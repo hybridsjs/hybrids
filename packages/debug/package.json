@@ -1,0 +1,15 @@
+{
+  "name": "@hybrids/debug",
+  "version": "0.0.0",
+  "description": "",
+  "author": "Dominik Lubański <dominik.lubanski@gmail.com>",
+  "repository": "https://github.com/hybridsjs/hybrids/tree/master/packages/debug",
+  "webpack": "src/index.js",
+  "module":"src/index.js",
+  "jsnext:main": "src/index.js",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "dependencies": {
+    "logdown": "^1.4.2"
+  }
+}

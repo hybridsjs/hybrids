@@ -1,0 +1,24 @@
+{
+  "parser": "babel-eslint",
+  "extends": "airbnb-base",
+  "env": {
+    "browser": true,
+    "node": true,
+    "jasmine": true,
+  },
+  "rules": {
+    "no-debugger": 1,
+    "no-param-reassign": 0,
+    "no-new-func": 0,
+    "new-cap": 0,
+    "import/prefer-default-export": 0,
+    "class-methods-use-this": 0,
+    "comma-dangle": ["error", {
+        "arrays": "only-multiline",
+        "objects": "only-multiline",
+        "imports": "only-multiline",
+        "exports": "only-multiline",
+        "functions": "ignore",
+    }]
+  },
+}

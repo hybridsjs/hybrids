@@ -1,0 +1,17 @@
+{
+  "presets": ["es2015"],
+  "plugins": [
+    "add-module-exports",
+  ],
+  "env": {
+    "coverage": {
+      "plugins": [
+        ["istanbul", {
+          "include": [
+            "src/**/*.js"
+          ]
+        }]
+      ]
+    }
+  }
+}
