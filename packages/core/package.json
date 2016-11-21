@@ -1,15 +1,15 @@
 {
   "name": "@hybrids/core",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "",
   "author": "Dominik Lubański <dominik.lubanski@gmail.com>",
   "repository": "https://github.com/hybridsjs/hybrids/tree/master/packages/core",
   "webpack": "src/index.js",
-  "module":"src/index.js",
+  "module": "src/index.js",
   "jsnext:main": "src/index.js",
   "main": "lib/index.js",
   "license": "MIT",
   "dependencies": {
-    "@hybrids/debug": "^0.0.0"
+    "@hybrids/debug": "^0.0.1"
   }
 }

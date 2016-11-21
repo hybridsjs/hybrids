@@ -1,17 +1,17 @@
 {
   "name": "@hybrids/engine",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "",
   "author": "Dominik Lubański <dominik.lubanski@gmail.com>",
   "repository": "https://github.com/hybridsjs/hybrids/tree/master/packages/engine",
   "webpack": "src/index.js",
-  "module":"src/index.js",
+  "module": "src/index.js",
   "jsnext:main": "src/index.js",
   "main": "lib/index.js",
   "license": "MIT",
   "dependencies": {
-    "@hybrids/core": "^0.0.0",
-    "@hybrids/debug": "^0.0.0",
+    "@hybrids/core": "^0.0.1",
+    "@hybrids/debug": "^0.0.1",
     "papillon": "^1.5.3"
   }
 }
