@@ -92,9 +92,9 @@ export default function defineHybrid(...args) {
       }, {});
     case 'string':
       if (args.length === 1) {
-        return () => {
-          bootstrap.bind(null, args[0]);
-          return args[0];
+        return (Controller) => {
+          bootstrap(args[0], Controller);
+          return Controller;
         };
       }
 
