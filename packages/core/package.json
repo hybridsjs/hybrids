@@ -10,6 +10,7 @@
   "main": "lib/index.js",
   "license": "MIT",
   "dependencies": {
-    "@hybrids/debug": "^0.0.1"
+    "@hybrids/debug": "^0.0.1",
+    "papillon": "^1.5.4"
   }
 }

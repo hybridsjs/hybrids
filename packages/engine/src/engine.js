@@ -1,5 +1,5 @@
-import { Observer, State } from 'papillon/papillon';
-import { dispatchEvent, OPTIONS, CONTROLLER } from '@hybrids/core';
+import { State } from 'papillon/papillon';
+import { OPTIONS, CONTROLLER } from '@hybrids/core';
 
 import Template from './template';
 import markers from './markers';
@@ -7,14 +7,15 @@ import filters from './filters';
 
 class Engine {
   constructor(element, template) {
-    this.element = element;
     this.controller = element[CONTROLLER];
     this.template = template;
-    this.observedProperties = element.constructor[OPTIONS].properties
-      .reduce((acc, { property }) => { acc[property] = true; return acc; }, {});
 
-    this.shadowRoot = this.element.attachShadow({ mode: 'open' });
+    this.shadowRoot = element.shadowRoot || element.attachShadow({ mode: 'open' });
     this.shadowRoot.appendChild(this.compile());
+
+    this.shadowRoot.addEventListener('change', ({ detail: { changelog } = {} }) => {
+      this.render(changelog);
+    });
   }
 
   compile(templateId, locals) {
@@ -46,25 +47,7 @@ class Engine {
   }
 
   connected() {
-    this.observer = new Observer(this.controller, Object.keys(this.controller), (changelog) => {
-      this.render(changelog);
-
-      const shouldEmit = Object.keys(changelog)
-        .filter(key => changelog[key].type === 'modify')
-        .some(key => this.observedProperties[key]);
-
-      if (shouldEmit) dispatchEvent.source.call(this.element, 'change');
-    });
-
-    this.shadowRoot.addEventListener('change', () => {
-      this.observer.check();
-    });
-
     this.render();
-  }
-
-  diconnected() {
-    this.observer.destroy();
   }
 }
 

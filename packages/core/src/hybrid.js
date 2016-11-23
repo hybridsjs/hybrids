@@ -1,8 +1,10 @@
+import { Observer } from 'papillon/papillon';
 import { warning, error } from '@hybrids/debug';
 
 import { proxy } from './proxy';
 import { dashToCamel } from './utils';
-import { CONTROLLER, MIDDLEWARE, OPTIONS } from './symbols';
+import { dispatchEvent } from './plugins/dispatch-event';
+import { CONTROLLER, MIDDLEWARE, OPTIONS, OBSERVER } from './symbols';
 
 function HTMLBridge(...args) {
   return Reflect.construct(HTMLElement, args, this.constructor);
@@ -49,6 +51,16 @@ export default class Hybrid extends HTMLBridge {
     this[MIDDLEWARE].forEach((middleware) => {
       if (middleware.connected) middleware.connected();
     });
+
+    this[OBSERVER] = new Observer(this[CONTROLLER], Object.keys(this[CONTROLLER]), (changelog) => {
+      if (this.shadowRoot) dispatchEvent.call(this.shadowRoot, 'change', { changelog });
+
+      const shouldEmit = Object.keys(changelog).some(key =>
+        this.constructor[OPTIONS].properties.find(({ property }) => property === key)
+      );
+
+      if (shouldEmit) dispatchEvent.call(this, 'change');
+    });
   }
 
   disconnectedCallback() {
@@ -57,6 +69,9 @@ export default class Hybrid extends HTMLBridge {
     this[MIDDLEWARE].forEach((middleware) => {
       if (middleware.disconnected) middleware.disconnected();
     });
+
+    this[OBSERVER].destroy();
+    this[OBSERVER] = null;
   }
 
   attributeChangedCallback(attrName, oldVal, newVal) {
