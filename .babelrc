@@ -4,11 +4,11 @@
     "add-module-exports",
   ],
   "env": {
-    "coverage": {
+    "development": {
       "plugins": [
         ["istanbul", {
           "include": [
-            "src/**/*.js"
+            "packages/**/src/**/*.js"
           ]
         }]
       ]

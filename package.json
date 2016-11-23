@@ -7,11 +7,10 @@
   "repository": "https://github.com/hybridsjs/hybrids",
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "dev": "karma start",
+    "dev": "NODE_ENV=development karma start",
     "prebuild": "ls packages | xargs -I {dir} rm -rf packages/{dir}/lib",
     "build": "ls packages | xargs -I {dir} babel packages/{dir}/src -d packages/{dir}/lib -s inline",
-    "test": "karma start --single-run",
-    "test:coverage": "NODE_ENV=coverage npm run test -- --reporters coverage",
+    "test": "karma start --single-run --reporters progress",
     "dist": "rm -rf ./dist && npm run dist:dev && npm run dist:prod",
     "dist:dev": "webpack hybrids=./src/hybrids.js --define process.env.NODE_ENV='\"development\"'",
     "dist:prod": "webpack hybrids.min=./src/hybrids.js --optimize-dedupe --optimize-minimize --optimize-occurence-order --define process.env.NODE_ENV='\"production\"'",

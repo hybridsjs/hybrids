@@ -28,7 +28,7 @@ module.exports = (config) => {
     webpackMiddleware: {
       stats: 'errors-only',
     },
-    reporters: ['progress'],
+    reporters: ['progress', 'coverage'],
     coverageReporter: {
       type: 'html',
       dir: 'coverage/',
