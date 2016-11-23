@@ -1,6 +1,6 @@
-import Logdown from 'logdown/src/index';
+const Logdown = process.env.NODE_ENV !== 'production' ? require('logdown/src/index') : false;
 
-const logger = new Logdown();
+const logger = Logdown ? new Logdown() : false;
 const messages = new Map();
 
 function resolve(...args) {
@@ -22,7 +22,7 @@ function resolve(...args) {
 
   if (process.env.NODE_ENV !== 'production') {
     const desc = messages.get(msg);
-    if (desc) {
+    if (desc && logger) {
       Promise.resolve().then(() => logger.warn(desc.replace(/%s/g, () => args.shift())));
     }
   }
