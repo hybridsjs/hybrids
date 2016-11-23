@@ -1,0 +1,11 @@
+/node_modules
+/test
+/packages
+/src
+*.log
+.babelrc
+.eslintrc
+karma.conf.js
+lerna.json
+webpack.config.js
+.tern-project

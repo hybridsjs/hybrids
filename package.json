@@ -1,15 +1,23 @@
 {
-  "private": "true",
+  "name": "hybrids",
+  "version": "0.0.1",
+  "description": "Web Components Toolkit",
+  "main": "dist/hybrids.js",
+  "author": "Dominik Lubański <dominik.lubanski@gmail.com>",
+  "repository": "https://github.com/hybridsjs/hybrids",
   "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "dev": "karma start",
     "prebuild": "ls packages | xargs -I {dir} rm -rf packages/{dir}/lib",
     "build": "ls packages | xargs -I {dir} babel packages/{dir}/src -d packages/{dir}/lib -s inline",
     "test": "karma start --single-run",
-    "test:coverage": "NODE_ENV=coverage npm run test",
-    "dist": "rm -rf ./packages/hybrids/dist && webpack",
-    "bootstrap": "lerna bootstrap",
-    "dev": "karma start",
-    "prepublish": "npm run test && npm run build",
-    "publish": "echo publish"
+    "test:coverage": "NODE_ENV=coverage npm run test -- --reporters coverage",
+    "dist": "rm -rf ./dist && npm run dist:dev && npm run dist:prod",
+    "dist:dev": "webpack hybrids=./src/hybrids.js --define process.env.NODE_ENV='\"development\"'",
+    "dist:prod": "webpack hybrids.min=./src/hybrids.js --optimize-dedupe --optimize-minimize --optimize-occurence-order --define process.env.NODE_ENV='\"production\"'",
+    "prepublish": "npm run test && npm run dist",
+    "predeploy": "npm run test && npm run build",
+    "deploy": "lerna publish"
   },
   "license": "MIT",
   "devDependencies": {
