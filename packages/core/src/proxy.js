@@ -26,7 +26,7 @@ export function callWithContext(currentContext, fn) {
   return result;
 }
 
-export function inject(fn, currentContext = context) {
+export function resolve(fn, currentContext = context) {
   if (!currentContext) {
     error('illegal invocation: %s', fn.name);
   }

@@ -35,7 +35,7 @@ export default class Hybrid extends HTMLBridge {
   }
 
   connectedCallback() {
-    this.constructor[OPTIONS].properties.forEach(({ property }) => {
+    const publicProperties = new Set(this.constructor[OPTIONS].properties.map(({ property }) => {
       const value = this[property];
 
       if ({}.hasOwnProperty.call(this, property)) {
@@ -44,7 +44,9 @@ export default class Hybrid extends HTMLBridge {
       }
 
       this[property] = value;
-    });
+
+      return property;
+    }));
 
     if (this[CONTROLLER].connected) this[CONTROLLER].connected();
 
@@ -53,14 +55,17 @@ export default class Hybrid extends HTMLBridge {
     });
 
     this[OBSERVER] = new Observer(this[CONTROLLER], Object.keys(this[CONTROLLER]), (changelog) => {
-      if (this.shadowRoot) dispatchEvent.call(this.shadowRoot, 'change', { changelog });
+      if (this.shadowRoot) dispatchEvent.call(this.shadowRoot, 'hybrids:change', { changelog });
 
-      const shouldEmit = Object.keys(changelog).some(key =>
-        this.constructor[OPTIONS].properties.find(({ property }) => property === key)
-      );
-
-      if (shouldEmit) dispatchEvent.call(this, 'change');
+      if (Object.keys(changelog).some(key => publicProperties.has(key))) {
+        dispatchEvent.call(this, 'change');
+      }
     });
+
+    if (this.shadowRoot) {
+      this[OBSERVER].check = this[OBSERVER].check.bind(this[OBSERVER]);
+      this.shadowRoot.addEventListener('change', this[OBSERVER].check);
+    }
   }
 
   disconnectedCallback() {
@@ -69,6 +74,10 @@ export default class Hybrid extends HTMLBridge {
     this[MIDDLEWARE].forEach((middleware) => {
       if (middleware.disconnected) middleware.disconnected();
     });
+
+    if (this.shadowRoot) {
+      this.shadowRoot.removeEventListener('change', this[OBSERVER].check);
+    }
 
     this[OBSERVER].destroy();
     this[OBSERVER] = null;

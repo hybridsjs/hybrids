@@ -1,15 +1,15 @@
-import { define, CONTROLLER } from '@hybrids/core';
+import { define } from '@hybrids/core';
 import engine from '../src/engine';
 
-fdescribe('engine', () => {
+describe('engine', () => {
   let el;
   let content;
-  // let ctrl;
 
   define('hybrids-engine-test', class Controller {
     static get options() {
       return {
         use: [engine],
+        properties: ['test'],
         template: `
           <div>{{ test }}</div>
         `
@@ -23,7 +23,6 @@ fdescribe('engine', () => {
 
   beforeEach(() => {
     el = document.createElement('hybrids-engine-test');
-    // ctrl = el[CONTROLLER];
     content = el.shadowRoot.children[0];
 
     document.body.appendChild(el);
@@ -37,10 +36,13 @@ fdescribe('engine', () => {
     expect(content.textContent.trim()).toEqual('testing content');
   });
 
-  it('updates view', () => {
-    el.test = 'new value';
+  it('updates view', (done) => {
     window.requestAnimationFrame(() => {
-      expect(content.textContent.trim()).toEqual('new value');
+      el.test = 'new value';
+      window.requestAnimationFrame(() => {
+        expect(content.textContent.trim()).toEqual('new value');
+        done();
+      });
     });
   });
 });

@@ -13,8 +13,10 @@ class Engine {
     this.shadowRoot = element.shadowRoot || element.attachShadow({ mode: 'open' });
     this.shadowRoot.appendChild(this.compile());
 
-    this.shadowRoot.addEventListener('change', ({ detail: { changelog } = {} }) => {
-      this.render(changelog);
+    this.shadowRoot.addEventListener('hybrids:change', (event) => {
+      if (event.currentTarget === event.target) {
+        this.render(event.detail.changelog);
+      }
     });
   }
 

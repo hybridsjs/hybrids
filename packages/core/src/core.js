@@ -17,16 +17,25 @@ function normalizeProperty(property) {
 
 function bootstrap(name, Controller) {
   if (window.customElements.get(name)) {
-    if (window.customElements.get(name)[CONTROLLER] !== Controller) {
-      error(TypeError, 'hybrid element already defined: %s', name);
+    const ExtHybrid = window.customElements.get(name);
+    if (ExtHybrid[CONTROLLER] !== Controller) {
+      error(TypeError, 'Element already defined: %s', name);
     } else {
-      return Controller;
+      return ExtHybrid;
     }
   }
 
   const options = Controller.options || {};
   const properties = (options.properties || []).map(normalizeProperty);
   const observedAttributes = [];
+
+  if (options.define) {
+    if (typeof options.define === 'object') {
+      defineHybrid(options.define); // eslint-disable-line no-use-before-define
+    } else {
+      error(TypeError, "'define' option must be an object: %s", typeof options.define);
+    }
+  }
 
   class ExtHybrid extends Hybrid {
     static get observedAttributes() { return observedAttributes; }
@@ -72,10 +81,8 @@ function bootstrap(name, Controller) {
     return true;
   });
 
-  const set = new Set((options.use || []).concat(Controller.use || []));
-
   Object.defineProperty(ExtHybrid, MIDDLEWARE, {
-    value: [...set].map(m => m(ExtHybrid)).filter(m => m),
+    value: [...new Set(options.use || [])].map(m => m(ExtHybrid)).filter(m => m),
   });
 
   return window.customElements.define(name, ExtHybrid);

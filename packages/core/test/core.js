@@ -48,7 +48,7 @@ describe('define', () => {
       expect(ctrl.test).toEqual('new value');
     });
 
-    it('maps controller property with element', () => {
+    it('map controller property with element', () => {
       ctrl.test = 'new value';
       expect(el.test).toEqual('new value');
     });
@@ -83,12 +83,65 @@ describe('define', () => {
       });
     });
 
-    it('dispatch change event for shadowRoot', (done) => {
+    it('dispatch hybrids:change event for shadowRoot', (done) => {
       const shadow = el.attachShadow({ mode: 'open' });
       const spy = jasmine.createSpy('callback');
-      shadow.addEventListener('change', spy);
-      ctrl.internal = 'new value';
+      shadow.addEventListener('hybrids:change', spy);
+      el.test = 'new value';
 
+      window.requestAnimationFrame(() => {
+        expect(spy).toHaveBeenCalled();
+        done();
+      });
+    });
+  });
+
+  describe('nested elements', () => {
+    const test = {};
+    class HybridsNestedOne {
+      static get options() {
+        return {
+          properties: ['value']
+        };
+      }
+
+      constructor() {
+        this.value = test;
+      }
+    }
+
+    class HybridsNestedTwo {
+      static get options() {
+        return {
+          define: { HybridsNestedOne },
+          properties: ['value']
+        };
+      }
+
+      constructor() {
+        this.value = test;
+      }
+    }
+
+    define({ HybridsNestedTwo });
+
+    it('define inside options', () => {
+      expect(customElements.get('hybrids-nested-one')[CONTROLLER]).toEqual(HybridsNestedOne);
+      expect(customElements.get('hybrids-nested-two')[CONTROLLER]).toEqual(HybridsNestedTwo);
+    });
+
+    it('dispatch hybrids:change event in parent shadowRoot', (done) => {
+      const child = document.createElement('hybrids-nested-one');
+      const parent = document.createElement('hybrids-nested-two');
+      const spy = jasmine.createSpy('callback');
+
+      parent.attachShadow({ mode: 'open' });
+      parent.shadowRoot.appendChild(child);
+      parent.shadowRoot.addEventListener('hybrids:change', spy);
+
+      document.body.appendChild(parent);
+
+      child.value.test = 'test';
       window.requestAnimationFrame(() => {
         expect(spy).toHaveBeenCalled();
         done();
