@@ -21,6 +21,10 @@ export default class VirtualFragment {
     return this.items[this.items.length - 1];
   }
 
+  getValue() {
+    return this.value;
+  }
+
   remove() {
     this.items.forEach((item) => {
       if (item instanceof VirtualFragment) {
@@ -62,7 +66,7 @@ export default class VirtualFragment {
     return target;
   }
 
-  setLocals(locals) {
+  setLocals(locals, value) {
     this.items.forEach((item) => {
       if (item instanceof VirtualFragment) {
         item.setLocals(locals);
@@ -70,5 +74,7 @@ export default class VirtualFragment {
         defineLocals(item, locals);
       }
     });
+
+    this.value = value;
   }
 }

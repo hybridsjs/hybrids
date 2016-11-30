@@ -1,7 +1,7 @@
 import { error } from '@hybrids/debug';
 import VirtualFragment from './shared/virtual-fragment';
 
-function createArrayLocals(locals) {
+function createLocals(locals) {
   const { index, length } = locals;
   return Object.assign({
     number: index + 1,
@@ -21,28 +21,33 @@ export default function foreach(node, expr, localName = 'item') {
 
   return ({ type: globalType, changelog }, engine) => {
     const list = expr.get();
-    if (!(list instanceof Array)) {
-      error(TypeError, 'target property path must be an array instance: %s', typeof list);
+    if (typeof list !== 'object') {
+      error(TypeError, '[foreach]: target must be an object: %s', typeof list);
     }
+
+    const listKeys = Object.keys(list);
+    const length = Reflect.has(list, 'length') ? list.length : listKeys.length;
 
     switch (globalType) {
       case 'modify': {
         const deleted = [];
+
         Object.assign(cache, Object.keys(changelog).reduce((items, key) => {
           const { type, oldKey, newKey } = changelog[key];
 
           if (type === 'delete') {
             if (cache[key]) deleted.push(cache[key]);
           } else {
-            const index = Number(key);
-            const before = items[index - 1] || cache[index - 1];
+            const index = listKeys.indexOf(key);
+            const beforeKey = listKeys[index - 1];
+            const before = items[beforeKey] || cache[beforeKey];
             let fragment;
 
             if (oldKey || newKey) {
               fragment = cache[oldKey] || new VirtualFragment(engine.compile(node), node);
 
               if (oldKey) {
-                cache[oldKey] = null;
+                delete cache[oldKey];
                 if (cache[key] && !newKey) deleted.push(cache[key]);
               }
 
@@ -54,9 +59,9 @@ export default function foreach(node, expr, localName = 'item') {
               fragment = cache[key];
             }
 
-            fragment.setLocals(createArrayLocals({
-              [localName]: list[key], length: list.length, index, key
-            }));
+            fragment.setLocals(createLocals({
+              [localName]: list[key], length, index, key
+            }), list[key]);
             items[key] = fragment;
           }
 
@@ -64,40 +69,51 @@ export default function foreach(node, expr, localName = 'item') {
         }, {}));
 
         deleted.forEach(fragment => fragment.remove());
-        cache.length = list.length;
+        if (Array.isArray(list)) cache.length = list.length;
 
         break;
       }
 
       default: {
-        const itemsLength = cache.length;
+        const cacheKeys = Object.keys(cache);
+        const deletedKeys = cacheKeys.filter(key => !{}.hasOwnProperty.call(list, key));
         let last;
 
-        Object.keys(list).reduce((acc, key, index) => {
+        Object.assign(cache, listKeys.reduce((acc, key, index) => {
           let fragment;
 
-          if (index < itemsLength) {
-            fragment = cache[index];
+          const keyFromCache = cacheKeys.find(
+            cacheKey => cache[cacheKey] && cache[cacheKey].getValue() === list[key]
+          );
+
+          if (keyFromCache) {
+            fragment = cache[keyFromCache];
+            delete cache[keyFromCache];
+            if (keyFromCache !== key) {
+              if (cache[key]) cache[key].remove();
+              fragment.insertAfter(last);
+            }
           } else {
             fragment = new VirtualFragment(engine.compile(node), node);
             fragment.insertAfter(last);
           }
 
-          fragment.setLocals(createArrayLocals({
-            [localName]: list[key], index, length: list.length, key
-          }));
+          fragment.setLocals(
+            createLocals({ [localName]: list[key], index, length, key }), list[key]
+          );
 
           last = fragment;
-          acc[index] = fragment;
+          acc[key] = fragment;
 
           return acc;
-        }, cache);
+        }, {}));
 
-        for (let i = list.length; i < itemsLength; i += 1) {
-          cache[i].remove();
-        }
+        deletedKeys.forEach((key) => {
+          if (cache[key]) cache[key].remove();
+          delete cache[key];
+        });
 
-        cache.length = list.length;
+        if (Array.isArray(list)) cache.length = list.length;
       }
     }
   };
