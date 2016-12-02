@@ -1,6 +1,7 @@
 import { define } from '@hybrids/core';
 import engine from '../../src/engine';
-import { getOwnLocals } from '../../src/expression';
+import { getOwnLocals, LOCALS_PREFIX as L } from '../../src/expression';
+import { PROPERTY_PREFIX as P, MARKER_PREFIX as M } from '../../src/template';
 
 describe('Engine | Markers | Foreach -', () => {
   let el;
@@ -22,8 +23,8 @@ describe('Engine | Markers | Foreach -', () => {
           use: [engine],
           properties: ['items'],
           template: `
-            <template *foreach="items">
-              <div @text-content="@item" data-value hidden></div>
+            <template ${M}foreach="items">
+              <div ${P}text-content="${L}item" data-value hidden></div>
               <span hidden>test</span>
             </template>
           `
@@ -206,9 +207,9 @@ describe('Engine | Markers | Foreach -', () => {
           use: [engine],
           properties: ['items'],
           template: `
-            <template *foreach="items">
-              <template *foreach="value: @item.values">
-                <div data-value>{{ @value }}</div>
+            <template ${M}foreach="items">
+              <template ${M}foreach="value: ${L}item.values">
+                <div data-value>{{ ${L}value }}</div>
               </template>
               asd
             </template>
@@ -286,8 +287,8 @@ describe('Engine | Markers | Foreach -', () => {
           use: [engine],
           properties: ['items'],
           template: `
-            <template *foreach="items">
-              <div @text-content="@item" data-value hidden></div>
+            <template ${M}foreach="items">
+              <div ${P}text-content="${L}item" data-value hidden></div>
               <span hidden>test</span>
             </template>
           `
