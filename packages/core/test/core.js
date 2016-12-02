@@ -1,6 +1,6 @@
 import { define, CONTROLLER } from '../src/index';
 
-describe('define', () => {
+describe('Core | define -', () => {
   let el;
   let ctrl;
 
@@ -126,8 +126,8 @@ describe('define', () => {
     define({ HybridsNestedTwo });
 
     it('define inside options', () => {
-      expect(customElements.get('hybrids-nested-one')[CONTROLLER]).toEqual(HybridsNestedOne);
-      expect(customElements.get('hybrids-nested-two')[CONTROLLER]).toEqual(HybridsNestedTwo);
+      expect(window.customElements.get('hybrids-nested-one')[CONTROLLER]).toEqual(HybridsNestedOne);
+      expect(window.customElements.get('hybrids-nested-two')[CONTROLLER]).toEqual(HybridsNestedTwo);
     });
 
     it('dispatch hybrids:change event in parent shadowRoot', (done) => {
