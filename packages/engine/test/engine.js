@@ -1,7 +1,7 @@
 import { define } from '@hybrids/core';
 import engine from '../src/engine';
 
-describe('Engine | Middleware -', () => {
+describe('Engine | Provider -', () => {
   let el;
   let content;
 

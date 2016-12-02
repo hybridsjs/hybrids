@@ -1,7 +1,7 @@
 import { error } from '@hybrids/debug';
 import Hybrid from './hybrid';
 import { camelToDash, reflectValue } from './utils';
-import { CONTROLLER, MIDDLEWARE, OPTIONS } from './symbols';
+import { CONTROLLER, PROVIDERS, OPTIONS } from './symbols';
 
 function normalizeProperty(property) {
   const type = typeof property;
@@ -81,7 +81,7 @@ function bootstrap(name, Controller) {
     return true;
   });
 
-  Object.defineProperty(ExtHybrid, MIDDLEWARE, {
+  Object.defineProperty(ExtHybrid, PROVIDERS, {
     value: [...new Set(options.use || [])].map(m => m(ExtHybrid)).filter(m => m),
   });
 

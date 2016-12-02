@@ -4,7 +4,7 @@ import { warning, error } from '@hybrids/debug';
 import { proxy } from './proxy';
 import { dashToCamel } from './utils';
 import { dispatchEvent } from './plugins/dispatch-event';
-import { CONTROLLER, MIDDLEWARE, OPTIONS, OBSERVER } from './symbols';
+import { CONTROLLER, PROVIDERS, OPTIONS, OBSERVER } from './symbols';
 
 function HTMLBridge(...args) {
   return Reflect.construct(HTMLElement, args, this.constructor);
@@ -13,7 +13,7 @@ Object.setPrototypeOf(HTMLBridge.prototype, HTMLElement.prototype);
 
 export default class Hybrid extends HTMLBridge {
   static get [CONTROLLER]() { return Object; }
-  static get [MIDDLEWARE]() { return []; }
+  static get [PROVIDERS]() { return []; }
   static get [OPTIONS]() { return { properties: [] }; }
 
   constructor() {
@@ -23,8 +23,8 @@ export default class Hybrid extends HTMLBridge {
       value: proxy(this, () => new this.constructor[CONTROLLER]()),
     });
 
-    Object.defineProperty(this, MIDDLEWARE, {
-      value: this.constructor[MIDDLEWARE].map(m => m(this)).filter(m => m),
+    Object.defineProperty(this, PROVIDERS, {
+      value: this.constructor[PROVIDERS].map(m => m(this)).filter(m => m),
     });
 
     this.constructor[OPTIONS].properties.forEach(({ property }) => {
@@ -50,8 +50,8 @@ export default class Hybrid extends HTMLBridge {
 
     if (this[CONTROLLER].connected) this[CONTROLLER].connected();
 
-    this[MIDDLEWARE].forEach((middleware) => {
-      if (middleware.connected) middleware.connected();
+    this[PROVIDERS].forEach((provider) => {
+      if (provider.connected) provider.connected();
     });
 
     this[OBSERVER] = new Observer(this[CONTROLLER], Object.keys(this[CONTROLLER]), (changelog) => {
@@ -71,8 +71,8 @@ export default class Hybrid extends HTMLBridge {
   disconnectedCallback() {
     if (this[CONTROLLER].disconnected) this[CONTROLLER].disconnected();
 
-    this[MIDDLEWARE].forEach((middleware) => {
-      if (middleware.disconnected) middleware.disconnected();
+    this[PROVIDERS].forEach((provider) => {
+      if (provider.disconnected) provider.disconnected();
     });
 
     if (this.shadowRoot) {
