@@ -4,7 +4,9 @@ import Path from './path';
 import Expression, { defineLocals, getOwnLocals, LOCALS_PREFIX } from './expression';
 import { WATCHERS, DEFAULT_MARKER } from './symbols';
 
-const MARKER_PREFIX = '*';
+export const MARKER_PREFIX = '*';
+export const PROPERTY_PREFIX = '@';
+export const TEMPLATE_DATASET = 'hid';
 
 function walk(node, fn) {
   node = node.firstElementChild || node.firstChild;
@@ -29,7 +31,7 @@ function interpolate(node) {
       case Node.TEXT_NODE: {
         const result = child.textContent.replace(
           /{{(([^}]|\n)+)}}/g,
-          (match, expr) => `<span [text-content]="${expr.trim()}"></span>`
+          (match, expr) => `<span ${PROPERTY_PREFIX}text-content="${expr.trim()}"></span>`
         );
 
         if (result !== child.textContent) {
@@ -42,19 +44,19 @@ function interpolate(node) {
 
         break;
       }
-      default: {
+      case Node.ELEMENT_NODE: {
         const wrappers = [];
 
         Array.from(child.attributes).forEach(({ name, value }) => {
-          if (name.substr(0, 3) === `[${MARKER_PREFIX}${MARKER_PREFIX}`) {
+          if (name.substr(0, 2) === `${MARKER_PREFIX}${MARKER_PREFIX}`) {
             child.removeAttribute(name);
-            wrappers.push({ name: name.substr(3, name.length - 4), value });
+            wrappers.push({ name: name.substr(2), value });
           }
         });
 
         wrappers.reduce((acc, { name, value }) => {
           const { children: [temp] } = createFragment(
-            `<template [${MARKER_PREFIX}${name}]="${value}"></template>`
+            `<template ${MARKER_PREFIX}${name}="${value}"></template>`
           );
 
           node.insertBefore(temp, acc);
@@ -65,7 +67,9 @@ function interpolate(node) {
         }, child);
 
         interpolate(child);
+        break;
       }
+      default: break;
     }
   });
 }
@@ -85,34 +89,32 @@ function parseEvaluate(input, container) {
 function parseNode(node, m, p) {
   let markers = 0;
 
-  try {
-    Array.from(node.attributes || [])
-      .filter(({ name }) => name.length > 1 && name.substr(0, 1) === '[')
-      .forEach((attr) => {
-        let id = attr.name.substr(1, attr.name.length - 2);
+  Array.from(node.attributes)
+    .filter(({ name }) => name.length > 1)
+    .forEach((attr) => {
+      const prefix = attr.name.substr(0, 1);
+      let id = attr.name.substr(1);
 
-        if (!id) {
-          error(SyntaxError, 'marker must not be empty');
-        }
+      markers = markers || [];
 
-        markers = markers || [];
-
-        if (id[0] === MARKER_PREFIX) {
+      switch (prefix) {
+        case MARKER_PREFIX:
           attr.value.split(';').forEach((item) => {
-            markers.push({ m: id.substr(1), p: parseEvaluate(item, p) });
+            markers.push({ m: id, p: parseEvaluate(item, p) });
           });
-        } else {
+          break;
+        case PROPERTY_PREFIX:
           id = id.replace(/-([a-z])/g, g => g[1].toUpperCase());
           markers.push({ m: 0, p: parseEvaluate(`${id}:${attr.value || id}`, p) });
-        }
+          break;
+        default:
+          break;
+      }
 
-        if (process.env.NODE_ENV === 'production') {
-          node.removeAttribute(attr.name);
-        }
-      });
-  } catch (e) {
-    error(e, 'parsing failed: %s...', node.outerHTML.match(/^<[^<]+>/i));
-  }
+      if (process.env.NODE_ENV === 'production') {
+        node.removeAttribute(attr.name);
+      }
+    });
 
   m.push(markers);
 }
@@ -123,13 +125,13 @@ function parseTemplate(template, container) {
   const id = container.t.length;
 
   container.t.push(map);
-  template.dataset.hid = id;
+  template.dataset[TEMPLATE_DATASET] = id;
 
   interpolate(template.content);
 
   walk(template.content, (node) => {
     parseNode(node, map.m, container.p);
-    if (node.content) parseTemplate(node, container);
+    if (node instanceof HTMLTemplateElement) parseTemplate(node, container);
   });
 
   Array.from(template.content.childNodes)
@@ -141,23 +143,25 @@ function parseTemplate(template, container) {
 function getTemplateId(templateOrId) {
   switch (typeof templateOrId) {
     case 'object':
-      return Number(templateOrId.dataset.hid);
+      return Number(templateOrId.dataset[TEMPLATE_DATASET]);
     default:
       return templateOrId;
   }
 }
 
 export default class Template {
-  constructor(input, markers, filters) {
+  constructor(input, markers = {}, filters = {}) {
     switch (typeof input) {
       case 'object':
-        this.container = input;
+        this.container = {
+          p: input.p, t: input.t.map(({ c, m }) => ({ m, c: createFragment(c) })),
+        };
         break;
       default: {
         const template = document.createElement('template');
-        this.container = { t: [], p: {} };
         template.innerHTML = input.replace(/\n +/gi, '\n');
-        parseTemplate(template, this.container);
+
+        this.container = parseTemplate(template, { t: [], p: {} });
         break;
       }
     }
@@ -167,7 +171,10 @@ export default class Template {
   }
 
   compile(controller, templateOrId = 0, locals = null) {
-    const map = this.container.t[getTemplateId(templateOrId)];
+    const templateId = getTemplateId(templateOrId);
+    const map = this.container.t[templateId];
+    if (!map) error(ReferenceError, 'template not found: %s', templateId);
+
     const fragment = document.importNode(map.c, true);
 
     if (typeof templateOrId === 'object') {

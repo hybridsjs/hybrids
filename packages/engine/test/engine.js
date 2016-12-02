@@ -1,24 +1,26 @@
 import { define } from '@hybrids/core';
 import engine from '../src/engine';
 
-describe('engine', () => {
+describe('Engine | Middleware -', () => {
   let el;
   let content;
 
-  define('hybrids-engine-test', class Controller {
-    static get options() {
-      return {
-        use: [engine],
-        properties: ['test'],
-        template: `
-          <div>{{ test }}</div>
-        `
-      };
-    }
+  beforeAll(() => {
+    define('hybrids-engine-test', class Controller {
+      static get options() {
+        return {
+          use: [engine],
+          properties: ['test'],
+          template: `
+            <div>{{ test }}</div>
+          `
+        };
+      }
 
-    constructor() {
-      this.test = 'testing content';
-    }
+      constructor() {
+        this.test = 'testing content';
+      }
+    });
   });
 
   beforeEach(() => {

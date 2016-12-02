@@ -1,8 +1,8 @@
-import { define, CONTROLLER } from '@hybrids/core';
+import { define } from '@hybrids/core';
 import engine from '../../src/engine';
 import { getOwnLocals } from '../../src/expression';
 
-describe('foreach marker', () => {
+describe('Engine | Markers | Foreach -', () => {
   let el;
 
   function extractValues() {
@@ -22,8 +22,8 @@ describe('foreach marker', () => {
           use: [engine],
           properties: ['items'],
           template: `
-            <template [*foreach]="items">
-              <div [text-content]="@item" data-value hidden></div>
+            <template *foreach="items">
+              <div @text-content="@item" data-value hidden></div>
               <span hidden>test</span>
             </template>
           `
@@ -35,7 +35,9 @@ describe('foreach marker', () => {
       }
     }
 
-    define({ EngineForeachTest });
+    beforeAll(() => {
+      define({ EngineForeachTest });
+    });
 
     beforeEach(() => {
       el = document.createElement('engine-foreach-test');
@@ -204,8 +206,8 @@ describe('foreach marker', () => {
           use: [engine],
           properties: ['items'],
           template: `
-            <template [*foreach]="items">
-              <template [*attrs]="test: @item.values[0]" [*foreach]="value: @item.values">
+            <template *foreach="items">
+              <template *foreach="value: @item.values">
                 <div data-value>{{ @value }}</div>
               </template>
               asd
@@ -223,7 +225,9 @@ describe('foreach marker', () => {
       }
     }
 
-    define({ EngineForeachTestMultiply });
+    beforeAll(() => {
+      define({ EngineForeachTestMultiply });
+    });
 
     beforeEach(() => {
       el = document.createElement('engine-foreach-test-multiply');
@@ -282,8 +286,8 @@ describe('foreach marker', () => {
           use: [engine],
           properties: ['items'],
           template: `
-            <template [*foreach]="items">
-              <div [text-content]="@item" data-value hidden></div>
+            <template *foreach="items">
+              <div @text-content="@item" data-value hidden></div>
               <span hidden>test</span>
             </template>
           `
@@ -295,7 +299,9 @@ describe('foreach marker', () => {
       }
     }
 
-    define({ EngineForeachObjectTest });
+    beforeAll(() => {
+      define({ EngineForeachObjectTest });
+    });
 
     beforeEach(() => {
       el = document.createElement('engine-foreach-object-test');
