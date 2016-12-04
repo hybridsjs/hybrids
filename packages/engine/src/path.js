@@ -25,11 +25,13 @@ function parse(evaluate) {
 }
 
 export default class Path {
-  constructor(evaluate) {
-    this.evaluate = evaluate;
-    this.path = parse(evaluate);
-
-    return this;
+  constructor(input) {
+    if (typeof input === 'object') {
+      Object.assign(this, input);
+    } else {
+      this.evaluate = input;
+      this.path = parse(input);
+    }
   }
 
   get rootProperty() {
@@ -145,9 +147,5 @@ export default class Path {
     });
 
     delete result.context[result.property];
-  }
-
-  toJSON() {
-    return this.path;
   }
 }

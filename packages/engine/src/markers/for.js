@@ -12,9 +12,9 @@ function createLocals(locals) {
   }, locals);
 }
 
-export default function foreach(node, expr, localName = 'item') {
-  if (!(node instanceof HTMLTemplateElement)) {
-    error(TypeError, '[foreach]: <template> element required');
+export default function (node, expr, localName = 'item') {
+  if (!(node instanceof Comment)) {
+    error(TypeError, 'for: element must be a <template>');
   }
 
   const cache = new VirtualFragment(null, node, true).items;
@@ -22,7 +22,7 @@ export default function foreach(node, expr, localName = 'item') {
   return ({ type: globalType, changelog }, engine) => {
     const list = expr.get();
     if (typeof list !== 'object') {
-      error(TypeError, '[foreach]: target must be an object: %s', typeof list);
+      error(TypeError, 'for: target must be an object: %s', typeof list);
     }
 
     const listKeys = Object.keys(list);
@@ -84,7 +84,7 @@ export default function foreach(node, expr, localName = 'item') {
 
           const keyFromCache = cacheKeys.find(
             cacheKey => cache[cacheKey] && cache[cacheKey].getValue() === list[key]
-          );
+          ) || ({}.hasOwnProperty.call(cache, key) && key);
 
           if (keyFromCache) {
             fragment = cache[keyFromCache];

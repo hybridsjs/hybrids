@@ -3,7 +3,7 @@ import engine from '../../src/engine';
 import { getOwnLocals, LOCALS_PREFIX as L } from '../../src/expression';
 import { PROPERTY_PREFIX as P, MARKER_PREFIX as M } from '../../src/template';
 
-describe('Engine | Markers | Foreach -', () => {
+describe('Engine | Markers | For -', () => {
   let el;
 
   function extractValues() {
@@ -23,7 +23,7 @@ describe('Engine | Markers | Foreach -', () => {
           use: [engine],
           properties: ['items'],
           template: `
-            <template ${M}foreach="items">
+            <template ${M}for="items">
               <div ${P}text-content="${L}item" data-value hidden></div>
               <span hidden>test</span>
             </template>
@@ -50,7 +50,7 @@ describe('Engine | Markers | Foreach -', () => {
     });
 
     it('initial locals', () => {
-      expect(getOwnLocals(el.shadowRoot.children[1])).toEqual({
+      expect(getOwnLocals(el.shadowRoot.children[0])).toEqual({
         number: 1,
         first: true,
         last: false,
@@ -61,7 +61,7 @@ describe('Engine | Markers | Foreach -', () => {
         length: 4,
         key: '0',
       });
-      expect(getOwnLocals(el.shadowRoot.children[3])).toEqual({
+      expect(getOwnLocals(el.shadowRoot.children[2])).toEqual({
         number: 2,
         first: false,
         last: false,
@@ -77,7 +77,7 @@ describe('Engine | Markers | Foreach -', () => {
     it('shift item locals', (done) => {
       el.items.shift();
       window.requestAnimationFrame(() => {
-        expect(getOwnLocals(el.shadowRoot.children[1])).toEqual({
+        expect(getOwnLocals(el.shadowRoot.children[0])).toEqual({
           number: 1,
           first: true,
           last: false,
@@ -88,7 +88,7 @@ describe('Engine | Markers | Foreach -', () => {
           length: 3,
           key: '0',
         });
-        expect(getOwnLocals(el.shadowRoot.children[3])).toEqual({
+        expect(getOwnLocals(el.shadowRoot.children[2])).toEqual({
           number: 2,
           first: false,
           last: false,
@@ -207,8 +207,8 @@ describe('Engine | Markers | Foreach -', () => {
           use: [engine],
           properties: ['items'],
           template: `
-            <template ${M}foreach="items">
-              <template ${M}foreach="value: ${L}item.values">
+            <template ${M}for="items">
+              <template ${M}for="value: ${L}item.values">
                 <div data-value>{{ ${L}value }}</div>
               </template>
               asd
@@ -287,7 +287,7 @@ describe('Engine | Markers | Foreach -', () => {
           use: [engine],
           properties: ['items'],
           template: `
-            <template ${M}foreach="items">
+            <template ${M}for="items">
               <div ${P}text-content="${L}item" data-value hidden></div>
               <span hidden>test</span>
             </template>

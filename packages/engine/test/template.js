@@ -1,4 +1,4 @@
-import Template, { MARKER_PREFIX as M, PROPERTY_PREFIX as P, TEMPLATE_DATASET as T } from '../src/template';
+import Template, { MARKER_PREFIX as M, PROPERTY_PREFIX as P } from '../src/template';
 import { getOwnLocals } from '../src/expression';
 import { WATCHERS, DEFAULT_MARKER } from '../src/symbols';
 
@@ -22,8 +22,8 @@ describe('Engine | Template -', () => {
 
     it('interpolate template marker', () => {
       const template = new Template(`<div ${M}${M}marker="something"></div>`);
-      expect(template.container.t[0].c.children[0].tagName.toLowerCase()).toEqual('template');
-      expect(template.container.t[0].c.children[0].dataset[T]).toEqual('1');
+      // expect(template.container.t[0].c.children[0].tagName.toLowerCase()).toEqual('template');
+      // expect(template.container.t[0].c.children[0].dataset[T]).toEqual('1');
       expect(template.container.t[0].m[0][0]).toEqual({ m: 'marker', p: [['something']] });
       expect(template.container.t[1].c.children[0].outerHTML).toEqual('<div></div>');
     });
@@ -41,11 +41,15 @@ describe('Engine | Template -', () => {
     });
   });
 
-  it('construct from serialized JSON', () => {
-    const serialize = new Template(`<div ${M}marker="something"></div>`).serialize();
-    const copy = new Template(serialize);
+  it('construct from exprted JSON', () => {
+    const input = `
+      <div ${M}marker="one"></div>
+      <template><span ${M}marker="two"></span></template>
+    `;
+    const template = new Template(input);
+    const copy = new Template(template.export());
 
-    expect(copy.serialize()).toEqual(serialize);
+    expect(copy.container.p).toEqual(template.container.p);
   });
 
   describe('compile', () => {
@@ -103,7 +107,7 @@ describe('Engine | Template -', () => {
       `, { marker });
 
       const parent = template.compile({ one: 'test' });
-      const child = template.compile({ two: 'test' }, parent.children[1]);
+      const child = template.compile({ two: 'test' }, parent.childNodes[3]);
 
       expect(child.children[0].outerHTML).toEqual(`<span ${M}marker="val1:val2:two"></span>`);
     });

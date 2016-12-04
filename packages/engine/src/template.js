@@ -6,16 +6,16 @@ import { WATCHERS, DEFAULT_MARKER } from './symbols';
 
 export const MARKER_PREFIX = '*';
 export const PROPERTY_PREFIX = '@';
-export const TEMPLATE_DATASET = 'hid';
+export const TEMPLATE_PREFIX = 'template:';
 
 function walk(node, fn) {
-  node = node.firstElementChild || node.firstChild;
+  node = node.firstChild;
   while (node) {
-    if (node.nodeType === Node.ELEMENT_NODE) {
+    if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.COMMENT_NODE) {
       fn(node);
       walk(node, fn);
     }
-    node = node.nextElementSibling || node.nextSibling;
+    node = node.nextSibling;
   }
 }
 
@@ -72,6 +72,8 @@ function interpolate(node) {
       default: break;
     }
   });
+
+  return node;
 }
 
 function parseEvaluate(input, container) {
@@ -89,32 +91,34 @@ function parseEvaluate(input, container) {
 function parseNode(node, m, p) {
   let markers = 0;
 
-  Array.from(node.attributes)
-    .filter(({ name }) => name.length > 1)
-    .forEach((attr) => {
-      const prefix = attr.name.substr(0, 1);
-      let id = attr.name.substr(1);
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    Array.from(node.attributes)
+      .filter(({ name }) => name.length > 1)
+      .forEach((attr) => {
+        const prefix = attr.name.substr(0, 1);
+        let id = attr.name.substr(1);
 
-      markers = markers || [];
+        markers = markers || [];
 
-      switch (prefix) {
-        case MARKER_PREFIX:
-          attr.value.split(';').forEach((item) => {
-            markers.push({ m: id, p: parseEvaluate(item, p) });
-          });
-          break;
-        case PROPERTY_PREFIX:
-          id = id.replace(/-([a-z])/g, g => g[1].toUpperCase());
-          markers.push({ m: 0, p: parseEvaluate(`${id}:${attr.value || id}`, p) });
-          break;
-        default:
-          break;
-      }
+        switch (prefix) {
+          case MARKER_PREFIX:
+            attr.value.split(';').forEach((item) => {
+              markers.push({ m: id, p: parseEvaluate(item, p) });
+            });
+            break;
+          case PROPERTY_PREFIX:
+            id = id.replace(/-([a-z])/g, g => g[1].toUpperCase());
+            markers.push({ m: 0, p: parseEvaluate(`${id}:${attr.value || id}`, p) });
+            break;
+          default:
+            break;
+        }
 
-      if (process.env.NODE_ENV === 'production') {
-        node.removeAttribute(attr.name);
-      }
-    });
+        if (process.env.NODE_ENV === 'production') {
+          node.removeAttribute(attr.name);
+        }
+      });
+  }
 
   m.push(markers);
 }
@@ -125,17 +129,20 @@ function parseTemplate(template, container) {
   const id = container.t.length;
 
   container.t.push(map);
-  template.dataset[TEMPLATE_DATASET] = id;
 
-  interpolate(template.content);
-
-  walk(template.content, (node) => {
+  walk(interpolate(template.content), (node) => {
     parseNode(node, map.m, container.p);
     if (node instanceof HTMLTemplateElement) parseTemplate(node, container);
   });
 
-  Array.from(template.content.childNodes)
-    .forEach(node => temp.content.appendChild(node));
+  temp.content.appendChild(template.content);
+
+  if (id) {
+    template.parentNode.insertBefore(
+      document.createComment(`${TEMPLATE_PREFIX}${id}`), template
+    );
+    template.parentNode.removeChild(template);
+  }
 
   return container;
 }
@@ -143,7 +150,7 @@ function parseTemplate(template, container) {
 function getTemplateId(templateOrId) {
   switch (typeof templateOrId) {
     case 'object':
-      return Number(templateOrId.dataset[TEMPLATE_DATASET]);
+      return Number(templateOrId.textContent.replace(TEMPLATE_PREFIX, ''));
     default:
       return templateOrId;
   }
@@ -154,12 +161,16 @@ export default class Template {
     switch (typeof input) {
       case 'object':
         this.container = {
-          p: input.p, t: input.t.map(({ c, m }) => ({ m, c: createFragment(c) })),
+          p: Object.keys(input.p).reduce((acc, key) => {
+            acc[key] = new Path(input.p[key]);
+            return acc;
+          }, {}),
+          t: input.t.map(({ c, m }) => ({ m, c: createFragment(c) })),
         };
         break;
       default: {
         const template = document.createElement('template');
-        template.innerHTML = input.replace(/\n +/gi, '\n');
+        template.innerHTML = input;
 
         this.container = parseTemplate(template, { t: [], p: {} });
         break;
@@ -183,7 +194,7 @@ export default class Template {
 
     if (locals) {
       Array.from(fragment.childNodes)
-        .filter(n => n.nodeType === Node.ELEMENT_NODE)
+        .filter(n => n.nodeType === Node.ELEMENT_NODE || n.nodeType === Node.COMMENT_NODE)
         .forEach(n => defineLocals(n, locals));
     }
 
@@ -241,10 +252,12 @@ export default class Template {
     });
   }
 
-  serialize() {
+  export() {
     return JSON.parse(JSON.stringify(this.container, (key, value) => {
       if (Object(value) === value && value instanceof DocumentFragment) {
-        return Array.from(value.childNodes).reduce((acc, c) => acc + (c.outerHTML || ''), '');
+        return Array.from(value.childNodes).reduce((acc, c) =>
+          (acc + c instanceof Comment ? `<!--${c.textContent}-->` : (c.outerHTML || ''))
+        , '');
       }
 
       return value;
