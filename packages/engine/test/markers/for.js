@@ -209,9 +209,9 @@ describe('Engine | Markers | For -', () => {
           template: `
             <template ${M}for="items">
               <template ${M}for="value: ${L}item.values">
-                <div data-value>{{ ${L}value }}</div>
+                <div data-value ${M}props="item: ${L}item">{{ ${L}value }}</div>
               </template>
-              asd
+              <span>some static text</span>
             </template>
           `
         };
@@ -277,6 +277,13 @@ describe('Engine | Markers | For -', () => {
         expect(extractValues()).toEqual([]);
         done();
       });
+    });
+
+    it('merge locals with parent for', () => {
+      const { item, index, value } = getOwnLocals(el.shadowRoot.children[4]);
+      expect(item).toEqual(el.items[1]);
+      expect(index).toEqual(0);
+      expect(value).toEqual('4');
     });
   });
 

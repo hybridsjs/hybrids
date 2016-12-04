@@ -7,7 +7,11 @@ function resolveLocal(node, name) {
     return { [`${LOCALS_PREFIX}${name}`]: node[LOCALS].get(name) };
   }
 
-  return node.parentElement && resolveLocal(node.parentElement, name);
+  if (node.parentElement) {
+    return resolveLocal(node.parentElement, name);
+  }
+
+  return {};
 }
 
 function mergeLocals(node, temp = {}) {
@@ -15,7 +19,7 @@ function mergeLocals(node, temp = {}) {
 
   node[LOCALS].forEach((value, key) => {
     if (!{}.hasOwnProperty.call(temp, key)) {
-      temp[`${LOCALS_PREFIX}${key}`] = value;
+      temp[key] = value;
     }
   });
 
@@ -46,7 +50,7 @@ export function getOwnLocals(node) {
 }
 
 export default class Expression {
-  constructor(node, context, path, filters) {
+  constructor(node, context, path, filters = []) {
     this.node = node;
     this.path = path;
     this.filters = filters;
@@ -54,7 +58,7 @@ export default class Expression {
     if (this.path.rootProperty[0] === LOCALS_PREFIX) {
       const rootProperty = this.path.rootProperty.substr(1);
       Object.defineProperty(this, 'context', {
-        get() { return resolveLocal(this.node, rootProperty) || {}; }
+        get: () => resolveLocal(this.node, rootProperty)
       });
 
       if (!this.path.isNestedProperty()) this.set = () => {};

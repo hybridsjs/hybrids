@@ -39,7 +39,7 @@ export default class Path {
   }
 
   isNestedProperty() {
-    return !!this.path.length;
+    return this.path.length > 1;
   }
 
   get(context) {
