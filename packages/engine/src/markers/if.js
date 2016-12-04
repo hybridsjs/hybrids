@@ -1,23 +1,20 @@
 import { error } from '@hybrids/debug';
+import VirtualFragment from './shared/virtual-fragment';
 
 export default function If(node, expr) {
-  if (!(node instanceof HTMLTemplateElement)) {
-    error(TypeError, '[if]: <template> element required');
+  if (!(node instanceof Comment)) {
+    error(TypeError, 'if: element must be a <template>');
   }
 
-  let list = [];
+  let fragment;
 
   return (changelog, engine) => {
     if (expr.get()) {
-      const fragment = engine.compile(node);
-      list = Array.from(fragment.childNodes);
-      node.parentNode.insertBefore(fragment, node.nextSibling);
+      fragment = new VirtualFragment(engine.compile(node), node);
+      fragment.insertAfter();
     } else {
-      const fragment = document.createDocumentFragment();
-      list.forEach((child) => {
-        fragment.appendChild(child);
-      });
-      list = [];
+      fragment.remove();
+      fragment = null;
     }
   };
 }
