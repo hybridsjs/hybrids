@@ -95,13 +95,11 @@ describe('Engine | Expression -', () => {
     });
 
     it('not set value without set replace', () => {
-      expr.set('new value');
-      expect(expr.get()).toEqual('value');
+      expect(() => expr.set('new value')).toThrow();
     });
 
     it('not set value with set replace', () => {
-      expr.set('new value', true);
-      expect(expr.get()).toEqual('value');
+      expect(() => expr.set('new value', true)).toThrow();
     });
   });
 

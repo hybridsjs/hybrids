@@ -1,3 +1,4 @@
+import { error } from '@hybrids/debug';
 import { LOCALS } from './symbols';
 
 export const LOCALS_PREFIX = '@';
@@ -61,7 +62,11 @@ export default class Expression {
         get: () => resolveLocal(this.node, rootProperty)
       });
 
-      if (!this.path.isNestedProperty()) this.set = () => {};
+      if (!this.path.isNestedProperty()) {
+        this.set = () => {
+          error(TypeError, 'local variable is readonly: %s', rootProperty);
+        };
+      }
     } else {
       this.context = context;
     }
