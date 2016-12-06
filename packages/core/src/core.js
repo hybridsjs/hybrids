@@ -45,7 +45,7 @@ function bootstrap(name, Controller) {
 
   options.properties = properties.filter(({ property, attr, reflect }) => {
     if (Reflect.has(ExtHybrid.prototype, property)) {
-      error(ReferenceError, "'%s': already in HTMLElement prototype chain", property);
+      error(ReferenceError, 'property already in HTMLElement prototype chain: %s', property);
     }
 
     if (Reflect.has(Controller.prototype, property)) {
@@ -82,10 +82,15 @@ function bootstrap(name, Controller) {
   });
 
   Object.defineProperty(ExtHybrid, PROVIDERS, {
-    value: [...new Set(options.use || [])].map(m => m(ExtHybrid)).filter(m => m),
+    value: [...new Set(options.use || [])].map((m) => {
+      if (typeof m !== 'function') error(TypeError, 'provider must be a function: %s', typeof m);
+      return m(ExtHybrid);
+    }).filter(m => m),
   });
 
-  return window.customElements.define(name, ExtHybrid);
+  window.customElements.define(name, ExtHybrid);
+
+  return ExtHybrid;
 }
 
 export default function defineHybrid(...args) {

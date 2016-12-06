@@ -29,7 +29,7 @@ export default class Hybrid extends HTMLBridge {
 
     this.constructor[OPTIONS].properties.forEach(({ property }) => {
       if (!Reflect.has(this[CONTROLLER], property)) {
-        error(ReferenceError, "'%s': public property must be defined", property);
+        error(ReferenceError, 'public property must be defined: %s', property);
       }
     });
   }
