@@ -29,17 +29,41 @@ function interpolate(node) {
   Array.from(node.childNodes).forEach((child) => {
     switch (child.nodeType) {
       case Node.TEXT_NODE: {
-        const result = child.textContent.replace(
-          /{{(([^}]|\n)+)}}/g,
-          (match, expr) => `<span ${PROPERTY_PREFIX}text-content="${expr.trim()}"></span>`
-        );
+        if (node.nodeType === Node.ELEMENT_NODE &&
+          node.childNodes.length === 1 &&
+          child.textContent.trim().match(/^{{(([^}]|\n)+)}}$/g)) {
+          let value = child.textContent.trim();
+          value = value.substr(2, value.length - 4).trim();
 
-        if (result !== child.textContent) {
-          Array.from(createFragment(result).childNodes).forEach((newChild) => {
-            node.insertBefore(newChild, child);
-          });
+          if (node.hasAttribute(`${PROPERTY_PREFIX}text-content`)) {
+            error(
+              SyntaxError,
+              `interpolation conflict in {{ %s }} and ${PROPERTY_PREFIX}text-content attribute: %s`,
+              value,
+              node.outerHTML.replace(/[\n\t ]+/g, ' ')
+            );
+          } else {
+            node.removeChild(child);
+            node.setAttribute('____text-content', value);
+            const { childNodes: [temp] } = createFragment(
+              node.outerHTML.replace('____text-content', `${PROPERTY_PREFIX}text-content`)
+            );
+            node.parentNode.insertBefore(temp, node);
+            node.parentNode.removeChild(node);
+          }
+        } else {
+          const result = child.textContent.replace(
+            /{{(([^}]|\n)+)}}/g,
+            (match, expr) => `<span ${PROPERTY_PREFIX}text-content="${expr.trim()}"></span>`
+          );
 
-          node.removeChild(child);
+          if (result !== child.textContent) {
+            Array.from(createFragment(result).childNodes).forEach((newChild) => {
+              node.insertBefore(newChild, child);
+            });
+
+            node.removeChild(child);
+          }
         }
 
         break;

@@ -14,10 +14,30 @@ describe('Engine | Template -', () => {
       expect(template.container.t[0].m[0][0]).toEqual({ m: 0, p: [['user', 'user']] });
     });
 
-    it('interpolate text', () => {
+    it('interpolate text to span', () => {
       const template = new Template('{{ something }}');
       expect(template.container.t[0].c.children[0].tagName.toLowerCase()).toEqual('span');
       expect(template.container.t[0].m[0][0]).toEqual({ m: 0, p: [['something', 'textContent']] });
+    });
+
+    it('interpolate text to node [text-content] property marker', () => {
+      const template = new Template(`
+        <div some="value" other-thing="val">
+          {{ something }}
+        </div>
+      `);
+      const div = template.container.t[0].c.children[0];
+      expect(div.tagName.toLowerCase()).toEqual('div');
+      expect(div.hasAttribute(`${P}text-content`)).toEqual(true);
+      expect(div.getAttribute('some')).toEqual('value');
+      expect(div.getAttribute('other-thing')).toEqual('val');
+      expect(template.container.t[0].m[0][0]).toEqual({ m: 0, p: [['something', 'textContent']] });
+    });
+
+    it('throw for conflict text interpolation', () => {
+      expect(() => new Template(`
+        <div some="value" other-thing="val" ${P}text-content="other">{{ something }}</div>
+      `)).toThrow();
     });
 
     it('interpolate template marker', () => {
