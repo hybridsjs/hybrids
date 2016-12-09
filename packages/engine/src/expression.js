@@ -81,10 +81,19 @@ export default class Expression {
   }
 
   get() {
+    if (!Reflect.has(this.context, this.path.rootProperty)) {
+      error(
+        ReferenceError, 'root property must be defined: %s', this.path.rootProperty,
+      );
+    }
     return this.applyFilters(this.path.get(this.context));
   }
 
   set(value, replace) {
+    if (!Reflect.has(this.context, this.path.rootProperty)) {
+      error(ReferenceError, 'root property is not defined: %s', this.path.rootProperty);
+    }
+
     this.path.set(this.context, this.applyFilters(value), replace);
   }
 

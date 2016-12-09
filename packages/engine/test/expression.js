@@ -26,13 +26,19 @@ describe('Engine | Expression -', () => {
       expect(expr.get()).toEqual('value');
     });
 
-    it('not set value without set replace', () => {
-      expr.set('new value');
+    it('set default value with set replace to false', () => {
+      delete context.one.two;
+      expr.set('new value', false);
+      expect(expr.get()).toEqual('new value');
+    });
+
+    it('not replace value with set replace to false', () => {
+      expr.set('new value', false);
       expect(expr.get()).toEqual('value');
     });
 
-    it('set value with set replace', () => {
-      expr.set('new value', true);
+    it('set value', () => {
+      expr.set('new value');
       expect(expr.get()).toEqual('new value');
     });
   });
@@ -52,14 +58,14 @@ describe('Engine | Expression -', () => {
       expect(spy).toHaveBeenCalled();
     });
 
-    it('not set value without set replace', () => {
-      expr.set('new value');
+    it('not set value with set replace to false', () => {
+      expr.set('new value', false);
       expect(expr.get()).toEqual(1);
       expect(spy).toHaveBeenCalled();
     });
 
-    it('set value with set replace', () => {
-      expr.set(2, true);
+    it('set value', () => {
+      expr.set(2);
       expect(spy).toHaveBeenCalled();
       expect(expr.get()).toEqual(4);
     });
@@ -77,12 +83,12 @@ describe('Engine | Expression -', () => {
     });
 
     it('not set value without set replace', () => {
-      expr.set('new value');
+      expr.set('new value', false);
       expect(expr.get()).toEqual('value');
     });
 
-    it('set value with set replace', () => {
-      expr.set('new value', true);
+    it('set value', () => {
+      expr.set('new value');
       expect(expr.get()).toEqual('new value');
     });
   });

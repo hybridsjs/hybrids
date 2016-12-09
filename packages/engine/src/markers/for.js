@@ -22,7 +22,7 @@ export default function (node, expr, localName = 'item') {
   return ({ type: globalType, changelog }, engine) => {
     const list = expr.get();
     if (typeof list !== 'object') {
-      error(TypeError, 'for: target must be an object: %s', typeof list);
+      error(TypeError, 'for: target property \'%s\' must be an object: %s', expr.evaluate, typeof list);
     }
 
     const listKeys = Object.keys(list);

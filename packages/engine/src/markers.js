@@ -1,16 +1,24 @@
-import { DEFAULT_MARKER } from './symbols';
+import { PROPERTY_MARKER } from './symbols';
 
-import attrs from './markers/attrs';
+import attr from './markers/attr';
+import bind from './markers/bind';
+import classList from './markers/class';
 import For from './markers/for';
 import If from './markers/if';
 import on from './markers/on';
-import props from './markers/props';
+import prop from './markers/prop';
+import ref from './markers/ref';
+import style from './markers/style';
 
 export default {
-  attrs,
+  attr,
+  bind,
+  class: classList,
   for: For,
   if: If,
   on,
-  props,
-  [DEFAULT_MARKER]: props,
+  prop,
+  ref,
+  style,
+  [PROPERTY_MARKER]: prop,
 };

@@ -7,24 +7,22 @@ import filters from './filters';
 
 class Engine {
   constructor(element, template) {
-    this.controller = element[CONTROLLER];
+    this.element = element;
     this.template = template;
-
-    this.shadowRoot = element.shadowRoot || element.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(this.compile());
-
-    this.shadowRoot.addEventListener('hybrids:change', (event) => {
-      if (event.currentTarget === event.target) {
-        this.render(event.detail.changelog);
-      }
-    });
   }
 
   compile(templateId, locals) {
-    return this.template.compile(this.controller, templateId, locals);
+    return this.template.compile(this.element[CONTROLLER], templateId, locals);
   }
 
-  render(changelog) {
+  connected() {
+    this.shadowRoot = this.element.shadowRoot || this.element.attachShadow({ mode: 'open' });
+    this.shadowRoot.appendChild(this.compile());
+
+    this.changed();
+  }
+
+  changed(changelog) {
     this.template.run(this.shadowRoot, (w) => {
       if (w.locals) {
         const cache = w.cache;
@@ -48,8 +46,8 @@ class Engine {
     });
   }
 
-  connected() {
-    this.render();
+  disconnected() {
+    Array.from(this.shadowRoot.childNodes).forEach(child => this.shadowRoot.removeChild(child));
   }
 }
 

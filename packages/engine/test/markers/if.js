@@ -37,26 +37,26 @@ describe('Engine | Markers | If -', () => {
     document.body.appendChild(el);
   });
 
-  it('render elements', (done) => {
+  rafIt('render elements', () => {
     expect(el.shadowRoot.children.length).toEqual(4);
-    done();
   });
 
-  it('remove elements', (done) => {
+  rafIt('remove elements', () => {
     el.show = false;
-    window.requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       expect(el.shadowRoot.children.length).toEqual(0);
-      done();
     });
   });
 
   it('rerender removed nested elements', (done) => {
-    el.show = false;
-    window.requestAnimationFrame(() => {
-      el.show = true;
-      window.requestAnimationFrame(() => {
-        expect(el.shadowRoot.children.length).toEqual(4);
-        done();
+    requestAnimationFrame(() => {
+      el.show = false;
+      requestAnimationFrame(() => {
+        el.show = true;
+        requestAnimationFrame(() => {
+          expect(el.shadowRoot.children.length).toEqual(4);
+          done();
+        });
       });
     });
   });

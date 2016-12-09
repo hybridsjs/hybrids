@@ -3,6 +3,10 @@ import Path from '../src/path';
 describe('Engine | Path -', () => {
   let context;
 
+  it('throw for empty input', () => {
+    expect(() => new Path('')).toThrow();
+  });
+
   it('create from serialized object', () => {
     const path = new Path('a.b.c');
     const serialized = Object.assign({}, path);
@@ -26,9 +30,9 @@ describe('Engine | Path -', () => {
       expect(path2.get(context)).toEqual('three');
     });
 
-    it('throws for not defined root property', () => {
+    it('return undefined for not defined root property', () => {
       const path = new Path('other.thing');
-      expect(() => path.get(context)).toThrow();
+      expect(path.get(context)).toBeUndefined();
     });
 
     it('throws for invalid type of property path', () => {
@@ -49,16 +53,16 @@ describe('Engine | Path -', () => {
       expect(context.asd.dsa.qwe).toEqual('new Value');
     });
 
-    it('not create property path when already set', () => {
+    it('not create property path when replace set to false', () => {
       const path = new Path('qwe');
-      path.set(context, 'new Value');
+      path.set(context, 'new Value', false);
 
       expect(context.qwe).toEqual(123);
     });
 
-    it('set property path when replace is set', () => {
+    it('set property', () => {
       const path = new Path('qwe');
-      path.set(context, 'new Value', true);
+      path.set(context, 'new Value');
 
       expect(context.qwe).toEqual('new Value');
     });
@@ -66,11 +70,6 @@ describe('Engine | Path -', () => {
     it('throws for invalid type of property path', () => {
       const path = new Path('qwe.value');
       expect(() => path.set(context, 'test')).toThrow();
-    });
-
-    it('throws for not defined root property', () => {
-      const path = new Path('other.thing');
-      expect(() => path.set(context)).toThrow();
     });
   });
 

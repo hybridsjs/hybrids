@@ -3,7 +3,6 @@ import engine from '../src/engine';
 
 describe('Engine | Provider -', () => {
   let el;
-  let content;
 
   beforeAll(() => {
     define('hybrids-engine-test', class Controller {
@@ -25,8 +24,6 @@ describe('Engine | Provider -', () => {
 
   beforeEach(() => {
     el = document.createElement('hybrids-engine-test');
-    content = el.shadowRoot.children[0];
-
     document.body.appendChild(el);
   });
 
@@ -34,17 +31,14 @@ describe('Engine | Provider -', () => {
     document.body.removeChild(el);
   });
 
-  it('renders view', () => {
-    expect(content.textContent.trim()).toEqual('testing content');
+  rafIt('renders view', () => {
+    expect(el.shadowRoot.children[0].textContent.trim()).toEqual('testing content');
   });
 
-  it('updates view', (done) => {
-    window.requestAnimationFrame(() => {
-      el.test = 'new value';
-      window.requestAnimationFrame(() => {
-        expect(content.textContent.trim()).toEqual('new value');
-        done();
-      });
+  rafIt('updates view', () => {
+    el.test = 'new value';
+    requestAnimationFrame(() => {
+      expect(el.shadowRoot.children[0].textContent.trim()).toEqual('new value');
     });
   });
 });

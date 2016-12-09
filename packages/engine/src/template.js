@@ -2,7 +2,7 @@ import { error } from '@hybrids/debug';
 
 import Path from './path';
 import Expression, { defineLocals, getOwnLocals, LOCALS_PREFIX } from './expression';
-import { WATCHERS, DEFAULT_MARKER } from './symbols';
+import { WATCHERS, PROPERTY_MARKER } from './symbols';
 
 export const MARKER_PREFIX = '*';
 export const PROPERTY_PREFIX = '@';
@@ -55,7 +55,7 @@ function interpolate(node) {
         });
 
         wrappers.reduce((acc, { name, value }) => {
-          const { children: [temp] } = createFragment(
+          const { childNodes: [temp] } = createFragment(
             `<template ${MARKER_PREFIX}${name}="${value}"></template>`
           );
 
@@ -78,11 +78,15 @@ function interpolate(node) {
 
 function parseEvaluate(input, container) {
   return input.split('|').map((i, index) => {
-    const result = i.split(':').map(j => j.trim());
+    const result = i.split(':').slice(0, 2).map(j => j.trim());
+
     if (index === 0) {
       const expr = result.pop();
       result.unshift(expr);
     }
+
+    if (result[1]) result.splice(1, 1, ...result[1].split(',').map(j => j.trim()));
+
     if (!container[result[0]]) container[result[0]] = new Path(result[0]);
     return result;
   });
@@ -156,6 +160,14 @@ function getTemplateId(templateOrId) {
   }
 }
 
+function getNodeOuterHTML(node, list) {
+  if (node instanceof Comment) {
+    node = list[getTemplateId(node)].c.children[0];
+  }
+
+  return `${node.outerHTML.match(/^<[^<]+>/i)}...`;
+}
+
 export default class Template {
   constructor(input, markers = {}, filters = {}) {
     switch (typeof input) {
@@ -205,11 +217,11 @@ export default class Template {
       if (list) {
         list.forEach(({ m: markerId, p: paths }) => {
           try {
-            markerId = markerId || DEFAULT_MARKER;
+            markerId = markerId || PROPERTY_MARKER;
             const marker = this.markers[markerId];
 
             if (!marker) {
-              error(ReferenceError, '[%s]: marker not found', markerId);
+              error(ReferenceError, 'marker not found: %s', markerId);
             }
 
             const [exprKey, ...args] = paths[0];
@@ -231,7 +243,7 @@ export default class Template {
               });
             }
           } catch (e) {
-            error(e, 'compilation failed: %s', node.outerHTML.match(/^<[^<]+>/i));
+            error(e, 'compilation failed: %s', getNodeOuterHTML(node, this.container.t));
           }
         });
       }
@@ -247,7 +259,7 @@ export default class Template {
       try {
         if ({}.hasOwnProperty.call(node, WATCHERS)) node[WATCHERS].forEach(w => cb(w));
       } catch (e) {
-        error(e, 'execute: %s', node.outerHTML.match(/^<[^<]+>/i));
+        error(e, 'execute: %s', getNodeOuterHTML(node, this.container.t));
       }
     });
   }

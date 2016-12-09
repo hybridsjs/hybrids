@@ -45,11 +45,11 @@ describe('Engine | Markers | For -', () => {
       document.body.appendChild(el);
     });
 
-    it('initial items list', () => {
+    rafIt('initial items list', () => {
       expect(extractValues()).toEqual(['4', '2', '3', '1']);
     });
 
-    it('initial locals', () => {
+    rafIt('initial locals', () => {
       expect(getOwnLocals(el.shadowRoot.children[0])).toEqual({
         number: 1,
         first: true,
@@ -74,9 +74,9 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    it('shift item locals', (done) => {
+    rafIt('shift item locals', () => {
       el.items.shift();
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(getOwnLocals(el.shadowRoot.children[0])).toEqual({
           number: 1,
           first: true,
@@ -99,102 +99,96 @@ describe('Engine | Markers | For -', () => {
           length: 3,
           key: '1',
         });
-        done();
       });
     });
 
-    it('pop item', (done) => {
+    rafIt('pop item', () => {
       el.items.pop();
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['4', '2', '3']);
-        done();
       });
     });
 
-    it('shift item', (done) => {
+    rafIt('shift item', () => {
       el.items.shift();
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['2', '3', '1']);
-        done();
       });
     });
 
-    it('unshift item', (done) => {
+    rafIt('unshift item', () => {
       el.items.unshift('6');
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['6', '4', '2', '3', '1']);
-        done();
       });
     });
 
-    it('sort item', (done) => {
+    rafIt('sort item', () => {
       el.items.sort();
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['1', '2', '3', '4']);
-        done();
       });
     });
 
-    it('replace with add item', (done) => {
+    rafIt('replace with add item', () => {
       el.items = ['2', '2', '1', '4'];
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['2', '2', '1', '4']);
-        done();
       });
     });
 
-    it('replace', (done) => {
+    rafIt('replace', () => {
       el.items = ['2', '2', '1'];
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['2', '2', '1']);
-        done();
       });
     });
 
-    it('empty with length', (done) => {
+    rafIt('empty with length', () => {
       el.items.length = 0;
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual([]);
-        done();
       });
     });
 
-    it('empty with new instance', (done) => {
+    rafIt('empty with new instance', () => {
       el.items = [];
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual([]);
-        done();
       });
     });
 
-    it('push items', (done) => {
+    rafIt('push items', () => {
       el.items.push('1', '2', '3');
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['4', '2', '3', '1', '1', '2', '3']);
-        done();
       });
     });
 
     it('multiple stage splice', (done) => {
-      el.items.push('1', '2', '3');
-      window.requestAnimationFrame(() => {
-        el.items.splice(3, 2);
+      requestAnimationFrame(() => {
+        el.items.push('1', '2', '3');
+        requestAnimationFrame(() => {
+          el.items.splice(3, 2);
 
-        window.requestAnimationFrame(() => {
-          expect(extractValues()).toEqual(['4', '2', '3', '2', '3']);
-          done();
+          requestAnimationFrame(() => {
+            expect(extractValues()).toEqual(['4', '2', '3', '2', '3']);
+            done();
+          });
         });
       });
     });
 
     it('multiple stage sort', (done) => {
-      el.items.push('1', '2', '3');
-      window.requestAnimationFrame(() => {
-        el.items.sort();
+      requestAnimationFrame(() => {
+        el.items.push('1', '2', '3');
+        requestAnimationFrame(() => {
+          el.items.sort();
 
-        window.requestAnimationFrame(() => {
-          expect(extractValues()).toEqual(['1', '1', '2', '2', '3', '3', '4']);
-          done();
+          requestAnimationFrame(() => {
+            expect(extractValues()).toEqual(['1', '1', '2', '2', '3', '3', '4']);
+            done();
+          });
         });
       });
     });
@@ -209,7 +203,7 @@ describe('Engine | Markers | For -', () => {
           template: `
             <template ${M}for="items">
               <template ${M}for="value: ${L}item.values">
-                <div data-value ${M}props="item: ${L}item">{{ ${L}value }}</div>
+                <div data-value ${P}item="${L}item">{{ ${L}value }}</div>
               </template>
               <span>some static text</span>
             </template>
@@ -235,51 +229,46 @@ describe('Engine | Markers | For -', () => {
       document.body.appendChild(el);
     });
 
-    it('render initial items', () => {
+    rafIt('render initial items', () => {
       expect(extractValues()).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
     });
 
-    it('pop item', (done) => {
+    rafIt('pop item', () => {
       el.items.pop();
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['1', '2', '3', '4', '5', '6']);
-        done();
       });
     });
 
-    it('shift item', (done) => {
+    rafIt('shift item', () => {
       el.items.shift();
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['4', '5', '6', '7', '8', '9']);
-        done();
       });
     });
 
-    it('unshift item', (done) => {
+    rafIt('unshift item', () => {
       el.items.unshift({ values: ['10'] });
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
-        done();
       });
     });
 
-    it('sort item', (done) => {
+    rafIt('sort item', () => {
       el.items.sort((a, b) => b.values[0] - a.values[0]);
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['7', '8', '9', '4', '5', '6', '1', '2', '3']);
-        done();
       });
     });
 
-    it('empty with length', (done) => {
+    rafIt('empty with length', () => {
       el.items.length = 0;
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual([]);
-        done();
       });
     });
 
-    it('merge locals with parent for', () => {
+    rafIt('merge locals with parent for', () => {
       const { item, index, value } = getOwnLocals(el.shadowRoot.children[4]);
       expect(item).toEqual(el.items[1]);
       expect(index).toEqual(0);
@@ -316,11 +305,11 @@ describe('Engine | Markers | For -', () => {
       document.body.appendChild(el);
     });
 
-    it('initial items list', () => {
+    rafIt('initial items list', () => {
       expect(extractValues()).toEqual(['a', 'c', 'b']);
     });
 
-    it('initial locals', () => {
+    rafIt('initial locals', () => {
       expect(getOwnLocals(el.shadowRoot.children[1])).toEqual({
         number: 1,
         first: true,
@@ -345,37 +334,33 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    it('delete property', (done) => {
+    rafIt('delete property', () => {
       delete el.items.c;
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['a', 'b']);
-        done();
       });
     });
 
-    it('added property', (done) => {
+    rafIt('added property', () => {
       el.items.newProperty = 'test';
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['a', 'c', 'b', 'test']);
-        done();
       });
     });
 
-    it('replace the same', (done) => {
+    rafIt('replace the same', () => {
       const elements = Array.from(el.shadowRoot.querySelectorAll('[data-value]'));
       el.items = { a: 'a', c: 'c', b: 'b' };
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['a', 'c', 'b']);
         expect(elements).toEqual(Array.from(el.shadowRoot.querySelectorAll('[data-value]')));
-        done();
       });
     });
 
-    it('replace without property', (done) => {
+    rafIt('replace without property', () => {
       el.items = { a: 'a', b: 'b' };
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['a', 'b']);
-        done();
       });
     });
   });

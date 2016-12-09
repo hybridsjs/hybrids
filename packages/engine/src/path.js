@@ -26,6 +26,8 @@ function parse(evaluate) {
 
 export default class Path {
   constructor(input) {
+    if (!input) error(TypeError, 'path cannot be empty');
+
     if (typeof input === 'object') {
       Object.assign(this, input);
     } else {
@@ -43,12 +45,6 @@ export default class Path {
   }
 
   get(context) {
-    if (!Reflect.has(context, this.rootProperty)) {
-      error(
-        ReferenceError, "'%s': root property must be defined: %s", this.evaluate, this.rootProperty,
-      );
-    }
-
     let result = context;
 
     this.path.every(({ property, proto }) => {
@@ -66,11 +62,7 @@ export default class Path {
     return result;
   }
 
-  set(context, value, replace) {
-    if (!Reflect.has(context, this.rootProperty)) {
-      error(ReferenceError, "'%s' is not defined", this.rootProperty);
-    }
-
+  set(context, value, replace = true) {
     const result = this.path.reduce((acc, { property, proto }) => {
       if (proto) {
         if (!acc.context[property]) {
