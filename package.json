@@ -42,7 +42,6 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^1.7.0",
     "lerna": "2.0.0-beta.30",
-    "webcomponents.js": "github:webcomponents/webcomponentsjs",
     "webpack": "^1.12.15"
   }
 }

@@ -21,4 +21,8 @@
         "functions": "ignore",
     }]
   },
+  "globals": {
+    "rafIt": true,
+    "frafIt": true,
+  }
 }

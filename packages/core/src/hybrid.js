@@ -54,18 +54,29 @@ export default class Hybrid extends HTMLBridge {
       if (provider.connected) provider.connected();
     });
 
-    this[OBSERVER] = new Observer(this[CONTROLLER], Object.keys(this[CONTROLLER]), (changelog) => {
-      if (this.shadowRoot) dispatchEvent.call(this.shadowRoot, 'hybrids:change', { changelog });
+    Object.defineProperty(this, OBSERVER, {
+      value: new Observer(this[CONTROLLER], Object.keys(this[CONTROLLER]), (changelog) => {
+        if (this[CONTROLLER].changed) this[CONTROLLER].changed(changelog);
 
-      if (Object.keys(changelog).some(key => publicProperties.has(key))) {
-        dispatchEvent.call(this, 'change');
-      }
+        this[PROVIDERS].forEach((provider) => {
+          if (provider.changed) provider.changed(changelog);
+        });
+
+        if (Object.keys(changelog).some(key => publicProperties.has(key))) {
+          let parent = this.parentNode;
+          let host;
+          while (parent && !host) {
+            host = parent.host;
+            parent = parent.parentNode;
+          }
+
+          if (host && host[OBSERVER]) host[OBSERVER].check();
+
+          dispatchEvent.call(this, 'change');
+        }
+      }),
+      configurable: true,
     });
-
-    if (this.shadowRoot) {
-      this[OBSERVER].check = this[OBSERVER].check.bind(this[OBSERVER]);
-      this.shadowRoot.addEventListener('change', this[OBSERVER].check);
-    }
   }
 
   disconnectedCallback() {
@@ -75,12 +86,8 @@ export default class Hybrid extends HTMLBridge {
       if (provider.disconnected) provider.disconnected();
     });
 
-    if (this.shadowRoot) {
-      this.shadowRoot.removeEventListener('change', this[OBSERVER].check);
-    }
-
     this[OBSERVER].destroy();
-    this[OBSERVER] = null;
+    Object.defineProperty(this, OBSERVER, { value: null, configurable: true });
   }
 
   attributeChangedCallback(attrName, oldVal, newVal) {

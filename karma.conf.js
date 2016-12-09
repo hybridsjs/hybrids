@@ -4,15 +4,10 @@ module.exports = (config) => {
   config.set({
     basePath: process.cwd(),
     frameworks: ['jasmine'],
-    files: [
-      // './node_modules/core-js/client/shim.js',
-      // './node_modules/webcomponents.js/src/Template/Template.js',
-      // './node_modules/@webcomponents/custom-elements/custom-elements.min.js',
-      // './node_modules/@webcomponents/shadydom/shadydom.min.js',
-      'packages/*/test/**/*.js',
-    ],
+    files: ['test/environment.js', 'packages/*/test/**/*.js'],
     exclude: [],
     preprocessors: {
+      'test/environment.js': ['webpack', 'sourcemap'],
       'packages/*/test/**/*.js': ['webpack', 'sourcemap'],
     },
     webpack: Object.assign({}, webpackConfig, {
