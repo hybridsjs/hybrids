@@ -17,12 +17,20 @@ export default class VirtualFragment {
     }
   }
 
+  getFirstItem() {
+    return this.items[0];
+  }
+
   getLastItem() {
     return this.items[this.items.length - 1];
   }
 
   getValue() {
     return this.value;
+  }
+
+  isAfter(fragment) {
+    return fragment && fragment.getLastItem().nextSibling === this.getFirstItem();
   }
 
   remove() {
@@ -42,9 +50,6 @@ export default class VirtualFragment {
 
     if (target instanceof VirtualFragment) {
       target = target.getLastItem();
-      if (target instanceof VirtualFragment) {
-        return this.insertAfter(target);
-      }
     } else if (target !== this.target && map.get(target)) {
       target = map.get(target).getLastItem() || target;
     }
@@ -67,14 +72,7 @@ export default class VirtualFragment {
   }
 
   setLocals(locals, value) {
-    this.items.forEach((item) => {
-      if (item instanceof VirtualFragment) {
-        item.setLocals(locals);
-      } else {
-        defineLocals(item, locals);
-      }
-    });
-
     this.value = value;
+    this.items.forEach(item => defineLocals(item, locals));
   }
 }

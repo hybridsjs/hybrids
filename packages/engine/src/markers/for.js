@@ -37,7 +37,7 @@ export default function (node, expr, localName = 'item') {
 
           if (type === 'delete') {
             if (cache[key]) deleted.push(cache[key]);
-          } else {
+          } else if (type !== 'modify') {
             const index = listKeys.indexOf(key);
             const beforeKey = listKeys[index - 1];
             const before = items[beforeKey] || cache[beforeKey];
@@ -50,8 +50,7 @@ export default function (node, expr, localName = 'item') {
                 delete cache[oldKey];
                 if (cache[key] && !newKey) deleted.push(cache[key]);
               }
-
-              fragment.insertAfter(before);
+              if (!fragment.isAfter(before)) fragment.insertAfter(before);
             } else if (!cache[key]) {
               fragment = new VirtualFragment(engine.compile(node), node);
               fragment.insertAfter(before);
@@ -77,6 +76,8 @@ export default function (node, expr, localName = 'item') {
       default: {
         const cacheKeys = Object.keys(cache);
         const deletedKeys = cacheKeys.filter(key => !{}.hasOwnProperty.call(list, key));
+        const deletedFragments = new Set(deletedKeys.map(key => cache[key]));
+
         let last;
 
         Object.assign(cache, listKeys.reduce((acc, key, index) => {
@@ -89,9 +90,11 @@ export default function (node, expr, localName = 'item') {
           if (keyFromCache) {
             fragment = cache[keyFromCache];
             delete cache[keyFromCache];
+            deletedFragments.delete(fragment);
+
             if (keyFromCache !== key) {
-              if (cache[key]) cache[key].remove();
-              fragment.insertAfter(last);
+              if (cache[key]) deletedFragments.add(cache[key]);
+              if (!fragment.isAfter(last)) fragment.insertAfter(last);
             }
           } else {
             fragment = new VirtualFragment(engine.compile(node), node);
@@ -108,10 +111,8 @@ export default function (node, expr, localName = 'item') {
           return acc;
         }, {}));
 
-        deletedKeys.forEach((key) => {
-          if (cache[key]) cache[key].remove();
-          delete cache[key];
-        });
+        deletedFragments.forEach(fragment => fragment.remove());
+        deletedKeys.forEach(key => cache[key] && delete cache[key]);
 
         if (Array.isArray(list)) cache.length = list.length;
       }

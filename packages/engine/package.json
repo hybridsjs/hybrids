@@ -12,6 +12,6 @@
   "dependencies": {
     "@hybrids/core": "^0.2.0",
     "@hybrids/debug": "^0.2.0",
-    "papillon": "^1.5.3"
+    "papillon": "^1.5.5"
   }
 }

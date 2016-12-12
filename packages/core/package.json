@@ -11,6 +11,6 @@
   "license": "MIT",
   "dependencies": {
     "@hybrids/debug": "^0.2.0",
-    "papillon": "^1.5.4"
+    "papillon": "^1.5.5"
   }
 }

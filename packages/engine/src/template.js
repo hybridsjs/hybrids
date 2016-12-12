@@ -45,9 +45,11 @@ function interpolate(node) {
           } else {
             node.removeChild(child);
             node.setAttribute('____text-content', value);
-            const { childNodes: [temp] } = createFragment(
+
+            const temp = createFragment(
               node.outerHTML.replace('____text-content', `${PROPERTY_PREFIX}text-content`)
-            );
+            ).childNodes[0];
+
             node.parentNode.insertBefore(temp, node);
             node.parentNode.removeChild(node);
           }
@@ -79,9 +81,9 @@ function interpolate(node) {
         });
 
         wrappers.reduce((acc, { name, value }) => {
-          const { childNodes: [temp] } = createFragment(
+          const temp = createFragment(
             `<template ${MARKER_PREFIX}${name}="${value}"></template>`
-          );
+          ).childNodes[0];
 
           node.insertBefore(temp, acc);
           temp.content.appendChild(acc);

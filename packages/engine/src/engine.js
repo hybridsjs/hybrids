@@ -25,19 +25,20 @@ class Engine {
   changed(changelog) {
     this.template.run(this.shadowRoot, (w) => {
       if (w.locals) {
-        const cache = w.cache;
         const value = w.expr.get();
-        if (typeof cache === 'object' && cache !== null) {
-          const state = new State(cache);
+        if (!{}.hasOwnProperty.call(w, 'cache') || !State.is(value, w.cache)) {
+          w.fn({ type: 'set' }, this);
+        } else if (State.isObject(value)) {
+          const state = new State(value);
+
           if (state.isChanged()) {
             w.fn({
               changelog: state.changelog,
-              type: cache === value ? 'modify' : 'set'
+              type: 'modify',
             }, this);
           }
-        } else if (cache !== value) {
-          w.fn({ type: 'set' }, this);
         }
+
         w.cache = value;
       } else if (!changelog || changelog[w.rootProperty] || !w.initialized) {
         w.initialized = true;

@@ -130,7 +130,7 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    rafIt('replace with add item', () => {
+    rafIt('replace using old items', () => {
       el.items = ['2', '2', '1', '4'];
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['2', '2', '1', '4']);
@@ -273,6 +273,98 @@ describe('Engine | Markers | For -', () => {
       expect(item).toEqual(el.items[1]);
       expect(index).toEqual(0);
       expect(value).toEqual('4');
+    });
+  });
+
+  describe('multiple nested array instances', () => {
+    class EngineForeachTestMultiplyNested {
+      static get options() {
+        return {
+          use: [engine],
+          properties: ['items'],
+          template: `
+            <template ${M}for="items">
+              <template ${M}for="${L}item">
+                <template ${M}for="${L}item"><span data-value>{{ ${L}item }}</span></template>
+              </template>
+            </template>
+          `
+        };
+      }
+
+      constructor() {
+        this.items = [
+          [['1', '3'], ['5', '2']],
+          [['4', '3'], ['6', '2']],
+        ];
+      }
+    }
+
+    beforeAll(() => {
+      define({ EngineForeachTestMultiplyNested });
+    });
+
+    beforeEach(() => {
+      el = document.createElement('engine-foreach-test-multiply-nested');
+      document.body.appendChild(el);
+    });
+
+    rafIt('render initial items', () => {
+      expect(extractValues()).toEqual(['1', '3', '5', '2', '4', '3', '6', '2']);
+    });
+
+    rafIt('pop root item', () => {
+      el.items.pop();
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['1', '3', '5', '2']);
+      });
+    });
+
+    rafIt('pop children item', () => {
+      el.items[0].pop();
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['1', '3', '4', '3', '6', '2']);
+      });
+    });
+
+    rafIt('pop nested children item', () => {
+      el.items[1][0].pop();
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['1', '3', '5', '2', '4', '6', '2']);
+      });
+    });
+
+    rafIt('shift root item', () => {
+      el.items.shift();
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['4', '3', '6', '2']);
+      });
+    });
+
+    rafIt('shift children item', () => {
+      el.items[0].shift();
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['5', '2', '4', '3', '6', '2']);
+      });
+    });
+
+    rafIt('shift nested children item', () => {
+      el.items[1][0].shift();
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['1', '3', '5', '2', '3', '6', '2']);
+      });
+    });
+
+    rafIt('sort item', () => {
+      el.items.forEach((item) => {
+        item.forEach((child) => {
+          child.sort((a, b) => a - b);
+        });
+      });
+
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['1', '3', '2', '5', '3', '4', '2', '6']);
+      });
     });
   });
 
