@@ -4,8 +4,12 @@ import { injectable } from '../proxy';
 import { CONTROLLER, PROVIDERS, OBSERVER, CONNECTED } from '../symbols';
 
 class ChildrenProvider {
-  constructor(host, options) {
+  constructor(host, Controller, options = { deep: false, nested: false }) {
+    if (!Controller) error(TypeError, 'invalid arguments');
+    if (typeof options !== 'object') error(TypeError, 'invalid arguments');
+
     this.host = host;
+    this.Controller = Controller;
     this.options = options;
 
     this.items = [];
@@ -27,8 +31,9 @@ class ChildrenProvider {
 
   walk(node, items = []) {
     Array.from(node.children).forEach((child) => {
-      if (child.constructor[CONTROLLER] === this.options.constructor) {
+      if (child.constructor[CONTROLLER] === this.Controller) {
         items.push(child[CONTROLLER]);
+        if (this.options.deep && this.options.nested) this.walk(child, items);
       } else if (this.options.deep) this.walk(child, items);
     });
 
@@ -48,11 +53,8 @@ class ChildrenProvider {
   }
 }
 
-export function children(constructor, options = { deep: false }) {
-  options = Object.assign({}, options, { constructor });
-  if (!options.constructor) error(TypeError, 'invalid arguments');
-
-  const provider = new ChildrenProvider(this, options);
+export function children(Controller, options) {
+  const provider = new ChildrenProvider(this, Controller, options);
   this[PROVIDERS].push(provider);
 
   return provider.items;
