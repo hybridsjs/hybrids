@@ -1,16 +1,17 @@
 import { error } from '@hybrids/debug';
 
-const map = new WeakMap();
-const set = new WeakSet();
+const CONTEXT_NAME = '__hybrids_context__';
 
-let context = null;
+if (!{}.hasOwnProperty.call(window, CONTEXT_NAME)) {
+  Object.defineProperty(window, CONTEXT_NAME, { writable: true });
+}
 
 export function injectable(fn) {
   function wrapper(...args) {
-    if (!context) {
+    if (!window[CONTEXT_NAME]) {
       error('illegal invocation: %s', fn.name);
     }
-    return fn.apply(context, args);
+    return fn.apply(window[CONTEXT_NAME], args);
   }
 
   Object.defineProperty(wrapper, 'source', { value: fn });
@@ -19,20 +20,23 @@ export function injectable(fn) {
 }
 
 export function callWithContext(currentContext, fn) {
-  context = currentContext;
+  window[CONTEXT_NAME] = currentContext;
   const result = fn();
-  context = null;
+  window[CONTEXT_NAME] = null;
 
   return result;
 }
 
-export function resolve(fn, currentContext = context) {
+export function resolve(fn, currentContext = window[CONTEXT_NAME]) {
   if (!currentContext) {
     error('illegal invocation: %s', fn.name);
   }
 
   return () => callWithContext(currentContext, fn);
 }
+
+const map = new WeakMap();
+const set = new WeakSet();
 
 export function proxy(element, constructor) {
   const controller = callWithContext(element, () => constructor());
