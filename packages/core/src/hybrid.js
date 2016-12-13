@@ -4,7 +4,7 @@ import { warning, error } from '@hybrids/debug';
 import { proxy } from './proxy';
 import { dashToCamel } from './utils';
 import { dispatchEvent } from './plugins/dispatch-event';
-import { CONTROLLER, PROVIDERS, OPTIONS, OBSERVER } from './symbols';
+import { CONTROLLER, PROVIDERS, OPTIONS, OBSERVER, CONNECTED } from './symbols';
 
 function HTMLBridge(...args) {
   return Reflect.construct(HTMLElement, args, this.constructor);
@@ -18,6 +18,8 @@ export default class Hybrid extends HTMLBridge {
 
   constructor() {
     super();
+
+    Object.defineProperty(this, CONNECTED, { value: false, configurable: true });
 
     Object.defineProperty(this, CONTROLLER, {
       value: proxy(this, () => new this.constructor[CONTROLLER]()),
@@ -35,6 +37,8 @@ export default class Hybrid extends HTMLBridge {
   }
 
   connectedCallback() {
+    Object.defineProperty(this, CONNECTED, { value: true, configurable: true });
+
     const publicProperties = new Set(this.constructor[OPTIONS].properties.map(({ property }) => {
       const value = this[property];
 
@@ -80,6 +84,8 @@ export default class Hybrid extends HTMLBridge {
   }
 
   disconnectedCallback() {
+    Object.defineProperty(this, CONNECTED, { value: false, configurable: true });
+
     if (this[CONTROLLER].disconnected) this[CONTROLLER].disconnected();
 
     this[PROVIDERS].forEach((provider) => {
