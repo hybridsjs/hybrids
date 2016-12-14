@@ -96,6 +96,14 @@ export default class Hybrid extends HTMLBridge {
     Object.defineProperty(this, OBSERVER, { value: null, configurable: true });
   }
 
+  adoptedCallback() {
+    if (this[CONTROLLER].adopted) this[CONTROLLER].adopted();
+
+    this[PROVIDERS].forEach((provider) => {
+      if (provider.adopted) provider.adopted();
+    });
+  }
+
   attributeChangedCallback(attrName, oldVal, newVal) {
     const property = dashToCamel(attrName);
 
