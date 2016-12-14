@@ -189,8 +189,13 @@ function getTemplateId(templateOrId) {
 
 export default class Template {
   constructor(input, { markers = {}, filters = {}, styles = [], name = '' } = {}) {
-    switch (typeof input) {
-      case 'object': {
+    this.markers = markers;
+    this.filters = filters;
+
+    if (typeof input === 'object') {
+      if (input instanceof HTMLTemplateElement) {
+        input = input.innerHTML;
+      } else {
         this.container = {
           p: Object.keys(input.p).reduce((acc, key) => {
             acc[key] = new Path(input.p[key]);
@@ -212,32 +217,21 @@ export default class Template {
             return acc;
           }, []),
         };
-        break;
+
+        return;
       }
-
-      case 'string': {
-        if (styles) {
-          [].concat(styles).forEach((style) => { input = `<style>${style}</style>${input}`; });
-        }
-
-        const template = document.createElement('template');
-        template.innerHTML = input;
-
-        if (window.ShadyCSS && name) window.ShadyCSS.prepareTemplate(template, name);
-
-        this.container = parseTemplate(template, { t: [], p: {} });
-        break;
-      }
-
-      default: error(TypeError, 'invalid arguments');
     }
 
-    this.markers = markers;
-    this.filters = filters;
-  }
+    if (styles) {
+      [].concat(styles).forEach((style) => { input = `<style>${style}</style>${input}`; });
+    }
 
-  attachStyle(styleEl) {
-    this.container.t[0].e.content.insertBefore(styleEl, null);
+    const template = document.createElement('template');
+    template.innerHTML = input;
+
+    if (window.ShadyCSS && name) window.ShadyCSS.prepareTemplate(template, name);
+
+    this.container = parseTemplate(template, { t: [], p: {} });
   }
 
   compile(controller, templateOrId = 0, locals = null) {

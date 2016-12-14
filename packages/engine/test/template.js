@@ -69,6 +69,14 @@ describe('Engine | Template -', () => {
     });
   });
 
+  it('construct from template element', () => {
+    const tempEl = document.createElement('template');
+    tempEl.innerHTML = `<span ${M}props="something"></span>`;
+
+    const template = new Template(tempEl);
+    expect(template.container.t[0].m[0][0]).toEqual({ m: 'props', p: [['something']] });
+  });
+
   it('construct from exprted JSON', () => {
     const input = `
       <style></style>
