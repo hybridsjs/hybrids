@@ -21,6 +21,7 @@
   "license": "MIT",
   "devDependencies": {
     "@webcomponents/custom-elements": "github:webcomponents/custom-elements",
+    "@webcomponents/shadycss": "github:webcomponents/shadycss",
     "@webcomponents/shadydom": "github:webcomponents/shadydom",
     "babel-cli": "^6.18.0",
     "babel-core": "^6.7.6",

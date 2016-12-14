@@ -4,6 +4,8 @@ require('core-js/shim');
 if (!window.customElements) require('@webcomponents/custom-elements');
 if (!document.body.attachShadow) require('@webcomponents/shadydom/src/env');
 
+require('@webcomponents/shadycss/src/entry');
+
 Object.assign(window, {
   rafIt(name, fn) {
     it(name, (done) => {

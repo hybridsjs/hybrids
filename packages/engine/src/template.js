@@ -11,7 +11,8 @@ export const TEMPLATE_PREFIX = 'template:';
 function walk(node, fn) {
   node = node.firstChild;
   while (node) {
-    if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.COMMENT_NODE) {
+    if ((node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() !== 'style')
+    || node.nodeType === Node.COMMENT_NODE) {
       fn(node);
       walk(node, fn);
     }
@@ -155,7 +156,7 @@ function parseNode(node, m, p) {
 
 function parseTemplate(template, container) {
   const temp = document.createElement('template');
-  const map = { c: temp.content, m: [] };
+  const map = { e: temp, m: [] };
   const id = container.t.length;
 
   container.t.push(map);
@@ -186,37 +187,57 @@ function getTemplateId(templateOrId) {
   }
 }
 
-function getNodeOuterHTML(node, list) {
-  if (node instanceof Comment) {
-    node = list[getTemplateId(node)].c.children[0];
-  }
-
-  return `${node.outerHTML.match(/^<[^<]+>/i)}...`;
-}
-
 export default class Template {
-  constructor(input, markers = {}, filters = {}) {
+  constructor(input, { markers = {}, filters = {}, styles = [], name = '' } = {}) {
     switch (typeof input) {
-      case 'object':
+      case 'object': {
         this.container = {
           p: Object.keys(input.p).reduce((acc, key) => {
             acc[key] = new Path(input.p[key]);
             return acc;
           }, {}),
-          t: input.t.map(({ c, m }) => ({ m, c: createFragment(c) })),
+          t: input.t.map((t, index) => {
+            if (!index && styles) {
+              [].concat(styles).forEach((style) => { t.e = `<style>${style}</style>${t.e}`; });
+            }
+
+            const template = document.createElement('template');
+            template.innerHTML = t.e;
+            t.e = template;
+
+            return t;
+          }).reduceRight((acc, t) => {
+            if (window.ShadyCSS && name) window.ShadyCSS.prepareTemplate(t.e, name);
+            acc.unshift(t);
+            return acc;
+          }, []),
         };
         break;
-      default: {
+      }
+
+      case 'string': {
+        if (styles) {
+          [].concat(styles).forEach((style) => { input = `<style>${style}</style>${input}`; });
+        }
+
         const template = document.createElement('template');
         template.innerHTML = input;
+
+        if (window.ShadyCSS && name) window.ShadyCSS.prepareTemplate(template, name);
 
         this.container = parseTemplate(template, { t: [], p: {} });
         break;
       }
+
+      default: error(TypeError, 'invalid arguments');
     }
 
     this.markers = markers;
     this.filters = filters;
+  }
+
+  attachStyle(styleEl) {
+    this.container.t[0].e.content.insertBefore(styleEl, null);
   }
 
   compile(controller, templateOrId = 0, locals = null) {
@@ -224,7 +245,7 @@ export default class Template {
     const map = this.container.t[templateId];
     if (!map) error(ReferenceError, 'template not found: %s', templateId);
 
-    const fragment = document.importNode(map.c, true);
+    const fragment = document.importNode(map.e.content, true);
 
     if (typeof templateOrId === 'object') {
       locals = Object.assign(getOwnLocals(templateOrId), locals);
@@ -269,7 +290,7 @@ export default class Template {
               });
             }
           } catch (e) {
-            error(e, 'compilation failed: %s', getNodeOuterHTML(node, this.container.t));
+            error(e, 'compilation failed: %s', this.container.t[0].e.innerHTML);
           }
         });
       }
@@ -285,17 +306,15 @@ export default class Template {
       try {
         if ({}.hasOwnProperty.call(node, WATCHERS)) node[WATCHERS].forEach(w => cb(w));
       } catch (e) {
-        error(e, 'execute: %s', getNodeOuterHTML(node, this.container.t));
+        error(e, 'execute: %s', this.container.t[0].e.innerHTML);
       }
     });
   }
 
   export() {
     return JSON.parse(JSON.stringify(this.container, (key, value) => {
-      if (Object(value) === value && value instanceof DocumentFragment) {
-        return Array.from(value.childNodes).reduce((acc, c) =>
-          (acc + c instanceof Comment ? `<!--${c.textContent}-->` : (c.outerHTML || ''))
-        , '');
+      if (typeof value === 'object' && value instanceof HTMLTemplateElement) {
+        return value.innerHTML;
       }
 
       return value;

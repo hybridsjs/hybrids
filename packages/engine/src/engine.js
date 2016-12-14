@@ -45,6 +45,8 @@ class Engine {
         w.fn((changelog && changelog[w.rootProperty]) || { type: 'set' }, this);
       }
     });
+
+    if (window.ShadyCSS) window.ShadyCSS.applyStyle(this.element);
   }
 
   disconnected() {
@@ -56,11 +58,12 @@ export default function engine(Hybrid) {
   const options = Hybrid[OPTIONS];
 
   if (options.template) {
-    const template = new Template(
-      options.template,
-      Object.assign({}, markers, options.markers),
-      Object.assign({}, filters, options.filters),
-    );
+    const template = new Template(options.template, {
+      markers: Object.assign({}, markers, options.markers),
+      filters: Object.assign({}, filters, options.filters),
+      name: options.name,
+      styles: options.styles
+    });
 
     return element => new Engine(element, template);
   }

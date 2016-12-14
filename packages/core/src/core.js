@@ -29,6 +29,8 @@ function bootstrap(name, Controller) {
   const properties = (options.properties || []).map(normalizeProperty);
   const observedAttributes = [];
 
+  options.name = name;
+
   if (options.define) {
     if (typeof options.define === 'object') {
       defineHybrid(options.define); // eslint-disable-line no-use-before-define

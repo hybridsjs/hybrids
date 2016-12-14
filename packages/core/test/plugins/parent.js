@@ -21,7 +21,7 @@ describe('Core | Plugins | Parent -', () => {
     expect(parent.call(childEl, CorePluginsParent)).toEqual(parentEl[CONTROLLER]);
   });
 
-  it('return parent controller', () => {
+  it('return parent controller in shadowRoot', () => {
     const div = document.createElement('div');
     const shadow = div.attachShadow({ mode: 'open' });
     shadow.appendChild(parentEl);

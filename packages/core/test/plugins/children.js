@@ -61,7 +61,7 @@ describe('Core | Plugins | Children -', () => {
       if (parentEl.parentElement) document.body.removeChild(parentEl);
     });
 
-    it('update children list for DOM changes', (done) => {
+    it('update children list for DOM changes before', (done) => {
       const list = children.call(parentEl, CorePluginsChildren);
       document.body.appendChild(parentEl);
       requestAnimationFrame(() => {
@@ -75,7 +75,7 @@ describe('Core | Plugins | Children -', () => {
       });
     });
 
-    it('update children list for DOM changes', (done) => {
+    it('update children list for DOM changes after', (done) => {
       document.body.appendChild(parentEl);
       requestAnimationFrame(() => {
         const list = children.call(parentEl, CorePluginsChildren);

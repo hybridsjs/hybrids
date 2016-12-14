@@ -16,7 +16,7 @@ describe('Engine | Template -', () => {
 
     it('interpolate text to span', () => {
       const template = new Template('{{ something }}');
-      expect(template.container.t[0].c.childNodes[0].tagName.toLowerCase()).toEqual('span');
+      expect(template.container.t[0].e.content.childNodes[0].tagName.toLowerCase()).toEqual('span');
       expect(template.container.t[0].m[0][0]).toEqual({ m: 0, p: [['something', 'textContent']] });
     });
 
@@ -26,7 +26,7 @@ describe('Engine | Template -', () => {
           {{ something }}
         </div>`
       );
-      const div = template.container.t[0].c.childNodes[0];
+      const div = template.container.t[0].e.content.childNodes[0];
       expect(div.tagName.toLowerCase()).toEqual('div');
       expect(div.hasAttribute(`${P}text-content`)).toEqual(true);
       expect(div.getAttribute('some')).toEqual('value');
@@ -43,7 +43,7 @@ describe('Engine | Template -', () => {
     it('interpolate template marker', () => {
       const template = new Template(`<div ${M}${M}marker="something"></div>`);
       expect(template.container.t[0].m[0][0]).toEqual({ m: 'marker', p: [['something']] });
-      expect(template.container.t[1].c.childNodes[0].outerHTML).toEqual('<div></div>');
+      expect(template.container.t[1].e.content.childNodes[0].outerHTML).toEqual('<div></div>');
     });
 
     it('expression only', () => {
@@ -71,13 +71,15 @@ describe('Engine | Template -', () => {
 
   it('construct from exprted JSON', () => {
     const input = `
+      <style></style>
       <div ${M}marker="one"></div>
       <template><span ${M}marker="two"></span></template>
+      test
     `;
     const template = new Template(input);
     const copy = new Template(template.export());
 
-    expect(copy.container.p).toEqual(template.container.p);
+    expect(copy.container.t[0].e.innerHTML).toEqual(template.container.t[0].e.innerHTML);
   });
 
   describe('compile', () => {
@@ -92,18 +94,18 @@ describe('Engine | Template -', () => {
         <!-- this is comment -->
         <span ${M}marker="one"></span>
         <span ${M}marker="val1, val2: two | filter"></span>
-      `, { marker }, { filter(val) { return val; } });
+      `, { markers: { marker }, filters: { filter(val) { return val; } } });
 
       template.compile({ one: 'test 1', two: 'test 2' });
 
       expect(marker).toHaveBeenCalled();
       expect(marker.calls.count()).toEqual(2);
 
-      expect(marker.calls.argsFor(0)[0]).toEqual(template.container.t[0].c.childNodes[3]);
+      expect(marker.calls.argsFor(0)[0]).toEqual(template.container.t[0].e.content.childNodes[3]);
       expect(marker.calls.argsFor(0)[1].get()).toEqual('test 1');
       expect(marker.calls.argsFor(0)[2]).not.toBeDefined();
 
-      expect(marker.calls.argsFor(1)[0]).toEqual(template.container.t[0].c.childNodes[5]);
+      expect(marker.calls.argsFor(1)[0]).toEqual(template.container.t[0].e.content.childNodes[5]);
       expect(marker.calls.argsFor(1)[1].get()).toEqual('test 2');
       expect(marker.calls.argsFor(1)[2]).toEqual('val1');
       expect(marker.calls.argsFor(1)[3]).toEqual('val2');
@@ -111,7 +113,7 @@ describe('Engine | Template -', () => {
 
     it('use property marker', () => {
       const template = new Template(`<span ${P}test="something"></span>`, {
-        [PROPERTY_MARKER]: marker,
+        markers: { [PROPERTY_MARKER]: marker },
       });
 
       template.compile({ something: 'one' });
@@ -122,7 +124,7 @@ describe('Engine | Template -', () => {
       const template = new Template(
         `<span ${M}marker="one"></span>
         <template><span ${M}marker="val1:val2:two"></span></template>`
-      , { marker });
+      , { markers: { marker } });
 
       const fragment = template.compile({ two: 'test' }, 1);
       expect(fragment.childNodes[0].outerHTML).toEqual(`<span ${M}marker="val1:val2:two"></span>`);
@@ -132,7 +134,7 @@ describe('Engine | Template -', () => {
       const template = new Template(
         `<span ${M}marker="one"></span>
         <template><span ${M}marker="val1:val2:two"></span></template>`
-      , { marker });
+      , { markers: { marker } });
 
       const parent = template.compile({ one: 'test' });
       const child = template.compile({ two: 'test' }, parent.childNodes[2]);
@@ -152,14 +154,18 @@ describe('Engine | Template -', () => {
 
     it('add watcher', () => {
       const watcher = () => {};
-      const template = new Template(`<span ${M}marker="one"></span>`, { marker() { return watcher; } });
+      const template = new Template(`<span ${M}marker="one"></span>`, {
+        markers: { marker() { return watcher; } }
+      });
 
       const fragment = template.compile({ one: 'test' });
       expect([...fragment.childNodes[0][WATCHERS]][0].fn).toEqual(watcher);
     });
 
     it('set locals', () => {
-      const template = new Template(`<span ${M}marker="something"></span>`, { marker() {} });
+      const template = new Template(`<span ${M}marker="something"></span>`, {
+        markers: { marker() {} },
+      });
       const fragment = template.compile({ something: 'test' }, 0, { localValue: 'test' });
 
       expect(getOwnLocals(fragment.childNodes[0])).toEqual({ localValue: 'test' });
@@ -171,7 +177,7 @@ describe('Engine | Template -', () => {
     const template = new Template(`
       <span ${M}marker="one"></span>
       <span ${M}marker="@two"></span>
-    `, { marker() { return () => {}; } });
+    `, { markers: { marker() { return () => {}; } } });
 
     const fragment = template.compile({ one: 'test' });
     template.run(fragment, cb);
