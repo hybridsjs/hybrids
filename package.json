@@ -12,7 +12,7 @@
     "build": "ls packages | xargs -I {dir} babel packages/{dir}/src -d packages/{dir}/lib -s inline",
     "test": "karma start --single-run --reporters progress",
     "dist": "rm -rf ./dist && npm run dist:dev && npm run dist:prod",
-    "dist:dev": "webpack hybrids=./src/hybrids.js --define process.env.NODE_ENV='\"development\"'",
+    "dist:dev": "webpack hybrids=./src/hybrids.js --optimize-dedupe --optimize-occurence-order --define process.env.NODE_ENV='\"development\"'",
     "dist:prod": "webpack hybrids.min=./src/hybrids.js --optimize-dedupe --optimize-minimize --optimize-occurence-order --define process.env.NODE_ENV='\"production\"'",
     "prepublish": "npm run test && npm run dist",
     "predeploy": "npm run test && npm run build",
