@@ -5,8 +5,8 @@ import { CONTROLLER, PROVIDERS, OBSERVER, CONNECTED } from '../symbols';
 
 class ChildrenProvider {
   constructor(host, Controller, options = { deep: false, nested: false }) {
-    if (!Controller) error(TypeError, 'invalid arguments');
-    if (typeof options !== 'object') error(TypeError, 'invalid arguments');
+    if (!Controller) error(TypeError, '[core|children] Invalid arguments');
+    if (typeof options !== 'object') error(TypeError, '[core|children] Invalid arguments');
 
     this.host = host;
     this.Controller = Controller;
@@ -18,8 +18,11 @@ class ChildrenProvider {
       this.host[OBSERVER].check();
     });
 
+    this.observer.observe(this.host, {
+      childList: true, subtree: !!this.options.deep
+    });
+
     this.refresh();
-    if (this.host[CONNECTED]) this.observe();
   }
 
   refresh() {
@@ -40,20 +43,15 @@ class ChildrenProvider {
     return items;
   }
 
-  observe() {
-    this.observer.observe(this.host, { childList: true, subtree: !!this.options.deep });
-  }
-
-  connected() {
-    this.observe();
-  }
-
   disconnected() {
+    debugger;
     this.observer.disconnect();
   }
 }
 
 export function children(Controller, options) {
+  if (!this[CONNECTED]) return error(Error, '[core|children] Illegal invocation');
+
   const provider = new ChildrenProvider(this, Controller, options);
   this[PROVIDERS].push(provider);
 
