@@ -11,7 +11,7 @@ function normalizeProperty(property) {
     case 'object':
       return Object.assign({ attr: true, reflect: true }, property);
     default:
-      return error(TypeError, 'property description must be an object or string: %s', type);
+      return error(TypeError, '[core|define] Property description must be an object or string: %s', type);
   }
 }
 
@@ -19,7 +19,7 @@ function bootstrap(name, Controller) {
   if (window.customElements.get(name)) {
     const ExtHybrid = window.customElements.get(name);
     if (ExtHybrid[CONTROLLER] !== Controller) {
-      error(TypeError, 'Element already defined: %s', name);
+      error(TypeError, '[core|define] Element already defined: %s', name);
     } else {
       return ExtHybrid;
     }
@@ -35,7 +35,7 @@ function bootstrap(name, Controller) {
     if (typeof options.define === 'object') {
       defineHybrid(options.define); // eslint-disable-line no-use-before-define
     } else {
-      error(TypeError, "'define' option must be an object: %s", typeof options.define);
+      error(TypeError, "[core|define] 'define' option must be an object: %s", typeof options.define);
     }
   }
 
@@ -47,15 +47,24 @@ function bootstrap(name, Controller) {
 
   options.properties = properties.filter(({ property, attr, reflect }) => {
     if (Reflect.has(ExtHybrid.prototype, property)) {
-      error(ReferenceError, 'property already in HTMLElement prototype chain: %s', property);
+      error(ReferenceError, '[core|define] Property already in HTMLElement prototype chain: %s', property);
     }
 
     if (Reflect.has(Controller.prototype, property)) {
-      Object.defineProperty(ExtHybrid.prototype, property, {
-        value(...args) { return this[CONTROLLER][property](...args); },
-      });
+      let desc;
+      let proto = Controller.prototype;
+      while (!desc) {
+        desc = Object.getOwnPropertyDescriptor(proto, property);
+        proto = Object.getPrototypeOf(proto);
+      }
 
-      return false;
+      if (!desc.get) {
+        Object.defineProperty(ExtHybrid.prototype, property, {
+          value(...args) { return this[CONTROLLER][property](...args); },
+        });
+
+        return false;
+      }
     }
 
     const attrName = camelToDash(property);
@@ -85,7 +94,9 @@ function bootstrap(name, Controller) {
 
   Object.defineProperty(ExtHybrid, PROVIDERS, {
     value: [...new Set(options.use || [])].map((m) => {
-      if (typeof m !== 'function') error(TypeError, 'provider must be a function: %s', typeof m);
+      if (typeof m !== 'function') {
+        error(TypeError, '[core|define] Provider must be a function: %s', typeof m);
+      }
       return m(ExtHybrid);
     }).filter(m => m),
   });
@@ -96,7 +107,7 @@ function bootstrap(name, Controller) {
 }
 
 export default function defineHybrid(...args) {
-  if (!args.length) error(TypeError, 'invalid arguments');
+  if (!args.length) error(TypeError, '[core|define] Invalid arguments');
 
   switch (typeof args[0]) {
     case 'object':
@@ -114,6 +125,6 @@ export default function defineHybrid(...args) {
 
       return bootstrap(...args);
     default:
-      return error(TypeError, 'invalid arguments');
+      return error(TypeError, '[core|define] Invalid arguments');
   }
 }

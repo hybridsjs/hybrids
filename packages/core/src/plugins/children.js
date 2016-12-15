@@ -44,7 +44,6 @@ class ChildrenProvider {
   }
 
   disconnected() {
-    debugger;
     this.observer.disconnect();
   }
 }

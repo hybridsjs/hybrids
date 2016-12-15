@@ -39,55 +39,6 @@ describe('Core | define -', () => {
     });
   });
 
-  describe('public properties', () => {
-    const options = {};
-    let el;
-    class Controller {
-      static get options() {
-        return options;
-      }
-
-      constructor() {
-        this.one = false;
-        this.two = 'test';
-      }
-
-      three() { return 'some value'; }
-    }
-
-    beforeEach(() => {
-      options.properties = ['one', { property: 'two', attr: false }, { property: 'three' }];
-    });
-
-    it('map properties', () => {
-      el = new (define('hybrids-core-public-properties', Controller))();
-      expect(el.one).toEqual(false);
-      expect(el.two).toEqual('test');
-      expect(el.three()).toEqual('some value');
-    });
-
-    it('throw for bad type', () => {
-      options.properties.push(1);
-      expect(() => {
-        define('hybrids-core-public-props-error', Controller);
-      }).toThrow();
-    });
-
-    it('throw for already defined property in HTMLElement', () => {
-      options.properties.push('title');
-      expect(() => define('hybrids-core-public-throw-duplicate', Controller)).toThrow();
-    });
-
-    it('reflect boolean value', () => {
-      el = new (define('hybrids-core-reflect-boolean', Controller))();
-      expect(el.hasAttribute('one')).toEqual(false);
-      el.one = true;
-      expect(el.hasAttribute('one')).toEqual(true);
-      el.one = false;
-      expect(el.hasAttribute('one')).toEqual(false);
-    });
-  });
-
   describe('providers', () => {
     let providers;
     let Controller;

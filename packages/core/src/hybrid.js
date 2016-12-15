@@ -12,10 +12,6 @@ function HTMLBridge(...args) {
 Object.setPrototypeOf(HTMLBridge.prototype, HTMLElement.prototype);
 
 export default class Hybrid extends HTMLBridge {
-  static get [CONTROLLER]() { return Object; }
-  static get [PROVIDERS]() { return []; }
-  static get [OPTIONS]() { return { properties: [] }; }
-
   constructor() {
     super();
 
@@ -40,14 +36,11 @@ export default class Hybrid extends HTMLBridge {
     Object.defineProperty(this, CONNECTED, { value: true, configurable: true });
 
     const publicProperties = new Set(this.constructor[OPTIONS].properties.map(({ property }) => {
-      const value = this[property];
-
       if ({}.hasOwnProperty.call(this, property)) {
+        const value = this[property];
         delete this[property];
         this[property] = value;
       }
-
-      this[property] = value;
 
       return property;
     }));
