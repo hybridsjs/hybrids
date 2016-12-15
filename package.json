@@ -7,7 +7,8 @@
   "repository": "https://github.com/hybridsjs/hybrids",
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "dev": "NODE_ENV=coverage karma start",
+    "dev": "karma start",
+    "dev:coverage": "NODE_ENV=coverage karma start",
     "prebuild": "ls packages | xargs -I {dir} rm -rf packages/{dir}/lib",
     "build": "ls packages | xargs -I {dir} babel packages/{dir}/src -d packages/{dir}/lib -s inline",
     "test": "karma start --single-run --reporters progress",
@@ -43,6 +44,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^1.7.0",
     "lerna": "2.0.0-beta.30",
+    "template": "github:webcomponents/template",
     "webpack": "^1.12.15"
   }
 }

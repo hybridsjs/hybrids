@@ -4,11 +4,10 @@ module.exports = (config) => {
   config.set({
     basePath: process.cwd(),
     frameworks: ['jasmine'],
-    files: ['test/environment.js', 'packages/*/test/**/*.js'],
+    files: ['test/unit.js'],
     exclude: [],
     preprocessors: {
-      'test/environment.js': ['webpack', 'sourcemap'],
-      'packages/*/test/**/*.js': ['webpack', 'sourcemap'],
+      'test/unit.js': ['webpack', 'sourcemap'],
     },
     webpack: Object.assign({}, webpackConfig, {
       devtool: 'inline-source-map',

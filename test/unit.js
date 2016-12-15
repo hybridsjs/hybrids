@@ -2,9 +2,9 @@
 require('core-js/shim');
 
 if (!window.customElements) require('@webcomponents/custom-elements');
-if (!document.body.attachShadow) require('@webcomponents/shadydom/src/env');
-
-require('@webcomponents/shadycss/src/entry');
+if (!document.body.attachShadow) require('@webcomponents/shadydom');
+require('@webcomponents/shadycss');
+require('template');
 
 Object.assign(window, {
   rafIt(name, fn) {
@@ -25,3 +25,6 @@ Object.assign(window, {
     });
   },
 });
+
+const req = require.context('../packages', true, /^\.\/[a-z]+\/test\/(.*\.(js$))$/igm);
+req.keys().forEach(key => req(key));
