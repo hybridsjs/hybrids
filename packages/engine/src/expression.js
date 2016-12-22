@@ -16,13 +16,13 @@ function resolveLocal(node, name) {
 }
 
 function mergeLocals(node, temp = {}) {
-  if (!node[LOCALS]) return temp;
-
-  node[LOCALS].forEach((value, key) => {
-    if (!{}.hasOwnProperty.call(temp, key)) {
-      temp[key] = value;
-    }
-  });
+  if (node[LOCALS]) {
+    node[LOCALS].forEach((value, key) => {
+      if (!{}.hasOwnProperty.call(temp, key)) {
+        temp[key] = value;
+      }
+    });
+  }
 
   if (node.parentElement) {
     return mergeLocals(node.parentElement, temp);

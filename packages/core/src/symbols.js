@@ -1,5 +1,5 @@
 export const CONTROLLER = Symbol('controller');
 export const PROVIDERS = Symbol('providers');
 export const OPTIONS = Symbol('options');
-export const OBSERVER = Symbol('observer');
-export const CONNTECTED = Symbol('connected');
+export const NAME = Symbol('name');
+export const UPDATE = Symbol('update');

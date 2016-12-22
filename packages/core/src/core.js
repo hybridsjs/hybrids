@@ -1,19 +1,7 @@
 import { error } from '@hybrids/debug';
 import Hybrid from './hybrid';
-import { camelToDash, reflectValue } from './utils';
-import { CONTROLLER, PROVIDERS, OPTIONS } from './symbols';
-
-function normalizeProperty(property) {
-  const type = typeof property;
-  switch (type) {
-    case 'string':
-      return { property, attr: true, reflect: true };
-    case 'object':
-      return Object.assign({ attr: true, reflect: true }, property);
-    default:
-      return error(TypeError, '[core|define] Property description must be an object or string: %s', type);
-  }
-}
+import { camelToDash, reflectValue, normalizeProperty } from './utils';
+import { CONTROLLER, PROVIDERS, OPTIONS, NAME } from './symbols';
 
 function bootstrap(name, Controller) {
   if (window.customElements.get(name)) {
@@ -29,8 +17,6 @@ function bootstrap(name, Controller) {
   const properties = (options.properties || []).map(normalizeProperty);
   const observedAttributes = [];
 
-  options.name = name;
-
   if (options.define) {
     if (typeof options.define === 'object') {
       defineHybrid(options.define); // eslint-disable-line no-use-before-define
@@ -43,9 +29,10 @@ function bootstrap(name, Controller) {
     static get observedAttributes() { return observedAttributes; }
     static get [CONTROLLER]() { return Controller; }
     static get [OPTIONS]() { return options; }
+    static get [NAME]() { return name; }
   }
 
-  options.properties = properties.filter(({ property, attr, reflect }) => {
+  options.properties = properties.filter(({ property, attr }) => {
     if (Reflect.has(ExtHybrid.prototype, property)) {
       error(ReferenceError, '[core|define] Property already in HTMLElement prototype chain: %s', property);
     }
@@ -67,27 +54,12 @@ function bootstrap(name, Controller) {
       }
     }
 
-    const attrName = camelToDash(property);
-
     Object.defineProperty(ExtHybrid.prototype, property, {
-      get() {
-        return this[CONTROLLER][property];
-      },
-      set(value) {
-        this[CONTROLLER][property] = reflectValue(value, this[CONTROLLER][property]);
-        const newValue = this[CONTROLLER][property];
-
-        if (reflect && typeof newValue === 'boolean') {
-          if (newValue) {
-            this.setAttribute(attrName, '');
-          } else {
-            this.removeAttribute(attrName);
-          }
-        }
-      },
+      get() { return this[CONTROLLER][property]; },
+      set(value) { this[CONTROLLER][property] = reflectValue(value, this[CONTROLLER][property]); },
     });
 
-    if (attr) observedAttributes.push(attrName);
+    if (attr) observedAttributes.push(attr);
 
     return true;
   });

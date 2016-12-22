@@ -1,9 +1,13 @@
-import { define, CONTROLLER } from '../src/index';
+import { define, CONTROLLER, OPTIONS, NAME } from '../src/index';
 import Hybrid from '../src/hybrid';
 
 describe('Core | define -', () => {
-  describe('return value', () => {
-    class Controller {}
+  describe('basic features', () => {
+    const options = {};
+
+    class Controller {
+      static get options() { return options; }
+    }
 
     it('return extended Hybrid', () => {
       const ExtHybrid = define('hybrids-core-return-test', class {});
@@ -27,6 +31,67 @@ describe('Core | define -', () => {
 
     it('throw for invalid arguments', () => {
       expect(() => define(class {})).toThrow();
+    });
+
+    it('set Hybrid options', () => {
+      const ExtHybrid = define('hybrids-core-options', Controller);
+      expect(ExtHybrid[OPTIONS]).toEqual(options);
+    });
+
+    it('set Hybrid name', () => {
+      const ExtHybrid = define('hybrids-core-name', Controller);
+      expect(ExtHybrid[NAME]).toEqual('hybrids-core-name');
+    });
+
+    it('throw for already defined properties in HTMLElement', () => {
+      expect(() => {
+        define('hybrids-core-defined-property', class {
+          static get options() {
+            return { properties: ['title'] };
+          }
+        });
+      }).toThrow();
+    });
+
+    it('map public property with controller prototype method', () => {
+      const spy = jasmine.createSpy();
+      const ExtHybrid = define('hybrids-core-proto-method', class {
+        static get options() { return { properties: ['one', 'two'] }; }
+        one(...args) { spy.apply(this, args); }
+        get two() { return 'value'; }
+      });
+
+      const args = [1, 2];
+      const hybrid = new ExtHybrid();
+      hybrid.one(...args);
+
+      expect(typeof hybrid.two).not.toEqual('function');
+      expect(spy).toHaveBeenCalled();
+      expect(spy.calls.mostRecent().object).toEqual(hybrid[CONTROLLER]);
+      expect(spy.calls.mostRecent().args).toEqual([1, 2]);
+    });
+
+    it('map public property with controller own property', () => {
+      const ExtHybrid = define('hybrids-core-proto-property', class {
+        static get options() {
+          return {
+            properties: [{ property: 'one', attr: false }, { property: 'two', attr: false }]
+          };
+        }
+        constructor() {
+          this.one = 'value';
+        }
+      });
+
+      const hybrid = new ExtHybrid();
+      expect(hybrid.one).toEqual('value');
+      expect(hybrid.two).toEqual(undefined);
+
+      hybrid.one = 'new value';
+      hybrid.two = 'other value';
+
+      expect(hybrid[CONTROLLER].one).toEqual('new value');
+      expect(hybrid[CONTROLLER].two).toEqual('other value');
     });
   });
 

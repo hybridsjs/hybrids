@@ -1,7 +1,7 @@
 import { error } from '@hybrids/debug';
 
 import Path from './path';
-import Expression, { defineLocals, getOwnLocals, LOCALS_PREFIX } from './expression';
+import Expression, { defineLocals, getOwnLocals } from './expression';
 import { WATCHERS, PROPERTY_MARKER } from './symbols';
 
 export const MARKER_PREFIX = '*';
@@ -155,18 +155,11 @@ function parseNode(node, m, p) {
 }
 
 function parseTemplate(template, container) {
-  const temp = document.createElement('template');
-  const map = { e: temp, m: [] };
+  const map = { e: template, m: [] };
   const id = container.t.length;
+  const nestedTemplates = [];
 
   container.t.push(map);
-
-  walk(interpolate(template.content), (node) => {
-    parseNode(node, map.m, container.p);
-    if (node instanceof HTMLTemplateElement) parseTemplate(node, container);
-  });
-
-  temp.content.appendChild(template.content);
 
   if (id) {
     template.parentNode.insertBefore(
@@ -174,6 +167,13 @@ function parseTemplate(template, container) {
     );
     template.parentNode.removeChild(template);
   }
+
+  walk(interpolate(template.content), (node) => {
+    parseNode(node, map.m, container.p);
+    if (node instanceof HTMLTemplateElement) nestedTemplates.push(node);
+  });
+
+  nestedTemplates.forEach(node => parseTemplate(node, container));
 
   return container;
 }
@@ -276,12 +276,7 @@ export default class Template {
 
             if (fn) {
               if (!node[WATCHERS]) Object.defineProperty(node, WATCHERS, { value: new Set() });
-              node[WATCHERS].add({
-                fn,
-                expr,
-                rootProperty: path.rootProperty,
-                locals: path.rootProperty[0] === LOCALS_PREFIX
-              });
+              node[WATCHERS].add({ fn, expr });
             }
           } catch (e) {
             error(e, 'compilation failed: %s', this.container.t[0].e.innerHTML);

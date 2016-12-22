@@ -1,28 +1,27 @@
 import { error } from '@hybrids/debug';
 
 import { injectable } from '../proxy';
-import { CONTROLLER, PROVIDERS, OBSERVER, CONNECTED } from '../symbols';
+import { CONTROLLER, UPDATE } from '../symbols';
 
-class ChildrenProvider {
+class Children {
   constructor(host, Controller, options = { deep: false, nested: false }) {
     if (!Controller) error(TypeError, '[core|children] Invalid arguments');
     if (typeof options !== 'object') error(TypeError, '[core|children] Invalid arguments');
 
+    if (host[CONTROLLER]) error(Error, '[core|children] Illegal invocation');
+
     this.host = host;
     this.Controller = Controller;
     this.options = options;
-
     this.items = [];
-    this.observer = new MutationObserver(() => {
-      this.refresh();
-      this.host[OBSERVER].check();
-    });
+    this.refresh = this.refresh.bind(this);
+    this.observer = new MutationObserver(this.refresh);
 
     this.observer.observe(this.host, {
       childList: true, subtree: !!this.options.deep
     });
 
-    this.refresh();
+    this.host.addEventListener('upgrade', this.refresh);
   }
 
   refresh() {
@@ -30,6 +29,8 @@ class ChildrenProvider {
 
     Object.assign(this.items, temp);
     this.items.length = temp.length;
+
+    this.host[UPDATE]();
   }
 
   walk(node, items = []) {
@@ -42,19 +43,10 @@ class ChildrenProvider {
 
     return items;
   }
-
-  disconnected() {
-    this.observer.disconnect();
-  }
 }
 
 export function children(Controller, options) {
-  if (!this[CONNECTED]) return error(Error, '[core|children] Illegal invocation');
-
-  const provider = new ChildrenProvider(this, Controller, options);
-  this[PROVIDERS].push(provider);
-
-  return provider.items;
+  return new Children(this, Controller, options).items;
 }
 
 export default injectable(children);

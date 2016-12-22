@@ -46,7 +46,9 @@ describe('Engine | Markers | For -', () => {
     });
 
     rafIt('initial items list', () => {
-      expect(extractValues()).toEqual(['4', '2', '3', '1']);
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['4', '2', '3', '1']);
+      });
     });
 
     rafIt('initial locals', () => {
@@ -230,7 +232,9 @@ describe('Engine | Markers | For -', () => {
     });
 
     rafIt('render initial items', () => {
-      expect(extractValues()).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
+      });
     });
 
     rafIt('pop item', () => {
@@ -310,7 +314,9 @@ describe('Engine | Markers | For -', () => {
     });
 
     rafIt('render initial items', () => {
-      expect(extractValues()).toEqual(['1', '3', '5', '2', '4', '3', '6', '2']);
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['1', '3', '5', '2', '4', '3', '6', '2']);
+      });
     });
 
     rafIt('pop root item', () => {
@@ -398,7 +404,9 @@ describe('Engine | Markers | For -', () => {
     });
 
     rafIt('initial items list', () => {
-      expect(extractValues()).toEqual(['a', 'c', 'b']);
+      requestAnimationFrame(() => {
+        expect(extractValues()).toEqual(['a', 'c', 'b']);
+      });
     });
 
     rafIt('initial locals', () => {
@@ -440,12 +448,17 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    rafIt('replace the same', () => {
-      const elements = Array.from(el.shadowRoot.querySelectorAll('[data-value]'));
-      el.items = { a: 'a', c: 'c', b: 'b' };
+    it('replace the same', (done) => {
       requestAnimationFrame(() => {
-        expect(extractValues()).toEqual(['a', 'c', 'b']);
-        expect(elements).toEqual(Array.from(el.shadowRoot.querySelectorAll('[data-value]')));
+        requestAnimationFrame(() => {
+          const elements = Array.from(el.shadowRoot.querySelectorAll('[data-value]'));
+          el.items = { a: 'a', c: 'c', b: 'b' };
+          requestAnimationFrame(() => {
+            expect(extractValues()).toEqual(['a', 'c', 'b']);
+            expect(elements).toEqual(Array.from(el.shadowRoot.querySelectorAll('[data-value]')));
+            done();
+          });
+        });
       });
     });
 

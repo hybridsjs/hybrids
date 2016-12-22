@@ -32,7 +32,9 @@ describe('Engine | Provider -', () => {
   });
 
   rafIt('renders view', () => {
-    expect(el.shadowRoot.children[0].textContent.trim()).toEqual('testing content');
+    requestAnimationFrame(() => {
+      expect(el.shadowRoot.children[0].textContent.trim()).toEqual('testing content');
+    });
   });
 
   rafIt('updates view', () => {

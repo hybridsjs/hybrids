@@ -38,7 +38,9 @@ describe('Engine | Markers | If -', () => {
   });
 
   rafIt('render elements', () => {
-    expect(el.shadowRoot.children.length).toEqual(4);
+    requestAnimationFrame(() => {
+      expect(el.shadowRoot.children.length).toEqual(4);
+    });
   });
 
   rafIt('remove elements', () => {

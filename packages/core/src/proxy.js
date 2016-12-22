@@ -20,9 +20,10 @@ export function injectable(fn) {
 }
 
 export function callWithContext(currentContext, fn) {
+  const oldContext = window[CONTEXT_NAME];
   window[CONTEXT_NAME] = currentContext;
   const result = fn();
-  window[CONTEXT_NAME] = null;
+  window[CONTEXT_NAME] = oldContext;
 
   return result;
 }
@@ -44,7 +45,7 @@ export function proxy(element, constructor) {
   if (typeof Proxy === 'function') {
     return new Proxy(controller, {
       get(target, property, receiver) {
-        const value = Reflect.get(target, property, receiver);
+        const value = callWithContext(element, () => Reflect.get(target, property, receiver));
 
         if (typeof value === 'function') {
           return (...args) => callWithContext(element, value.bind(receiver, ...args));
@@ -52,6 +53,9 @@ export function proxy(element, constructor) {
 
         return value;
       },
+      set(target, property, value, receiver) {
+        return callWithContext(element, () => Reflect.set(target, property, value, receiver));
+      }
     });
   }
 
@@ -63,8 +67,9 @@ export function proxy(element, constructor) {
       set.add(proto);
 
       Object.getOwnPropertyNames(proto).forEach((key) => { // eslint-disable-line no-loop-func
-        const desc = Object.getOwnPropertyDescriptor(proto, key);
         if (key !== 'constructor') {
+          const desc = Object.getOwnPropertyDescriptor(proto, key);
+
           if (desc.value && typeof desc.value === 'function') {
             const fn = desc.value;
             const temp = {
@@ -73,6 +78,21 @@ export function proxy(element, constructor) {
               },
             };
             desc.value = temp[key];
+            Object.defineProperty(proto, key, desc);
+          } else if (desc.get) {
+            const oldGet = desc.get;
+            const oldSet = desc.set;
+
+            desc.get = function proxyGet() {
+              return callWithContext(map.get(this), () => oldGet.call(this));
+            };
+
+            if (desc.set) {
+              desc.set = function proxySet(val) {
+                return callWithContext(map.get(this), () => oldSet.call(this, val));
+              };
+            }
+
             Object.defineProperty(proto, key, desc);
           }
         }

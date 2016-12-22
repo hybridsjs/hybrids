@@ -44,7 +44,51 @@ export function reflectValue(value, target) {
           return error(TypeError, "invalid type coercion from '%s' to '%s'", valueType, type);
       }
     }
-    default:
-      return error(TypeError, "type coercion to '%s' not supported", type);
+    default: return value;
   }
+}
+
+export function reflectAttribute(attr, value) {
+  if (typeof value === 'boolean') {
+    if (value && !this.getAttribute(attr)) {
+      this.setAttribute(attr, '');
+    } else if (this.getAttribute(attr) !== null) {
+      this.removeAttribute(attr);
+    }
+  }
+}
+
+export function normalizeProperty(property) {
+  const type = typeof property;
+  switch (type) {
+    case 'string':
+      return { property, attr: camelToDash(property), reflect: true };
+    case 'object': {
+      const desc = Object.assign({ attr: true, reflect: true }, property);
+      if (desc.attr) {
+        desc.attr = desc.attr !== true ? desc.attr : camelToDash(desc.property);
+      }
+      return desc;
+    }
+    default: return error(
+      TypeError, '[core|define] Property description must be an object or string: %s', type
+    );
+  }
+}
+
+let tasks;
+export function queue(fn) {
+  if (!tasks) {
+    tasks = [];
+
+    Promise.resolve().then(() => {
+      while (tasks[0]) {
+        const task = tasks.shift();
+        task();
+      }
+      tasks = null;
+    });
+  }
+
+  tasks.unshift(fn);
 }

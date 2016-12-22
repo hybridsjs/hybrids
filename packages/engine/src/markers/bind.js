@@ -84,17 +84,18 @@ function bindSelect(node, expr, path, multiply = false) {
   };
 }
 
-function bindDefault(node, expr, path) {
-  node.addEventListener('input', () => {
-    expr.set(node.checked ? path.get(node) : undefined);
-  });
+function bindDefault(node, expr, path, eventName) {
+  let flag = false;
+
+  node.addEventListener(eventName, () => { expr.set(path.get(node)); flag = true; });
+
   return () => {
-    const value = expr.get();
-    path.set(node, value !== undefined ? value : '');
+    if (!flag) path.set(node, expr.get());
+    flag = false;
   };
 }
 
-export default function bind(node, expr, sourcePath = 'value') {
+export default function bind(node, expr, sourcePath = 'value', eventName = 'change') {
   const path = new Path(sourcePath);
 
   switch (node.type) {
@@ -107,6 +108,7 @@ export default function bind(node, expr, sourcePath = 'value') {
     case 'select-multiple':
       return bindSelect(node, expr, path, true);
     default:
-      return bindDefault(node, expr, path);
+      if (node.type) eventName = 'input';
+      return bindDefault(node, expr, path, eventName);
   }
 }

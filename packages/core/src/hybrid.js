@@ -1,21 +1,18 @@
-import { Observer } from 'papillon/papillon';
-import { warning, error } from '@hybrids/debug';
+import { Observer, PropertyObserver, State } from 'papillon/papillon';
 
 import { proxy } from './proxy';
-import { dashToCamel } from './utils';
+import { dashToCamel, reflectAttribute, queue } from './utils';
 import { dispatchEvent } from './plugins/dispatch-event';
-import { CONTROLLER, PROVIDERS, OPTIONS, OBSERVER, CONNECTED } from './symbols';
 
-function HTMLBridge(...args) {
-  return Reflect.construct(HTMLElement, args, this.constructor);
-}
+import { CONTROLLER, PROVIDERS, OPTIONS, UPDATE } from './symbols';
+
+// BUG: Babel transpiled class breaks native custom elements
+function HTMLBridge(...args) { return Reflect.construct(HTMLElement, args, this.constructor); }
 Object.setPrototypeOf(HTMLBridge.prototype, HTMLElement.prototype);
 
 export default class Hybrid extends HTMLBridge {
   constructor() {
     super();
-
-    Object.defineProperty(this, CONNECTED, { value: false, configurable: true });
 
     Object.defineProperty(this, CONTROLLER, {
       value: proxy(this, () => new this.constructor[CONTROLLER]()),
@@ -25,87 +22,52 @@ export default class Hybrid extends HTMLBridge {
       value: this.constructor[PROVIDERS].map(m => m(this)).filter(m => m),
     });
 
-    this.constructor[OPTIONS].properties.forEach(({ property }) => {
-      if (!Reflect.has(this[CONTROLLER], property)) {
-        error(ReferenceError, 'public property must be defined: %s', property);
-      }
+    const updates = this[PROVIDERS].filter(p => p.update);
+    const callback = () => updates.forEach(p => p.update());
+
+    Object.defineProperty(this, UPDATE, {
+      value: () => Observer.requestAnimationFrame(callback),
     });
+
+    // BUG: https://github.com/webcomponents/custom-elements/issues/17
+    Promise.resolve().then(() => dispatchEvent.call(this, 'upgrade', null, { bubbles: false }));
   }
 
   connectedCallback() {
-    Object.defineProperty(this, CONNECTED, { value: true, configurable: true });
+    this.constructor[OPTIONS].properties.forEach(({ property, attr, reflect }) => {
+      if (attr && reflect) {
+        new PropertyObserver(this[CONTROLLER], property).observe(
+          () => {}, reflectAttribute.bind(this, attr)
+        );
 
-    const publicProperties = new Set(this.constructor[OPTIONS].properties.map(({ property }) => {
+        reflectAttribute.call(this, attr, this[property]);
+      }
+
       if ({}.hasOwnProperty.call(this, property)) {
         const value = this[property];
         delete this[property];
         this[property] = value;
       }
-
-      return property;
-    }));
-
-    if (this[CONTROLLER].connected) this[CONTROLLER].connected();
-
-    this[PROVIDERS].forEach((provider) => {
-      if (provider.connected) provider.connected();
     });
 
-    Object.defineProperty(this, OBSERVER, {
-      value: new Observer(this[CONTROLLER], Object.keys(this[CONTROLLER]), (changelog) => {
-        if (this[CONTROLLER].changed) this[CONTROLLER].changed(changelog);
+    if (this[CONTROLLER].connect) this[CONTROLLER].connect();
+    this[PROVIDERS].forEach((p) => { if (p.connect) p.connect(); });
 
-        this[PROVIDERS].forEach((provider) => {
-          if (provider.changed) provider.changed(changelog);
-        });
-
-        if (Object.keys(changelog).some(key => publicProperties.has(key))) {
-          let parent = this.parentNode;
-          let host;
-          while (parent && !host) {
-            host = parent.host;
-            parent = parent.parentNode;
-          }
-
-          if (host && host[OBSERVER]) host[OBSERVER].check();
-
-          dispatchEvent.call(this, 'change');
-        }
-      }),
-      configurable: true,
-    });
+    this[UPDATE]();
   }
 
   disconnectedCallback() {
-    Object.defineProperty(this, CONNECTED, { value: false, configurable: true });
-
-    if (this[CONTROLLER].disconnected) this[CONTROLLER].disconnected();
-
-    this[PROVIDERS].forEach((provider) => {
-      if (provider.disconnected) provider.disconnected();
-    });
-
-    this[OBSERVER].destroy();
-    Object.defineProperty(this, OBSERVER, { value: null, configurable: true });
-  }
-
-  adoptedCallback() {
-    if (this[CONTROLLER].adopted) this[CONTROLLER].adopted();
-
-    this[PROVIDERS].forEach((provider) => {
-      if (provider.adopted) provider.adopted();
-    });
+    if (this[CONTROLLER].disconnect) this[CONTROLLER].disconnect();
+    this[PROVIDERS].forEach((p) => { if (p.disconnect) p.disconnect(); });
   }
 
   attributeChangedCallback(attrName, oldVal, newVal) {
     const property = dashToCamel(attrName);
 
-    try {
-      const value = newVal !== null ? newVal : false;
-      this[property] = value !== '' ? value : true;
-    } catch (e) {
-      warning(e, "reflect attribute '%s' to property '%s'", attrName, property);
-    }
+    newVal = newVal !== null ? newVal : false;
+    const newPropValue = newVal !== '' ? newVal : true;
+
+    if (!State.is(newPropValue, this[property])) queue(() => (this[property] = newPropValue));
   }
 
   get [Symbol.toStringTag]() { return 'HTMLHybridElement'; }
