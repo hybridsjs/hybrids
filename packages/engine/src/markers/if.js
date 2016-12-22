@@ -13,7 +13,7 @@ export default function If(node, expr) {
       fragment = new VirtualFragment(engine.compile(node), node);
       fragment.insertAfter();
     } else {
-      fragment.remove();
+      if (fragment) fragment.remove();
       fragment = null;
     }
   };
