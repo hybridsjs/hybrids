@@ -43,9 +43,9 @@ class Engine {
       }
 
       w.cache = value;
-
-      if (window.ShadyCSS) window.ShadyCSS.applyStyle(this.element);
     });
+
+    if (window.ShadyCSS) window.ShadyCSS.applyStyle(this.element);
   }
 
   compile(templateId, locals) {
