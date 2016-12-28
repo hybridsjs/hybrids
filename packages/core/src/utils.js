@@ -76,19 +76,32 @@ export function normalizeProperty(property) {
   }
 }
 
-let tasks;
+let queueTasks;
 export function queue(fn) {
-  if (!tasks) {
-    tasks = [];
+  if (!queueTasks) {
+    queueTasks = [];
 
     Promise.resolve().then(() => {
-      while (tasks[0]) {
-        const task = tasks.shift();
+      while (queueTasks[0]) {
+        const task = queueTasks.shift();
         task();
       }
-      tasks = null;
+      queueTasks = null;
     });
   }
 
-  tasks.unshift(fn);
+  queueTasks.unshift(fn);
+}
+
+let sheduleTasks;
+export function shedule(cb) {
+  if (!sheduleTasks) {
+    sheduleTasks = new Set().add(cb);
+    window.requestAnimationFrame(() => {
+      sheduleTasks.forEach(c => c());
+      sheduleTasks = undefined;
+    });
+  } else {
+    sheduleTasks.add(cb);
+  }
 }

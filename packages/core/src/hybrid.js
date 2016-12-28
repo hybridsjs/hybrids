@@ -1,7 +1,7 @@
-import { Observer, PropertyObserver, State } from 'papillon/papillon';
+import { PropertyObserver } from 'papillon';
 
 import { proxy } from './proxy';
-import { dashToCamel, reflectAttribute, queue } from './utils';
+import { dashToCamel, reflectAttribute, queue, shedule } from './utils';
 import { dispatchEvent } from './plugins/dispatch-event';
 
 import { CONTROLLER, PROVIDERS, OPTIONS, UPDATE } from './symbols';
@@ -26,7 +26,7 @@ export default class Hybrid extends HTMLBridge {
     const callback = () => updates.forEach(p => p.update());
 
     Object.defineProperty(this, UPDATE, {
-      value: () => Observer.requestAnimationFrame(callback),
+      value: () => shedule(callback),
     });
 
     // BUG: https://github.com/webcomponents/custom-elements/issues/17
@@ -67,7 +67,7 @@ export default class Hybrid extends HTMLBridge {
     newVal = newVal !== null ? newVal : false;
     const newPropValue = newVal !== '' ? newVal : true;
 
-    if (!State.is(newPropValue, this[property])) queue(() => (this[property] = newPropValue));
+    if (newPropValue !== this[property]) queue(() => (this[property] = newPropValue));
   }
 
   get [Symbol.toStringTag]() { return 'HTMLHybridElement'; }

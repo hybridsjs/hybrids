@@ -1,4 +1,4 @@
-import { Observer, State, PropertyObserver } from 'papillon/papillon';
+import { Observer, State, PropertyObserver } from 'papillon';
 import { OPTIONS, CONTROLLER, NAME } from '@hybrids/core';
 
 import Template from './template';
