@@ -1,4 +1,4 @@
 import './debug';
 
 export { default as engine } from './engine';
-export * from './symbols';
+export { PROPERTY_MARKER } from './markers';

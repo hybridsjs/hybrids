@@ -1,11 +1,13 @@
 import { error } from '@hybrids/debug';
-import { LOCALS } from './symbols';
 
 export const LOCALS_PREFIX = '@';
 
+const localsMap = new WeakMap();
+
 function resolveLocal(node, name) {
-  if (node[LOCALS] && node[LOCALS].has(name)) {
-    return { [`${LOCALS_PREFIX}${name}`]: node[LOCALS].get(name) };
+  const locals = localsMap.get(node);
+  if (locals && locals.has(name)) {
+    return { [`${LOCALS_PREFIX}${name}`]: locals.get(name) };
   }
 
   if (node.parentElement) {
@@ -16,8 +18,9 @@ function resolveLocal(node, name) {
 }
 
 function mergeLocals(node, temp = {}) {
-  if (node[LOCALS]) {
-    node[LOCALS].forEach((value, key) => {
+  const locals = localsMap.get(node);
+  if (locals) {
+    locals.forEach((value, key) => {
       if (!{}.hasOwnProperty.call(temp, key)) {
         temp[key] = value;
       }
@@ -32,18 +35,21 @@ function mergeLocals(node, temp = {}) {
 }
 
 export function defineLocals(node, locals) {
-  if (!node[LOCALS]) Object.defineProperty(node, LOCALS, { value: new Map() });
+  let map = localsMap.get(node);
+  if (!map) {
+    map = new Map();
+    localsMap.set(node, map);
+  }
   Object.keys(locals).forEach((key) => {
-    node[LOCALS].set(key, locals[key]);
+    map.set(key, locals[key]);
   });
 }
 
 export function getOwnLocals(node) {
-  if (node[LOCALS]) {
+  const locals = localsMap.get(node);
+  if (locals) {
     const result = {};
-    node[LOCALS].forEach((value, key) => {
-      result[key] = value;
-    });
+    locals.forEach((value, key) => (result[key] = value));
     return result;
   }
 

@@ -2,11 +2,13 @@ import { error } from '@hybrids/debug';
 
 import Path from './path';
 import Expression, { defineLocals, getOwnLocals } from './expression';
-import { WATCHERS, PROPERTY_MARKER } from './symbols';
+import { PROPERTY_MARKER } from './markers';
 
 export const MARKER_PREFIX = '*';
 export const PROPERTY_PREFIX = '@';
 export const TEMPLATE_PREFIX = 'template:';
+
+const watchersMap = new WeakMap();
 
 function walk(node, fn) {
   node = node.firstChild;
@@ -170,7 +172,7 @@ function parseTemplate(template, container) {
 
   walk(interpolate(template.content), (node) => {
     parseNode(node, map.m, container.p);
-    if (node instanceof HTMLTemplateElement) nestedTemplates.push(node);
+    if (node.nodeName === 'TEMPLATE') nestedTemplates.push(node);
   });
 
   nestedTemplates.forEach(node => parseTemplate(node, container));
@@ -193,7 +195,7 @@ export default class Template {
     this.filters = filters;
 
     if (typeof input === 'object') {
-      if (input instanceof HTMLTemplateElement) {
+      if (input.nodeName === 'TEMPLATE') {
         input = input.innerHTML;
       } else {
         this.container = {
@@ -275,8 +277,12 @@ export default class Template {
             const fn = marker(node, expr, ...args);
 
             if (fn) {
-              if (!node[WATCHERS]) Object.defineProperty(node, WATCHERS, { value: new Set() });
-              node[WATCHERS].add({ fn, expr });
+              let watchList = watchersMap.get(node);
+              if (!watchList) {
+                watchList = [];
+                watchersMap.set(node, watchList);
+              }
+              watchList.push({ fn, expr });
             }
           } catch (e) {
             error(e, 'compilation failed: %s', this.container.t[0].e.innerHTML);
@@ -293,7 +299,8 @@ export default class Template {
   run(root, cb) {
     walk(root, (node) => {
       try {
-        if ({}.hasOwnProperty.call(node, WATCHERS)) node[WATCHERS].forEach(w => cb(w));
+        const list = watchersMap.get(node);
+        if (list) list.forEach(w => cb(w));
       } catch (e) {
         error(e, 'execute: %s', this.container.t[0].e.innerHTML);
       }
@@ -302,7 +309,7 @@ export default class Template {
 
   export() {
     return JSON.parse(JSON.stringify(this.container, (key, value) => {
-      if (typeof value === 'object' && value instanceof HTMLTemplateElement) {
+      if (typeof value === 'object' && value.nodeName === 'TEMPLATE') {
         return value.innerHTML;
       }
 

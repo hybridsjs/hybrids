@@ -1,5 +1,3 @@
-import { PROPERTY_MARKER } from './symbols';
-
 import attr from './markers/attr';
 import bind from './markers/bind';
 import classList from './markers/class';
@@ -9,6 +7,8 @@ import on from './markers/on';
 import prop from './markers/prop';
 import ref from './markers/ref';
 import style from './markers/style';
+
+export const PROPERTY_MARKER = Symbol('property marker');
 
 export default {
   attr,

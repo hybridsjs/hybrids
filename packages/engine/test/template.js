@@ -1,6 +1,6 @@
 import Template, { MARKER_PREFIX as M, PROPERTY_PREFIX as P } from '../src/template';
 import { getOwnLocals } from '../src/expression';
-import { WATCHERS, PROPERTY_MARKER } from '../src/symbols';
+import { PROPERTY_MARKER } from '../src/markers';
 
 describe('Engine | Template -', () => {
   describe('parse', () => {
@@ -40,10 +40,16 @@ describe('Engine | Template -', () => {
       `)).toThrow();
     });
 
-    it('interpolate template marker', () => {
+    it('interpolate double prefix to template marker', () => {
       const template = new Template(`<div ${M}${M}marker="something"></div>`);
       expect(template.container.t[0].m[0][0]).toEqual({ m: 'marker', p: [['something']] });
       expect(template.container.t[1].e.content.childNodes[0].outerHTML).toEqual('<div></div>');
+    });
+
+    it('template to comment', () => {
+      const template = new Template(`<template ${M}marker="something"></template>`);
+      expect(template.container.t[0].m[0][0]).toEqual({ m: 'marker', p: [['something']] });
+      expect(template.container.t[0].e.content.childNodes[0] instanceof Comment).toEqual(true);
     });
 
     it('expression only', () => {
@@ -158,16 +164,6 @@ describe('Engine | Template -', () => {
     it('throw for missing template', () => {
       const template = new Template(`<span ${M}props="something"></span>`);
       expect(() => template.compile({}, 1)).toThrow();
-    });
-
-    it('add watcher', () => {
-      const watcher = () => {};
-      const template = new Template(`<span ${M}marker="one"></span>`, {
-        markers: { marker() { return watcher; } }
-      });
-
-      const fragment = template.compile({ one: 'test' });
-      expect([...fragment.childNodes[0][WATCHERS]][0].fn).toEqual(watcher);
     });
 
     it('set locals', () => {

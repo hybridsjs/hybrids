@@ -52,27 +52,29 @@ describe('Engine | Markers | For -', () => {
     });
 
     rafIt('initial locals', () => {
-      expect(getOwnLocals(el.shadowRoot.children[0])).toEqual({
-        number: 1,
-        first: true,
-        last: false,
-        odd: true,
-        even: false,
-        item: '4',
-        index: 0,
-        length: 4,
-        key: '0',
-      });
-      expect(getOwnLocals(el.shadowRoot.children[2])).toEqual({
-        number: 2,
-        first: false,
-        last: false,
-        odd: false,
-        even: true,
-        item: '2',
-        index: 1,
-        length: 4,
-        key: '1',
+      requestAnimationFrame(() => {
+        expect(getOwnLocals(el.shadowRoot.children[0])).toEqual({
+          number: 1,
+          first: true,
+          last: false,
+          odd: true,
+          even: false,
+          item: '4',
+          index: 0,
+          length: 4,
+          key: '0',
+        });
+        expect(getOwnLocals(el.shadowRoot.children[2])).toEqual({
+          number: 2,
+          first: false,
+          last: false,
+          odd: false,
+          even: true,
+          item: '2',
+          index: 1,
+          length: 4,
+          key: '1',
+        });
       });
     });
 
@@ -273,10 +275,12 @@ describe('Engine | Markers | For -', () => {
     });
 
     rafIt('merge locals with parent for', () => {
-      const { item, index, value } = getOwnLocals(el.shadowRoot.children[4]);
-      expect(item).toEqual(el.items[1]);
-      expect(index).toEqual(0);
-      expect(value).toEqual('4');
+      requestAnimationFrame(() => {
+        const { item, index, value } = getOwnLocals(el.shadowRoot.children[4]);
+        expect(item).toEqual(el.items[1]);
+        expect(index).toEqual(0);
+        expect(value).toEqual('4');
+      });
     });
   });
 
@@ -410,27 +414,29 @@ describe('Engine | Markers | For -', () => {
     });
 
     rafIt('initial locals', () => {
-      expect(getOwnLocals(el.shadowRoot.children[1])).toEqual({
-        number: 1,
-        first: true,
-        last: false,
-        odd: true,
-        even: false,
-        item: 'a',
-        index: 0,
-        length: 3,
-        key: 'a',
-      });
-      expect(getOwnLocals(el.shadowRoot.children[3])).toEqual({
-        number: 2,
-        first: false,
-        last: false,
-        odd: false,
-        even: true,
-        item: 'c',
-        index: 1,
-        length: 3,
-        key: 'c',
+      requestAnimationFrame(() => {
+        expect(getOwnLocals(el.shadowRoot.children[1])).toEqual({
+          number: 1,
+          first: true,
+          last: false,
+          odd: true,
+          even: false,
+          item: 'a',
+          index: 0,
+          length: 3,
+          key: 'a',
+        });
+        expect(getOwnLocals(el.shadowRoot.children[3])).toEqual({
+          number: 2,
+          first: false,
+          last: false,
+          odd: false,
+          even: true,
+          item: 'c',
+          index: 1,
+          length: 3,
+          key: 'c',
+        });
       });
     });
 
