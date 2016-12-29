@@ -1,7 +1,9 @@
+/coverage
 /node_modules
 /test
 /packages
 /src
+/hybrids.js
 *.log
 .babelrc
 .eslintrc
