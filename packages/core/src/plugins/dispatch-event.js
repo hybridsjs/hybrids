@@ -1,12 +1,7 @@
 import { injectable } from '../proxy';
 
-export function dispatchEvent(name, detail, options) {
-  const config = Object.assign(
-    { bubbles: true, cancelable: false },
-    { detail },
-    options
-  );
-
+export function dispatchEvent(name, options) {
+  const config = Object.assign({ bubbles: true, cancelable: false }, options);
   let event;
 
   if (document.createEvent) {

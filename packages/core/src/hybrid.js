@@ -1,7 +1,7 @@
 import { PropertyObserver } from 'papillon';
 
 import { proxy } from './proxy';
-import { dashToCamel, reflectAttribute, queue, shedule } from './utils';
+import { dashToCamel, reflectBoolAttribute, queue, shedule } from './utils';
 import { dispatchEvent } from './plugins/dispatch-event';
 
 import { CONTROLLER, PROVIDERS, OPTIONS, UPDATE } from './symbols';
@@ -30,17 +30,17 @@ export default class Hybrid extends HTMLBridge {
     });
 
     // BUG: https://github.com/webcomponents/custom-elements/issues/17
-    Promise.resolve().then(() => dispatchEvent.call(this, 'upgrade', null, { bubbles: false }));
+    Promise.resolve().then(() => dispatchEvent.call(this, 'upgrade', { bubbles: false }));
   }
 
   connectedCallback() {
     this.constructor[OPTIONS].properties.forEach(({ property, attr, reflect }) => {
       if (attr && reflect) {
         new PropertyObserver(this[CONTROLLER], property).observe(
-          () => {}, reflectAttribute.bind(this, attr)
+          () => {}, reflectBoolAttribute.bind(this, attr)
         );
 
-        reflectAttribute.call(this, attr, this[property]);
+        reflectBoolAttribute.call(this, attr, this[property]);
       }
 
       if ({}.hasOwnProperty.call(this, property)) {

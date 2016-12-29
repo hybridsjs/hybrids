@@ -3,16 +3,10 @@ import { error } from '@hybrids/debug';
 let activeContext = null;
 
 export function injectable(fn) {
-  function wrapper(...args) {
-    if (!activeContext) {
-      error('illegal invocation: %s', fn.name);
-    }
+  return function wrapper(...args) {
+    if (!activeContext) error('[core|proxy] illegal invocation: %s', fn.name);
     return fn.apply(activeContext, args);
-  }
-
-  Object.defineProperty(wrapper, 'source', { value: fn });
-
-  return wrapper;
+  };
 }
 
 export function callWithContext(context, fn) {
@@ -24,11 +18,9 @@ export function callWithContext(context, fn) {
   return result;
 }
 
-export function resolve(fn, context = activeContext) {
-  if (!context) {
-    error('illegal invocation: %s', fn.name);
-  }
-
+export function resolve(fn) {
+  if (!activeContext) error('[core|proxy] illegal invocation: %s', fn.name);
+  const context = activeContext;
   return () => callWithContext(context, fn);
 }
 

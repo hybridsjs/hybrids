@@ -15,15 +15,9 @@ export function reflectValue(value, target) {
 
   const type = typeof target;
   switch (type) {
-    case 'string':
-      if (typeof value === 'object') {
-        return JSON.stringify(value);
-      }
-      return String(value);
-    case 'number':
-      return Number(value);
-    case 'boolean':
-      return Boolean(value);
+    case 'string': return String(value);
+    case 'number': return Number(value);
+    case 'boolean': return Boolean(value);
     case 'object': {
       const valueType = typeof value;
       switch (valueType) {
@@ -32,23 +26,26 @@ export function reflectValue(value, target) {
         case 'string': {
           try {
             const parsed = JSON.parse(value);
-            if (typeof parsed === 'object') {
-              return parsed;
-            }
+            if (typeof parsed === 'object') return parsed;
             throw new TypeError();
           } catch (e) {
-            return error(e, "invalid type coercion from '%s' to '%s'", valueType, type);
+            return error(e, "[core|utils] Invalid type coercion: '%s' to '%s'", valueType, type);
           }
         }
         default:
-          return error(TypeError, "invalid type coercion from '%s' to '%s'", valueType, type);
+          return error(TypeError, "[core|utils] Invalid type coercion: '%s' to '%s'", valueType, type);
       }
     }
-    default: return value;
+    case 'undefined': return value;
+    default: {
+      const valueType = typeof value;
+      if (valueType === type) return value;
+      return error(TypeError, "[core|utils] Invalid type coercion: '%s' to '%s'", valueType, type);
+    }
   }
 }
 
-export function reflectAttribute(attr, value) {
+export function reflectBoolAttribute(attr, value) {
   if (typeof value === 'boolean') {
     if (value && !this.getAttribute(attr)) {
       this.setAttribute(attr, '');
@@ -67,11 +64,13 @@ export function normalizeProperty(property) {
       const desc = Object.assign({ attr: true, reflect: true }, property);
       if (desc.attr) {
         desc.attr = desc.attr !== true ? desc.attr : camelToDash(desc.property);
+      } else {
+        desc.reflect = false;
       }
       return desc;
     }
     default: return error(
-      TypeError, '[core|define] Property description must be an object or string: %s', type
+      TypeError, '[core|utils] Property description must be an object or string: %s', type
     );
   }
 }

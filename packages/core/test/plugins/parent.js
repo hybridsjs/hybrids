@@ -22,6 +22,10 @@ describe('Core | Plugins | Parent -', () => {
     if (parentEl.parentElement) parentEl.parentElement.removeChild(parentEl);
   });
 
+  it('throw when controller is not initialized', () => {
+    expect(() => parent.call(document.createElement('div'), CorePluginsParent)).toThrow();
+  });
+
   rafIt('return parent controller', () => {
     parentEl.appendChild(childEl);
     requestAnimationFrame(() => {
