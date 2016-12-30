@@ -112,7 +112,7 @@ describe('Core | define -', () => {
       providers = [];
       Controller = class {
         static get options() {
-          return { use: providers };
+          return { providers };
         }
       };
     });

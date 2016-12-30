@@ -65,7 +65,7 @@ function bootstrap(name, Controller) {
   });
 
   Object.defineProperty(ExtHybrid, PROVIDERS, {
-    value: [...new Set(options.use || [])].map((m) => {
+    value: (options.providers || []).map((m) => {
       if (typeof m !== 'function') {
         error(TypeError, '[core|define] Provider must be a function: %s', typeof m);
       }

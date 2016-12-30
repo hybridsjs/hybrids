@@ -20,7 +20,7 @@ describe('Engine | Markers | For -', () => {
     class EngineForeachTest {
       static get options() {
         return {
-          use: [engine],
+          providers: [engine],
           properties: ['items'],
           template: `
             <template ${M}for="items">
@@ -202,7 +202,7 @@ describe('Engine | Markers | For -', () => {
     class EngineForeachTestMultiply {
       static get options() {
         return {
-          use: [engine],
+          providers: [engine],
           properties: ['items'],
           template: `
             <template ${M}for="items">
@@ -288,7 +288,7 @@ describe('Engine | Markers | For -', () => {
     class EngineForeachTestMultiplyNested {
       static get options() {
         return {
-          use: [engine],
+          providers: [engine],
           properties: ['items'],
           template: `
             <template ${M}for="items">
@@ -382,7 +382,7 @@ describe('Engine | Markers | For -', () => {
     class EngineForeachObjectTest {
       static get options() {
         return {
-          use: [engine],
+          providers: [engine],
           properties: ['items'],
           template: `
             <template ${M}for="items">

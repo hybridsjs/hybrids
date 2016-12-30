@@ -28,7 +28,7 @@ describe('Engine | Shadow DOM styling -', () => {
       class EngineCssInner {
         static get options() {
           return {
-            use: [engine],
+            providers: [engine],
             template: `
               <style>
                 :host {
@@ -79,7 +79,7 @@ describe('Engine | Shadow DOM styling -', () => {
       class EngineCssInnerOuter {
         static get options() {
           return {
-            use: [engine],
+            providers: [engine],
             styles: [`
               :host {
                 display: block;
@@ -135,7 +135,7 @@ describe('Engine | Shadow DOM styling -', () => {
       class EngineCssExportedOuter {
         static get options() {
           return {
-            use: [engine],
+            providers: [engine],
             styles: [`
               :host {
                 display: block;

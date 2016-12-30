@@ -55,7 +55,7 @@ describe('Core | Hybrid -', () => {
     rafIt('call provider connect', () => {
       define('hybrids-core-hybrid-connect-provider', class {
         static get options() {
-          return { use: [() => () => ({ connect() { spy(); } })] };
+          return { providers: [() => () => ({ connect() { spy(); } })] };
         }
       });
       el = document.createElement('hybrids-core-hybrid-connect-provider');
@@ -68,7 +68,7 @@ describe('Core | Hybrid -', () => {
     it('call provider update after connected', (done) => {
       define('hybrids-core-hybrid-update-provider', class {
         static get options() {
-          return { use: [() => () => ({ update() { spy(); } })] };
+          return { providers: [() => () => ({ update() { spy(); } })] };
         }
       });
       el = document.createElement('hybrids-core-hybrid-update-provider');
@@ -86,7 +86,7 @@ describe('Core | Hybrid -', () => {
     it('call provider disconnect', (done) => {
       define('hybrids-core-hybrid-disconnect-provider', class {
         static get options() {
-          return { use: [() => () => ({ disconnect() { spy(); } })] };
+          return { providers: [() => () => ({ disconnect() { spy(); } })] };
         }
       });
       el = document.createElement('hybrids-core-hybrid-disconnect-provider');

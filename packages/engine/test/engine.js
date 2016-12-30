@@ -8,7 +8,7 @@ describe('Engine | Provider -', () => {
     define('hybrids-engine-test', class Controller {
       static get options() {
         return {
-          use: [engine],
+          providers: [engine],
           properties: ['test'],
           template: `
             <div>{{ test }}</div>
