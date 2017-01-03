@@ -1,5 +1,5 @@
 import attr from './markers/attr';
-import bind from './markers/bind';
+import model from './markers/model';
 import classList from './markers/class';
 import For from './markers/for';
 import If from './markers/if';
@@ -12,7 +12,7 @@ export const PROPERTY_MARKER = Symbol('property marker');
 
 export default {
   attr,
-  bind,
+  model,
   class: classList,
   for: For,
   if: If,

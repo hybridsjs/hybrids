@@ -1,5 +1,6 @@
-import { Observer, State, PropertyObserver } from 'papillon';
+import { State, PropertyObserver } from 'papillon';
 import { OPTIONS, CONTROLLER, NAME } from '@hybrids/core';
+import { shedule } from '@hybrids/core/src/utils';
 
 import Template from './template';
 import markers from './markers';
@@ -14,8 +15,8 @@ class Engine {
 
     Object.keys(this.controller).forEach((key) => {
       new PropertyObserver(this.controller, key).observe(
-        (value) => { if (State.isObject(value)) Observer.requestAnimationFrame(this.update); },
-        () => Observer.requestAnimationFrame(this.update)
+        (value) => { if (State.isObject(value)) shedule(this.update); },
+        () => shedule(this.update)
       );
     });
 
