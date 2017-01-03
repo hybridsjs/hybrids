@@ -1,5 +1,4 @@
 import { PropertyObserver } from 'papillon';
-import { error } from '@hybrids/debug';
 
 import { proxy } from './proxy';
 import { dashToCamel, reflectBoolAttribute, queue, shedule } from './utils';
