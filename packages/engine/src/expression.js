@@ -103,8 +103,8 @@ export default class Expression {
     this.path.set(this.context, this.applyFilters(value), replace);
   }
 
-  call(...args) {
-    const locals = mergeLocals(this.node);
-    return this.applyFilters(this.path.call(this.context, ...args, locals));
+  call(argsMap) {
+    const locals = mergeLocals(this.node, argsMap);
+    return this.applyFilters(this.path.call(this.context, locals));
   }
 }

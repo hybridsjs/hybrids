@@ -140,17 +140,16 @@ describe('Engine | Expression -', () => {
     });
 
     it('call with arguments', () => {
-      expr.call('one', 'two');
+      expr.call({ one: 'one', two: 'two' });
       expect(spy.calls.mostRecent().object).toEqual(context.one);
-      expect(spy.calls.mostRecent().args).toEqual(['one', 'two', {}]);
+      expect(spy.calls.mostRecent().args).toEqual([{ one: 'one', two: 'two' }]);
     });
 
     it('call with locals', () => {
-      defineLocals(el, { test: 'value', other: 1 });
-      expr.call('one', 'two');
-      expect(spy.calls.mostRecent().object).toEqual(context.one);
+      defineLocals(el, { test: 'value', two: 1 });
+      expr.call({ one: 'one', two: 'two' });
       expect(spy.calls.mostRecent().args).toEqual([
-        'one', 'two', { test: 'value', other: 1 }
+        { one: 'one', two: 'two', test: 'value' }
       ]);
     });
 
@@ -159,12 +158,12 @@ describe('Engine | Expression -', () => {
       parent.appendChild(el);
 
       defineLocals(parent, { test: 'parent value', parent: true });
-      defineLocals(el, { test: 'value', other: 1 });
+      defineLocals(el, { test: 'value', two: 1 });
 
-      expr.call('one', 'two');
+      expr.call({ one: 'one', two: 'two' });
 
       expect(spy.calls.mostRecent().args).toEqual([
-        'one', 'two', { test: 'value', other: 1, parent: true }
+        { one: 'one', two: 'two', test: 'value', parent: true }
       ]);
     });
   });
