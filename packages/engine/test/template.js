@@ -1,23 +1,37 @@
-import Template, { MARKER_PREFIX as M, PROPERTY_PREFIX as P } from '../src/template';
-import { getOwnLocals } from '../src/expression';
-import { PROPERTY_MARKER } from '../src/markers';
+import Template, {
+  MARKER_PREFIX as M, PROPERTY_PREFIX as P, EVENT_PREFIX as E, TEMPLATE_PREFIX as T
+} from '../src/template';
+import { getOwnLocals, LOCALS_PREFIX as L } from '../src/expression';
 
 describe('Engine | Template -', () => {
   describe('parse', () => {
     it('interpolate property', () => {
       const template = new Template(`<span ${P}text-content="something" title=""></span>`);
-      expect(template.container.t[0].m[0][0]).toEqual({ m: 0, p: [['something', 'textContent']] });
+      expect(template.container.t[0].m[0][0]).toEqual({ m: 'prop', p: [['something', 'textContent']] });
+    });
+
+    it('interpolate event', () => {
+      const template = new Template(`<span ${E}some-event="something" title=""></span>`);
+      expect(template.container.t[0].m[0][0]).toEqual({ m: 'on', p: [['something', 'some-event']] });
     });
 
     it('interpolate property without value', () => {
       const template = new Template(`<span ${P}user title=""></span>`);
-      expect(template.container.t[0].m[0][0]).toEqual({ m: 0, p: [['user', 'user']] });
+      expect(template.container.t[0].m[0][0]).toEqual({ m: 'prop', p: [['user', 'user']] });
     });
 
     it('interpolate text to span', () => {
       const template = new Template('{{ something }}');
       expect(template.container.t[0].e.content.childNodes[0].tagName.toLowerCase()).toEqual('span');
-      expect(template.container.t[0].m[0][0]).toEqual({ m: 0, p: [['something', 'textContent']] });
+      expect(template.container.t[0].m[0][0]).toEqual({ m: 'prop', p: [['something', 'textContent']] });
+    });
+
+    it('interpolate multiple text to spans', () => {
+      const template = new Template('{{ something }} {{ else }}');
+      expect(template.container.t[0].e.content.childNodes[0].tagName.toLowerCase()).toEqual('span');
+      expect(template.container.t[0].e.content.childNodes[2].tagName.toLowerCase()).toEqual('span');
+      expect(template.container.t[0].m[0][0]).toEqual({ m: 'prop', p: [['something', 'textContent']] });
+      expect(template.container.t[0].m[1][0]).toEqual({ m: 'prop', p: [['else', 'textContent']] });
     });
 
     it('interpolate text to node [text-content] property marker', () => {
@@ -31,7 +45,7 @@ describe('Engine | Template -', () => {
       expect(div.hasAttribute(`${P}text-content`)).toEqual(true);
       expect(div.getAttribute('some')).toEqual('value');
       expect(div.getAttribute('other-thing')).toEqual('val');
-      expect(template.container.t[0].m[0][0]).toEqual({ m: 0, p: [['something', 'textContent']] });
+      expect(template.container.t[0].m[0][0]).toEqual({ m: 'prop', p: [['something', 'textContent']] });
     });
 
     it('throw for conflict text interpolation', () => {
@@ -40,8 +54,8 @@ describe('Engine | Template -', () => {
       `)).toThrow();
     });
 
-    it('interpolate double prefix to template marker', () => {
-      const template = new Template(`<div ${M}${M}marker="something"></div>`);
+    it('interpolate template prefix to template marker', () => {
+      const template = new Template(`<div ${T}marker="something"></div>`);
       expect(template.container.t[0].m[0][0]).toEqual({ m: 'marker', p: [['something']] });
       expect(template.container.t[1].e.content.childNodes[0].outerHTML).toEqual('<div></div>');
     });
@@ -127,7 +141,7 @@ describe('Engine | Template -', () => {
 
     it('use property marker', () => {
       const template = new Template(`<span ${P}test="something"></span>`, {
-        markers: { [PROPERTY_MARKER]: marker },
+        markers: { prop: marker },
       });
 
       template.compile({ something: 'one' });
@@ -180,7 +194,7 @@ describe('Engine | Template -', () => {
     const cb = jasmine.createSpy('callback');
     const template = new Template(`
       <span ${M}marker="one"></span>
-      <span ${M}marker="@two"></span>
+      <span ${M}marker="${L}two"></span>
     `, { markers: { marker() { return () => {}; } } });
 
     const fragment = template.compile({ one: 'test' });

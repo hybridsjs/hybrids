@@ -1,4 +1,5 @@
 import { PropertyObserver } from 'papillon';
+import { error } from '@hybrids/debug';
 
 import { proxy } from './proxy';
 import { dashToCamel, reflectBoolAttribute, queue, shedule } from './utils';
@@ -30,7 +31,9 @@ export default class Hybrid extends HTMLBridge {
     });
 
     // BUG: https://github.com/webcomponents/custom-elements/issues/17
-    Promise.resolve().then(() => dispatchEvent.call(this, 'upgrade', { bubbles: false }));
+    Promise.resolve()
+      .then(() => dispatchEvent.call(this, 'upgrade', { bubbles: false }))
+      .catch((e) => { throw e; });
   }
 
   connectedCallback() {

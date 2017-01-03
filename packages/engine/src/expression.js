@@ -1,6 +1,6 @@
 import { error } from '@hybrids/debug';
 
-export const LOCALS_PREFIX = '@';
+export const LOCALS_PREFIX = '$';
 
 const localsMap = new WeakMap();
 

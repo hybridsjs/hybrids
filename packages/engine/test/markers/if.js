@@ -1,6 +1,7 @@
 import { define } from '@hybrids/core';
 import engine from '../../src/engine';
-import { MARKER_PREFIX as M } from '../../src/template';
+import { LOCALS_PREFIX as L } from '../../src/expression';
+import { MARKER_PREFIX as M, TEMPLATE_PREFIX as T } from '../../src/template';
 
 describe('Engine | Markers | If -', () => {
   let el;
@@ -16,7 +17,7 @@ describe('Engine | Markers | If -', () => {
         properties: ['items', 'show'],
         template: `
           <template ${M}if="show">
-            <div ${M}${M}for="items">{{ @item }}</div>
+            <div ${T}for="items">{{ ${L}item }}</div>
           </template>
         `
       };

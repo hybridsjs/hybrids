@@ -1,6 +1,7 @@
 import { State, PropertyObserver } from 'papillon';
 import { OPTIONS, CONTROLLER, NAME } from '@hybrids/core';
 import { shedule } from '@hybrids/core/src/utils';
+import { error } from '@hybrids/debug';
 
 import Template from './template';
 import markers from './markers';
@@ -24,7 +25,7 @@ class Engine {
     Promise.resolve().then(() => {
       this.shadowRoot = this.element.shadowRoot || this.element.attachShadow({ mode: 'open' });
       this.shadowRoot.appendChild(this.compile());
-    });
+    }).catch((e) => { throw e; });
   }
 
   update() {
@@ -35,7 +36,7 @@ class Engine {
         const state = new State(value);
 
         if (state.isChanged()) {
-          w.fn({ changelog: state.changelog || {}, type: 'modify' }, this);
+          w.fn({ changelog: state.changelog, type: 'modify' }, this);
         } else if (!State.is(value, w.cache)) {
           w.fn({ type: 'set' }, this);
         }
@@ -56,17 +57,14 @@ class Engine {
 
 export default function engine(Hybrid) {
   const options = Hybrid[OPTIONS];
+  if (!options.template) error(TypeError, '[@hybrids/engine] "template" option is required');
 
-  if (options.template) {
-    const template = new Template(options.template, {
-      markers: Object.assign({}, markers, options.markers),
-      filters: Object.assign({}, filters, options.filters),
-      name: Hybrid[NAME],
-      styles: options.styles
-    });
+  const template = new Template(options.template, {
+    markers: Object.assign({}, markers, options.markers),
+    filters: Object.assign({}, filters, options.filters),
+    name: Hybrid[NAME],
+    styles: options.styles
+  });
 
-    return element => new Engine(element, template);
-  }
-
-  return false;
+  return element => new Engine(element, template);
 }

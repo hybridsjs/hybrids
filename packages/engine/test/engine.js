@@ -43,4 +43,12 @@ describe('Engine | Provider -', () => {
       expect(el.shadowRoot.children[0].textContent.trim()).toEqual('new value');
     });
   });
+
+  rafIt('throw when no template given', () => {
+    expect(() => {
+      define('hybrids-engine-throw', class {
+        static get options() { return { providers: [engine] }; }
+      });
+    }).toThrow();
+  });
 });

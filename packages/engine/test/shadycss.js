@@ -1,6 +1,7 @@
 import { define } from '@hybrids/core';
 import { engine } from '../src/index';
-import Template from '../src/template';
+import Template, { TEMPLATE_PREFIX as T } from '../src/template';
+import { LOCALS_PREFIX as L } from '../src/expression';
 
 describe('Engine | Shadow DOM styling -', () => {
   let globalEl;
@@ -38,7 +39,7 @@ describe('Engine | Shadow DOM styling -', () => {
                 div.testing { color: rgb(0, 0, 255); }
               </style>
               <div class="testing">This is some text</div>
-              <div **for="items" class="testing">{{ @item }}</div>
+              <div ${T}for="items" class="testing">{{ ${L}item }}</div>
             `
           };
         }
@@ -89,7 +90,7 @@ describe('Engine | Shadow DOM styling -', () => {
             `],
             template: `
               <div class="testing">This is some text</div>
-              <div **for="items" class="testing">{{ @item }}</div>
+              <div ${T}for="items" class="testing">{{ ${L}item }}</div>
             `
           };
         }
@@ -129,7 +130,7 @@ describe('Engine | Shadow DOM styling -', () => {
     beforeAll(() => {
       const template = new Template(`
         <div class="testing">This is some text</div>
-        <div **for="items" class="testing">{{ @item }}</div>
+        <div ${T}for="items" class="testing">{{ ${L}item }}</div>
       `);
 
       class EngineCssExportedOuter {

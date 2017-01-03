@@ -4,7 +4,7 @@ export default function attr(node, expr, attrName = expr.evaluate) {
     if (value === false || value === undefined || value === null) {
       node.removeAttribute(attrName);
     } else {
-      node.setAttribute(attrName, value === true ? attrName : value);
+      node.setAttribute(attrName, value === true ? '' : value);
     }
   };
 }

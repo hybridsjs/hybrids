@@ -8,8 +8,6 @@ import prop from './markers/prop';
 import ref from './markers/ref';
 import style from './markers/style';
 
-export const PROPERTY_MARKER = Symbol('property marker');
-
 export default {
   attr,
   model,
@@ -20,5 +18,4 @@ export default {
   prop,
   ref,
   style,
-  [PROPERTY_MARKER]: prop,
 };

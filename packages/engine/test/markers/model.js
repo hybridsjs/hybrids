@@ -60,7 +60,7 @@ describe('Engine | Markers | Model -', () => {
   });
 
   function getId(id) {
-    return el.shadowRoot.getElementById(id);
+    return el.shadowRoot.querySelector(`#${id}`);
   }
 
   describe('radio', () => {

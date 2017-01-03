@@ -4,9 +4,11 @@ import Path from './path';
 import Expression, { defineLocals, getOwnLocals } from './expression';
 import { PROPERTY_MARKER } from './markers';
 
-export const MARKER_PREFIX = '*';
-export const PROPERTY_PREFIX = '@';
-export const TEMPLATE_PREFIX = 'template:';
+export const MARKER_PREFIX = '--';
+
+export const PROPERTY_PREFIX = ':';
+export const EVENT_PREFIX = '@';
+export const TEMPLATE_PREFIX = '*';
 
 const watchersMap = new WeakMap();
 
@@ -47,14 +49,7 @@ function interpolate(node) {
             );
           } else {
             node.removeChild(child);
-            node.setAttribute('____text-content', value);
-
-            const temp = createFragment(
-              node.outerHTML.replace('____text-content', `${PROPERTY_PREFIX}text-content`)
-            ).childNodes[0];
-
-            node.parentNode.insertBefore(temp, node);
-            node.parentNode.removeChild(node);
+            node.setAttribute(`${PROPERTY_PREFIX}text-content`, value);
           }
         } else {
           const result = child.textContent.replace(
@@ -77,9 +72,9 @@ function interpolate(node) {
         const wrappers = [];
 
         Array.from(child.attributes).forEach(({ name, value }) => {
-          if (name.substr(0, 2) === `${MARKER_PREFIX}${MARKER_PREFIX}`) {
+          if (name.substr(0, 1) === TEMPLATE_PREFIX) {
             child.removeAttribute(name);
-            wrappers.push({ name: name.substr(2), value });
+            wrappers.push({ name: name.substr(1), value });
           }
         });
 
@@ -128,23 +123,30 @@ function parseNode(node, m, p) {
     Array.from(node.attributes)
       .filter(({ name }) => name.length > 1)
       .forEach((attr) => {
-        const prefix = attr.name.substr(0, 1);
-        let id = attr.name.substr(1);
+        if (attr.name.substr(0, 2) === MARKER_PREFIX) {
+          const id = attr.name.substr(2);
+          markers = markers || [];
+          attr.value.split(';').forEach((item) => {
+            markers.push({ m: id, p: parseEvaluate(item, p) });
+          });
+        } else {
+          const prefix = attr.name.substr(0, 1);
 
-        markers = markers || [];
-
-        switch (prefix) {
-          case MARKER_PREFIX:
-            attr.value.split(';').forEach((item) => {
-              markers.push({ m: id, p: parseEvaluate(item, p) });
-            });
-            break;
-          case PROPERTY_PREFIX:
-            id = id.replace(/-([a-z])/g, g => g[1].toUpperCase());
-            markers.push({ m: 0, p: parseEvaluate(`${id}:${attr.value || id}`, p) });
-            break;
-          default:
-            break;
+          switch (prefix) {
+            case PROPERTY_PREFIX: {
+              const id = attr.name.substr(1).replace(/-([a-z])/g, g => g[1].toUpperCase());
+              markers = markers || [];
+              markers.push({ m: 'prop', p: parseEvaluate(`${id}:${attr.value || id}`, p) });
+              break;
+            }
+            case EVENT_PREFIX: {
+              const id = attr.name.substr(1);
+              markers = markers || [];
+              markers.push({ m: 'on', p: parseEvaluate(`${id}:${attr.value || id}`, p) });
+              break;
+            }
+            default: break;
+          }
         }
 
         if (process.env.NODE_ENV === 'production') {
@@ -165,7 +167,7 @@ function parseTemplate(template, container) {
 
   if (id) {
     template.parentNode.insertBefore(
-      document.createComment(`${TEMPLATE_PREFIX}${id}`), template
+      document.createComment(`template:${id}`), template
     );
     template.parentNode.removeChild(template);
   }
@@ -183,7 +185,7 @@ function parseTemplate(template, container) {
 function getTemplateId(templateOrId) {
   switch (typeof templateOrId) {
     case 'object':
-      return Number(templateOrId.textContent.replace(TEMPLATE_PREFIX, ''));
+      return Number(templateOrId.textContent.split(':')[1]);
     default:
       return templateOrId;
   }
