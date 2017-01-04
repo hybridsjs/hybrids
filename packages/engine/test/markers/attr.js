@@ -45,24 +45,32 @@ describe('Engine | Markers | Attr -', () => {
   }
 
   rafIt('set text to attribute', () => {
-    expect(getId('one').getAttribute('customattr')).toEqual('text');
+    requestAnimationFrame(() => {
+      expect(getId('one').getAttribute('customattr')).toEqual('text');
+    });
   });
 
   rafIt('set number to attribute', () => {
-    expect(getId('two').getAttribute('with-dash')).toEqual('123');
+    requestAnimationFrame(() => {
+      expect(getId('two').getAttribute('with-dash')).toEqual('123');
+    });
   });
 
   rafIt('set bool to attribute', () => {
-    expect(getId('three').hasAttribute('other')).toEqual(true);
-    expect(getId('three').getAttribute('other')).toEqual('');
+    requestAnimationFrame(() => {
+      expect(getId('three').hasAttribute('other')).toEqual(true);
+      expect(getId('three').getAttribute('other')).toEqual('');
+    });
   });
 
   it('removes attribute when false', (done) => {
     requestAnimationFrame(() => {
-      el[CONTROLLER].data.bool = false;
       requestAnimationFrame(() => {
-        expect(getId('three').hasAttribute('other')).toEqual(false);
-        done();
+        el[CONTROLLER].data.bool = false;
+        requestAnimationFrame(() => {
+          expect(getId('three').hasAttribute('other')).toEqual(false);
+          done();
+        });
       });
     });
   });

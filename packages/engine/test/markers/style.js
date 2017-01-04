@@ -45,9 +45,11 @@ describe('Engine | Markers | Style -', () => {
   }
 
   rafIt('set simple', () => {
-    const style = getComputedStyle('simple');
-    expect(style.backgroundColor).toEqual('rgb(255, 0, 0)');
-    expect(style.color).toEqual('rgb(255, 255, 0)');
+    requestAnimationFrame(() => {
+      const style = getComputedStyle('simple');
+      expect(style.backgroundColor).toEqual('rgb(255, 0, 0)');
+      expect(style.color).toEqual('rgb(255, 255, 0)');
+    });
   });
 
   rafIt('update simple', () => {
@@ -61,9 +63,11 @@ describe('Engine | Markers | Style -', () => {
   });
 
   rafIt('set list', () => {
-    const style = getComputedStyle('list');
-    expect(style.backgroundColor).toEqual('rgb(255, 0, 0)');
-    expect(style.color).toEqual('rgb(255, 255, 0)');
+    requestAnimationFrame(() => {
+      const style = getComputedStyle('list');
+      expect(style.backgroundColor).toEqual('rgb(255, 0, 0)');
+      expect(style.color).toEqual('rgb(255, 255, 0)');
+    });
   });
 
   rafIt('update list', () => {

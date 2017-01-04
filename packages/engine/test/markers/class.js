@@ -48,8 +48,10 @@ describe('Engine | Markers | Class -', () => {
   }
 
   rafIt('set simple', () => {
-    expect(getId('simple').classList.contains('one')).toEqual(true);
-    expect(getId('simple').classList.contains('two')).toEqual(false);
+    requestAnimationFrame(() => {
+      expect(getId('simple').classList.contains('one')).toEqual(true);
+      expect(getId('simple').classList.contains('two')).toEqual(false);
+    });
   });
 
   rafIt('update simple', () => {
@@ -66,9 +68,11 @@ describe('Engine | Markers | Class -', () => {
   });
 
   rafIt('set keys', () => {
-    const keys = getId('keys');
-    expect(keys.classList.contains('one')).toEqual(true);
-    expect(keys.classList.contains('two')).toEqual(false);
+    requestAnimationFrame(() => {
+      const keys = getId('keys');
+      expect(keys.classList.contains('one')).toEqual(true);
+      expect(keys.classList.contains('two')).toEqual(false);
+    });
   });
 
   rafIt('update keys', () => {
@@ -94,9 +98,11 @@ describe('Engine | Markers | Class -', () => {
   });
 
   rafIt('set array', () => {
-    const keys = getId('array');
-    expect(keys.classList.contains('one')).toEqual(true);
-    expect(keys.classList.contains('two')).toEqual(true);
+    requestAnimationFrame(() => {
+      const keys = getId('array');
+      expect(keys.classList.contains('one')).toEqual(true);
+      expect(keys.classList.contains('two')).toEqual(true);
+    });
   });
 
   rafIt('remove item in array', () => {

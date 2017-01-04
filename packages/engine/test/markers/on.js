@@ -25,9 +25,7 @@ describe('Engine | Markers | On -', () => {
         this.items = [0];
       }
 
-      click(...args) {
-        spy(...args);
-      }
+      click(...args) { spy(...args, args[0][`${L}event`].target); }
     }
 
     define({ EngineMarkersOnTest });
@@ -47,13 +45,19 @@ describe('Engine | Markers | On -', () => {
     return el.shadowRoot.querySelector(`#${id}`);
   }
 
-  rafIt('call event handler', () => {
-    getId('one').click();
+  it('call event handler', (done) => {
     requestAnimationFrame(() => {
-      const { args } = spy.calls.mostRecent();
-      expect(spy).toHaveBeenCalled();
-      expect(args[0]).toEqual(jasmine.objectContaining({ item: 0 }));
-      expect(args[0][`${L}event`].target).toEqual(el);
+      requestAnimationFrame(() => {
+        const one = getId('one');
+        one.click();
+
+        const { args } = spy.calls.mostRecent();
+
+        expect(spy).toHaveBeenCalled();
+        expect(args[0]).toEqual(jasmine.objectContaining({ item: 0 }));
+        expect(args[1]).toEqual(one);
+        done();
+      });
     });
   });
 });
