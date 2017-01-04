@@ -41,7 +41,7 @@ class Engine {
           w.fn({ type: 'set' }, this);
         }
       } else if (!{}.hasOwnProperty.call(w, 'cache') || !State.is(value, w.cache)) {
-        w.fn({ type: 'set' }, this);
+        w.fn({ type: 'set', oldValue: w.cache }, this);
       }
 
       w.cache = value;

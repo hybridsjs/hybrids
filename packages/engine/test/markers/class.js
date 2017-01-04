@@ -83,6 +83,16 @@ describe('Engine | Markers | Class -', () => {
     });
   });
 
+  rafIt('clear keys', () => {
+    ctrl.keys = null;
+    const keys = getId('keys');
+    requestAnimationFrame(() => {
+      expect(keys.classList.contains('one')).toEqual(false);
+      expect(keys.classList.contains('two')).toEqual(false);
+      expect(keys.classList.contains('three')).toEqual(false);
+    });
+  });
+
   rafIt('set array', () => {
     const keys = getId('array');
     expect(keys.classList.contains('one')).toEqual(true);
@@ -117,6 +127,15 @@ describe('Engine | Markers | Class -', () => {
       expect(array.classList.contains('one')).toEqual(true);
       expect(array.classList.contains('two')).toEqual(true);
       expect(array.classList.contains('new-value')).toEqual(true);
+    });
+  });
+
+  rafIt('clear array', () => {
+    ctrl.array = 0;
+    requestAnimationFrame(() => {
+      const array = getId('array');
+      expect(array.classList.contains('one')).toEqual(false);
+      expect(array.classList.contains('two')).toEqual(false);
     });
   });
 });

@@ -2,15 +2,12 @@ import { error } from '@hybrids/debug';
 
 export default function classList(node, expr, ...classNames) {
   if (!classNames.length) {
-    return ({ type: globalType, changelog }) => {
+    return ({ type: globalType, oldValue, changelog }) => {
       const list = expr.get();
-      if (typeof list !== 'object') {
-        error('[@hybrids/engine] class: "%s" must be an object: "%s"', expr.evaluate, typeof list);
-      }
-      const isArray = Array.isArray(list);
 
       switch (globalType) {
-        case 'modify':
+        case 'modify': {
+          const isArray = Array.isArray(list);
           Object.keys(changelog).forEach((key) => {
             switch (changelog[key].type) {
               case 'delete':
@@ -28,16 +25,34 @@ export default function classList(node, expr, ...classNames) {
             }
           });
           break;
+        }
         default:
-          Object.keys(list).forEach((key) => {
-            if (isArray) {
-              node.classList.add(list[key]);
-            } else if (list[key]) {
-              node.classList.add(key);
-            } else {
-              node.classList.remove(key);
+          if (list) {
+            if (typeof list !== 'object') {
+              error('[@hybrids/engine] class: "%s" must be an object: "%s"', expr.evaluate, typeof list);
             }
-          });
+            const isArray = Array.isArray(list);
+
+            Object.keys(list).forEach((key) => {
+              if (isArray) {
+                node.classList.add(list[key]);
+              } else if (list[key]) {
+                node.classList.add(key);
+              } else {
+                node.classList.remove(key);
+              }
+            });
+          } else if (typeof oldValue === 'object' && oldValue !== null) {
+            const isArray = Array.isArray(oldValue);
+
+            Object.keys(oldValue).forEach((key) => {
+              if (isArray) {
+                node.classList.remove(oldValue[key]);
+              } else {
+                node.classList.remove(key);
+              }
+            });
+          }
       }
     };
   }
