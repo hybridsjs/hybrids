@@ -1,4 +1,3 @@
-import { error } from '@hybrids/debug';
 import { defineLocals } from '../../expression';
 
 const map = new WeakMap();
@@ -8,13 +7,7 @@ export default class VirtualFragment {
     this.items = fragment ? Array.from(fragment.childNodes) : [];
     this.target = target;
 
-    if (saveReference) {
-      if (map.get(this)) {
-        error(ReferenceError, 'Multiple virtual fragments not supported');
-      }
-
-      map.set(target, this);
-    }
+    if (saveReference) map.set(target, this);
   }
 
   getFirstItem() {

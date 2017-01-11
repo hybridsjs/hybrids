@@ -1,4 +1,4 @@
-export default function attr(node, expr, attrName = expr.evaluate) {
+export default function attr({ node, expr }, attrName = expr.evaluate) {
   return () => {
     const value = expr.get();
     if (value === false || value === undefined || value === null) {

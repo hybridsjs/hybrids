@@ -1,6 +1,5 @@
-import { error } from '@hybrids/debug';
 import { shedule } from '@hybrids/core/src/utils';
-
+import { error } from '../debug';
 import Path from '../path';
 
 function bindRadio(node, expr, path) {
@@ -36,12 +35,9 @@ function bindCheckbox(node, expr, path) {
       if (node.hasAttribute('value')) {
         if (value) {
           if (!Array.isArray(value)) {
-            error(
-              TypeError,
-              "[@hybrids/engine] model: '%s' must be an array: %s",
-              expr.evaluate,
-              typeof value
-            );
+            error(TypeError, "model: '%evaluate' must be an array: %type", {
+              evaluate: expr.evaluate, type: typeof value
+            });
           }
           node.checked = value.indexOf(path.get(node)) > -1;
         } else {
@@ -79,12 +75,9 @@ function bindSelect(node, expr, path, multiply = false) {
         if (value === undefined) {
           value = [];
         } else if (!Array.isArray(value)) {
-          error(
-            TypeError,
-            "[@hybrids/engine] model: '%s' must be an array: %s",
-            expr.evaluate,
-            typeof value
-          );
+          error(TypeError, "model: '%evaluate' must be an array: %type", {
+            evaluate: expr.evaluate, type: typeof value
+          });
         }
       } else {
         value = [value];
@@ -108,7 +101,7 @@ function bindDefault(node, expr, path) {
   };
 }
 
-export default function model(node, expr, sourcePath = 'value', eventName) {
+export default function model({ node, expr }, sourcePath = 'value', eventName) {
   const path = new Path(sourcePath);
   let callbacks;
   let flag = false;

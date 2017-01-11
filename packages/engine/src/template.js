@@ -1,11 +1,8 @@
-import { error } from '@hybrids/debug';
-
+import { error } from './debug';
 import Path from './path';
 import Expression, { defineLocals, getOwnLocals } from './expression';
-import { PROPERTY_MARKER } from './markers';
 
 export const MARKER_PREFIX = '--';
-
 export const PROPERTY_PREFIX = ':';
 export const EVENT_PREFIX = '@';
 export const TEMPLATE_PREFIX = '*';
@@ -30,6 +27,51 @@ function createFragment(input) {
   return temp.content;
 }
 
+function getTemplateId(templateOrId) {
+  switch (typeof templateOrId) {
+    case 'object':
+      return Number(templateOrId.textContent.split(':')[1]);
+    default:
+      return templateOrId;
+  }
+}
+
+function normalizeWhitespace(input, startIndent = 0) {
+  let i = input.indexOf('\n');
+  if (i > -1) {
+    let indent = 0 - startIndent - 2;
+    for (i += 1; input[i] === ' ' && i < input.length; i += 1) { indent += 1; }
+    return input.replace(/\n +/g, t => t.substr(0, Math.max(t.length - indent, 1)));
+  }
+
+  return input;
+}
+
+export function stringifyMarker(node, attr, templates) {
+  let output;
+
+  if (node.nodeType === Node.COMMENT_NODE) {
+    node = templates[getTemplateId(node)].e;
+  }
+
+  if (node.nodeName !== 'TEMPLATE') {
+    output = normalizeWhitespace((node).outerHTML);
+  } else {
+    output = `${node.outerHTML.match(/^<[^<]+>/i)}\n  ${normalizeWhitespace(node.innerHTML, 2)}\n</${node.nodeName.toLowerCase()}>`;
+  }
+
+  output = output.split('\n').map((line, index) => {
+    if (!index) {
+      const startIndex = line.indexOf(attr);
+      return `| ${line}\n| ${' '.repeat(startIndex)}${'^'.repeat(attr.length)}`;
+    }
+
+    return `| ${line}`;
+  }).join('\n');
+
+  return `\n\n${output}\n`;
+}
+
 function interpolate(node) {
   Array.from(node.childNodes).forEach((child) => {
     switch (child.nodeType) {
@@ -40,17 +82,8 @@ function interpolate(node) {
           let value = child.textContent.trim();
           value = value.substr(2, value.length - 4).trim();
 
-          if (node.hasAttribute(`${PROPERTY_PREFIX}text-content`)) {
-            error(
-              SyntaxError,
-              `interpolation conflict in {{ %s }} and ${PROPERTY_PREFIX}text-content attribute: %s`,
-              value,
-              node.outerHTML.replace(/[\n\t ]+/g, ' ')
-            );
-          } else {
-            node.removeChild(child);
-            node.setAttribute(`${PROPERTY_PREFIX}text-content`, value);
-          }
+          node.removeChild(child);
+          node.setAttribute(`${PROPERTY_PREFIX}text-content`, value);
         } else {
           const result = child.textContent.replace(
             /{{(([^}]|\n)+)}}/g,
@@ -123,30 +156,34 @@ function parseNode(node, m, p) {
     Array.from(node.attributes)
       .filter(({ name }) => name.length > 1)
       .forEach((attr) => {
-        if (attr.name.substr(0, 2) === MARKER_PREFIX) {
-          const id = attr.name.substr(2);
-          markers = markers || [];
-          attr.value.split(';').forEach((item) => {
-            markers.push({ m: id, p: parseEvaluate(item, p) });
-          });
-        } else {
-          const prefix = attr.name.substr(0, 1);
+        try {
+          if (attr.name.substr(0, 2) === MARKER_PREFIX) {
+            const id = attr.name.substr(2);
+            markers = markers || [];
+            attr.value.split(';').forEach((item) => {
+              markers.push({ a: attr.name, m: id, p: parseEvaluate(item, p) });
+            });
+          } else {
+            const prefix = attr.name.substr(0, 1);
 
-          switch (prefix) {
-            case PROPERTY_PREFIX: {
-              const id = attr.name.substr(1).replace(/-([a-z])/g, g => g[1].toUpperCase());
-              markers = markers || [];
-              markers.push({ m: 'prop', p: parseEvaluate(`${id}:${attr.value || id}`, p) });
-              break;
+            switch (prefix) {
+              case PROPERTY_PREFIX: {
+                const id = attr.name.substr(1).replace(/-([a-z])/g, g => g[1].toUpperCase());
+                markers = markers || [];
+                markers.push({ a: attr.name, m: 'prop', p: parseEvaluate(`${id}:${attr.value || id}`, p) });
+                break;
+              }
+              case EVENT_PREFIX: {
+                const id = attr.name.substr(1);
+                markers = markers || [];
+                markers.push({ a: attr.name, m: 'on', p: parseEvaluate(`${id}:${attr.value || id}`, p) });
+                break;
+              }
+              default: break;
             }
-            case EVENT_PREFIX: {
-              const id = attr.name.substr(1);
-              markers = markers || [];
-              markers.push({ m: 'on', p: parseEvaluate(`${id}:${attr.value || id}`, p) });
-              break;
-            }
-            default: break;
           }
+        } catch (e) {
+          error(e, 'template: Parsing failed: %node', { node: stringifyMarker(node, attr.name) });
         }
 
         if (process.env.NODE_ENV === 'production') {
@@ -180,15 +217,6 @@ function parseTemplate(template, container) {
   nestedTemplates.forEach(node => parseTemplate(node, container));
 
   return container;
-}
-
-function getTemplateId(templateOrId) {
-  switch (typeof templateOrId) {
-    case 'object':
-      return Number(templateOrId.textContent.split(':')[1]);
-    default:
-      return templateOrId;
-  }
 }
 
 export default class Template {
@@ -260,13 +288,12 @@ export default class Template {
     walk(fragment, (node) => {
       const list = map.m[index];
       if (list) {
-        list.forEach(({ m: markerId, p: paths }) => {
+        list.forEach(({ a: attr, m: markerId, p: paths }) => {
           try {
-            markerId = markerId || PROPERTY_MARKER;
             const marker = this.markers[markerId];
 
             if (!marker) {
-              error(ReferenceError, 'marker not found: %s', markerId);
+              error(ReferenceError, "template: Marker '%markerId' not found", { markerId });
             }
 
             const [exprKey, ...args] = paths[0];
@@ -276,7 +303,7 @@ export default class Template {
 
             const path = this.container.p[exprKey];
             const expr = new Expression(node, controller, path, filterList);
-            const fn = marker(node, expr, ...args);
+            const fn = marker({ attr, node, expr }, ...args);
 
             if (fn) {
               let watchList = watchersMap.get(node);
@@ -284,10 +311,10 @@ export default class Template {
                 watchList = [];
                 watchersMap.set(node, watchList);
               }
-              watchList.push({ fn, expr });
+              watchList.push({ fn, expr, attr });
             }
           } catch (e) {
-            error(e, 'compilation failed: %s', this.container.t[0].e.innerHTML);
+            error(e, 'template: Compilation failed: %node', { node: stringifyMarker(node, attr, this.container.t) });
           }
         });
       }
@@ -300,11 +327,15 @@ export default class Template {
 
   run(root, cb) {
     walk(root, (node) => {
-      try {
-        const list = watchersMap.get(node);
-        if (list) list.forEach(w => cb(w));
-      } catch (e) {
-        error(e, 'execute: %s', this.container.t[0].e.innerHTML);
+      const list = watchersMap.get(node);
+      if (list) {
+        list.forEach((w) => {
+          try {
+            cb(w);
+          } catch (e) {
+            error(e, 'template: Execution failed %node', { node: stringifyMarker(node, w.attr, this.container.t) });
+          }
+        });
       }
     });
   }

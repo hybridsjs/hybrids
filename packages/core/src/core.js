@@ -1,4 +1,4 @@
-import { error } from '@hybrids/debug';
+import { error } from './debug';
 import Hybrid from './hybrid';
 import { camelToDash, reflectValue, normalizeProperty } from './utils';
 import { CONTROLLER, PROVIDERS, OPTIONS, NAME } from './symbols';
@@ -7,7 +7,7 @@ function bootstrap(name, Controller) {
   if (window.customElements.get(name)) {
     const ExtHybrid = window.customElements.get(name);
     if (ExtHybrid[CONTROLLER] !== Controller) {
-      error(TypeError, '[core|define] Element already defined: %s', name);
+      error(TypeError, "define: Element '%name' already defined", { name });
     } else {
       return ExtHybrid;
     }
@@ -18,10 +18,10 @@ function bootstrap(name, Controller) {
   const observedAttributes = [];
 
   if (options.define) {
-    if (typeof options.define === 'object') {
+    try {
       defineHybrid(options.define); // eslint-disable-line no-use-before-define
-    } else {
-      error(TypeError, "[core|define] 'define' option must be an object: %s", typeof options.define);
+    } catch (e) {
+      error(e, "define: Invalid 'define' option");
     }
   }
 
@@ -34,7 +34,7 @@ function bootstrap(name, Controller) {
 
   options.properties = properties.filter(({ property, attr }) => {
     if (Reflect.has(ExtHybrid.prototype, property)) {
-      error(ReferenceError, '[core|define] Property already in HTMLElement prototype chain: %s', property);
+      error(ReferenceError, "define: Property '%property' already in HTMLElement prototype chain", { property });
     }
 
     if (Reflect.has(Controller.prototype, property)) {
@@ -67,7 +67,7 @@ function bootstrap(name, Controller) {
   Object.defineProperty(ExtHybrid, PROVIDERS, {
     value: (options.providers || []).map((m) => {
       if (typeof m !== 'function') {
-        error(TypeError, '[core|define] Provider must be a function: %s', typeof m);
+        error(TypeError, 'define: Provider must be a function: %type', { type: typeof m });
       }
       return m(ExtHybrid);
     }).filter(m => m),
@@ -79,7 +79,7 @@ function bootstrap(name, Controller) {
 }
 
 export default function defineHybrid(...args) {
-  if (!args.length) error(TypeError, '[core|define] Invalid arguments');
+  if (!args.length) error(TypeError, 'define: Invalid arguments');
 
   switch (typeof args[0]) {
     case 'object':
@@ -97,6 +97,6 @@ export default function defineHybrid(...args) {
 
       return bootstrap(...args);
     default:
-      return error(TypeError, '[core|define] Invalid arguments');
+      return error(TypeError, 'define: Invalid arguments');
   }
 }

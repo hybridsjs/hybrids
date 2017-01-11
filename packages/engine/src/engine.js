@@ -1,8 +1,8 @@
 import { State, PropertyObserver } from 'papillon';
 import { OPTIONS, CONTROLLER, NAME } from '@hybrids/core';
 import { shedule } from '@hybrids/core/src/utils';
-import { error } from '@hybrids/debug';
 
+import { error } from './debug';
 import Template from './template';
 import markers from './markers';
 import filters from './filters';
@@ -57,7 +57,7 @@ class Engine {
 
 export default function engine(Hybrid) {
   const options = Hybrid[OPTIONS];
-  if (!options.template) error(TypeError, '[@hybrids/engine] "template" option is required');
+  if (!options.template) error(TypeError, 'engine: Hybrid "template" option is required');
 
   const template = new Template(options.template, {
     markers: Object.assign({}, markers, options.markers),

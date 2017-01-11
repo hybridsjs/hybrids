@@ -1,11 +1,12 @@
-import { error } from '@hybrids/debug';
+import { error } from '../debug';
 
 import { injectable } from '../proxy';
 import { CONTROLLER } from '../symbols';
 
 export function parent(Controller) {
-  if (!this[CONTROLLER]) return error(Error, '[core|parent] Illegal invocation');
-  if (typeof Controller !== 'function') error(TypeError, '[core|parent] Invalid arguments');
+  if (typeof Controller !== 'function') error(TypeError, 'parent: Invalid arguments');
+  if (!this[CONTROLLER]) return error(Error, 'parent: Illegal invocation');
+
   let parentElement = this.parentElement;
 
   while (parentElement) {

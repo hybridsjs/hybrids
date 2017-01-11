@@ -1,6 +1,6 @@
-import { error } from '@hybrids/debug';
+import { error } from '../debug';
 
-export default function classList(node, expr, ...classNames) {
+export default function classList({ node, expr }, ...classNames) {
   if (!classNames.length) {
     return ({ type: globalType, oldValue, changelog }) => {
       const list = expr.get();
@@ -29,7 +29,7 @@ export default function classList(node, expr, ...classNames) {
         default:
           if (list) {
             if (typeof list !== 'object') {
-              error('[@hybrids/engine] class: "%s" must be an object: "%s"', expr.evaluate, typeof list);
+              error(TypeError, "class: '%evaluate' must be an object: %type", { evaluate: expr.evaluate, type: typeof list });
             }
             const isArray = Array.isArray(list);
 

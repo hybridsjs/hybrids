@@ -1,9 +1,9 @@
-import { error } from '@hybrids/debug';
+import { error } from '../debug';
 import VirtualFragment from './shared/virtual-fragment';
 
-export default function If(node, expr) {
+export default function If({ node, expr }) {
   if (!(node instanceof Comment)) {
-    error(TypeError, 'if: element must be a <template>');
+    error(TypeError, 'if: Element must be a <template>');
   }
 
   let fragment;

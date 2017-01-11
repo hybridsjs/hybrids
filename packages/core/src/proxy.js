@@ -1,10 +1,10 @@
-import { error } from '@hybrids/debug';
+import { error } from './debug';
 
 let activeContext = null;
 
 export function injectable(fn) {
   return function wrapper(...args) {
-    if (!activeContext) error('[core|proxy] illegal invocation: %s', fn.name);
+    if (!activeContext) error("proxy: Illegal invocation of '%fn'", { fn: fn.name });
     return fn.apply(activeContext, args);
   };
 }
@@ -12,14 +12,15 @@ export function injectable(fn) {
 export function callWithContext(context, fn) {
   const oldContext = activeContext;
   activeContext = context;
-  const result = fn();
-  activeContext = oldContext;
 
+  const result = fn();
+
+  activeContext = oldContext;
   return result;
 }
 
 export function resolve(fn) {
-  if (!activeContext) error('[core|proxy] illegal invocation: %s', fn.name);
+  if (!activeContext) error("proxy: Illegal invocation of '%fn'", { fn: fn.name });
   const context = activeContext;
   return () => callWithContext(context, fn);
 }

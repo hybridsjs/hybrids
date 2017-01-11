@@ -1,4 +1,4 @@
-import { error } from '@hybrids/debug';
+import { error } from './debug';
 
 export const LOCALS_PREFIX = '$';
 
@@ -70,7 +70,7 @@ export default class Expression {
 
       if (!this.path.isNestedProperty()) {
         this.set = () => {
-          error(TypeError, 'local variable is readonly: %s', rootProperty);
+          error(TypeError, "expression: Local variable '%local' is readonly", { local: rootProperty });
         };
       }
     } else {
@@ -88,16 +88,20 @@ export default class Expression {
 
   get() {
     if (!Reflect.has(this.context, this.path.rootProperty)) {
-      error(
-        ReferenceError, 'root property must be defined: %s', this.path.rootProperty,
-      );
+      const text = `expression: ${this.path.isNestedProperty() ? "'%property' in '%evaluate'" : "'%property' "} must be defined`;
+      error(ReferenceError, text, {
+        property: this.path.rootProperty, evaluate: this.evaluate
+      });
     }
     return this.applyFilters(this.path.get(this.context));
   }
 
   set(value, replace) {
     if (!Reflect.has(this.context, this.path.rootProperty)) {
-      error(ReferenceError, 'root property is not defined: %s', this.path.rootProperty);
+      const text = `expression: ${this.path.isNestedProperty() ? "'%property' in '%evaluate'" : "'%property' "} must be defined`;
+      error(ReferenceError, text, {
+        property: this.path.rootProperty, evaluate: this.evaluate
+      });
     }
 
     this.path.set(this.context, this.applyFilters(value), replace);

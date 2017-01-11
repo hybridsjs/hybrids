@@ -1,3 +1,3 @@
-export default function ref(node, expr) {
+export default function ref({ node, expr }) {
   expr.set(node);
 }

@@ -1,4 +1,4 @@
-import { error } from '@hybrids/debug';
+import { error } from '../debug';
 import VirtualFragment from './shared/virtual-fragment';
 
 function createLocals(locals) {
@@ -12,9 +12,9 @@ function createLocals(locals) {
   }, locals);
 }
 
-export default function (node, expr, localName = 'item') {
+export default function ({ node, expr }, localName = 'item') {
   if (!(node instanceof Comment)) {
-    error(TypeError, 'for: element must be a <template>');
+    error(TypeError, 'for: Element must be a <template>');
   }
 
   const cache = new VirtualFragment(null, node, true).items;
@@ -22,7 +22,7 @@ export default function (node, expr, localName = 'item') {
   return ({ type: globalType, changelog }, engine) => {
     const list = expr.get();
     if (typeof list !== 'object') {
-      error(TypeError, 'for: target property \'%s\' must be an object: %s', expr.evaluate, typeof list);
+      error(TypeError, "for: '%evaluate' must be an object: %type", { evaluate: expr.evaluate, type: typeof list });
     }
 
     const listKeys = Object.keys(list);

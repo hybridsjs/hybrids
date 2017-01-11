@@ -1,14 +1,17 @@
-import { error } from '@hybrids/debug';
+import { error } from '../debug';
 
 import { injectable } from '../proxy';
 import { CONTROLLER, UPDATE } from '../symbols';
 
 class Children {
   constructor(host, Controller, options = { deep: false, nested: false }) {
-    if (!Controller) error(TypeError, '[core|children] Invalid arguments');
-    if (typeof options !== 'object') error(TypeError, '[core|children] Invalid arguments');
-
-    if (host[CONTROLLER]) error(Error, '[core|children] Illegal invocation');
+    if (typeof Controller !== 'function') error(TypeError, 'children: Invalid arguments');
+    if (typeof options !== 'object') {
+      error(TypeError, 'children: options must be an object: %options', {
+        options: typeof options
+      });
+    }
+    if (host[CONTROLLER]) error(Error, 'children: Illegal invocation');
 
     this.host = host;
     this.Controller = Controller;

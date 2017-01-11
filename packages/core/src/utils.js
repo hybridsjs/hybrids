@@ -1,4 +1,4 @@
-import { error } from '@hybrids/debug';
+import { error } from './debug';
 
 export function camelToDash(str) {
   return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
@@ -29,18 +29,18 @@ export function reflectValue(value, target) {
             if (typeof parsed === 'object') return parsed;
             throw new TypeError();
           } catch (e) {
-            return error(e, "[core|utils] Invalid type coercion: '%s' to '%s'", valueType, type);
+            return error(e, "reflect property: Invalid type coercion: '%valueType' to '%type'", { valueType, type });
           }
         }
         default:
-          return error(TypeError, "[core|utils] Invalid type coercion: '%s' to '%s'", valueType, type);
+          return error(TypeError, "reflect property: Invalid type coercion: '%valueType' to '%type'", { valueType, type });
       }
     }
     case 'undefined': return value;
     default: {
       const valueType = typeof value;
       if (valueType === type) return value;
-      return error(TypeError, "[core|utils] Invalid type coercion: '%s' to '%s'", valueType, type);
+      return error(TypeError, "reflect property: Invalid type coercion: '%valueType' to '%type'", { valueType, type });
     }
   }
 }
@@ -70,7 +70,7 @@ export function normalizeProperty(property) {
       return desc;
     }
     default: return error(
-      TypeError, '[core|utils] Property description must be an object or string: %s', type
+      TypeError, 'normalize property: Property description must be an object or string: %type', { type }
     );
   }
 }
