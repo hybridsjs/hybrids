@@ -1,4 +1,4 @@
-import * as filters from '../src/filters';
+import filters from '../src/filters';
 
 describe('Engine | Filters -', () => {
   it('reverse bool value', () => {
