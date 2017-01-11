@@ -1,6 +1,6 @@
 import './debug';
 
-export { default as define } from './core';
+export { default as define } from './define';
 export { injectable, resolve } from './proxy';
 
 export { default as dispatchEvent } from './plugins/dispatch-event';
