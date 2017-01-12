@@ -8,13 +8,13 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "karma start",
-    "dev:coverage": "NODE_ENV=coverage karma start",
+    "dev:coverage": "NODE_ENV=coverage npm run dev",
     "prebuild": "ls packages | xargs -I {dir} rm -rf packages/{dir}/lib",
     "build": "ls packages | xargs -I {dir} babel packages/{dir}/src -d packages/{dir}/lib -s inline",
     "test": "karma start --single-run --reporters progress",
     "dist": "rm -rf ./dist && npm run dist:dev && npm run dist:prod",
-    "dist:dev": "webpack hybrids=./hybrids.js --optimize-dedupe --optimize-occurence-order --define process.env.NODE_ENV='\"development\"'",
-    "dist:prod": "webpack hybrids.min=./hybrids.js --optimize-dedupe --optimize-minimize --optimize-occurence-order --define process.env.NODE_ENV='\"production\"'",
+    "dist:dev": "webpack hybrids=./hybrids.js --optimize-minimize --define process.env.NODE_ENV='\"development\"'",
+    "dist:prod": "webpack hybrids.min=./hybrids.js --optimize-minimize --define process.env.NODE_ENV='\"production\"'",
     "prepublish": "npm run test && npm run dist",
     "predeploy": "npm run test && npm run build",
     "deploy": "lerna publish"
@@ -41,9 +41,9 @@
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "^1.0.2",
     "karma-sourcemap-loader": "^0.3.7",
-    "karma-webpack": "^1.7.0",
+    "karma-webpack": "^2.0.1",
     "lerna": "2.0.0-beta.30",
     "template": "github:webcomponents/template",
-    "webpack": "^1.12.15"
+    "webpack": "2.2.0-rc.4"
   }
 }

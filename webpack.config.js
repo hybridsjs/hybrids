@@ -7,12 +7,13 @@ module.exports = {
     sourceMapFilename: '[file].map',
   },
   module: {
-    preLoaders: [
-      { test: /\.js$/, loader: 'eslint', exclude: /node_modules/ },
-    ],
-    loaders: [
-      { test: /\.js$/, loaders: ['babel'] },
-    ],
+    rules: [
+      { test: /\.js$/, loader: 'eslint-loader', include: /packages\/[^/]+\/src/, enforce: 'pre' },
+      { test: /\.js$/, loader: 'babel-loader' },
+    ]
+  },
+  resolve: {
+    mainFields: ['jsnext:main', 'main'],
   },
   devtool: 'source-map',
 };

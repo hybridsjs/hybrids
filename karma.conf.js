@@ -2,36 +2,32 @@ const webpackConfig = require('./webpack.config');
 
 module.exports = (config) => {
   config.set({
-    basePath: process.cwd(),
     frameworks: ['jasmine'],
+    reporters: ['progress', 'coverage'],
+    browsers: process.env.TRAVIS ? ['ChromeTravis'] : ['Chrome'],
     files: ['test/unit.js'],
-    exclude: [],
     preprocessors: {
       'test/unit.js': ['webpack', 'sourcemap'],
     },
     webpack: Object.assign({}, webpackConfig, {
       devtool: 'inline-source-map',
       entry: undefined,
-      eslint: {
-        configFile: './.eslintrc',
-      },
-      webpackServer: {
-        noInfo: true,
-      },
     }),
     webpackMiddleware: {
-      stats: 'errors-only',
+      noInfo: true,
+      stats: 'errors-only'
     },
-    reporters: ['progress', 'coverage'],
     coverageReporter: {
       type: 'html',
       dir: 'coverage/',
     },
-    port: 9876,
-    colors: true,
-    logLevel: config.LOG_INFO,
+    customLaunchers: {
+      ChromeTravis: {
+        base: 'Chrome',
+        flags: ['--no-sandbox'],
+      },
+    },
     autoWatch: true,
-    browsers: ['Chrome'],
     singleRun: false,
   });
 };
