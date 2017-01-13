@@ -1,4 +1,4 @@
-import { shedule } from '@hybrids/core/src/utils';
+import { Observer } from 'papillon';
 import { error } from '../debug';
 import Path from '../path';
 
@@ -126,8 +126,8 @@ export default function model({ node, expr }, sourcePath = 'value', eventName) {
 
   node.addEventListener(eventName || 'change', () => {
     flag = true;
-    shedule(callbacks.up);
-    shedule(() => (flag = false));
+    Observer.requestAnimationFrame(callbacks.up);
+    Observer.requestAnimationFrame(() => (flag = false));
   });
 
   return () => {

@@ -1,6 +1,6 @@
 import { error } from './debug';
 import Path from './path';
-import Expression, { defineLocals, getOwnLocals } from './expression';
+import Expression, { defineLocals, getOwnLocals, LOCALS_PREFIX } from './expression';
 
 export const MARKER_PREFIX = '--';
 export const PROPERTY_PREFIX = ':';
@@ -348,5 +348,12 @@ export default class Template {
 
       return value;
     }));
+  }
+
+  getRootPathProperties() {
+    return new Set(Object.keys(this.container.p)
+      .map(key => this.container.p[key].rootProperty)
+      .filter(key => key[0] !== LOCALS_PREFIX)
+    );
   }
 }

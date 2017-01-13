@@ -1,7 +1,7 @@
 import { error } from '../debug';
 
 import { injectable } from '../proxy';
-import { CONTROLLER, UPDATE } from '../symbols';
+import { CONTROLLER } from '../symbols';
 
 class Children {
   constructor(host, Controller, options = { deep: false, nested: false }) {
@@ -32,8 +32,6 @@ class Children {
 
     Object.assign(this.items, temp);
     this.items.length = temp.length;
-
-    this.host[UPDATE]();
   }
 
   walk(node, items = []) {

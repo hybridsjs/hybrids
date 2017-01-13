@@ -1,5 +1,5 @@
 import {
-  camelToDash, dashToCamel, reflectValue, reflectBoolAttribute, normalizeProperty, queue, shedule
+  camelToDash, dashToCamel, reflectValue, reflectBoolAttribute, normalizeProperty, queue
 } from '../src/utils';
 
 describe('Core | Utils -', () => {
@@ -41,36 +41,15 @@ describe('Core | Utils -', () => {
     });
   });
 
-  it('reflectBoolAttribute', () => {
-    const el = document.createElement('div');
-
-    reflectBoolAttribute.call(el, 'test', false);
-    expect(el.hasAttribute('test')).toEqual(false);
-
-    reflectBoolAttribute.call(el, 'test', true);
-    expect(el.hasAttribute('test')).toEqual(true);
-    expect(el.getAttribute('test')).toEqual('');
-
-    reflectBoolAttribute.call(el, 'test', {});
-    expect(el.hasAttribute('test')).toEqual(true);
-    expect(el.getAttribute('test')).toEqual('');
-
-    reflectBoolAttribute.call(el, 'test', false);
-    expect(el.hasAttribute('test')).toEqual(false);
-  });
-
   it('normalizeProperty', () => {
     expect(normalizeProperty('test')).toEqual({
-      property: 'test', attr: 'test', reflect: true,
+      property: 'test', attr: 'test',
     });
     expect(normalizeProperty({ property: 'test' })).toEqual({
-      property: 'test', attr: 'test', reflect: true,
-    });
-    expect(normalizeProperty({ property: 'test', attr: false })).toEqual({
-      property: 'test', attr: false, reflect: false,
+      property: 'test', attr: 'test',
     });
     expect(normalizeProperty({ property: 'test', attr: 'other-test' })).toEqual({
-      property: 'test', attr: 'other-test', reflect: true,
+      property: 'test', attr: 'other-test',
     });
     expect(() => normalizeProperty(false)).toThrow();
   });
@@ -85,20 +64,6 @@ describe('Core | Utils -', () => {
       expect(spy).toHaveBeenCalled();
       expect(spy.calls.first().args[0]).toEqual('two');
       expect(spy.calls.mostRecent().args[0]).toEqual('one');
-      done();
-    });
-  });
-
-  it('shedule', (done) => {
-    const spy = jasmine.createSpy();
-
-    shedule(() => spy('one'));
-    shedule(() => spy('two'));
-
-    requestAnimationFrame(() => {
-      expect(spy).toHaveBeenCalled();
-      expect(spy.calls.first().args[0]).toEqual('one');
-      expect(spy.calls.mostRecent().args[0]).toEqual('two');
       done();
     });
   });

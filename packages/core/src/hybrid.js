@@ -1,10 +1,8 @@
-import { PropertyObserver } from 'papillon';
-
 import { proxy } from './proxy';
-import { dashToCamel, reflectBoolAttribute, queue, shedule } from './utils';
+import { dashToCamel, queue } from './utils';
 import { dispatchEvent } from './plugins/dispatch-event';
 
-import { CONTROLLER, PROVIDERS, OPTIONS, UPDATE } from './symbols';
+import { CONTROLLER, PROVIDERS, OPTIONS } from './symbols';
 
 // BUG: Babel transpiled class breaks native custom elements
 function HTMLBridge(...args) { return Reflect.construct(HTMLElement, args, this.constructor); }
@@ -18,33 +16,14 @@ export default class Hybrid extends HTMLBridge {
       value: proxy(this, () => new this.constructor[CONTROLLER]()),
     });
 
-    Object.defineProperty(this, PROVIDERS, {
-      value: this.constructor[PROVIDERS].map(m => m(this)).filter(m => m),
-    });
-
-    const updates = this[PROVIDERS].filter(p => p.update);
-    const callback = () => updates.forEach(p => p.update());
-
-    Object.defineProperty(this, UPDATE, {
-      value: () => shedule(callback),
-    });
+    this.constructor[PROVIDERS].map(m => m(this));
 
     // BUG: https://github.com/webcomponents/custom-elements/issues/17
-    Promise.resolve()
-      .then(() => dispatchEvent.call(this, 'upgrade', { bubbles: false }))
-      .catch((e) => { throw e; });
+    Promise.resolve().then(() => dispatchEvent.call(this, 'upgrade', { bubbles: false }));
   }
 
   connectedCallback() {
-    this.constructor[OPTIONS].properties.forEach(({ property, attr, reflect }) => {
-      if (attr && reflect) {
-        new PropertyObserver(this[CONTROLLER], property).observe(
-          () => {}, reflectBoolAttribute.bind(this, attr)
-        );
-
-        reflectBoolAttribute.call(this, attr, this[property]);
-      }
-
+    this.constructor[OPTIONS].properties.forEach(({ property }) => {
       if ({}.hasOwnProperty.call(this, property)) {
         const value = this[property];
         delete this[property];
@@ -53,14 +32,12 @@ export default class Hybrid extends HTMLBridge {
     });
 
     if (this[CONTROLLER].connect) this[CONTROLLER].connect();
-    this[PROVIDERS].forEach((p) => { if (p.connect) p.connect(); });
-
-    this[UPDATE]();
+    dispatchEvent.call(this, 'connect', { bubbles: false });
   }
 
   disconnectedCallback() {
     if (this[CONTROLLER].disconnect) this[CONTROLLER].disconnect();
-    this[PROVIDERS].forEach((p) => { if (p.disconnect) p.disconnect(); });
+    dispatchEvent.call(this, 'disconnect', { bubbles: false });
   }
 
   attributeChangedCallback(attrName, oldVal, newVal) {

@@ -45,27 +45,15 @@ export function reflectValue(value, target) {
   }
 }
 
-export function reflectBoolAttribute(attr, value) {
-  if (typeof value === 'boolean') {
-    if (value && !this.getAttribute(attr)) {
-      this.setAttribute(attr, '');
-    } else if (this.getAttribute(attr) !== null) {
-      this.removeAttribute(attr);
-    }
-  }
-}
-
 export function normalizeProperty(property) {
   const type = typeof property;
   switch (type) {
     case 'string':
-      return { property, attr: camelToDash(property), reflect: true };
+      return { property, attr: camelToDash(property) };
     case 'object': {
-      const desc = Object.assign({ attr: true, reflect: true }, property);
+      const desc = Object.assign({ attr: true }, property);
       if (desc.attr) {
         desc.attr = desc.attr !== true ? desc.attr : camelToDash(desc.property);
-      } else {
-        desc.reflect = false;
       }
       return desc;
     }
@@ -90,17 +78,4 @@ export function queue(fn) {
   }
 
   queueTasks.unshift(fn);
-}
-
-let sheduleTasks;
-export function shedule(cb) {
-  if (!sheduleTasks) {
-    sheduleTasks = new Set().add(cb);
-    window.requestAnimationFrame(() => {
-      sheduleTasks.forEach(c => c());
-      sheduleTasks = undefined;
-    });
-  } else {
-    sheduleTasks.add(cb);
-  }
 }

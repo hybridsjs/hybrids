@@ -19,7 +19,7 @@ export default function ({ node, expr }, localName = 'item') {
 
   const cache = new VirtualFragment(null, node, true).items;
 
-  return ({ type: globalType, changelog }, engine) => {
+  return ({ type: globalType, changelog }, compile) => {
     const list = expr.get();
     if (typeof list !== 'object') {
       error(TypeError, "for: '%evaluate' must be an object: %type", { evaluate: expr.evaluate, type: typeof list });
@@ -44,7 +44,7 @@ export default function ({ node, expr }, localName = 'item') {
             let fragment;
 
             if (oldKey || newKey) {
-              fragment = cache[oldKey] || new VirtualFragment(engine.compile(node), node);
+              fragment = cache[oldKey] || new VirtualFragment(compile(node), node);
 
               if (oldKey) {
                 delete cache[oldKey];
@@ -52,7 +52,7 @@ export default function ({ node, expr }, localName = 'item') {
               }
               if (!fragment.isAfter(before)) fragment.insertAfter(before);
             } else if (!cache[key]) {
-              fragment = new VirtualFragment(engine.compile(node), node);
+              fragment = new VirtualFragment(compile(node), node);
               fragment.insertAfter(before);
             } else {
               fragment = cache[key];
@@ -97,7 +97,7 @@ export default function ({ node, expr }, localName = 'item') {
               if (!fragment.isAfter(last)) fragment.insertAfter(last);
             }
           } else {
-            fragment = new VirtualFragment(engine.compile(node), node);
+            fragment = new VirtualFragment(compile(node), node);
             fragment.insertAfter(last);
           }
 

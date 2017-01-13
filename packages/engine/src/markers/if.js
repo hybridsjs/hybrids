@@ -8,9 +8,9 @@ export default function If({ node, expr }) {
 
   let fragment;
 
-  return (changelog, engine) => {
+  return (changelog, compile) => {
     if (expr.get()) {
-      fragment = new VirtualFragment(engine.compile(node), node);
+      fragment = new VirtualFragment(compile(node), node);
       fragment.insertAfter();
     } else {
       if (fragment) fragment.remove();

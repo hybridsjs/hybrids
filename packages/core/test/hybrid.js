@@ -52,10 +52,14 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    rafIt('call provider connect', () => {
+    rafIt('dispatch connect event', () => {
       define('hybrids-core-hybrid-connect-provider', class {
         static get options() {
-          return { providers: [() => () => ({ connect() { spy(); } })] };
+          return {
+            providers: [() => function provider(host) {
+              host.addEventListener('connect', spy);
+            }],
+          };
         }
       });
       el = document.createElement('hybrids-core-hybrid-connect-provider');
@@ -65,28 +69,14 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    it('call provider update after connected', (done) => {
-      define('hybrids-core-hybrid-update-provider', class {
-        static get options() {
-          return { providers: [() => () => ({ update() { spy(); } })] };
-        }
-      });
-      el = document.createElement('hybrids-core-hybrid-update-provider');
-      document.body.appendChild(el);
-
-      // BUG: polyfill call connected callback async
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          expect(spy).toHaveBeenCalled();
-          done();
-        });
-      });
-    });
-
-    it('call provider disconnect', (done) => {
+    it('dispatch disconnect event', (done) => {
       define('hybrids-core-hybrid-disconnect-provider', class {
         static get options() {
-          return { providers: [() => () => ({ disconnect() { spy(); } })] };
+          return {
+            providers: [() => function provider(host) {
+              host.addEventListener('disconnect', spy);
+            }],
+          };
         }
       });
       el = document.createElement('hybrids-core-hybrid-disconnect-provider');

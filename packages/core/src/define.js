@@ -1,7 +1,16 @@
 import { error } from './debug';
 import Hybrid from './hybrid';
+import { injectable, resolve } from './proxy';
 import { camelToDash, reflectValue, normalizeProperty } from './utils';
 import { CONTROLLER, PROVIDERS, OPTIONS, NAME } from './symbols';
+
+const reflectAttr = injectable(function setBoolAttr(attr, value) {
+  if (value && !this.hasAttribute(attr)) {
+    this.setAttribute(attr, '');
+  } else if (this.hasAttribute(attr)) {
+    this.removeAttribute(attr);
+  }
+});
 
 function bootstrap(name, Controller) {
   if (window.customElements.get(name)) {
@@ -14,8 +23,6 @@ function bootstrap(name, Controller) {
   }
 
   const options = Controller.options || {};
-  const properties = (options.properties || []).map(normalizeProperty);
-  const observedAttributes = [];
 
   if (options.define) {
     try {
@@ -25,6 +32,8 @@ function bootstrap(name, Controller) {
     }
   }
 
+  const observedAttributes = [];
+
   class ExtHybrid extends Hybrid {
     static get observedAttributes() { return observedAttributes; }
     static get [CONTROLLER]() { return Controller; }
@@ -32,37 +41,59 @@ function bootstrap(name, Controller) {
     static get [NAME]() { return name; }
   }
 
-  options.properties = properties.filter(({ property, attr }) => {
-    if (Reflect.has(ExtHybrid.prototype, property)) {
-      error(ReferenceError, "define: Property '%property' already in HTMLElement prototype chain", { property });
-    }
-
-    if (Reflect.has(Controller.prototype, property)) {
-      let desc;
-      let proto = Controller.prototype;
-      while (!desc) {
-        desc = Object.getOwnPropertyDescriptor(proto, property);
-        proto = Object.getPrototypeOf(proto);
+  options.properties = (options.properties || [])
+    .map(normalizeProperty)
+    .filter(({ property, attr }) => {
+      if (Reflect.has(ExtHybrid.prototype, property)) {
+        error(ReferenceError, "define: Property '%property' already in HTMLElement prototype chain", { property });
       }
 
-      if (!desc.get) {
-        Object.defineProperty(ExtHybrid.prototype, property, {
-          value(...args) { return this[CONTROLLER][property](...args); },
+      if (Reflect.has(Controller.prototype, property)) {
+        let desc;
+        let proto = Controller.prototype;
+        while (!desc) {
+          desc = Object.getOwnPropertyDescriptor(proto, property);
+          proto = Object.getPrototypeOf(proto);
+        }
+
+        if (!desc.get && typeof desc.value === 'function') {
+          Object.defineProperty(ExtHybrid.prototype, property, {
+            value(...args) { return this[CONTROLLER][property](...args); },
+          });
+
+          return false;
+        }
+      } else {
+        const key = Symbol(property);
+        Object.defineProperty(Controller.prototype, property, {
+          get() { return this[key]; },
+          set(newVal) {
+            Object.defineProperty(this, key, {
+              value: newVal,
+              enumerable: false,
+              writable: true,
+              configurable: true,
+            });
+            if (typeof newVal === 'boolean') {
+              Promise.resolve().then(resolve(() => reflectAttr(attr, newVal)));
+            }
+          },
+          enumerable: true,
+          configurable: true,
         });
-
-        return false;
       }
-    }
 
-    Object.defineProperty(ExtHybrid.prototype, property, {
-      get() { return this[CONTROLLER][property]; },
-      set(value) { this[CONTROLLER][property] = reflectValue(value, this[CONTROLLER][property]); },
+      Object.defineProperty(ExtHybrid.prototype, property, {
+        get() { return this[CONTROLLER][property]; },
+        set(newVal) {
+          this[CONTROLLER][property] = reflectValue(newVal, this[CONTROLLER][property]);
+        },
+      });
+
+      if (attr) observedAttributes.push(attr);
+
+      return true;
     });
-
-    if (attr) observedAttributes.push(attr);
-
-    return true;
-  });
 
   Object.defineProperty(ExtHybrid, PROVIDERS, {
     value: (options.providers || []).map((m) => {
