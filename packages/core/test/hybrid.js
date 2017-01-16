@@ -52,12 +52,12 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    rafIt('dispatch connect event', () => {
+    rafIt('dispatch hybrid-connect event', () => {
       define('hybrids-core-hybrid-connect-provider', class {
         static get options() {
           return {
             providers: [() => function provider(host) {
-              host.addEventListener('connect', spy);
+              host.addEventListener('hybrid-connect', spy);
             }],
           };
         }
@@ -69,12 +69,12 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    it('dispatch disconnect event', (done) => {
+    it('dispatch hybrid-disconnect event', (done) => {
       define('hybrids-core-hybrid-disconnect-provider', class {
         static get options() {
           return {
             providers: [() => function provider(host) {
-              host.addEventListener('disconnect', spy);
+              host.addEventListener('hybrid-disconnect', spy);
             }],
           };
         }

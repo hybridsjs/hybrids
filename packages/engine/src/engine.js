@@ -53,18 +53,23 @@ export default function engine(Hybrid) {
       request = request || execute({ host, template, compile }).then(() => (request = undefined));
     };
 
-    // BUG: https://github.com/webcomponents/custom-elements/issues/17
-    Promise.resolve().then(() => {
-      const shadowRoot = host.shadowRoot || host.attachShadow({ mode: 'open' });
-      shadowRoot.appendChild(compile());
+    host.addEventListener('hybrid-connect', () => {
+      if (!host.shadowRoot) {
+        const shadowRoot = host.attachShadow({ mode: 'open' });
+        const set = template.getRootPathProperties();
+        shadowRoot.appendChild(compile());
 
-      template.getRootPathProperties().forEach((key) => {
-        new PropertyObserver(ctrl, key).observe(
-          value => (value && typeof value === 'object' ? render() : null), render
-        );
-      });
+        Object.keys(ctrl).forEach(key => set.add(key));
+        set.forEach((key) => {
+          new PropertyObserver(ctrl, key).observe(
+            value => (value && typeof value === 'object' ? render() : null), render
+          );
+        });
+      }
 
       render();
     });
+
+    host.addEventListener('hybrid-update', render);
   };
 }

@@ -17,9 +17,6 @@ export default class Hybrid extends HTMLBridge {
     });
 
     this.constructor[PROVIDERS].map(m => m(this));
-
-    // BUG: https://github.com/webcomponents/custom-elements/issues/17
-    Promise.resolve().then(() => dispatchEvent.call(this, 'upgrade', { bubbles: false }));
   }
 
   connectedCallback() {
@@ -32,12 +29,12 @@ export default class Hybrid extends HTMLBridge {
     });
 
     if (this[CONTROLLER].connect) this[CONTROLLER].connect();
-    dispatchEvent.call(this, 'connect', { bubbles: false });
+    dispatchEvent.call(this, 'hybrid-connect', { bubbles: false });
   }
 
   disconnectedCallback() {
     if (this[CONTROLLER].disconnect) this[CONTROLLER].disconnect();
-    dispatchEvent.call(this, 'disconnect', { bubbles: false });
+    dispatchEvent.call(this, 'hybrid-disconnect', { bubbles: false });
   }
 
   attributeChangedCallback(attrName, oldVal, newVal) {

@@ -2,6 +2,7 @@ import { error } from '../debug';
 
 import { injectable } from '../proxy';
 import { CONTROLLER } from '../symbols';
+import { dispatchEvent } from './dispatch-event';
 
 class Children {
   constructor(host, Controller, options = { deep: false, nested: false }) {
@@ -24,7 +25,7 @@ class Children {
       childList: true, subtree: !!this.options.deep
     });
 
-    this.host.addEventListener('upgrade', this.refresh);
+    this.host.addEventListener('hybrid-connect', this.refresh);
   }
 
   refresh() {
@@ -32,6 +33,8 @@ class Children {
 
     Object.assign(this.items, temp);
     this.items.length = temp.length;
+
+    dispatchEvent.call(this.host, 'hybrid-update', { bubbles: false });
   }
 
   walk(node, items = []) {
