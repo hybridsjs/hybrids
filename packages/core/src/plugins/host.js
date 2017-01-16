@@ -1,3 +1,3 @@
 import { injectable } from '../proxy';
 
-export default injectable(function host() { return this; });
+export default injectable(host => host);

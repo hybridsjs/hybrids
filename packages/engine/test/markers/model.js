@@ -226,7 +226,7 @@ describe('Engine | Markers | Model -', () => {
       const select = getId('select1');
       select.options[0].selected = true;
       select.options[1].selected = true;
-      dispatchEvent.call(select, 'change');
+      dispatchEvent(select, 'change');
       requestAnimationFrame(() => {
         expect(ctrl.data.select1).toEqual('two');
       });
@@ -242,7 +242,7 @@ describe('Engine | Markers | Model -', () => {
     rafIt('set one multi value from select', () => {
       const select = getId('select2');
       select.options[0].selected = true;
-      dispatchEvent.call(select, 'change');
+      dispatchEvent(select, 'change');
       requestAnimationFrame(() => {
         expect(ctrl.data.select2).toEqual(['one']);
       });
@@ -252,7 +252,7 @@ describe('Engine | Markers | Model -', () => {
       const select = getId('select2');
       select.options[0].selected = true;
       select.options[1].selected = true;
-      dispatchEvent.call(select, 'change');
+      dispatchEvent(select, 'change');
       requestAnimationFrame(() => {
         expect(ctrl.data.select2).toEqual(['one', 'two']);
       });
@@ -263,7 +263,7 @@ describe('Engine | Markers | Model -', () => {
       ctrl.data.select2 = [];
       select.options[0].selected = true;
       select.options[1].selected = true;
-      dispatchEvent.call(select, 'change');
+      dispatchEvent(select, 'change');
       requestAnimationFrame(() => {
         expect(ctrl.data.select2).toEqual(['one', 'two']);
       });
@@ -288,7 +288,7 @@ describe('Engine | Markers | Model -', () => {
     rafIt('set value from text input', () => {
       const input = getId('text');
       input.value = 'test text';
-      dispatchEvent.call(input, 'input');
+      dispatchEvent(input, 'input');
       requestAnimationFrame(() => {
         expect(ctrl.data.text).toEqual('test text');
       });
@@ -307,7 +307,7 @@ describe('Engine | Markers | Model -', () => {
       const custom = getId('custom');
       const value = { test: 'test' };
       custom.value = value;
-      dispatchEvent.call(custom, 'change');
+      dispatchEvent(custom, 'change');
       requestAnimationFrame(() => {
         expect(ctrl.data.custom).toEqual(value);
       });

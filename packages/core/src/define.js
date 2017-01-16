@@ -4,11 +4,11 @@ import { injectable, resolve } from './proxy';
 import { camelToDash, reflectValue, normalizeProperty } from './utils';
 import { CONTROLLER, PROVIDERS, OPTIONS, NAME } from './symbols';
 
-const reflectAttr = injectable(function setBoolAttr(attr, value) {
-  if (value && !this.hasAttribute(attr)) {
-    this.setAttribute(attr, '');
-  } else if (this.hasAttribute(attr)) {
-    this.removeAttribute(attr);
+const reflectAttr = injectable((host, attr, value) => {
+  if (value && !host.hasAttribute(attr)) {
+    host.setAttribute(attr, '');
+  } else if (host.hasAttribute(attr)) {
+    host.removeAttribute(attr);
   }
 });
 

@@ -29,12 +29,12 @@ export default class Hybrid extends HTMLBridge {
     });
 
     if (this[CONTROLLER].connect) this[CONTROLLER].connect();
-    dispatchEvent.call(this, 'hybrid-connect', { bubbles: false });
+    dispatchEvent(this, 'hybrid-connect', { bubbles: false });
   }
 
   disconnectedCallback() {
     if (this[CONTROLLER].disconnect) this[CONTROLLER].disconnect();
-    dispatchEvent.call(this, 'hybrid-disconnect', { bubbles: false });
+    dispatchEvent(this, 'hybrid-disconnect', { bubbles: false });
   }
 
   attributeChangedCallback(attrName, oldVal, newVal) {

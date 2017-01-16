@@ -19,7 +19,7 @@ describe('Core | Proxy', () => {
     it('call function with context', () => {
       callWithContext(context, wrapper);
       expect(spy).toHaveBeenCalled();
-      expect(spy.calls.mostRecent().object).toEqual(context);
+      expect(spy.calls.mostRecent().args[0]).toEqual(context);
     });
 
     it('resolve throws error', () => {
@@ -30,7 +30,7 @@ describe('Core | Proxy', () => {
       const fn = callWithContext(context, () => resolve(wrapper));
       fn();
       expect(spy).toHaveBeenCalled();
-      expect(spy.calls.mostRecent().object).toEqual(context);
+      expect(spy.calls.mostRecent().args[0]).toEqual(context);
     });
   });
 
@@ -67,17 +67,17 @@ describe('Core | Proxy', () => {
 
       it('call with context prototype method', () => {
         ctrl.test1();
-        expect(spy.calls.mostRecent().object).toEqual(context);
+        expect(spy.calls.mostRecent().args[0]).toEqual(context);
       });
 
       it('call with context prototype getter', () => {
         expect(ctrl.test2).toEqual(undefined);
-        expect(spy.calls.mostRecent().object).toEqual(context);
+        expect(spy.calls.mostRecent().args[0]).toEqual(context);
       });
 
       it('call with context prototype setter', () => {
         ctrl.test2 = 'new value';
-        expect(spy.calls.mostRecent().object).toEqual(context);
+        expect(spy.calls.mostRecent().args[0]).toEqual(context);
       });
     });
 
@@ -98,17 +98,17 @@ describe('Core | Proxy', () => {
 
       it('call with context prototype method', () => {
         ctrl.test1();
-        expect(spy.calls.mostRecent().object).toEqual(context);
+        expect(spy.calls.mostRecent().args[0]).toEqual(context);
       });
 
       it('call with context prototype getter', () => {
         expect(ctrl.test2).toEqual(undefined);
-        expect(spy.calls.mostRecent().object).toEqual(context);
+        expect(spy.calls.mostRecent().args[0]).toEqual(context);
       });
 
       it('call with context prototype setter', () => {
         ctrl.test2 = 'new value';
-        expect(spy.calls.mostRecent().object).toEqual(context);
+        expect(spy.calls.mostRecent().args[0]).toEqual(context);
       });
     });
   });

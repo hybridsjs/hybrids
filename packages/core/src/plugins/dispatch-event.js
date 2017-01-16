@@ -1,6 +1,6 @@
 import { injectable } from '../proxy';
 
-export function dispatchEvent(name, options) {
+export function dispatchEvent(host, name, options) {
   const config = Object.assign({ bubbles: true, cancelable: false }, options);
   let event;
 
@@ -11,7 +11,7 @@ export function dispatchEvent(name, options) {
     event = new CustomEvent(name, config);
   }
 
-  this.dispatchEvent(event);
+  host.dispatchEvent(event);
 }
 
 export default injectable(dispatchEvent);

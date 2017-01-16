@@ -23,13 +23,13 @@ describe('Core | Plugins | Parent -', () => {
   });
 
   it('throw when controller is not initialized', () => {
-    expect(() => parent.call(document.createElement('div'), CorePluginsParent)).toThrow();
+    expect(() => parent(document.createElement('div'), CorePluginsParent)).toThrow();
   });
 
   rafIt('return parent controller', () => {
     parentEl.appendChild(childEl);
     requestAnimationFrame(() => {
-      expect(parent.call(childEl, CorePluginsParent)).toEqual(parentEl[CONTROLLER]);
+      expect(parent(childEl, CorePluginsParent)).toEqual(parentEl[CONTROLLER]);
     });
   });
 
@@ -43,7 +43,7 @@ describe('Core | Plugins | Parent -', () => {
       parentEl.appendChild(document.createElement('div'));
       parentEl.children[0].appendChild(childEl);
       requestAnimationFrame(() => {
-        expect(parent.call(childEl, CorePluginsParent)).toEqual(parentEl[CONTROLLER]);
+        expect(parent(childEl, CorePluginsParent)).toEqual(parentEl[CONTROLLER]);
         document.body.removeChild(div);
         done();
       });
@@ -53,16 +53,16 @@ describe('Core | Plugins | Parent -', () => {
   rafIt('return null', () => {
     document.body.appendChild(childEl);
     requestAnimationFrame(() => {
-      expect(parent.call(childEl, class {})).toEqual(null);
+      expect(parent(childEl, class {})).toEqual(null);
       document.body.removeChild(childEl);
     });
   });
 
   it('throw when not connected', () => {
-    expect(() => parent.call(childEl)).toThrow();
+    expect(() => parent(childEl)).toThrow();
   });
 
   rafIt('throw error for invalid arguments', () => {
-    expect(() => parent.call(childEl, 123)).toThrow();
+    expect(() => parent(childEl, 123)).toThrow();
   });
 });

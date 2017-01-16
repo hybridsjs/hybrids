@@ -14,7 +14,7 @@ describe('Core | Plugins | ListenTo -', () => {
 
     spy = jasmine.createSpy('callback');
 
-    revoke = listenTo.call(context, 'click', spy);
+    revoke = listenTo(context, 'click', spy);
     context.click();
   });
 

@@ -5,7 +5,7 @@ let activeContext = null;
 export function injectable(fn) {
   return function wrapper(...args) {
     if (!activeContext) error("proxy: Illegal invocation of '%fn'", { fn: fn.name });
-    return fn.apply(activeContext, args);
+    return fn(activeContext, ...args);
   };
 }
 

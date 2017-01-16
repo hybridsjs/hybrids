@@ -34,7 +34,7 @@ class Children {
     Object.assign(this.items, temp);
     this.items.length = temp.length;
 
-    dispatchEvent.call(this.host, 'hybrid-update', { bubbles: false });
+    dispatchEvent(this.host, 'hybrid-update', { bubbles: false });
   }
 
   walk(node, items = []) {
@@ -49,8 +49,8 @@ class Children {
   }
 }
 
-export function children(Controller, options) {
-  return new Children(this, Controller, options).items;
+export function children(host, Controller, options) {
+  return new Children(host, Controller, options).items;
 }
 
 export default injectable(children);

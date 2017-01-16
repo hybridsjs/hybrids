@@ -11,12 +11,12 @@ describe('Core | Plugins | Dispatch Event -', () => {
   });
 
   it('dispatch event', () => {
-    dispatchEvent.call(context, 'custom-event');
+    dispatchEvent(context, 'custom-event');
     expect(spy).toHaveBeenCalled();
   });
 
   it('push detail property', () => {
-    dispatchEvent.call(context, 'custom-event', { detail: 'some text' });
+    dispatchEvent(context, 'custom-event', { detail: 'some text' });
     expect(spy.calls.mostRecent().args[0].detail).toEqual('some text');
   });
 });
