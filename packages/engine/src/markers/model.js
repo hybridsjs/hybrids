@@ -29,9 +29,7 @@ function bindCheckbox(node, expr, path) {
         expr.set(node.checked);
       }
     },
-    down() {
-      const value = expr.get();
-
+    down(value) {
       if (node.hasAttribute('value')) {
         if (value) {
           if (!Array.isArray(value)) {
@@ -69,8 +67,7 @@ function bindSelect(node, expr, path, multiply = false) {
         expr.set(options[0]);
       }
     },
-    down() {
-      let value = expr.get();
+    down(value) {
       if (multiply) {
         if (value === undefined) {
           value = [];
@@ -94,8 +91,7 @@ function bindSelect(node, expr, path, multiply = false) {
 function bindDefault(node, expr, path) {
   return {
     up() { expr.set(path.get(node)); },
-    down() {
-      const value = expr.get();
+    down(value) {
       if (value !== undefined) path.set(node, value);
     },
   };
@@ -130,7 +126,7 @@ export default function model({ node, expr }, sourcePath = 'value', eventName) {
     Observer.requestAnimationFrame(() => (flag = false));
   });
 
-  return () => {
-    if (!flag) callbacks.down();
+  return (value) => {
+    if (!flag) callbacks.down(value);
   };
 }

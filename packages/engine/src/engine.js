@@ -11,19 +11,21 @@ function execute({ host, template, compile }) {
     window.requestAnimationFrame(() => {
       template.run(host.shadowRoot, (w) => {
         const value = w.expr.get();
+        let changelog;
 
         if (State.isObject(value)) {
           const state = new State(value);
 
           if (state.isChanged()) {
-            w.fn({ changelog: state.changelog, type: 'modify' }, compile);
+            changelog = { type: 'modify', changelog: state.changelog };
           } else if (!State.is(value, w.cache)) {
-            w.fn({ type: 'set' }, compile);
+            changelog = { type: 'set' };
           }
         } else if (!{}.hasOwnProperty.call(w, 'cache') || !State.is(value, w.cache)) {
-          w.fn({ type: 'set', oldValue: w.cache }, compile);
+          changelog = { type: 'set', oldValue: w.cache };
         }
 
+        if (changelog) w.fn(value, changelog, compile);
         w.cache = value;
       });
 

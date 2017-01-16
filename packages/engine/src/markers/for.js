@@ -19,8 +19,7 @@ export default function ({ node, expr }, localName = 'item') {
 
   const cache = new VirtualFragment(null, node, true).items;
 
-  return ({ type: globalType, changelog }, compile) => {
-    const list = expr.get();
+  return (list, { type: globalType, changelog }, compile) => {
     if (typeof list !== 'object') {
       error(TypeError, "for: '%evaluate' must be an object: %type", { evaluate: expr.evaluate, type: typeof list });
     }

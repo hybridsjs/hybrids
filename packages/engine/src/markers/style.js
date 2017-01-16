@@ -3,9 +3,7 @@ import { error } from '../debug';
 
 export default function style({ node, expr }, ...propertyNames) {
   if (!propertyNames.length) {
-    return ({ type: globalType, oldValue, changelog }) => {
-      const list = expr.get();
-
+    return (list, { type: globalType, oldValue, changelog }) => {
       switch (globalType) {
         case 'modify':
           Object.keys(changelog).forEach((key) => {
@@ -31,8 +29,7 @@ export default function style({ node, expr }, ...propertyNames) {
     };
   }
 
-  return () => {
-    const value = expr.get();
+  return (value) => {
     propertyNames.map(camelToDash).forEach(key => node.style.setProperty(key, value));
   };
 }

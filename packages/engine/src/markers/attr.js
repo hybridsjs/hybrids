@@ -1,6 +1,5 @@
 export default function attr({ node, expr }, attrName = expr.evaluate) {
-  return () => {
-    const value = expr.get();
+  return (value) => {
     if (value === false || value === undefined || value === null) {
       node.removeAttribute(attrName);
     } else {

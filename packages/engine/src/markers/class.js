@@ -2,9 +2,7 @@ import { error } from '../debug';
 
 export default function classList({ node, expr }, ...classNames) {
   if (!classNames.length) {
-    return ({ type: globalType, oldValue, changelog }) => {
-      const list = expr.get();
-
+    return (list, { type: globalType, oldValue, changelog }) => {
       switch (globalType) {
         case 'modify': {
           const isArray = Array.isArray(list);
@@ -57,9 +55,7 @@ export default function classList({ node, expr }, ...classNames) {
     };
   }
 
-  return () => {
-    const value = expr.get();
-
+  return (value) => {
     classNames.forEach((name) => {
       if (value) {
         node.classList.add(name);
