@@ -168,6 +168,24 @@ describe('Engine | Expression -', () => {
     });
   });
 
+  describe('get/set with computed path', () => {
+    beforeEach(() => {
+      path = new Path('one.two()');
+      context = { one: { two: () => 'test' } };
+      spyOn(context.one, 'two').and.returnValue('test');
+      expr = new Expression(el, context, path);
+    });
+
+    it('get value by calling method', () => {
+      expect(expr.get()).toEqual('test');
+      expect(context.one.two).toHaveBeenCalled();
+    });
+
+    it('throw error for setting value', () => {
+      expect(() => expr.set('test')).toThrow();
+    });
+  });
+
   describe('getOwnLocals', () => {
     let parent;
     beforeEach(() => {

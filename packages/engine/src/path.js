@@ -32,6 +32,10 @@ export default class Path {
       Object.assign(this, input);
     } else {
       this.evaluate = input;
+      if (input.substr(-2) === '()') {
+        input = input.substr(0, input.length - 2);
+        this.computed = true;
+      }
       this.path = parse(input);
     }
   }

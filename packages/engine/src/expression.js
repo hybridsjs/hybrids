@@ -90,17 +90,23 @@ export default class Expression {
     if (!Reflect.has(this.context, this.path.rootProperty)) {
       const text = `expression: ${this.path.isNestedProperty() ? "'%property' in '%evaluate'" : "'%property' "} must be defined`;
       error(ReferenceError, text, {
-        property: this.path.rootProperty, evaluate: this.evaluate
+        property: this.path.rootProperty, evaluate: this.path.evaluate
       });
     }
+
+    if (this.path.computed) return this.call();
     return this.applyFilters(this.path.get(this.context));
   }
 
   set(value, replace) {
+    if (this.path.computed) {
+      error(TypeError, "expression: computed path '%evaluate' is readonly", { evaluate: this.path.evaluate });
+    }
+
     if (!Reflect.has(this.context, this.path.rootProperty)) {
       const text = `expression: ${this.path.isNestedProperty() ? "'%property' in '%evaluate'" : "'%property' "} must be defined`;
       error(ReferenceError, text, {
-        property: this.path.rootProperty, evaluate: this.evaluate
+        property: this.path.rootProperty, evaluate: this.path.evaluate
       });
     }
 

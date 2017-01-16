@@ -15,6 +15,11 @@ describe('Engine | Path -', () => {
     expect(copy.path).toEqual(path.path);
   });
 
+  it('has computed property set', () => {
+    const path = new Path('a.b.c()');
+    expect(path.computed).toEqual(true);
+  });
+
   describe('`get` method', () => {
     beforeEach(() => {
       context = {
