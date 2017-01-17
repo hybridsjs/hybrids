@@ -1,56 +1,46 @@
 import { error } from '../debug';
-
 import { injectable } from '../proxy';
 import { CONTROLLER } from '../symbols';
+
 import { dispatchEvent } from './dispatch-event';
 
-class Children {
-  constructor(host, Controller, options = { deep: false, nested: false }) {
-    if (typeof Controller !== 'function') error(TypeError, 'children: Invalid arguments');
-    if (typeof options !== 'object') {
-      error(TypeError, 'children: options must be an object: %options', {
-        options: typeof options
-      });
-    }
-    if (host[CONTROLLER]) error(Error, 'children: Illegal invocation');
+function walk(node, Controller, options, items = []) {
+  Array.from(node.children).forEach((child) => {
+    if (child.constructor[CONTROLLER] === Controller) {
+      items.push(child[CONTROLLER]);
+      if (options.deep && options.nested) walk(child, Controller, options, items);
+    } else if (options.deep) walk(child, Controller, options, items);
+  });
 
-    this.host = host;
-    this.Controller = Controller;
-    this.options = options;
-    this.items = [];
-    this.refresh = this.refresh.bind(this);
-    this.observer = new MutationObserver(this.refresh);
-
-    this.observer.observe(this.host, {
-      childList: true, subtree: !!this.options.deep
-    });
-
-    this.host.addEventListener('hybrid-connect', this.refresh);
-  }
-
-  refresh() {
-    const temp = this.walk(this.host);
-
-    Object.assign(this.items, temp);
-    this.items.length = temp.length;
-
-    dispatchEvent(this.host, 'hybrid-update', { bubbles: false });
-  }
-
-  walk(node, items = []) {
-    Array.from(node.children).forEach((child) => {
-      if (child.constructor[CONTROLLER] === this.Controller) {
-        items.push(child[CONTROLLER]);
-        if (this.options.deep && this.options.nested) this.walk(child, items);
-      } else if (this.options.deep) this.walk(child, items);
-    });
-
-    return items;
-  }
+  return items;
 }
 
-export function children(host, Controller, options) {
-  return new Children(host, Controller, options).items;
+export function children(host, Controller, options = {}) {
+  if (typeof Controller !== 'function') error(TypeError, 'children: Invalid arguments');
+  if (typeof options !== 'object') {
+    error(TypeError, 'children: options must be an object: %options', {
+      options: typeof options
+    });
+  }
+  if (host[CONTROLLER]) error(Error, 'children: Illegal invocation');
+
+  const items = [];
+  const refresh = () => {
+    const temp = walk(host, Controller, options);
+
+    Object.assign(items, temp);
+    items.length = temp.length;
+
+    dispatchEvent(host, 'hybrid-update', { bubbles: false });
+  };
+
+  new MutationObserver(refresh).observe(host, {
+    childList: true, subtree: !!options.deep
+  });
+
+  host.addEventListener('hybrid-connect', refresh);
+
+  return items;
 }
 
 export default injectable(children);
