@@ -1,4 +1,3 @@
-import { LOCALS_PREFIX } from '../expression';
 import { stringifyMarker } from '../template';
 import { error } from '../debug';
 
@@ -12,7 +11,7 @@ export default function on({ node, expr, attr }, eventType, flag) {
 
   node.addEventListener(eventType, (event) => {
     try {
-      expr.get({ [`${LOCALS_PREFIX}event`]: event });
+      expr.get({ event });
     } catch (e) {
       error(e, 'on: Execution failed %node', { node: stringifyMarker(node, attr) });
     }

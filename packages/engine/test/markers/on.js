@@ -2,7 +2,6 @@ import { define } from '@hybrids/core';
 import engine from '../../src/engine';
 
 import { MARKER_PREFIX as M } from '../../src/template';
-import { LOCALS_PREFIX as L } from '../../src/expression';
 
 describe('Engine | Markers | On -', () => {
   let el;
@@ -25,7 +24,7 @@ describe('Engine | Markers | On -', () => {
         this.items = [0];
       }
 
-      click(...args) { spy(...args, args[0][`${L}event`].target); }
+      click(...args) { spy(...args, args[0].event.target); }
     }
 
     define({ EngineMarkersOnTest });
