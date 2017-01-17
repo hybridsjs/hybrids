@@ -17,7 +17,7 @@ describe('Engine | Path -', () => {
 
   it('has computed property set', () => {
     const path = new Path('a.b.c()');
-    expect(path.computed).toEqual(true);
+    expect(path.isComputed).toEqual(true);
   });
 
   describe('`get` method', () => {

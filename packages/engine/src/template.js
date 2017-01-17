@@ -183,7 +183,7 @@ function parseNode(node, m, p) {
             }
           }
         } catch (e) {
-          error(e, 'template: Parsing failed: %node', { node: stringifyMarker(node, attr.name) });
+          error(e, 'template: Parsing failed %node', { node: stringifyMarker(node, attr.name) });
         }
 
         if (process.env.NODE_ENV === 'production') {
@@ -314,7 +314,7 @@ export default class Template {
               watchList.push({ fn, expr, attr });
             }
           } catch (e) {
-            error(e, 'template: Compilation failed: %node', { node: stringifyMarker(node, attr, this.container.t) });
+            error(e, 'template: Compilation failed %node', { node: stringifyMarker(node, attr, this.container.t) });
           }
         });
       }

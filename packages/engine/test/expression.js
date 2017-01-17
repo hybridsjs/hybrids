@@ -129,45 +129,6 @@ describe('Engine | Expression -', () => {
     });
   });
 
-  describe('call method', () => {
-    let spy;
-
-    beforeEach(() => {
-      spy = jasmine.createSpy('two');
-      path = new Path('one.two');
-      context = { one: { two: spy } };
-      expr = new Expression(el, context, path);
-    });
-
-    it('call with arguments', () => {
-      expr.call({ one: 'one', two: 'two' });
-      expect(spy.calls.mostRecent().object).toEqual(context.one);
-      expect(spy.calls.mostRecent().args).toEqual([{ one: 'one', two: 'two' }]);
-    });
-
-    it('call with locals', () => {
-      defineLocals(el, { test: 'value', two: 1 });
-      expr.call({ one: 'one', two: 'two' });
-      expect(spy.calls.mostRecent().args).toEqual([
-        { one: 'one', two: 'two', test: 'value' }
-      ]);
-    });
-
-    it('call with merged locals', () => {
-      const parent = document.createElement('div');
-      parent.appendChild(el);
-
-      defineLocals(parent, { test: 'parent value', parent: true });
-      defineLocals(el, { test: 'value', two: 1 });
-
-      expr.call({ one: 'one', two: 'two' });
-
-      expect(spy.calls.mostRecent().args).toEqual([
-        { one: 'one', two: 'two', test: 'value', parent: true }
-      ]);
-    });
-  });
-
   describe('get/set with computed path', () => {
     beforeEach(() => {
       path = new Path('one.two()');
@@ -183,6 +144,34 @@ describe('Engine | Expression -', () => {
 
     it('throw error for setting value', () => {
       expect(() => expr.set('test')).toThrow();
+    });
+
+    it('call with arguments', () => {
+      expr.get({ one: 'one', two: 'two' });
+      expect(context.one.two.calls.mostRecent().object).toEqual(context.one);
+      expect(context.one.two.calls.mostRecent().args).toEqual([{ one: 'one', two: 'two' }]);
+    });
+
+    it('call with locals', () => {
+      defineLocals(el, { test: 'value', two: 1 });
+      expr.get({ one: 'one', two: 'two' });
+      expect(context.one.two.calls.mostRecent().args).toEqual([
+        { one: 'one', two: 'two', test: 'value' }
+      ]);
+    });
+
+    it('call with merged locals', () => {
+      const parent = document.createElement('div');
+      parent.appendChild(el);
+
+      defineLocals(parent, { test: 'parent value', parent: true });
+      defineLocals(el, { test: 'value', two: 1 });
+
+      expr.get({ one: 'one', two: 'two' });
+
+      expect(context.one.two.calls.mostRecent().args).toEqual([
+        { one: 'one', two: 'two', test: 'value', parent: true }
+      ]);
     });
   });
 

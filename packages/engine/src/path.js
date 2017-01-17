@@ -34,7 +34,7 @@ export default class Path {
       this.evaluate = input;
       if (input.substr(-2) === '()') {
         input = input.substr(0, input.length - 2);
-        this.computed = true;
+        this.isComputed = true;
       }
       this.path = parse(input);
     }

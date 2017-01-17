@@ -15,7 +15,7 @@ describe('Engine | Markers | On -', () => {
           providers: [engine],
           template: `
             <template ${M}for="items">
-              <div id="one" ${M}on="click"></div>
+              <div id="one" ${M}on="click: click()"></div>
             </template>
           `
         };
@@ -49,11 +49,12 @@ describe('Engine | Markers | On -', () => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const one = getId('one');
+
         one.click();
 
-        const { args } = spy.calls.mostRecent();
-
         expect(spy).toHaveBeenCalled();
+
+        const { args } = spy.calls.mostRecent();
         expect(args[0]).toEqual(jasmine.objectContaining({ item: 0 }));
         expect(args[1]).toEqual(one);
         done();
