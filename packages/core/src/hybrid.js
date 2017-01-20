@@ -16,18 +16,38 @@ export default class Hybrid extends HTMLBridge {
       value: proxy(this, () => new this.constructor[CONTROLLER]()),
     });
 
-    this.constructor[PROVIDERS].map(m => m(this));
+    this.constructor[PROVIDERS].map(m => m(this, this[CONTROLLER]));
+
+    this.constructor[OPTIONS].properties.forEach(({ property, attr }) => {
+      let value = this[CONTROLLER][property];
+      Object.defineProperty(this[CONTROLLER], property, {
+        get() { return value; },
+        set: (newVal) => {
+          value = newVal;
+          if (typeof newVal === 'boolean') {
+            Promise.resolve().then(() => {
+              if (value) {
+                if (!this.hasAttribute(attr)) this.setAttribute(attr, '');
+              } else if (this.hasAttribute(attr)) {
+                this.removeAttribute(attr);
+              }
+            });
+          }
+        },
+        enumerable: true
+      });
+
+      if ({}.hasOwnProperty.call(this, property)) {
+        Promise.resolve().then(() => {
+          const val = this[property];
+          delete this[property];
+          this[property] = val;
+        });
+      }
+    });
   }
 
   connectedCallback() {
-    this.constructor[OPTIONS].properties.forEach(({ property }) => {
-      if ({}.hasOwnProperty.call(this, property)) {
-        const value = this[property];
-        delete this[property];
-        this[property] = value;
-      }
-    });
-
     if (this[CONTROLLER].connect) this[CONTROLLER].connect();
     dispatchEvent(this, 'hybrid-connect', { bubbles: false });
   }

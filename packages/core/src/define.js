@@ -1,16 +1,7 @@
 import { error } from './debug';
 import Hybrid from './hybrid';
-import { injectable, resolve } from './proxy';
 import { camelToDash, reflectValue, normalizeProperty } from './utils';
 import { CONTROLLER, PROVIDERS, OPTIONS, NAME } from './symbols';
-
-const reflectAttr = injectable((host, attr, value) => {
-  if (value && !host.hasAttribute(attr)) {
-    host.setAttribute(attr, '');
-  } else if (host.hasAttribute(attr)) {
-    host.removeAttribute(attr);
-  }
-});
 
 function bootstrap(name, Controller) {
   if (window.customElements.get(name)) {
@@ -63,24 +54,6 @@ function bootstrap(name, Controller) {
 
           return false;
         }
-      } else {
-        const key = Symbol(property);
-        Object.defineProperty(Controller.prototype, property, {
-          get() { return this[key]; },
-          set(newVal) {
-            Object.defineProperty(this, key, {
-              value: newVal,
-              enumerable: false,
-              writable: true,
-              configurable: true,
-            });
-            if (typeof newVal === 'boolean') {
-              Promise.resolve().then(resolve(() => reflectAttr(attr, newVal)));
-            }
-          },
-          enumerable: true,
-          configurable: true,
-        });
       }
 
       Object.defineProperty(ExtHybrid.prototype, property, {
