@@ -35,6 +35,8 @@ export default class Path {
       if (input.substr(-2) === '()') {
         input = input.substr(0, input.length - 2);
         this.isComputed = true;
+      } else {
+        this.isComputed = false;
       }
       this.path = parse(input);
     }
@@ -44,7 +46,7 @@ export default class Path {
     return this.path[0].property;
   }
 
-  isNestedProperty() {
+  get isNestedProperty() {
     return this.path.length > 1;
   }
 
@@ -55,7 +57,7 @@ export default class Path {
       result = result[property];
 
       if (result && proto && !(result instanceof Object)) {
-        error(TypeError, `path: ${this.isNestedProperty() ? "'%property' in '%evaluate'" : "'%evaluate'"} must be an object: %type`, {
+        error(TypeError, `path: ${this.isNestedProperty ? "'%property' in '%evaluate'" : "'%evaluate'"} must be an object: %type`, {
           evaluate: this.evaluate, property, type: typeof result,
         });
       }
@@ -72,7 +74,7 @@ export default class Path {
         if (!acc.context[property]) {
           acc.context[property] = proto.constructor();
         } else if (!(acc.context[property] instanceof Object)) {
-          error(TypeError, `path: ${this.isNestedProperty() ? "'%property' in '%evaluate'" : "'%evaluate'"} must be an object: %type`, {
+          error(TypeError, `path: ${this.isNestedProperty ? "'%property' in '%evaluate'" : "'%evaluate'"} must be an object: %type`, {
             evaluate: this.evaluate, property, type: typeof acc.context[property],
           });
         }
@@ -97,7 +99,7 @@ export default class Path {
       if (proto) {
         acc.context = acc.context[property];
         if (!(acc.context instanceof Object)) {
-          error(TypeError, `path: ${this.isNestedProperty() ? "'%property' in '%evaluate'" : "'%evaluate'"} must be an object: %type`, {
+          error(TypeError, `path: ${this.isNestedProperty ? "'%property' in '%evaluate'" : "'%evaluate'"} must be an object: %type`, {
             evaluate: this.evaluate, property, type: typeof acc.context,
           });
         }
@@ -111,7 +113,7 @@ export default class Path {
     const type = typeof result.context[result.property];
 
     if (type !== 'function') {
-      error(TypeError, `path: ${this.isNestedProperty() ? "'%property' in '%evaluate'" : "'%evaluate'"} must be a function: %type`, {
+      error(TypeError, `path: ${this.isNestedProperty ? "'%property' in '%evaluate'" : "'%evaluate'"} must be a function: %type`, {
         evaluate: this.evaluate, property: result.property, type,
       });
     }

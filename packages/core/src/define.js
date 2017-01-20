@@ -1,6 +1,6 @@
 import { error } from './debug';
 import Hybrid from './hybrid';
-import { camelToDash, reflectValue, normalizeProperty } from './utils';
+import { camelToDash, normalizeProperty } from './utils';
 import { CONTROLLER, PROVIDERS, OPTIONS, NAME } from './symbols';
 
 function bootstrap(name, Controller) {
@@ -55,13 +55,6 @@ function bootstrap(name, Controller) {
           return false;
         }
       }
-
-      Object.defineProperty(ExtHybrid.prototype, property, {
-        get() { return this[CONTROLLER][property]; },
-        set(newVal) {
-          this[CONTROLLER][property] = reflectValue(newVal, this[CONTROLLER][property]);
-        },
-      });
 
       if (attr) observedAttributes.push(attr);
 

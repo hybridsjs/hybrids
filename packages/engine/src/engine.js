@@ -1,5 +1,5 @@
 import { State, PropertyObserver } from 'papillon';
-import { OPTIONS, CONTROLLER, NAME } from '@hybrids/core';
+import { OPTIONS, NAME } from '@hybrids/core';
 
 import { error } from './debug';
 import Template from './template';
@@ -46,8 +46,11 @@ export default function engine(Hybrid) {
     styles: options.styles
   });
 
-  return (host) => {
-    const ctrl = host[CONTROLLER];
+  const globalKeys = template.getRootPathProperties();
+  options.properties.forEach(({ property }) => globalKeys.add(property));
+
+  return (host, ctrl) => {
+    const keys = new Set([...globalKeys, Object.keys(ctrl)]);
     const compile = (id, locals) => template.compile(ctrl, id, locals);
 
     let request;
@@ -55,21 +58,17 @@ export default function engine(Hybrid) {
       request = request || execute({ host, template, compile }).then(() => (request = undefined));
     };
 
-    host.addEventListener('hybrid-connect', () => {
-      if (!host.shadowRoot) {
-        const shadowRoot = host.attachShadow({ mode: 'open' });
-        const set = template.getRootPathProperties();
-        shadowRoot.appendChild(compile());
-
-        Object.keys(ctrl).forEach(key => set.add(key));
-        set.forEach((key) => {
-          new PropertyObserver(ctrl, key).observe(
-            value => (value && typeof value === 'object' ? render() : null), render
-          );
-        });
-      }
-
+    Promise.resolve().then(() => {
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(compile());
       render();
+
+      keys.forEach((key) => {
+        new PropertyObserver(ctrl, key).observe(
+          value => (value && typeof value === 'object' ? render() : null),
+          render
+        );
+      });
     });
 
     host.addEventListener('hybrid-update', render);

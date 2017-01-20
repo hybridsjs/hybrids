@@ -80,6 +80,7 @@ describe('Core | define -', () => {
         }
         constructor() {
           this.one = 'value';
+          this.two = undefined;
         }
       });
 

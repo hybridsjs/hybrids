@@ -37,7 +37,7 @@ describe('Engine | Provider -', () => {
     });
   });
 
-  rafIt('updates view', () => {
+  rafIt('updates by property', () => {
     el.test = 'new value';
     requestAnimationFrame(() => {
       expect(el.shadowRoot.children[0].textContent.trim()).toEqual('new value');

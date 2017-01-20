@@ -68,7 +68,7 @@ export default class Expression {
         get: () => resolveLocal(this.node, rootProperty)
       });
 
-      if (!this.path.isNestedProperty()) {
+      if (!this.path.isNestedProperty) {
         this.set = () => {
           error(TypeError, "expression: Local variable '%local' is readonly", { local: rootProperty });
         };
@@ -92,7 +92,7 @@ export default class Expression {
 
   get(argsMap) {
     if (!Reflect.has(this.context, this.path.rootProperty)) {
-      const text = `expression: ${this.path.isNestedProperty() ? "'%property' in '%evaluate'" : "'%property' "} must be defined`;
+      const text = `expression: ${this.path.isNestedProperty ? "'%property' in '%evaluate'" : "'%property' "} must be defined`;
       error(ReferenceError, text, {
         property: this.path.rootProperty, evaluate: this.path.evaluate
       });
@@ -112,7 +112,7 @@ export default class Expression {
     }
 
     if (!Reflect.has(this.context, this.path.rootProperty)) {
-      const text = `expression: ${this.path.isNestedProperty() ? "'%property' in '%evaluate'" : "'%property' "} must be defined`;
+      const text = `expression: ${this.path.isNestedProperty ? "'%property' in '%evaluate'" : "'%property' "} must be defined`;
       error(ReferenceError, text, {
         property: this.path.rootProperty, evaluate: this.path.evaluate
       });

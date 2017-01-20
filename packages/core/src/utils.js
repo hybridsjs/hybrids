@@ -8,12 +8,7 @@ export function dashToCamel(str) {
   return str.replace(/-([a-z])/g, g => g[1].toUpperCase());
 }
 
-export function reflectValue(value, target) {
-  if (value === target) {
-    return target;
-  }
-
-  const type = typeof target;
+export function reflectValue(value, type) {
   switch (type) {
     case 'string': return String(value);
     case 'number': return Number(value);

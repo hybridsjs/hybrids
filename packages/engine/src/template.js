@@ -351,8 +351,11 @@ export default class Template {
   }
 
   getRootPathProperties() {
-    return new Set(Object.keys(this.container.p)
-      .map(key => this.container.p[key].rootProperty)
+    const paths = this.container.p;
+
+    return new Set(Object.keys(paths)
+      .filter(key => !(paths[key].isComputed && !paths[key].isNestedProperty))
+      .map(key => paths[key].rootProperty)
       .filter(key => key[0] !== LOCALS_PREFIX)
     );
   }

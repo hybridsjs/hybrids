@@ -114,24 +114,20 @@ describe('Engine | Template -', () => {
     it('run markers', () => {
       const template = new Template(`
         <!-- this is comment -->
-        <span ${M}marker="one"></span>
-        <span ${M}marker="val1, val2: two | filter"></span>
+        <span id="one" ${M}marker="one"></span>
+        <span id="two" ${M}marker="val1, val2: two | filter"></span>
       `, { markers: { marker }, filters: { filter(val) { return val; } } });
 
-      template.compile({ one: 'test 1', two: 'test 2' });
+      const fragment = template.compile({ one: 'test 1', two: 'test 2' });
 
       expect(marker).toHaveBeenCalled();
       expect(marker.calls.count()).toEqual(2);
 
-      expect(marker.calls.argsFor(0)[0].node).toEqual(
-        template.container.t[0].e.content.childNodes[3]
-      );
+      expect(marker.calls.argsFor(0)[0].node).toEqual(fragment.querySelector('#one'));
       expect(marker.calls.argsFor(0)[0].expr.get()).toEqual('test 1');
       expect(marker.calls.argsFor(0)[1]).not.toBeDefined();
 
-      expect(marker.calls.argsFor(1)[0].node).toEqual(
-        template.container.t[0].e.content.childNodes[5]
-      );
+      expect(marker.calls.argsFor(1)[0].node).toEqual(fragment.querySelector('#two'));
       expect(marker.calls.argsFor(1)[0].expr.get()).toEqual('test 2');
       expect(marker.calls.argsFor(1)[1]).toEqual('val1');
       expect(marker.calls.argsFor(1)[2]).toEqual('val2');

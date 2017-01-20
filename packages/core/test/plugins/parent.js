@@ -19,7 +19,7 @@ describe('Core | Plugins | Parent -', () => {
   });
 
   afterEach(() => {
-    if (parentEl.parentElement) parentEl.parentElement.removeChild(parentEl);
+    if (parentEl.parentElement === document.body) document.body.removeChild(parentEl);
   });
 
   it('throw when controller is not initialized', () => {
