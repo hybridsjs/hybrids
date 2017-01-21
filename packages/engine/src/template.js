@@ -220,7 +220,7 @@ function parseTemplate(template, container) {
 }
 
 export default class Template {
-  constructor(input, { markers = {}, filters = {}, styles = [], name = '' } = {}) {
+  constructor(input, { markers = {}, filters = {}, name, styles } = {}) {
     this.markers = markers;
     this.filters = filters;
 
