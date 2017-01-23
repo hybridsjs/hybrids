@@ -1,5 +1,8 @@
-import { camelToDash } from '@hybrids/core/src/utils';
 import { error } from '../debug';
+
+function camelToDash(str) {
+  return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+}
 
 export default function style({ node, expr }, ...propertyNames) {
   if (!propertyNames.length) {
