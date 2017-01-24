@@ -18,7 +18,7 @@ export default class Hybrid extends HTMLBridge {
     });
 
     this.constructor[OPTIONS].properties.forEach(({ property, attr }) => {
-      if (!Reflect.has(this[CONTROLLER], property)) {
+      if (process.env.NODE_ENV !== 'production' && !Reflect.has(this[CONTROLLER], property)) {
         error(TypeError, "hybrid: Public property '%property' must be defined", { property });
       }
 

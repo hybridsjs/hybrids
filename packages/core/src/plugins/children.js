@@ -16,13 +16,15 @@ function walk(node, Controller, options, items = []) {
 }
 
 export function children(host, Controller, options = {}) {
-  if (typeof Controller !== 'function') error(TypeError, 'children: Invalid arguments');
-  if (typeof options !== 'object') {
-    error(TypeError, 'children: options must be an object: %options', {
-      options: typeof options
-    });
+  if (process.env.NODE_ENV !== 'production') {
+    if (typeof Controller !== 'function') error(TypeError, 'children: Invalid arguments');
+    if (typeof options !== 'object') {
+      error(TypeError, 'children: options must be an object: %options', {
+        options: typeof options
+      });
+    }
+    if (host[CONTROLLER]) error(Error, 'children: Illegal invocation');
   }
-  if (host[CONTROLLER]) error(Error, 'children: Illegal invocation');
 
   const items = [];
   const refresh = () => {

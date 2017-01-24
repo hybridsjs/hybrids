@@ -32,7 +32,7 @@ function bindCheckbox(node, expr, path) {
     down(value) {
       if (node.hasAttribute('value')) {
         if (value) {
-          if (!Array.isArray(value)) {
+          if (process.env.NODE_ENV !== 'production' && !Array.isArray(value)) {
             error(TypeError, "model: '%evaluate' must be an array: %type", {
               evaluate: expr.evaluate, type: typeof value
             });
@@ -71,7 +71,7 @@ function bindSelect(node, expr, path, multiply = false) {
       if (multiply) {
         if (value === undefined) {
           value = [];
-        } else if (!Array.isArray(value)) {
+        } else if (process.env.NODE_ENV !== 'production' && !Array.isArray(value)) {
           error(TypeError, "model: '%evaluate' must be an array: %type", {
             evaluate: expr.evaluate, type: typeof value
           });

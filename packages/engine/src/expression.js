@@ -91,14 +91,7 @@ export default class Expression {
   }
 
   get(argsMap) {
-    if (!Reflect.has(this.context, this.path.rootProperty)) {
-      const text = `expression: ${this.path.isNestedProperty ? "'%property' in '%evaluate'" : "'%property' "} must be defined`;
-      error(ReferenceError, text, {
-        property: this.path.rootProperty, evaluate: this.path.evaluate
-      });
-    }
-
-    if (this.path.isComputed) {
+    if (this.isComputed) {
       const locals = mergeLocals(this.node, argsMap);
       return this.applyFilters(this.path.call(this.context, locals));
     }
@@ -107,15 +100,8 @@ export default class Expression {
   }
 
   set(value, replace) {
-    if (this.path.isComputed) {
+    if (process.env.NODE_ENV !== 'production' && this.isComputed) {
       error(TypeError, "expression: Computed '%evaluate' is readonly", { evaluate: this.path.evaluate });
-    }
-
-    if (!Reflect.has(this.context, this.path.rootProperty)) {
-      const text = `expression: ${this.path.isNestedProperty ? "'%property' in '%evaluate'" : "'%property' "} must be defined`;
-      error(ReferenceError, text, {
-        property: this.path.rootProperty, evaluate: this.path.evaluate
-      });
     }
 
     this.path.set(this.context, this.applyFilters(value), replace);

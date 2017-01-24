@@ -138,4 +138,14 @@ describe('Engine | Path -', () => {
       expect(context.c).toBeUndefined();
     });
   });
+
+  describe('computed', () => {
+    it('has isComputed set', () => {
+      expect(new Path('a.b()').isComputed).toEqual(true);
+    });
+
+    it('throws for path with arguments', () => {
+      expect(() => new Path('a.b.c(a, b)')).toThrow();
+    });
+  });
 });

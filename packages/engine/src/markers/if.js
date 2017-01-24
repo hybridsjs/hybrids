@@ -2,7 +2,7 @@ import { error } from '../debug';
 import VirtualFragment from './shared/virtual-fragment';
 
 export default function If({ node }) {
-  if (!(node instanceof Comment)) {
+  if (process.env.NODE_ENV !== 'production' && !(node instanceof Comment)) {
     error(TypeError, 'if: Element must be a <template>');
   }
 

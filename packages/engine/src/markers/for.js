@@ -13,14 +13,14 @@ function createLocals(locals) {
 }
 
 export default function ({ node, expr }, localName = 'item') {
-  if (!(node instanceof Comment)) {
+  if (process.env.NODE_ENV !== 'production' && !(node instanceof Comment)) {
     error(TypeError, 'for: Element must be a <template>');
   }
 
   const cache = new VirtualFragment(null, node, true).items;
 
   return (list, { type: globalType, changelog }, compile) => {
-    if (typeof list !== 'object') {
+    if (process.env.NODE_ENV !== 'production' && typeof list !== 'object') {
       error(TypeError, "for: '%evaluate' must be an object: %type", { evaluate: expr.evaluate, type: typeof list });
     }
 

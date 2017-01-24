@@ -26,7 +26,7 @@ export default function classList({ node, expr }, ...classNames) {
         }
         default:
           if (list) {
-            if (typeof list !== 'object') {
+            if (process.env.NODE_ENV !== 'production' && typeof list !== 'object') {
               error(TypeError, "class: '%evaluate' must be an object: %type", { evaluate: expr.evaluate, type: typeof list });
             }
             const isArray = Array.isArray(list);

@@ -35,7 +35,7 @@ function bootstrap(name, Controller) {
   options.properties = (options.properties || [])
     .map(normalizeProperty)
     .filter(({ property, attr }) => {
-      if (Reflect.has(ExtHybrid.prototype, property)) {
+      if (process.env.NODE_ENV !== 'production' && Reflect.has(ExtHybrid.prototype, property)) {
         error(ReferenceError, "define: Property '%property' already in HTMLElement prototype chain", { property });
       }
 
@@ -63,7 +63,7 @@ function bootstrap(name, Controller) {
 
   Object.defineProperty(ExtHybrid, PROVIDERS, {
     value: (options.providers || []).map((m) => {
-      if (typeof m !== 'function') {
+      if (process.env.NODE_ENV !== 'production' && typeof m !== 'function') {
         error(TypeError, 'define: Provider must be a function: %type', { type: typeof m });
       }
       return m(ExtHybrid);

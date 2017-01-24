@@ -37,7 +37,9 @@ function execute({ host, template, compile }) {
 
 export default function engine(Hybrid) {
   const options = Hybrid[OPTIONS];
-  if (!options.template) error(TypeError, 'engine: Hybrid "template" option is required');
+  if (process.env.NODE_ENV !== 'production' && !options.template) {
+    error(TypeError, 'engine: Hybrid "template" option is required');
+  }
 
   const template = new Template(options.template, {
     markers: Object.assign({}, markers, options.markers),

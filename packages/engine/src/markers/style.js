@@ -21,7 +21,7 @@ export default function style({ node, expr }, ...propertyNames) {
           break;
         default:
           if (list) {
-            if (typeof list !== 'object') {
+            if (process.env.NODE_ENV !== 'production' && typeof list !== 'object') {
               error(TypeError, "style: '%evaluate' must be an object: %type", { evaluate: expr.evaluate, type: typeof list });
             }
             Object.keys(list).forEach(key => node.style.setProperty(camelToDash(key), list[key]));

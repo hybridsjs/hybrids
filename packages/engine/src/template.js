@@ -48,28 +48,32 @@ function normalizeWhitespace(input, startIndent = 0) {
 }
 
 export function stringifyMarker(node, attr, templates) {
-  let output;
+  if (process.env.NODE_ENV !== 'production') {
+    let output;
 
-  if (node.nodeType === Node.COMMENT_NODE) {
-    node = templates[getTemplateId(node)].e;
-  }
-
-  if (node.nodeName !== 'TEMPLATE') {
-    output = normalizeWhitespace((node).outerHTML);
-  } else {
-    output = `${node.outerHTML.match(/^<[^<]+>/i)}\n  ${normalizeWhitespace(node.innerHTML, 2)}\n</${node.nodeName.toLowerCase()}>`;
-  }
-
-  output = output.split('\n').map((line, index) => {
-    if (!index) {
-      const startIndex = line.indexOf(attr);
-      return `| ${line}\n| ${' '.repeat(startIndex)}${'^'.repeat(attr.length)}`;
+    if (node.nodeType === Node.COMMENT_NODE) {
+      node = templates[getTemplateId(node)].e;
     }
 
-    return `| ${line}`;
-  }).join('\n');
+    if (node.nodeName !== 'TEMPLATE') {
+      output = normalizeWhitespace((node).outerHTML);
+    } else {
+      output = `${node.outerHTML.match(/^<[^<]+>/i)}\n  ${normalizeWhitespace(node.innerHTML, 2)}\n</${node.nodeName.toLowerCase()}>`;
+    }
 
-  return `\n\n${output}\n`;
+    output = output.split('\n').map((line, index) => {
+      if (!index) {
+        const startIndex = line.indexOf(attr);
+        return `| ${line}\n| ${' '.repeat(startIndex)}${'^'.repeat(attr.length)}`;
+      }
+
+      return `| ${line}`;
+    }).join('\n');
+
+    return `\n\n${output}\n`;
+  }
+
+  return '';
 }
 
 function interpolate(node) {
@@ -292,7 +296,7 @@ export default class Template {
           try {
             const marker = this.markers[markerId];
 
-            if (!marker) {
+            if (process.env.NODE_ENV !== 'production' && !marker) {
               error(ReferenceError, "template: Marker '%markerId' not found", { markerId });
             }
 

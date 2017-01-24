@@ -123,10 +123,6 @@ describe('Engine | Expression -', () => {
       defineLocals(parent, { one: 'value' });
       expect(expr.get()).toEqual('value');
     });
-
-    it('throw for empty inherti locals', () => {
-      expect(() => expr.get()).toThrow();
-    });
   });
 
   describe('get/set with computed path', () => {

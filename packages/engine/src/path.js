@@ -32,6 +32,11 @@ export default class Path {
       Object.assign(this, input);
     } else {
       this.evaluate = input;
+
+      if (process.env.NODE_ENV !== 'production' && /\([^)]+\)$/.test(input)) {
+        error(TypeError, "path: Arguments in '%evaluate' not supported", { evaluate: input });
+      }
+
       if (input.substr(-2) === '()') {
         input = input.substr(0, input.length - 2);
         this.isComputed = true;
