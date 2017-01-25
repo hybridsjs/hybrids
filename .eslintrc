@@ -19,6 +19,9 @@
         "imports": "only-multiline",
         "exports": "only-multiline",
         "functions": "ignore",
+    }],
+    "import/no-extraneous-dependencies": ["error", {
+      "devDependencies": ["**/test/*.js"]
     }]
   },
   "globals": {
