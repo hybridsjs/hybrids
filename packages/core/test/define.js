@@ -128,7 +128,8 @@ describe('Core | define -', () => {
 
       const ExtHybrid = define('hybrids-core-providers-one', Controller);
       expect(spy).toHaveBeenCalled();
-      expect(spy.calls.mostRecent().args[0]).toEqual(ExtHybrid);
+      expect(spy.calls.mostRecent().args)
+        .toEqual([ExtHybrid[OPTIONS], 'hybrids-core-providers-one']);
     });
 
     it('throw when provider is not a function', () => {

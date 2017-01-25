@@ -1,5 +1,4 @@
 import { State, PropertyObserver } from 'papillon';
-import { OPTIONS, NAME } from '@hybrids/core';
 
 import { error } from './debug';
 import Template from './template';
@@ -35,8 +34,7 @@ function execute({ host, template, compile }) {
   });
 }
 
-export default function engine(Hybrid) {
-  const options = Hybrid[OPTIONS];
+export default function engine(options, name) {
   if (process.env.NODE_ENV !== 'production' && !options.template) {
     error(TypeError, 'engine: Hybrid "template" option is required');
   }
@@ -44,8 +42,8 @@ export default function engine(Hybrid) {
   const template = new Template(options.template, {
     markers: Object.assign({}, markers, options.markers),
     filters: Object.assign({}, filters, options.filters),
-    name: Hybrid[NAME],
-    styles: options.styles
+    styles: options.styles,
+    name
   });
 
   const globalKeys = template.getRootPathProperties();

@@ -66,7 +66,7 @@ function bootstrap(name, Controller) {
       if (process.env.NODE_ENV !== 'production' && typeof m !== 'function') {
         error(TypeError, 'define: Provider must be a function: %type', { type: typeof m });
       }
-      return m(ExtHybrid);
+      return m(options, name);
     }).filter(m => m),
   });
 
