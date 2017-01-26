@@ -33,6 +33,12 @@ export default function style({ node, expr }, ...propertyNames) {
   }
 
   return (value) => {
-    propertyNames.map(camelToDash).forEach(key => node.style.setProperty(key, value));
+    propertyNames.map(camelToDash).forEach((key) => {
+      if (!value && value !== 0) {
+        node.style.removeProperty(key);
+      } else {
+        node.style.setProperty(key, value);
+      }
+    });
   };
 }

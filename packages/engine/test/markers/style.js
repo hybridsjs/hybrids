@@ -85,7 +85,7 @@ describe('Engine | Markers | Style -', () => {
     ctrl.style = null;
 
     requestAnimationFrame(() => {
-      expect(el.shadowRoot.querySelector('#list').hasAttribute('style')).toEqual(false);
+      expect(!!el.shadowRoot.querySelector('#list').getAttribute('style')).toEqual(false);
     });
   });
 });

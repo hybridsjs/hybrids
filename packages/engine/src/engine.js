@@ -5,7 +5,7 @@ import Template from './template';
 import markers from './markers';
 import filters from './filters';
 
-function execute({ host, template, compile }) {
+function execute(host, template, compile) {
   return new Promise((resolve) => {
     window.requestAnimationFrame(() => {
       template.run(host.shadowRoot, (w) => {
@@ -55,22 +55,23 @@ export default function engine(options, name) {
 
     let request;
     const render = () => {
-      request = request || execute({ host, template, compile }).then(() => (request = undefined));
+      request = request || execute(host, template, compile).then(() => (request = undefined));
     };
 
-    Promise.resolve().then(() => {
-      const shadowRoot = host.attachShadow({ mode: 'open' });
-      shadowRoot.appendChild(compile());
-      render();
-
-      keys.forEach((key) => {
-        new PropertyObserver(ctrl, key).observe(
+    keys.forEach((key) => {
+      new PropertyObserver(ctrl, key).observe(
           value => (value && typeof value === 'object' ? render() : null),
           render
         );
-      });
     });
 
     host.addEventListener('hybrid-update', render);
+
+    requestAnimationFrame(() => {
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(compile());
+    });
+
+    render();
   };
 }
