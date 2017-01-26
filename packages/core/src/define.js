@@ -1,5 +1,6 @@
 import { error } from './debug';
 import Hybrid from './hybrid';
+import { proxy } from './proxy';
 import { camelToDash, normalizeProperty } from './utils';
 import { CONTROLLER, PROVIDERS, OPTIONS, NAME } from './symbols';
 
@@ -12,6 +13,8 @@ function bootstrap(name, Controller) {
       return ExtHybrid;
     }
   }
+
+  proxy(Controller);
 
   const options = Controller.options || {};
 

@@ -1,5 +1,5 @@
 import { error } from './debug';
-import { proxy } from './proxy';
+import { mapInstance, callWithContext } from './proxy';
 import { dashToCamel, reflectValue, queue } from './utils';
 import { dispatchEvent } from './plugins/dispatch-event';
 
@@ -13,9 +13,13 @@ export default class Hybrid extends HTMLBridge {
   constructor() {
     super();
 
-    Object.defineProperty(this, CONTROLLER, {
-      value: proxy(this, () => new this.constructor[CONTROLLER]()),
+    callWithContext(this, () => {
+      Object.defineProperty(this, CONTROLLER, {
+        value: new this.constructor[CONTROLLER](),
+      });
     });
+
+    mapInstance(this[CONTROLLER], this);
 
     this.constructor[OPTIONS].properties.forEach(({ property, attr }) => {
       if (process.env.NODE_ENV !== 'production' && !Reflect.has(this[CONTROLLER], property)) {

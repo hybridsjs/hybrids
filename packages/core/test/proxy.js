@@ -1,6 +1,6 @@
-import { injectable, resolve, callWithContext, proxy } from '../src/proxy';
+import { injectable, resolve, callWithContext, proxy, mapInstance } from '../src/proxy';
 
-describe('Core | Proxy', () => {
+describe('core | proxy', () => {
   describe('injectable & resolve', () => {
     let spy;
     let wrapper;
@@ -16,17 +16,17 @@ describe('Core | Proxy', () => {
       expect(() => wrapper()).toThrow();
     });
 
-    it('call function with context', () => {
+    it('calls function with context', () => {
       callWithContext(context, wrapper);
       expect(spy).toHaveBeenCalled();
       expect(spy.calls.mostRecent().args[0]).toEqual(context);
     });
 
-    it('resolve throws error', () => {
+    it('resolves throws error', () => {
       expect(() => resolve(wrapper)).toThrow();
     });
 
-    it('return function with injected context', () => {
+    it('returns function with injected context', () => {
       const fn = callWithContext(context, () => resolve(wrapper));
       fn();
       expect(spy).toHaveBeenCalled();
@@ -57,59 +57,36 @@ describe('Core | Proxy', () => {
         set test2(newVal) {
           wrapper(newVal);
         }
+
+        get test3() { return 'test'; }
       };
+
+      proxy(Controller);
+      proxy(Controller); // second time should omit update
     });
 
-    describe('native Proxy', () => {
-      beforeEach(() => {
-        ctrl = proxy(context, () => new Controller());
-      });
-
-      it('call with context prototype method', () => {
-        ctrl.test1();
-        expect(spy.calls.mostRecent().args[0]).toEqual(context);
-      });
-
-      it('call with context prototype getter', () => {
-        expect(ctrl.test2).toEqual(undefined);
-        expect(spy.calls.mostRecent().args[0]).toEqual(context);
-      });
-
-      it('call with context prototype setter', () => {
-        ctrl.test2 = 'new value';
-        expect(spy.calls.mostRecent().args[0]).toEqual(context);
-      });
+    beforeEach(() => {
+      ctrl = new Controller();
+      mapInstance(ctrl, context);
     });
 
-    describe('emulated Proxy', () => {
-      let orgProxy;
-      beforeAll(() => {
-        orgProxy = Object.getOwnPropertyDescriptor(window, 'Proxy');
-        delete window.Proxy;
-      });
+    it('return value from method', () => {
+      expect(ctrl.test3).toEqual('test');
+    });
 
-      afterAll(() => {
-        if (orgProxy) Object.defineProperty(window, 'Proxy', orgProxy);
-      });
+    it('calls with context prototype method', () => {
+      ctrl.test1();
+      expect(spy.calls.mostRecent().args[0]).toEqual(context);
+    });
 
-      beforeEach(() => {
-        ctrl = proxy(context, () => new Controller());
-      });
+    it('calls with context prototype getter', () => {
+      expect(ctrl.test2).toEqual(undefined);
+      expect(spy.calls.mostRecent().args[0]).toEqual(context);
+    });
 
-      it('call with context prototype method', () => {
-        ctrl.test1();
-        expect(spy.calls.mostRecent().args[0]).toEqual(context);
-      });
-
-      it('call with context prototype getter', () => {
-        expect(ctrl.test2).toEqual(undefined);
-        expect(spy.calls.mostRecent().args[0]).toEqual(context);
-      });
-
-      it('call with context prototype setter', () => {
-        ctrl.test2 = 'new value';
-        expect(spy.calls.mostRecent().args[0]).toEqual(context);
-      });
+    it('calls with context prototype setter', () => {
+      ctrl.test2 = 'new value';
+      expect(spy.calls.mostRecent().args[0]).toEqual(context);
     });
   });
 });

@@ -4,7 +4,7 @@ let activeContext = null;
 
 export function injectable(fn) {
   return function wrapper(...args) {
-    if (!activeContext) error("proxy: Illegal invocation of '%fn'", { fn: fn.name });
+    if (!activeContext) error(ReferenceError, "proxy: Illegal invocation of '%fn'", { fn: fn.name });
     return fn(activeContext, ...args);
   };
 }
@@ -20,7 +20,7 @@ export function callWithContext(context, fn) {
 }
 
 export function resolve(fn) {
-  if (!activeContext) error("proxy: Illegal invocation of '%fn'", { fn: fn.name });
+  if (!activeContext) error(ReferenceError, "proxy: Illegal invocation of '%fn'", { fn: fn.name });
   const context = activeContext;
   return () => callWithContext(context, fn);
 }
@@ -28,29 +28,13 @@ export function resolve(fn) {
 const map = new WeakMap();
 const set = new WeakSet();
 
-export function proxy(element, constructor) {
-  const controller = callWithContext(element, () => constructor());
+export function mapInstance(target, context) {
+  map.set(target, context);
+}
 
-  if (typeof Proxy === 'function') {
-    return new Proxy(controller, {
-      get(target, property, receiver) {
-        const value = callWithContext(element, () => Reflect.get(target, property, receiver));
+export function proxy(Controller) {
+  let proto = Controller.prototype;
 
-        if (typeof value === 'function') {
-          return (...args) => callWithContext(element, value.bind(receiver, ...args));
-        }
-
-        return value;
-      },
-      set(target, property, value, receiver) {
-        return callWithContext(element, () => Reflect.set(target, property, value, receiver));
-      }
-    });
-  }
-
-  map.set(controller, element);
-
-  let proto = Object.getPrototypeOf(controller);
   while (proto) {
     if (!set.has(proto)) {
       set.add(proto);
@@ -63,7 +47,7 @@ export function proxy(element, constructor) {
             const fn = desc.value;
             const temp = {
               [key](...args) {
-                return callWithContext(map.get(this), () => fn.apply(this, args));
+                return callWithContext(map.get(this), fn.bind(this, ...args));
               },
             };
             desc.value = temp[key];
@@ -90,6 +74,4 @@ export function proxy(element, constructor) {
     proto = Object.getPrototypeOf(proto);
     if (proto === Object.prototype) proto = null;
   }
-
-  return controller;
 }
