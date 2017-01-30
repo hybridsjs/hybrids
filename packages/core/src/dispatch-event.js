@@ -1,4 +1,4 @@
-import { injectable } from '../proxy';
+import { injectable } from './proxy';
 
 export function dispatchEvent(host, name, options) {
   const config = Object.assign({ bubbles: true, cancelable: false }, options);

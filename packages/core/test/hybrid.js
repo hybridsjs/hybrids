@@ -1,6 +1,6 @@
 import { define, CONTROLLER } from '../src/index';
 
-describe('Core | Hybrid -', () => {
+describe('core | hybrid -', () => {
   let el;
   let spy;
   let Controller;
@@ -9,23 +9,23 @@ describe('Core | Hybrid -', () => {
     if (el && el.parentElement) el.parentElement.removeChild(el);
   });
 
-  describe('lifecycle', () => {
+  describe('lifecycle -', () => {
     beforeEach(() => {
       spy = jasmine.createSpy('callback');
       Controller = class {};
     });
 
-    it('return string representation', () => {
+    it('returns string representation', () => {
       el = new (define('hybrids-core-string-id', Controller))();
       expect(el.toString()).toEqual('[object HTMLHybridElement]');
     });
 
-    it('initialize controller', () => {
+    it('initializes controller', () => {
       el = new (define('hybrids-core-hybrid-init', Controller))();
       expect(el[CONTROLLER] instanceof Controller).toEqual(true);
     });
 
-    rafIt('call controller connect', () => {
+    rafIt('calls controller connect', () => {
       define('hybrids-core-hybrid-connect', class {
         connect() { spy(); }
       });
@@ -36,7 +36,7 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    it('call controller disconnect', (done) => {
+    it('calls controller disconnect', (done) => {
       define('hybrids-core-hybrid-disconnect', class {
         disconnect(...args) { spy(...args); }
       });
@@ -52,7 +52,7 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    rafIt('dispatch hybrid-connect event', () => {
+    rafIt('dispatches hybrid-connect event', () => {
       define('hybrids-core-hybrid-connect-provider', class {
         static get options() {
           return {
@@ -69,7 +69,7 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    it('dispatch hybrid-disconnect event', (done) => {
+    it('dispatches hybrid-disconnect event', (done) => {
       define('hybrids-core-hybrid-disconnect-provider', class {
         static get options() {
           return {
@@ -92,7 +92,7 @@ describe('Core | Hybrid -', () => {
     });
   });
 
-  describe('public properties', () => {
+  describe('public properties -', () => {
     let options;
 
     beforeAll(() => {
@@ -117,7 +117,7 @@ describe('Core | Hybrid -', () => {
       options.properties = ['one', { property: 'two', attr: false }, { property: 'three' }, 'four'];
     });
 
-    it('map properties', () => {
+    it('maps properties', () => {
       el = new (define('hybrids-core-public-properties', Controller))();
       expect(el.one).toEqual(false);
       expect(el.two).toEqual('test');
@@ -125,19 +125,19 @@ describe('Core | Hybrid -', () => {
       expect(el.four).toEqual('other value');
     });
 
-    it('throw for bad type', () => {
+    it('throws for bad type', () => {
       options.properties.push(1);
       expect(() => {
         define('hybrids-core-public-props-error-bad-type', Controller);
       }).toThrow();
     });
 
-    it('throw for already defined property in HTMLElement', () => {
+    it('throws for already defined property in HTMLElement', () => {
       options.properties.push('title');
       expect(() => define('hybrids-core-public-throw-duplicate', Controller)).toThrow();
     });
 
-    rafIt('update attribute from upgraded element', () => {
+    rafIt('updates attribute from upgraded element', () => {
       el = document.createElement('hybrids-core-reflect-boolean-one');
       el.setAttribute('one', '');
 
@@ -150,7 +150,7 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    rafIt('update attribute from defined element', () => {
+    rafIt('updates attribute from defined element', () => {
       define('hybrids-core-reflect-boolean-two', Controller);
 
       el = document.createElement('hybrids-core-reflect-boolean-two');
@@ -163,7 +163,7 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    rafIt('update property from upgraded element', () => {
+    rafIt('updates property from upgraded element', () => {
       el = document.createElement('hybrids-core-reflect-boolean-three');
       el.one = true;
 
@@ -177,7 +177,7 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    rafIt('reflect boolean value with ctrl', () => {
+    rafIt('reflects boolean value with ctrl', () => {
       define('hybrids-core-reflect-boolean-ctrl', Controller);
       el = document.createElement('hybrids-core-reflect-boolean-ctrl');
       document.body.appendChild(el);
@@ -189,7 +189,7 @@ describe('Core | Hybrid -', () => {
       });
     });
 
-    rafIt('reinitialize property when element is upgraded', () => {
+    rafIt('reinitializes property when element is upgraded', () => {
       el = document.createElement('hybrids-core-public-upgrade');
       el.one = true;
 

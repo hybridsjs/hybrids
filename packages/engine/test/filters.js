@@ -1,7 +1,7 @@
 import filters from '../src/filters';
 
-describe('Engine | Filters -', () => {
-  it('reverse bool value', () => {
+describe('engine | filters -', () => {
+  it('reverses bool value', () => {
     expect(filters.not(true)).toEqual(false);
   });
 });

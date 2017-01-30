@@ -1,7 +1,7 @@
-import { listenTo } from '../../src/plugins/listen-to';
-import { CONTROLLER } from '../../src/symbols';
+import { listenTo } from '../src/listen-to';
+import { CONTROLLER } from '../src/symbols';
 
-describe('Core | Plugins | ListenTo -', () => {
+describe('core | listenTo -', () => {
   let context;
   let ctrl;
   let spy;
@@ -18,7 +18,7 @@ describe('Core | Plugins | ListenTo -', () => {
     context.click();
   });
 
-  it('add event listener', () => {
+  it('adds event listener', () => {
     expect(spy).toHaveBeenCalled();
   });
 
@@ -26,7 +26,7 @@ describe('Core | Plugins | ListenTo -', () => {
     expect(spy.calls.mostRecent().object).toEqual(ctrl);
   });
 
-  it('return revoke function', () => {
+  it('returns revoke function', () => {
     context.click();
     revoke();
     context.click();

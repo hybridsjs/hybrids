@@ -3,7 +3,7 @@ import engine from '../../src/engine';
 import { getOwnLocals, LOCALS_PREFIX as L } from '../../src/expression';
 import { PROPERTY_PREFIX as P, MARKER_PREFIX as M } from '../../src/template';
 
-describe('Engine | Markers | For -', () => {
+describe('engine | markers | for -', () => {
   let el;
 
   function extractValues() {
@@ -16,7 +16,7 @@ describe('Engine | Markers | For -', () => {
     document.body.removeChild(el);
   });
 
-  describe('one array instance', () => {
+  describe('one array instance -', () => {
     class EngineForeachTest {
       static get options() {
         return {
@@ -78,7 +78,7 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    rafIt('shift item locals', () => {
+    rafIt('shifts item locals', () => {
       el.items.shift();
       requestAnimationFrame(() => {
         expect(getOwnLocals(el.shadowRoot.children[0])).toEqual({
@@ -106,42 +106,42 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    rafIt('pop item', () => {
+    rafIt('pops item', () => {
       el.items.pop();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['4', '2', '3']);
       });
     });
 
-    rafIt('shift item', () => {
+    rafIt('shifts item', () => {
       el.items.shift();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['2', '3', '1']);
       });
     });
 
-    rafIt('unshift item', () => {
+    rafIt('unshifts item', () => {
       el.items.unshift('6');
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['6', '4', '2', '3', '1']);
       });
     });
 
-    rafIt('sort item', () => {
+    rafIt('sorts item', () => {
       el.items.sort();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['1', '2', '3', '4']);
       });
     });
 
-    rafIt('replace using old items', () => {
+    rafIt('replaces using old items', () => {
       el.items = ['2', '2', '1', '4'];
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['2', '2', '1', '4']);
       });
     });
 
-    rafIt('replace', () => {
+    rafIt('replaces', () => {
       el.items = ['2', '2', '1'];
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['2', '2', '1']);
@@ -162,7 +162,7 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    rafIt('push items', () => {
+    rafIt('pushes items', () => {
       el.items.push('1', '2', '3');
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['4', '2', '3', '1', '1', '2', '3']);
@@ -198,7 +198,7 @@ describe('Engine | Markers | For -', () => {
     });
   });
 
-  describe('nested array instances', () => {
+  describe('nested array instances -', () => {
     class EngineForeachTestMultiply {
       static get options() {
         return {
@@ -233,34 +233,34 @@ describe('Engine | Markers | For -', () => {
       document.body.appendChild(el);
     });
 
-    rafIt('render initial items', () => {
+    rafIt('renders initial items', () => {
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
       });
     });
 
-    rafIt('pop item', () => {
+    rafIt('pops item', () => {
       el.items.pop();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['1', '2', '3', '4', '5', '6']);
       });
     });
 
-    rafIt('shift item', () => {
+    rafIt('shifts item', () => {
       el.items.shift();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['4', '5', '6', '7', '8', '9']);
       });
     });
 
-    rafIt('unshift item', () => {
+    rafIt('unshifts item', () => {
       el.items.unshift({ values: ['10'] });
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['10', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
       });
     });
 
-    rafIt('sort item', () => {
+    rafIt('sorts item', () => {
       el.items.sort((a, b) => b.values[0] - a.values[0]);
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['7', '8', '9', '4', '5', '6', '1', '2', '3']);
@@ -274,7 +274,7 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    rafIt('merge locals with parent for', () => {
+    rafIt('merges locals with parent for', () => {
       requestAnimationFrame(() => {
         const { item, index, value } = getOwnLocals(el.shadowRoot.children[4]);
         expect(item).toEqual(el.items[1]);
@@ -284,7 +284,7 @@ describe('Engine | Markers | For -', () => {
     });
   });
 
-  describe('multiple nested array instances', () => {
+  describe('multiple nested array instances -', () => {
     class EngineForeachTestMultiplyNested {
       static get options() {
         return {
@@ -317,55 +317,55 @@ describe('Engine | Markers | For -', () => {
       document.body.appendChild(el);
     });
 
-    rafIt('render initial items', () => {
+    rafIt('renders initial items', () => {
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['1', '3', '5', '2', '4', '3', '6', '2']);
       });
     });
 
-    rafIt('pop root item', () => {
+    rafIt('pops root item', () => {
       el.items.pop();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['1', '3', '5', '2']);
       });
     });
 
-    rafIt('pop children item', () => {
+    rafIt('pops children item', () => {
       el.items[0].pop();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['1', '3', '4', '3', '6', '2']);
       });
     });
 
-    rafIt('pop nested children item', () => {
+    rafIt('pops nested children item', () => {
       el.items[1][0].pop();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['1', '3', '5', '2', '4', '6', '2']);
       });
     });
 
-    rafIt('shift root item', () => {
+    rafIt('shifts root item', () => {
       el.items.shift();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['4', '3', '6', '2']);
       });
     });
 
-    rafIt('shift children item', () => {
+    rafIt('shifts children item', () => {
       el.items[0].shift();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['5', '2', '4', '3', '6', '2']);
       });
     });
 
-    rafIt('shift nested children item', () => {
+    rafIt('shifts nested children item', () => {
       el.items[1][0].shift();
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['1', '3', '5', '2', '3', '6', '2']);
       });
     });
 
-    rafIt('sort item', () => {
+    rafIt('sorts item', () => {
       el.items.forEach((item) => {
         item.forEach((child) => {
           child.sort((a, b) => a - b);
@@ -378,7 +378,7 @@ describe('Engine | Markers | For -', () => {
     });
   });
 
-  describe('one object instance', () => {
+  describe('one object instance -', () => {
     class EngineForeachObjectTest {
       static get options() {
         return {
@@ -440,7 +440,7 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    rafIt('delete property', () => {
+    rafIt('deletes property', () => {
       delete el.items.c;
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['a', 'b']);
@@ -454,7 +454,7 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    it('replace the same', (done) => {
+    it('replaces the same', (done) => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           const elements = Array.from(el.shadowRoot.querySelectorAll('[data-value]'));
@@ -468,7 +468,7 @@ describe('Engine | Markers | For -', () => {
       });
     });
 
-    rafIt('replace without property', () => {
+    rafIt('replaces without property', () => {
       el.items = { a: 'a', b: 'b' };
       requestAnimationFrame(() => {
         expect(extractValues()).toEqual(['a', 'b']);

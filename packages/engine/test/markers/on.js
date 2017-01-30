@@ -3,7 +3,7 @@ import engine from '../../src/engine';
 
 import { MARKER_PREFIX as M } from '../../src/template';
 
-describe('Engine | Markers | On -', () => {
+describe('engine | markers | on -', () => {
   let el;
   let spy;
 
@@ -44,7 +44,7 @@ describe('Engine | Markers | On -', () => {
     return el.shadowRoot.querySelector(`#${id}`);
   }
 
-  it('call event handler', (done) => {
+  it('calls event handler', (done) => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const one = getId('one');

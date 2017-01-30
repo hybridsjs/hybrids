@@ -1,7 +1,7 @@
 import { define } from '@hybrids/core';
 import engine from '../src/engine';
 
-describe('Engine | Provider -', () => {
+describe('engine | provider -', () => {
   let el;
 
   beforeAll(() => {
@@ -44,7 +44,7 @@ describe('Engine | Provider -', () => {
     });
   });
 
-  rafIt('throw when no template given', () => {
+  rafIt('throws when no template given', () => {
     expect(() => {
       define('hybrids-engine-throw', class {
         static get options() { return { plugins: [engine] }; }

@@ -2,7 +2,7 @@ import {
   camelToDash, dashToCamel, reflectValue, normalizeProperty, queue
 } from '../src/utils';
 
-describe('Core | Utils -', () => {
+describe('core | utils -', () => {
   it('camelToDash', () => {
     expect(camelToDash('AsdDsa')).toEqual('asd-dsa');
   });
@@ -11,7 +11,7 @@ describe('Core | Utils -', () => {
     expect(dashToCamel('asd-dsa')).toEqual('asdDsa');
   });
 
-  describe('reflectValue', () => {
+  describe('reflectValue -', () => {
     it('returns value when equal', () => {
       const val = {};
       expect(reflectValue(val, 'object')).toEqual(val);

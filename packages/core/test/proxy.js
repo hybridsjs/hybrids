@@ -1,7 +1,7 @@
 import { injectable, resolve, callWithContext, proxy, mapInstance } from '../src/proxy';
 
 describe('core | proxy', () => {
-  describe('injectable & resolve', () => {
+  describe('injectable & resolve -', () => {
     let spy;
     let wrapper;
     let context;
@@ -34,7 +34,7 @@ describe('core | proxy', () => {
     });
   });
 
-  describe('proxy', () => {
+  describe('proxy -', () => {
     let context;
     let Controller;
     let ctrl;
@@ -70,7 +70,7 @@ describe('core | proxy', () => {
       mapInstance(ctrl, context);
     });
 
-    it('return value from method', () => {
+    it('returns value from method', () => {
       expect(ctrl.test3).toEqual('test');
     });
 

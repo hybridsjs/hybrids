@@ -3,7 +3,7 @@ import engine from '../../src/engine';
 import { LOCALS_PREFIX as L } from '../../src/expression';
 import { MARKER_PREFIX as M, TEMPLATE_PREFIX as T } from '../../src/template';
 
-describe('Engine | Markers | If -', () => {
+describe('engine | markers | if -', () => {
   let el;
 
   afterEach(() => {
@@ -38,13 +38,13 @@ describe('Engine | Markers | If -', () => {
     document.body.appendChild(el);
   });
 
-  rafIt('render elements', () => {
+  rafIt('renders elements', () => {
     requestAnimationFrame(() => {
       expect(el.shadowRoot.children.length).toEqual(4);
     });
   });
 
-  rafIt('remove elements', () => {
+  rafIt('removes elements', () => {
     el.show = false;
     requestAnimationFrame(() => {
       expect(el.shadowRoot.children.length).toEqual(0);

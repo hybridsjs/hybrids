@@ -3,7 +3,7 @@ import engine from '../../src/engine';
 
 import { MARKER_PREFIX as M } from '../../src/template';
 
-describe('Engine | Markers | Class -', () => {
+describe('engine | markers | class -', () => {
   let el;
   let ctrl;
 
@@ -47,14 +47,14 @@ describe('Engine | Markers | Class -', () => {
     return el.shadowRoot.querySelector(`#${id}`);
   }
 
-  rafIt('set simple', () => {
+  rafIt('sets simple', () => {
     requestAnimationFrame(() => {
       expect(getId('simple').classList.contains('one')).toEqual(true);
       expect(getId('simple').classList.contains('two')).toEqual(false);
     });
   });
 
-  rafIt('update simple', () => {
+  rafIt('updates simple', () => {
     delete ctrl.keys.one;
     ctrl.keys.two = true;
     ctrl.keys.three = false;
@@ -67,7 +67,7 @@ describe('Engine | Markers | Class -', () => {
     });
   });
 
-  rafIt('set keys', () => {
+  rafIt('sets keys', () => {
     requestAnimationFrame(() => {
       const keys = getId('keys');
       expect(keys.classList.contains('one')).toEqual(true);
@@ -75,7 +75,7 @@ describe('Engine | Markers | Class -', () => {
     });
   });
 
-  rafIt('update keys', () => {
+  rafIt('updates keys', () => {
     delete ctrl.keys.one;
     ctrl.keys.two = true;
     ctrl.keys.three = true;
@@ -87,7 +87,7 @@ describe('Engine | Markers | Class -', () => {
     });
   });
 
-  rafIt('clear keys', () => {
+  rafIt('clears keys', () => {
     ctrl.keys = null;
     const keys = getId('keys');
     requestAnimationFrame(() => {
@@ -97,7 +97,7 @@ describe('Engine | Markers | Class -', () => {
     });
   });
 
-  rafIt('set array', () => {
+  rafIt('sets array', () => {
     requestAnimationFrame(() => {
       const keys = getId('array');
       expect(keys.classList.contains('one')).toEqual(true);
@@ -105,7 +105,7 @@ describe('Engine | Markers | Class -', () => {
     });
   });
 
-  rafIt('remove item in array', () => {
+  rafIt('removes item in array', () => {
     ctrl.array.splice(1, 1);
 
     requestAnimationFrame(() => {
@@ -115,7 +115,7 @@ describe('Engine | Markers | Class -', () => {
     });
   });
 
-  rafIt('set item in array', () => {
+  rafIt('sets item in array', () => {
     ctrl.array[0] = 'new-value';
 
     requestAnimationFrame(() => {
@@ -125,7 +125,7 @@ describe('Engine | Markers | Class -', () => {
     });
   });
 
-  rafIt('add item in array', () => {
+  rafIt('adds item in array', () => {
     ctrl.array.push('new-value');
 
     requestAnimationFrame(() => {
@@ -136,7 +136,7 @@ describe('Engine | Markers | Class -', () => {
     });
   });
 
-  rafIt('clear array', () => {
+  rafIt('clears array', () => {
     ctrl.array = 0;
     requestAnimationFrame(() => {
       const array = getId('array');

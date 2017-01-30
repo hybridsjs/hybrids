@@ -3,7 +3,7 @@ import { engine } from '../src/index';
 import Template, { TEMPLATE_PREFIX as T } from '../src/template';
 import { LOCALS_PREFIX as L } from '../src/expression';
 
-describe('Engine | Shadow DOM styling -', () => {
+describe('engine | shadow DOM styling -', () => {
   let globalEl;
   let globalStyles;
   let el;
@@ -24,7 +24,7 @@ describe('Engine | Shadow DOM styling -', () => {
     document.body.removeChild(globalStyles);
   });
 
-  describe('inner template with inner styles', () => {
+  describe('inner template with inner styles -', () => {
     beforeAll(() => {
       class EngineCssInner {
         static get options() {
@@ -58,7 +58,7 @@ describe('Engine | Shadow DOM styling -', () => {
       document.body.removeChild(el);
     });
 
-    rafIt('style all divs', () => {
+    rafIt('styles all divs', () => {
       requestAnimationFrame(() => {
         Array.from(el.shadowRoot.querySelectorAll('.testing')).forEach((child) => {
           const innerCSS = getComputedStyle(child);
@@ -67,7 +67,7 @@ describe('Engine | Shadow DOM styling -', () => {
       });
     });
 
-    rafIt('not style outer divs', () => {
+    rafIt('not styles outer divs', () => {
       requestAnimationFrame(() => {
         const outerCSS = getComputedStyle(globalEl);
         expect(outerCSS.color).toEqual('rgb(0, 255, 0)');
@@ -75,7 +75,7 @@ describe('Engine | Shadow DOM styling -', () => {
     });
   });
 
-  describe('inner template with outer styles', () => {
+  describe('inner template with outer styles -', () => {
     beforeAll(() => {
       class EngineCssInnerOuter {
         static get options() {
@@ -109,7 +109,7 @@ describe('Engine | Shadow DOM styling -', () => {
       document.body.removeChild(el);
     });
 
-    rafIt('style all divs', () => {
+    rafIt('styles all divs', () => {
       requestAnimationFrame(() => {
         Array.from(el.shadowRoot.querySelectorAll('.testing')).forEach((child) => {
           const innerCSS = getComputedStyle(child);
@@ -118,7 +118,7 @@ describe('Engine | Shadow DOM styling -', () => {
       });
     });
 
-    rafIt('not style outer divs', () => {
+    rafIt('not styles outer divs', () => {
       requestAnimationFrame(() => {
         const outerCSS = getComputedStyle(globalEl);
         expect(outerCSS.color).toEqual('rgb(0, 255, 0)');
@@ -126,7 +126,7 @@ describe('Engine | Shadow DOM styling -', () => {
     });
   });
 
-  describe('exported template with outer styles', () => {
+  describe('exported template with outer styles -', () => {
     beforeAll(() => {
       const template = new Template(`
         <div class="testing">This is some text</div>
@@ -162,7 +162,7 @@ describe('Engine | Shadow DOM styling -', () => {
       document.body.removeChild(el);
     });
 
-    rafIt('style all divs', () => {
+    rafIt('styles all divs', () => {
       requestAnimationFrame(() => {
         Array.from(el.shadowRoot.querySelectorAll('.testing')).forEach((child) => {
           const innerCSS = getComputedStyle(child);
@@ -171,7 +171,7 @@ describe('Engine | Shadow DOM styling -', () => {
       });
     });
 
-    rafIt('not style outer divs', () => {
+    rafIt('not styles outer divs', () => {
       requestAnimationFrame(() => {
         const outerCSS = getComputedStyle(globalEl);
         expect(outerCSS.color).toEqual('rgb(0, 255, 0)');

@@ -1,6 +1,6 @@
-import { dispatchEvent } from '../../src/plugins/dispatch-event';
+import { dispatchEvent } from '../src/dispatch-event';
 
-describe('Core | Plugins | Dispatch Event -', () => {
+describe('core | dispatch event -', () => {
   let context;
   let spy;
 
@@ -10,12 +10,12 @@ describe('Core | Plugins | Dispatch Event -', () => {
     context.addEventListener('custom-event', spy);
   });
 
-  it('dispatch event', () => {
+  it('dispatches event', () => {
     dispatchEvent(context, 'custom-event');
     expect(spy).toHaveBeenCalled();
   });
 
-  it('push detail property', () => {
+  it('pushes detail property', () => {
     dispatchEvent(context, 'custom-event', { detail: 'some text' });
     expect(spy.calls.mostRecent().args[0].detail).toEqual('some text');
   });

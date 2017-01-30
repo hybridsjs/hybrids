@@ -3,7 +3,7 @@ import engine from '../../src/engine';
 
 import { MARKER_PREFIX as M } from '../../src/template';
 
-describe('Engine | Markers | Style -', () => {
+describe('engine | markers | style -', () => {
   let el;
   let ctrl;
 
@@ -44,7 +44,7 @@ describe('Engine | Markers | Style -', () => {
     return window.getComputedStyle(el.shadowRoot.querySelector(`#${id}`));
   }
 
-  rafIt('set simple', () => {
+  rafIt('sets simple', () => {
     requestAnimationFrame(() => {
       const style = getComputedStyle('simple');
       expect(style.backgroundColor).toEqual('rgb(255, 0, 0)');
@@ -52,7 +52,7 @@ describe('Engine | Markers | Style -', () => {
     });
   });
 
-  rafIt('update simple', () => {
+  rafIt('updates simple', () => {
     ctrl.style.backgroundColor = 'rgb(0, 0, 255)';
     delete ctrl.style.color;
     requestAnimationFrame(() => {
@@ -62,7 +62,7 @@ describe('Engine | Markers | Style -', () => {
     });
   });
 
-  rafIt('set list', () => {
+  rafIt('sets list', () => {
     requestAnimationFrame(() => {
       const style = getComputedStyle('list');
       expect(style.backgroundColor).toEqual('rgb(255, 0, 0)');
@@ -70,7 +70,7 @@ describe('Engine | Markers | Style -', () => {
     });
   });
 
-  rafIt('update list', () => {
+  rafIt('updates list', () => {
     ctrl.style.backgroundColor = 'rgb(0, 0, 255)';
     delete ctrl.style.color;
 
@@ -81,7 +81,7 @@ describe('Engine | Markers | Style -', () => {
     });
   });
 
-  rafIt('clear list', () => {
+  rafIt('clears list', () => {
     ctrl.style = null;
 
     requestAnimationFrame(() => {

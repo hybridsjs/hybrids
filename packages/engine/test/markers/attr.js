@@ -3,7 +3,7 @@ import engine from '../../src/engine';
 
 import { MARKER_PREFIX as M } from '../../src/template';
 
-describe('Engine | Markers | Attr -', () => {
+describe('engine | markers | attr -', () => {
   let el;
 
   beforeAll(() => {
@@ -44,19 +44,19 @@ describe('Engine | Markers | Attr -', () => {
     return el.shadowRoot.querySelector(`#${id}`);
   }
 
-  rafIt('set text to attribute', () => {
+  rafIt('sets text to attribute', () => {
     requestAnimationFrame(() => {
       expect(getId('one').getAttribute('customattr')).toEqual('text');
     });
   });
 
-  rafIt('set number to attribute', () => {
+  rafIt('sets number to attribute', () => {
     requestAnimationFrame(() => {
       expect(getId('two').getAttribute('with-dash')).toEqual('123');
     });
   });
 
-  rafIt('set bool to attribute', () => {
+  rafIt('sets bool to attribute', () => {
     requestAnimationFrame(() => {
       expect(getId('three').hasAttribute('other')).toEqual(true);
       expect(getId('three').getAttribute('other')).toEqual('');

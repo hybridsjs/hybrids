@@ -1,10 +1,10 @@
 import { define, CONTROLLER } from '@hybrids/core';
-import { dispatchEvent } from '@hybrids/core/src/plugins/dispatch-event';
+import { dispatchEvent } from '@hybrids/core/src/dispatch-event';
 
 import engine from '../../src/engine';
 import { MARKER_PREFIX as M } from '../../src/template';
 
-describe('Engine | Markers | Model -', () => {
+describe('engine | markers | model -', () => {
   class EngineLinkTest {
     static get options() {
       return {
@@ -63,8 +63,8 @@ describe('Engine | Markers | Model -', () => {
     return el.shadowRoot.querySelector(`#${id}`);
   }
 
-  describe('radio', () => {
-    rafIt('set one value from radio', () => {
+  describe('radio -', () => {
+    rafIt('sets one value from radio', () => {
       getId('radio2').click();
       getId('radio1').click();
       requestAnimationFrame(() => {
@@ -72,7 +72,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set other one value from radio', () => {
+    rafIt('sets other one value from radio', () => {
       getId('radio1').click();
       getId('radio2').click();
       requestAnimationFrame(() => {
@@ -80,7 +80,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set one value to radio', () => {
+    rafIt('sets one value to radio', () => {
       ctrl.data.radio = 'one';
       requestAnimationFrame(() => {
         expect(getId('radio1').checked).toEqual(true);
@@ -89,22 +89,22 @@ describe('Engine | Markers | Model -', () => {
     });
   });
 
-  describe('checkbox', () => {
-    rafIt('set one value from checkbox', () => {
+  describe('checkbox -', () => {
+    rafIt('sets one value from checkbox', () => {
       getId('checkbox1').click();
       requestAnimationFrame(() => {
         expect(ctrl.data.checkbox).toEqual(['some value']);
       });
     });
 
-    rafIt('set other one value from checkbox', () => {
+    rafIt('sets other one value from checkbox', () => {
       getId('checkbox2').click();
       requestAnimationFrame(() => {
         expect(ctrl.data.checkbox).toEqual(['other value']);
       });
     });
 
-    it('unset one value from checkbox', (done) => {
+    it('unsets one value from checkbox', (done) => {
       requestAnimationFrame(() => {
         const checkbox = getId('checkbox1');
         checkbox.click();
@@ -118,7 +118,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set one value to checkbox', () => {
+    rafIt('sets one value to checkbox', () => {
       ctrl.data.checkbox = ['some value'];
       requestAnimationFrame(() => {
         expect(getId('checkbox1').checked).toEqual(true);
@@ -126,7 +126,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set multi values from checkbox', () => {
+    rafIt('sets multi values from checkbox', () => {
       getId('checkbox1').click();
       getId('checkbox2').click();
       requestAnimationFrame(() => {
@@ -134,7 +134,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    it('unset one of multi value from checkbox', (done) => {
+    it('unsets one of multi value from checkbox', (done) => {
       requestAnimationFrame(() => {
         getId('checkbox1').click();
         getId('checkbox2').click();
@@ -148,7 +148,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    it('unset all of multi value from checkbox', (done) => {
+    it('unsets all of multi value from checkbox', (done) => {
       requestAnimationFrame(() => {
         getId('checkbox1').click();
         getId('checkbox2').click();
@@ -163,7 +163,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('not set one multi value from checkbox', () => {
+    rafIt('not sets one multi value from checkbox', () => {
       ctrl.data.checkbox = ['some value'];
       getId('checkbox1').click();
       requestAnimationFrame(() => {
@@ -171,7 +171,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    it('not unset one multi value from checkbox', (done) => {
+    it('not unsets one multi value from checkbox', (done) => {
       ctrl.data.checkbox = [];
       requestAnimationFrame(() => {
         getId('checkbox1').click();
@@ -183,7 +183,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set one multi value to checkbox', () => {
+    rafIt('sets one multi value to checkbox', () => {
       ctrl.data.checkbox = ['some value'];
       requestAnimationFrame(() => {
         expect(getId('checkbox1').checked).toEqual(true);
@@ -191,7 +191,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set all multi value to checkbox', () => {
+    rafIt('sets all multi value to checkbox', () => {
       ctrl.data.checkbox = ['other value', 'some value'];
       requestAnimationFrame(() => {
         expect(getId('checkbox1').checked).toEqual(true);
@@ -199,14 +199,14 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set bool value from checkbox', () => {
+    rafIt('sets bool value from checkbox', () => {
       getId('checkbox3').click();
       requestAnimationFrame(() => {
         expect(ctrl.data.checkboxBool).toEqual(true);
       });
     });
 
-    it('unset bool value from checkbox', (done) => {
+    it('unsets bool value from checkbox', (done) => {
       requestAnimationFrame(() => {
         const checkbox = getId('checkbox3');
         checkbox.click();
@@ -221,8 +221,8 @@ describe('Engine | Markers | Model -', () => {
     });
   });
 
-  describe('select', () => {
-    rafIt('set one value from select', () => {
+  describe('select -', () => {
+    rafIt('sets one value from select', () => {
       const select = getId('select1');
       select.options[0].selected = true;
       select.options[1].selected = true;
@@ -232,14 +232,14 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set one value to select', () => {
+    rafIt('sets one value to select', () => {
       ctrl.data.select1 = 'two';
       requestAnimationFrame(() => {
         expect(getId('select1').value).toEqual('two');
       });
     });
 
-    rafIt('set one multi value from select', () => {
+    rafIt('sets one multi value from select', () => {
       const select = getId('select2');
       select.options[0].selected = true;
       dispatchEvent(select, 'change');
@@ -248,7 +248,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set two multi value from select', () => {
+    rafIt('sets two multi value from select', () => {
       const select = getId('select2');
       select.options[0].selected = true;
       select.options[1].selected = true;
@@ -258,7 +258,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set two multi value from select with predefined value', () => {
+    rafIt('sets two multi value from select with predefined value', () => {
       const select = getId('select2');
       ctrl.data.select2 = [];
       select.options[0].selected = true;
@@ -269,14 +269,14 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set one multi value to select', () => {
+    rafIt('sets one multi value to select', () => {
       ctrl.data.select2 = ['two'];
       requestAnimationFrame(() => {
         expect(Array.from(getId('select2').options).map(o => o.selected)).toEqual([false, true]);
       });
     });
 
-    rafIt('set multi value to select', () => {
+    rafIt('sets multi value to select', () => {
       ctrl.data.select2 = ['one', 'two'];
       requestAnimationFrame(() => {
         expect(Array.from(getId('select2').options).map(o => o.selected)).toEqual([true, true]);
@@ -284,8 +284,8 @@ describe('Engine | Markers | Model -', () => {
     });
   });
 
-  describe('text (default)', () => {
-    rafIt('set value from text input', () => {
+  describe('text (default) -', () => {
+    rafIt('sets value from text input', () => {
       const input = getId('text');
       input.value = 'test text';
       dispatchEvent(input, 'input');
@@ -294,7 +294,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set value to text input', () => {
+    rafIt('sets value to text input', () => {
       ctrl.data.text = 'test text';
       requestAnimationFrame(() => {
         expect(getId('text').value).toEqual('test text');
@@ -302,8 +302,8 @@ describe('Engine | Markers | Model -', () => {
     });
   });
 
-  describe('custom (default)', () => {
-    rafIt('set value from custom element', () => {
+  describe('custom (default) -', () => {
+    rafIt('sets value from custom element', () => {
       const custom = getId('custom');
       const value = { test: 'test' };
       custom.value = value;
@@ -313,7 +313,7 @@ describe('Engine | Markers | Model -', () => {
       });
     });
 
-    rafIt('set value to custom element', () => {
+    rafIt('sets value to custom element', () => {
       ctrl.data.custom = { test: 'test' };
       requestAnimationFrame(() => {
         expect(getId('custom').value).toEqual({ test: 'test' });

@@ -3,30 +3,30 @@ import Template, {
 } from '../src/template';
 import { getOwnLocals, LOCALS_PREFIX as L } from '../src/expression';
 
-describe('Engine | Template -', () => {
-  describe('parse', () => {
-    it('interpolate property', () => {
+describe('engine | template -', () => {
+  describe('parse -', () => {
+    it('interpolates property', () => {
       const template = new Template(`<span ${P}text-content="something" title=""></span>`);
       expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: 'prop', p: [['something', 'textContent']] }));
     });
 
-    it('interpolate event', () => {
+    it('interpolates event', () => {
       const template = new Template(`<span ${E}some-event="something" title=""></span>`);
       expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: 'on', p: [['something', 'some-event']] }));
     });
 
-    it('interpolate property without value', () => {
+    it('interpolates property without value', () => {
       const template = new Template(`<span ${P}user title=""></span>`);
       expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: 'prop', p: [['user', 'user']] }));
     });
 
-    it('interpolate text to span', () => {
+    it('interpolates text to span', () => {
       const template = new Template('{{ something }}');
       expect(template.container.t[0].e.content.childNodes[0].tagName.toLowerCase()).toEqual('span');
       expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: 'prop', p: [['something', 'textContent']] }));
     });
 
-    it('interpolate multiple text to spans', () => {
+    it('interpolates multiple text to spans', () => {
       const template = new Template('{{ something }} {{ else }}');
       expect(template.container.t[0].e.content.childNodes[0].tagName.toLowerCase()).toEqual('span');
       expect(template.container.t[0].e.content.childNodes[2].tagName.toLowerCase()).toEqual('span');
@@ -34,7 +34,7 @@ describe('Engine | Template -', () => {
       expect(template.container.t[0].m[1][0]).toEqual(jasmine.objectContaining({ m: 'prop', p: [['else', 'textContent']] }));
     });
 
-    it('interpolate text to node [text-content] property marker', () => {
+    it('interpolates text to node [text-content] property marker', () => {
       const template = new Template(
         `<div some="value" other-thing="val">
           {{ something }}
@@ -48,7 +48,7 @@ describe('Engine | Template -', () => {
       expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: 'prop', p: [['something', 'textContent']] }));
     });
 
-    it('interpolate template prefix to template marker', () => {
+    it('interpolates template prefix to template marker', () => {
       const template = new Template(`<div ${T}marker="something"></div>`);
       expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: 'marker', p: [['something']] }));
       expect(template.container.t[1].e.content.childNodes[0].outerHTML).toEqual('<div></div>');
@@ -83,7 +83,7 @@ describe('Engine | Template -', () => {
     });
   });
 
-  it('construct from template element', () => {
+  it('constructs from template element', () => {
     const tempEl = document.createElement('template');
     tempEl.innerHTML = `<span ${M}props="something"></span>`;
 
@@ -91,7 +91,7 @@ describe('Engine | Template -', () => {
     expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: 'props', p: [['something']] }));
   });
 
-  it('construct from exprted JSON', () => {
+  it('constructs from exprted JSON', () => {
     const input = `
       <style></style>
       <div ${M}marker="one"></div>
@@ -104,14 +104,14 @@ describe('Engine | Template -', () => {
     expect(copy.container.t[0].e.innerHTML).toEqual(template.container.t[0].e.innerHTML);
   });
 
-  describe('compile', () => {
+  describe('compile -', () => {
     let marker;
 
     beforeEach(() => {
       marker = jasmine.createSpy('marker');
     });
 
-    it('run markers', () => {
+    it('runs markers', () => {
       const template = new Template(`
         <!-- this is comment -->
         <span id="one" ${M}marker="one"></span>
@@ -133,7 +133,7 @@ describe('Engine | Template -', () => {
       expect(marker.calls.argsFor(1)[2]).toEqual('val2');
     });
 
-    it('use property marker', () => {
+    it('uses property marker', () => {
       const template = new Template(`<span ${P}test="something"></span>`, {
         markers: { prop: marker },
       });
@@ -164,17 +164,17 @@ describe('Engine | Template -', () => {
       expect(child.childNodes[0].outerHTML).toEqual(`<span ${M}marker="val1:val2:two"></span>`);
     });
 
-    it('throw for missing marker', () => {
+    it('throws for missing marker', () => {
       const template = new Template(`<span ${M}props="something"></span>`);
       expect(() => template.compile({})).toThrow();
     });
 
-    it('throw for missing template', () => {
+    it('throws for missing template', () => {
       const template = new Template(`<span ${M}props="something"></span>`);
       expect(() => template.compile({}, 1)).toThrow();
     });
 
-    it('set locals', () => {
+    it('sets locals', () => {
       const template = new Template(`<span ${M}marker="something"></span>`, {
         markers: { marker() {} },
       });
@@ -184,7 +184,7 @@ describe('Engine | Template -', () => {
     });
   });
 
-  it('run watchers', () => {
+  it('runs watchers', () => {
     const cb = jasmine.createSpy('callback');
     const template = new Template(`
       <span ${M}marker="one"></span>

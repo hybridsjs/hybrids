@@ -1,7 +1,7 @@
-import { error } from '../debug';
+import { error } from './debug';
 
-import { injectable } from '../proxy';
-import { CONTROLLER } from '../symbols';
+import { injectable } from './proxy';
+import { CONTROLLER } from './symbols';
 
 export function parent(host, Controller) {
   if (process.env.NODE_ENV !== 'production') {

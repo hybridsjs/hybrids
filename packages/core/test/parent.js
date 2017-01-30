@@ -1,7 +1,7 @@
-import { define, CONTROLLER } from '../../src/index';
-import { parent } from '../../src/plugins/parent';
+import { define, CONTROLLER } from '../src/index';
+import { parent } from '../src/parent';
 
-describe('Core | Plugins | Parent -', () => {
+describe('core | parent -', () => {
   let parentEl;
   let childEl;
 
@@ -22,18 +22,18 @@ describe('Core | Plugins | Parent -', () => {
     if (parentEl.parentElement === document.body) document.body.removeChild(parentEl);
   });
 
-  it('throw when controller is not initialized', () => {
+  it('throws when controller is not initialized', () => {
     expect(() => parent(document.createElement('div'), CorePluginsParent)).toThrow();
   });
 
-  rafIt('return parent controller', () => {
+  rafIt('returns parent controller', () => {
     parentEl.appendChild(childEl);
     requestAnimationFrame(() => {
       expect(parent(childEl, CorePluginsParent)).toEqual(parentEl[CONTROLLER]);
     });
   });
 
-  it('return parent controller in shadowRoot', (done) => {
+  it('returns parent controller in shadowRoot', (done) => {
     const div = document.createElement('div');
     document.body.appendChild(div);
 
@@ -50,7 +50,7 @@ describe('Core | Plugins | Parent -', () => {
     });
   });
 
-  rafIt('return null', () => {
+  rafIt('returns null', () => {
     document.body.appendChild(childEl);
     requestAnimationFrame(() => {
       expect(parent(childEl, class {})).toEqual(null);
@@ -58,11 +58,11 @@ describe('Core | Plugins | Parent -', () => {
     });
   });
 
-  it('throw when not connected', () => {
+  it('throws when not connected', () => {
     expect(() => parent(childEl)).toThrow();
   });
 
-  rafIt('throw error for invalid arguments', () => {
+  rafIt('throws error for invalid arguments', () => {
     expect(() => parent(childEl, 123)).toThrow();
   });
 });

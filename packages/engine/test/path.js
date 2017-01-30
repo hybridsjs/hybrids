@@ -1,13 +1,13 @@
 import Path from '../src/path';
 
-describe('Engine | Path -', () => {
+describe('engine | path -', () => {
   let context;
 
-  it('throw for empty input', () => {
+  it('throws for empty input', () => {
     expect(() => new Path('')).toThrow();
   });
 
-  it('create from serialized object', () => {
+  it('creates from serialized object', () => {
     const path = new Path('a.b.c');
     const serialized = Object.assign({}, path);
     const copy = new Path(serialized);
@@ -20,7 +20,7 @@ describe('Engine | Path -', () => {
     expect(path.isComputed).toEqual(true);
   });
 
-  describe('`get` method', () => {
+  describe('`get` method -', () => {
     beforeEach(() => {
       context = {
         one: { two: { three: 'four' } },
@@ -35,7 +35,7 @@ describe('Engine | Path -', () => {
       expect(path2.get(context)).toEqual('three');
     });
 
-    it('return undefined for not defined root property', () => {
+    it('returns undefined for not defined root property', () => {
       const path = new Path('other.thing');
       expect(path.get(context)).toBeUndefined();
     });
@@ -46,26 +46,26 @@ describe('Engine | Path -', () => {
     });
   });
 
-  describe('`set` method', () => {
+  describe('`set` method -', () => {
     beforeEach(() => {
       context = { asd: {}, qwe: 123 };
     });
 
-    it('create property path', () => {
+    it('creates property path', () => {
       const path = new Path('asd.dsa.qwe');
       path.set(context, 'new Value');
 
       expect(context.asd.dsa.qwe).toEqual('new Value');
     });
 
-    it('not create property path when replace set to false', () => {
+    it('not creates property path when replace set to false', () => {
       const path = new Path('qwe');
       path.set(context, 'new Value', false);
 
       expect(context.qwe).toEqual(123);
     });
 
-    it('set property', () => {
+    it('sets property', () => {
       const path = new Path('qwe');
       path.set(context, 'new Value');
 
@@ -78,7 +78,7 @@ describe('Engine | Path -', () => {
     });
   });
 
-  describe('`call` method', () => {
+  describe('`call` method -', () => {
     let spy;
 
     beforeEach(() => {
@@ -106,7 +106,7 @@ describe('Engine | Path -', () => {
     });
   });
 
-  describe('`delete` method', () => {
+  describe('`delete` method -', () => {
     beforeEach(() => {
       context = {
         a: { b: { c: 'test' } },
@@ -131,7 +131,7 @@ describe('Engine | Path -', () => {
       expect(context.e).toEqual({ f: 'test' });
     });
 
-    it('return for not defined property', () => {
+    it('returns for not defined property', () => {
       const path = new Path('c.b.a');
       path.delete(context);
 
@@ -139,7 +139,7 @@ describe('Engine | Path -', () => {
     });
   });
 
-  describe('computed', () => {
+  describe('computed -', () => {
     it('has isComputed set', () => {
       expect(new Path('a.b()').isComputed).toEqual(true);
     });

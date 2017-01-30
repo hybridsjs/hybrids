@@ -1,44 +1,44 @@
 import { define, CONTROLLER, OPTIONS } from '../src/index';
 import Hybrid from '../src/hybrid';
 
-describe('Core | define -', () => {
-  describe('basic features', () => {
+describe('core | define -', () => {
+  describe('basic features -', () => {
     const options = {};
 
     class Controller {
       static get options() { return options; }
     }
 
-    it('return extended Hybrid', () => {
+    it('returns extended Hybrid', () => {
       const ExtHybrid = define('hybrids-core-return-test', class {});
       expect(ExtHybrid.prototype instanceof Hybrid).toEqual(true);
     });
 
-    it('return the same hybrid', () => {
+    it('returns the same hybrid', () => {
       const one = define('hybrids-core-match', Controller);
       const two = define('hybrids-core-match', Controller);
       expect(one).toEqual(two);
     });
 
-    it('throw for re-define', () => {
+    it('throws for re-define', () => {
       define('hybrids-core-duplicate', Controller);
       expect(() => define('hybrids-core-duplicate', class {})).toThrow();
     });
 
-    it('throw for no arguments', () => {
+    it('throws for no arguments', () => {
       expect(() => define()).toThrow();
     });
 
-    it('throw for invalid arguments', () => {
+    it('throws for invalid arguments', () => {
       expect(() => define(class {})).toThrow();
     });
 
-    it('set Hybrid options', () => {
+    it('sets Hybrid options', () => {
       const ExtHybrid = define('hybrids-core-options', Controller);
       expect(ExtHybrid[OPTIONS]).toEqual(options);
     });
 
-    it('throw for already defined properties in HTMLElement', () => {
+    it('throws for already defined properties in HTMLElement', () => {
       expect(() => {
         define('hybrids-core-defined-property', class {
           static get options() {
@@ -48,7 +48,7 @@ describe('Core | define -', () => {
       }).toThrow();
     });
 
-    it('map public property with controller prototype method', () => {
+    it('maps public property with controller prototype method', () => {
       const spy = jasmine.createSpy();
       const ExtHybrid = define('hybrids-core-proto-method', class {
         static get options() { return { properties: ['one', 'two'] }; }
@@ -66,7 +66,7 @@ describe('Core | define -', () => {
       expect(spy.calls.mostRecent().args).toEqual([1, 2]);
     });
 
-    it('map public property with controller own property', () => {
+    it('maps public property with controller own property', () => {
       const ExtHybrid = define('hybrids-core-proto-property', class {
         static get options() {
           return {
@@ -91,7 +91,7 @@ describe('Core | define -', () => {
     });
   });
 
-  describe('decorator feature', () => {
+  describe('decorator feature -', () => {
     it('returns function with name wrapped', () => {
       const decorator = define('hybrids-core-decorator');
       class Controller {}
@@ -117,7 +117,7 @@ describe('Core | define -', () => {
       plugins.length = 0;
     });
 
-    it('should call provider when define', () => {
+    it('should calls provider when define', () => {
       const spy = jasmine.createSpy('provider');
       plugins.push(spy);
 
@@ -129,13 +129,13 @@ describe('Core | define -', () => {
         .toEqual(ExtHybrid[CONTROLLER]);
     });
 
-    it('throw when provider is not a function', () => {
+    it('throws when provider is not a function', () => {
       plugins.push({});
       expect(() => define('hybrids-core-plugins-two', Controller)).toThrow();
     });
   });
 
-  describe('nested elements by define', () => {
+  describe('nested elements by define -', () => {
     const test = {};
     class HybridsNestedOne {
       static get options() {
@@ -167,12 +167,12 @@ describe('Core | define -', () => {
     });
 
 
-    it('define inside options', () => {
+    it('defines inside options', () => {
       expect(window.customElements.get('hybrids-nested-one')[CONTROLLER]).toEqual(HybridsNestedOne);
       expect(window.customElements.get('hybrids-nested-two')[CONTROLLER]).toEqual(HybridsNestedTwo);
     });
 
-    it('throw when define is not an object', () => {
+    it('throws when define is not an object', () => {
       expect(() => define('hybrids-core-nested-define-throw', class {
         static get options() { return { define: class {} }; }
       })).toThrow();

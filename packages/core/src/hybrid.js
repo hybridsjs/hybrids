@@ -1,6 +1,6 @@
 import { mapInstance, callWithContext } from './proxy';
 import { dashToCamel, reflectValue, queue } from './utils';
-import { dispatchEvent } from './plugins/dispatch-event';
+import { dispatchEvent } from './dispatch-event';
 
 import { CONTROLLER, PLUGINS, OPTIONS } from './symbols';
 

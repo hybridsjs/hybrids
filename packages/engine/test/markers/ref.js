@@ -3,7 +3,7 @@ import engine from '../../src/engine';
 
 import { MARKER_PREFIX as M } from '../../src/template';
 
-describe('Engine | Markers | Ref -', () => {
+describe('engine | markers | ref -', () => {
   let el;
 
   beforeAll(() => {
@@ -38,7 +38,7 @@ describe('Engine | Markers | Ref -', () => {
     return el.shadowRoot.querySelector(`#${id}`);
   }
 
-  rafIt('set element ref', () => {
+  rafIt('sets element ref', () => {
     expect(el[CONTROLLER].div).toEqual(getId('one'));
   });
 });

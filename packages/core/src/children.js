@@ -1,6 +1,6 @@
-import { error } from '../debug';
-import { injectable } from '../proxy';
-import { CONTROLLER } from '../symbols';
+import { error } from './debug';
+import { injectable } from './proxy';
+import { CONTROLLER } from './symbols';
 
 import { dispatchEvent } from './dispatch-event';
 
