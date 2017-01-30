@@ -1,4 +1,3 @@
-import { error } from './debug';
 import { mapInstance, callWithContext } from './proxy';
 import { dashToCamel, reflectValue, queue } from './utils';
 import { dispatchEvent } from './plugins/dispatch-event';
@@ -22,10 +21,6 @@ export default class Hybrid extends HTMLBridge {
     mapInstance(this[CONTROLLER], this);
 
     this.constructor[OPTIONS].properties.forEach(({ property, attr }) => {
-      if (process.env.NODE_ENV !== 'production' && !Reflect.has(this[CONTROLLER], property)) {
-        error(TypeError, "hybrid: Public property '%property' must be defined", { property });
-      }
-
       let value = this[CONTROLLER][property];
       const reflectType = typeof value;
 

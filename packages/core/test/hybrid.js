@@ -117,14 +117,6 @@ describe('Core | Hybrid -', () => {
       options.properties = ['one', { property: 'two', attr: false }, { property: 'three' }, 'four'];
     });
 
-    it('throw for not initialized properties', () => {
-      expect(() => {
-        el = new (define('hybrids-core-not-initialized', class {
-          static get options() { return { properties: ['one'] }; }
-        }))();
-      }).toThrow();
-    });
-
     it('map properties', () => {
       el = new (define('hybrids-core-public-properties', Controller))();
       expect(el.one).toEqual(false);
