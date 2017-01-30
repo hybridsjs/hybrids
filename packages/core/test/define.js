@@ -105,7 +105,7 @@ describe('Core | define -', () => {
     });
   });
 
-  describe('providers', () => {
+  describe('providers -', () => {
     let providers;
     let Controller;
 
@@ -128,8 +128,10 @@ describe('Core | define -', () => {
 
       const ExtHybrid = define('hybrids-core-providers-one', Controller);
       expect(spy).toHaveBeenCalled();
-      expect(spy.calls.mostRecent().args)
-        .toEqual([ExtHybrid[OPTIONS], 'hybrids-core-providers-one']);
+      expect(spy.calls.mostRecent().args[0])
+        .toEqual(jasmine.objectContaining(ExtHybrid[OPTIONS]));
+      expect(spy.calls.mostRecent().args[1])
+        .toEqual(ExtHybrid[CONTROLLER]);
     });
 
     it('throw when provider is not a function', () => {

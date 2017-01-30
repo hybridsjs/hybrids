@@ -64,12 +64,14 @@ function bootstrap(name, Controller) {
       return true;
     });
 
+  const mergedOptions = Object.assign({}, options, { name });
+
   Object.defineProperty(ExtHybrid, PROVIDERS, {
     value: (options.providers || []).map((m) => {
       if (process.env.NODE_ENV !== 'production' && typeof m !== 'function') {
         error(TypeError, 'define: Provider must be a function: %type', { type: typeof m });
       }
-      return m(options, name);
+      return m(mergedOptions, Controller);
     }).filter(m => m),
   });
 

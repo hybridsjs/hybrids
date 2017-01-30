@@ -34,7 +34,7 @@ function execute(host, template, compile) {
   });
 }
 
-export default function engine(options, name) {
+export default function engine(options) {
   if (process.env.NODE_ENV !== 'production' && !options.template) {
     error(TypeError, 'engine: Hybrid "template" option is required');
   }
@@ -43,7 +43,7 @@ export default function engine(options, name) {
     markers: Object.assign({}, markers, options.markers),
     filters: Object.assign({}, filters, options.filters),
     styles: options.styles,
-    name
+    name: options.name,
   });
 
   const globalKeys = template.getRootPathProperties();
