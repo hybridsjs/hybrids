@@ -8,7 +8,7 @@ describe('Engine | Provider -', () => {
     define('hybrids-engine-test', class Controller {
       static get options() {
         return {
-          providers: [engine],
+          plugins: [engine],
           properties: ['test'],
           template: `
             <div>{{ test }}</div>
@@ -47,7 +47,7 @@ describe('Engine | Provider -', () => {
   rafIt('throw when no template given', () => {
     expect(() => {
       define('hybrids-engine-throw', class {
-        static get options() { return { providers: [engine] }; }
+        static get options() { return { plugins: [engine] }; }
       });
     }).toThrow();
   });

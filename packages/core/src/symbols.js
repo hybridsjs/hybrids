@@ -1,4 +1,3 @@
 export const CONTROLLER = Symbol('controller');
-export const PROVIDERS = Symbol('providers');
+export const PLUGINS = Symbol('plugins');
 export const OPTIONS = Symbol('options');
-export const NAME = Symbol('name');

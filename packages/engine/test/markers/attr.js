@@ -10,7 +10,7 @@ describe('Engine | Markers | Attr -', () => {
     class EngineMarkersAttrTest {
       static get options() {
         return {
-          providers: [engine],
+          plugins: [engine],
           template: `
             <div id="one" ${M}attr="customAttr: data.text"></div>
             <div id="two" ${M}attr="with-dash: data.number"></div>

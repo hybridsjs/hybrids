@@ -13,7 +13,7 @@ describe('Engine | Markers | If -', () => {
   class EngineIfTest {
     static get options() {
       return {
-        providers: [engine],
+        plugins: [engine],
         properties: ['items', 'show'],
         template: `
           <template ${M}if="show">

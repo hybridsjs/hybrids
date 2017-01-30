@@ -11,7 +11,7 @@ describe('Engine | Markers | Style -', () => {
     class EngineMarkersStyleTest {
       static get options() {
         return {
-          providers: [engine],
+          plugins: [engine],
           template: `
               <div id="simple" ${M}style="background-color: style.backgroundColor; color: style.color"></div>
               <div id="list" ${M}style="style"></div>

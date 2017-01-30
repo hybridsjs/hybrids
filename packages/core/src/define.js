@@ -2,7 +2,7 @@ import { error } from './debug';
 import Hybrid from './hybrid';
 import { proxy } from './proxy';
 import { camelToDash, normalizeProperty } from './utils';
-import { CONTROLLER, PROVIDERS, OPTIONS, NAME } from './symbols';
+import { CONTROLLER, PLUGINS, OPTIONS } from './symbols';
 
 function bootstrap(name, Controller) {
   if (global.customElements.get(name)) {
@@ -32,7 +32,6 @@ function bootstrap(name, Controller) {
     static get observedAttributes() { return observedAttributes; }
     static get [CONTROLLER]() { return Controller; }
     static get [OPTIONS]() { return options; }
-    static get [NAME]() { return name; }
   }
 
   options.properties = (options.properties || [])
@@ -66,13 +65,13 @@ function bootstrap(name, Controller) {
 
   const mergedOptions = Object.assign({}, options, { name });
 
-  Object.defineProperty(ExtHybrid, PROVIDERS, {
-    value: (options.providers || []).map((m) => {
-      if (process.env.NODE_ENV !== 'production' && typeof m !== 'function') {
-        error(TypeError, 'define: Provider must be a function: %type', { type: typeof m });
+  Object.defineProperty(ExtHybrid, PLUGINS, {
+    value: (options.plugins || []).map((plugin) => {
+      if (process.env.NODE_ENV !== 'production' && typeof plugin !== 'function') {
+        error(TypeError, 'define: Provider must be a function: %type', { type: typeof plugin });
       }
-      return m(mergedOptions, Controller);
-    }).filter(m => m),
+      return plugin(mergedOptions, Controller);
+    }).filter(plugin => plugin),
   });
 
   global.customElements.define(name, ExtHybrid);

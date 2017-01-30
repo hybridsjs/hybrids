@@ -3,7 +3,7 @@ import { mapInstance, callWithContext } from './proxy';
 import { dashToCamel, reflectValue, queue } from './utils';
 import { dispatchEvent } from './plugins/dispatch-event';
 
-import { CONTROLLER, PROVIDERS, OPTIONS } from './symbols';
+import { CONTROLLER, PLUGINS, OPTIONS } from './symbols';
 
 // BUG: Babel transpiled class breaks native custom elements
 function HTMLBridge(...args) { return Reflect.construct(HTMLElement, args, this.constructor); }
@@ -59,7 +59,7 @@ export default class Hybrid extends HTMLBridge {
       if (defaultValue !== undefined) this[property] = defaultValue;
     });
 
-    this.constructor[PROVIDERS].map(m => m(this, this[CONTROLLER]));
+    this.constructor[PLUGINS].map(plugin => plugin(this, this[CONTROLLER]));
   }
 
   connectedCallback() {

@@ -56,7 +56,7 @@ describe('Core | Hybrid -', () => {
       define('hybrids-core-hybrid-connect-provider', class {
         static get options() {
           return {
-            providers: [() => function provider(host) {
+            plugins: [() => function provider(host) {
               host.addEventListener('hybrid-connect', spy);
             }],
           };
@@ -73,7 +73,7 @@ describe('Core | Hybrid -', () => {
       define('hybrids-core-hybrid-disconnect-provider', class {
         static get options() {
           return {
-            providers: [() => function provider(host) {
+            plugins: [() => function provider(host) {
               host.addEventListener('hybrid-disconnect', spy);
             }],
           };

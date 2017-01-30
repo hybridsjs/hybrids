@@ -8,7 +8,7 @@ describe('Engine | Markers | Model -', () => {
   class EngineLinkTest {
     static get options() {
       return {
-        providers: [engine],
+        plugins: [engine],
         template: `
           <input id="radio1" ${M}model="data.radio" type="radio" value="one" />
           <input id="radio2" ${M}model="data.radio" type="radio" value="two" />

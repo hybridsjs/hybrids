@@ -11,7 +11,7 @@ describe('Engine | Markers | Class -', () => {
     class EngineMarkersClassTest {
       static get options() {
         return {
-          providers: [engine],
+          plugins: [engine],
           template: `
             <div id="simple" ${M}class="one: keys.one; two: keys.two"></div>
             <div id="keys" ${M}class="keys"></div>

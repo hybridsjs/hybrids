@@ -1,4 +1,4 @@
-import { define, CONTROLLER, OPTIONS, NAME } from '../src/index';
+import { define, CONTROLLER, OPTIONS } from '../src/index';
 import Hybrid from '../src/hybrid';
 
 describe('Core | define -', () => {
@@ -36,11 +36,6 @@ describe('Core | define -', () => {
     it('set Hybrid options', () => {
       const ExtHybrid = define('hybrids-core-options', Controller);
       expect(ExtHybrid[OPTIONS]).toEqual(options);
-    });
-
-    it('set Hybrid name', () => {
-      const ExtHybrid = define('hybrids-core-name', Controller);
-      expect(ExtHybrid[NAME]).toEqual('hybrids-core-name');
     });
 
     it('throw for already defined properties in HTMLElement', () => {
@@ -105,28 +100,28 @@ describe('Core | define -', () => {
     });
   });
 
-  describe('providers -', () => {
-    let providers;
+  describe('plugins -', () => {
+    let plugins;
     let Controller;
 
     beforeAll(() => {
-      providers = [];
+      plugins = [];
       Controller = class {
         static get options() {
-          return { providers };
+          return { plugins };
         }
       };
     });
 
     beforeEach(() => {
-      providers.length = 0;
+      plugins.length = 0;
     });
 
     it('should call provider when define', () => {
       const spy = jasmine.createSpy('provider');
-      providers.push(spy);
+      plugins.push(spy);
 
-      const ExtHybrid = define('hybrids-core-providers-one', Controller);
+      const ExtHybrid = define('hybrids-core-plugins-one', Controller);
       expect(spy).toHaveBeenCalled();
       expect(spy.calls.mostRecent().args[0])
         .toEqual(jasmine.objectContaining(ExtHybrid[OPTIONS]));
@@ -135,8 +130,8 @@ describe('Core | define -', () => {
     });
 
     it('throw when provider is not a function', () => {
-      providers.push({});
-      expect(() => define('hybrids-core-providers-two', Controller)).toThrow();
+      plugins.push({});
+      expect(() => define('hybrids-core-plugins-two', Controller)).toThrow();
     });
   });
 

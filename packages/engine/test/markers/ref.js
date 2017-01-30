@@ -10,7 +10,7 @@ describe('Engine | Markers | Ref -', () => {
     class EngineMarkersRefTest {
       static get options() {
         return {
-          providers: [engine],
+          plugins: [engine],
           template: `
             <div id="one" ${M}ref="div"></div>
           `

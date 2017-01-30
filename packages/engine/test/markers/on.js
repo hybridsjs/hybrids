@@ -11,7 +11,7 @@ describe('Engine | Markers | On -', () => {
     class EngineMarkersOnTest {
       static get options() {
         return {
-          providers: [engine],
+          plugins: [engine],
           template: `
             <template ${M}for="items">
               <div id="one" ${M}on="click: click()"></div>
