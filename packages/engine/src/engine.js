@@ -43,7 +43,7 @@ function execute(host, template, compile) {
     w.cache = value;
   });
 
-  if (window.ShadyCSS) window.ShadyCSS.applyStyle(host);
+  if (global.ShadyCSS) global.ShadyCSS.applyStyle(host);
 }
 
 export default function engine(options) {

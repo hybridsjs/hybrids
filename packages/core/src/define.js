@@ -5,8 +5,8 @@ import { camelToDash, normalizeProperty } from './utils';
 import { CONTROLLER, PROVIDERS, OPTIONS, NAME } from './symbols';
 
 function bootstrap(name, Controller) {
-  if (window.customElements.get(name)) {
-    const ExtHybrid = window.customElements.get(name);
+  if (global.customElements.get(name)) {
+    const ExtHybrid = global.customElements.get(name);
     if (ExtHybrid[CONTROLLER] !== Controller) {
       error(TypeError, "define: Element '%name' already defined", { name });
     } else {
@@ -75,7 +75,7 @@ function bootstrap(name, Controller) {
     }).filter(m => m),
   });
 
-  window.customElements.define(name, ExtHybrid);
+  global.customElements.define(name, ExtHybrid);
 
   return ExtHybrid;
 }

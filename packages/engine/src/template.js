@@ -248,7 +248,7 @@ export default class Template {
 
             return t;
           }).reduceRight((acc, t) => {
-            if (window.ShadyCSS && name) window.ShadyCSS.prepareTemplate(t.e, name);
+            if (global.ShadyCSS && name) global.ShadyCSS.prepareTemplate(t.e, name);
             acc.unshift(t);
             return acc;
           }, []),
@@ -265,7 +265,7 @@ export default class Template {
     const template = document.createElement('template');
     template.innerHTML = input;
 
-    if (window.ShadyCSS && name) window.ShadyCSS.prepareTemplate(template, name);
+    if (global.ShadyCSS && name) global.ShadyCSS.prepareTemplate(template, name);
 
     this.container = parseTemplate(template, { t: [], p: {} });
   }
