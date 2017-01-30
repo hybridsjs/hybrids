@@ -5,33 +5,45 @@ import Template from './template';
 import markers from './markers';
 import filters from './filters';
 
-function execute(host, template, compile) {
-  return new Promise((resolve) => {
-    window.requestAnimationFrame(() => {
-      template.run(host.shadowRoot, (w) => {
-        const value = w.expr.get();
-        let changelog;
+let request;
+let callbacks;
 
-        if (State.isObject(value)) {
-          const state = new State(value);
-
-          if (state.isChanged()) {
-            changelog = { type: 'modify', changelog: state.changelog };
-          } else if (!State.is(value, w.cache)) {
-            changelog = { type: 'set' };
-          }
-        } else if (!{}.hasOwnProperty.call(w, 'cache') || !State.is(value, w.cache)) {
-          changelog = { type: 'set', oldValue: w.cache };
-        }
-
-        if (changelog) w.fn(value, changelog, compile);
-        w.cache = value;
-      });
-
-      if (window.ShadyCSS) window.ShadyCSS.applyStyle(host);
-      resolve();
+function schedule(cb) {
+  if (!request) {
+    callbacks = new Set().add(cb);
+    request = global.requestAnimationFrame(() => {
+      callbacks.forEach(c => c());
+      request = callbacks = undefined;
     });
+  } else {
+    callbacks.add(cb);
+  }
+
+  return cb;
+}
+
+function execute(host, template, compile) {
+  template.run(host.shadowRoot, (w) => {
+    const value = w.expr.get();
+    let changelog;
+
+    if (State.isObject(value)) {
+      const state = new State(value);
+
+      if (state.isChanged()) {
+        changelog = { type: 'modify', changelog: state.changelog };
+      } else if (!State.is(value, w.cache)) {
+        changelog = { type: 'set' };
+      }
+    } else if (!{}.hasOwnProperty.call(w, 'cache') || !State.is(value, w.cache)) {
+      changelog = { type: 'set', oldValue: w.cache };
+    }
+
+    if (changelog) w.fn(value, changelog, compile);
+    w.cache = value;
   });
+
+  if (window.ShadyCSS) window.ShadyCSS.applyStyle(host);
 }
 
 export default function engine(options) {
@@ -52,11 +64,14 @@ export default function engine(options) {
   return (host, ctrl) => {
     const keys = new Set([...globalKeys, Object.keys(ctrl)]);
     const compile = (id, locals) => template.compile(ctrl, id, locals);
+    const render = schedule.bind(null, () => { execute(host, template, compile); });
 
-    let request;
-    const render = () => {
-      request = request || execute(host, template, compile).then(() => (request = undefined));
-    };
+    schedule(() => {
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      shadowRoot.appendChild(compile());
+
+      render();
+    });
 
     keys.forEach((key) => {
       new PropertyObserver(ctrl, key).observe(
@@ -66,12 +81,5 @@ export default function engine(options) {
     });
 
     host.addEventListener('hybrid-update', render);
-
-    requestAnimationFrame(() => {
-      const shadowRoot = host.attachShadow({ mode: 'open' });
-      shadowRoot.appendChild(compile());
-    });
-
-    render();
   };
 }
