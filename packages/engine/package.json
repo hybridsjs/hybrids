@@ -8,10 +8,8 @@
   "main": "lib/index.js",
   "license": "MIT",
   "dependencies": {
+    "@hybrids/core": "^0.6.0",
     "@hybrids/debug": "^0.5.0",
     "papillon": "^1.5.5"
-  },
-  "devDependencies": {
-    "@hybrids/core": "^0.6.0"
   }
 }

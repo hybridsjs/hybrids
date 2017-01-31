@@ -1,26 +1,10 @@
 import { State, PropertyObserver } from 'papillon';
+import { schedule } from '@hybrids/core';
 
 import { error } from './debug';
 import Template from './template';
 import markers from './markers';
 import filters from './filters';
-
-let request;
-let callbacks;
-
-function schedule(cb) {
-  if (!request) {
-    callbacks = new Set().add(cb);
-    request = global.requestAnimationFrame(() => {
-      callbacks.forEach(c => c());
-      request = callbacks = undefined;
-    });
-  } else {
-    callbacks.add(cb);
-  }
-
-  return cb;
-}
 
 function execute(host, template, compile) {
   template.run(host.shadowRoot, (w) => {

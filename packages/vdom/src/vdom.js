@@ -1,22 +1,7 @@
 import { State, PropertyObserver } from 'papillon';
+import { schedule } from '@hybrids/core';
+
 import { error } from './debug';
-
-let request;
-let callbacks;
-
-function schedule(cb) {
-  if (!request) {
-    callbacks = new Set().add(cb);
-    request = global.requestAnimationFrame(() => {
-      callbacks.forEach(c => c());
-      request = callbacks = undefined;
-    });
-  } else {
-    callbacks.add(cb);
-  }
-
-  return cb;
-}
 
 export default function vdom({ properties, render, autobind = true }, Controller) {
   if (process.env.NODE_ENV !== 'production' && !Reflect.has(Controller.prototype, 'render')) {
