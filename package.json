@@ -22,9 +22,6 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@webcomponents/custom-elements": "github:webcomponents/custom-elements",
-    "@webcomponents/shadycss": "github:webcomponents/shadycss",
-    "@webcomponents/shadydom": "github:webcomponents/shadydom",
     "babel-cli": "^6.18.0",
     "babel-core": "^6.7.6",
     "babel-eslint": "^7.1.1",
@@ -44,7 +41,6 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^2.0.1",
     "lerna": "2.0.0-beta.30",
-    "template": "github:webcomponents/template",
     "webpack": "2.2.0-rc.4"
   }
 }

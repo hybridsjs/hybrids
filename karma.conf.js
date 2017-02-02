@@ -5,9 +5,9 @@ module.exports = (config) => {
     frameworks: ['jasmine'],
     reporters: ['progress', 'coverage'],
     browsers: process.env.TRAVIS ? ['ChromeTravis'] : ['Chrome'],
-    files: ['test/unit.js'],
+    files: ['test/runner.js'],
     preprocessors: {
-      'test/unit.js': ['webpack', 'sourcemap'],
+      'test/runner.js': ['webpack', 'sourcemap'],
     },
     webpack: Object.assign({}, webpackConfig, {
       devtool: 'inline-source-map',
