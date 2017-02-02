@@ -1,14 +1,14 @@
 # Hybrids
 
-Hybrids is set of tools for creating web components using [Custom Elements](https://www.w3.org/TR/custom-elements/), [Template](https://www.w3.org/TR/html-templates/) and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/) specifications.
+Hybrids is a toolkit for creating web components using [Custom Elements](https://www.w3.org/TR/custom-elements/), [Template](https://www.w3.org/TR/html-templates/) and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/) specifications. It supposed to create the simplest and the easiest to use API.
 
-The main goal is to create the simplest and the easiest to use API. Name of the project is taken from *hybrid architecture* which is a core concept of the library.
+Name of the project is taken from *hybrid architecture*, which is a core concept of the library.
 
-#### Hybrid Architecture Unique Features
+#### Hybrid Architecture
 
-* Component logic decoupled from custom element to separate object
+* Component logic decoupled from custom element prototype
 * Full logic encapsulation with public and private access
-* Attributes, properties and methods mapping with type reflection
+* Attributes and properties mapping with type reflection
 * Normalized lifecycle callbacks
 * Easily extendable functionality with plugins
 * Helper methods for listen and dispatch events, get children or parent components and more
@@ -26,9 +26,9 @@ The main goal is to create the simplest and the easiest to use API. Name of the 
 
 | Package           | Description                           |
 |-------------------|---------------------------------------|
-| `@hybrids/engine` | Template engine with unidirectional data binding and consistent and predictable micro DSL |
+| `@hybrids/engine` | View engine with unidirectional data binding using consistent and predictable micro DSL |
 | `@hybrids/vdom`   | Middleware for connecting any React-like render library |
-| `@hybrids/store`*  | State management adapted for hybrid custom elements |
+| `@hybrids/store`*  | State management adapted for Hybrid Custom Elements |
 
 \* Not yet implemented
 
@@ -84,7 +84,7 @@ From now `<my-counter>` is fully working custom element:
   or call `myCounter.count()`
 
 However, the definition has not changed. There is only one difference - `options` static property. This object contains metadata required for connecting logic and custom element.
-For example, using `engine` plugin here is optional and can be easily replaced with `vdom` package to use React-like library.
+For example, using `engine` plugin is optional and can be easily replaced with `vdom` package to use React-like library.
 
 ## Documentation
 
@@ -94,7 +94,7 @@ Work in progress.
 
 #### NPM/Yarn
 
-The best way to use Hybrids is to use package manager with bundler:
+The best way to use Hybrids is to use package manager and JavaScript bundler (e.g. [webpack](https://webpack.js.org/)):
 
 ```bash
 npm install --save @hybrids/core
