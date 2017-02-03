@@ -13,10 +13,10 @@
     "dist": "rm -rf ./dist && npm run dist:dev && npm run dist:prod",
     "dist:dev": "webpack hybrids=./hybrids.js --optimize-minimize --define process.env.NODE_ENV='\"development\"'",
     "dist:prod": "webpack hybrids.min=./hybrids.js --optimize-minimize --define process.env.NODE_ENV='\"production\"'",
-    "prepublish": "npm run bootstrap && npm run dist",
+    "prepublish": "npm run bootstrap && npm run test && npm run dist",
     "prebuild": "ls packages | xargs -I {dir} rm -rf packages/{dir}/lib",
     "build": "ls packages | xargs -I {dir} babel packages/{dir}/src -d packages/{dir}/lib -s inline",
-    "deploy": "npm run build && lerna publish"
+    "deploy": "npm run test && npm run build && lerna publish"
   },
   "license": "MIT",
   "devDependencies": {
