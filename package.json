@@ -6,19 +6,17 @@
   "author": "Dominik Lubański <dominik.lubanski@gmail.com>",
   "repository": "https://github.com/hybridsjs/hybrids",
   "scripts": {
-    "postinstall": "npm run bootstrap",
     "bootstrap": "lerna bootstrap",
     "dev": "karma start",
     "dev:coverage": "NODE_ENV=coverage npm run dev",
-    "prebuild": "ls packages | xargs -I {dir} rm -rf packages/{dir}/lib",
-    "build": "ls packages | xargs -I {dir} babel packages/{dir}/src -d packages/{dir}/lib -s inline",
-    "test": "karma start --single-run --reporters progress",
+    "test": "npm run bootstrap && karma start --single-run --reporters progress",
     "dist": "rm -rf ./dist && npm run dist:dev && npm run dist:prod",
     "dist:dev": "webpack hybrids=./hybrids.js --optimize-minimize --define process.env.NODE_ENV='\"development\"'",
     "dist:prod": "webpack hybrids.min=./hybrids.js --optimize-minimize --define process.env.NODE_ENV='\"production\"'",
-    "prepublish": "npm run test && npm run dist",
-    "predeploy": "npm run test && npm run build",
-    "deploy": "lerna publish"
+    "prepublish": "npm run dist",
+    "prebuild": "ls packages | xargs -I {dir} rm -rf packages/{dir}/lib",
+    "build": "ls packages | xargs -I {dir} babel packages/{dir}/src -d packages/{dir}/lib -s inline",
+    "deploy": "npm run build && lerna publish"
   },
   "license": "MIT",
   "devDependencies": {
