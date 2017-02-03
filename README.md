@@ -117,13 +117,15 @@ Alternatively you can use built version of Hybrids. Bundle contains `core`, `eng
 
 **Development mode**
 ```html
-<script src="https://unpkg.com/hybrids@0.6.1/dist/hybrids.js"></script>
+<script src="https://unpkg.com/hybrids/dist/hybrids.js"></script>
 ```
 
 **Production mode**
 ```html
-<script src="https://unpkg.com/hybrids@0.6.1/dist/hybrids.min.js"></script>
+<script src="https://unpkg.com/hybrids/dist/hybrids.min.js"></script>
 ```
+
+These urls target latest version. You can specify version by adding postfix: `.../hybrids@0.6.2/...`.
 
 ## Browser Support
 
