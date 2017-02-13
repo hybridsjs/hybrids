@@ -1,4 +1,8 @@
-# Hybrids [![npm version](https://badge.fury.io/js/hybrids.svg)](https://badge.fury.io/js/hybrids) [![Build Status](https://travis-ci.org/hybridsjs/hybrids.svg?branch=master)](https://travis-ci.org/hybridsjs/hybrids)
+# Hybrids
+
+[![npm version](https://badge.fury.io/js/hybrids.svg)](https://badge.fury.io/js/hybrids)
+[![Build Status](https://travis-ci.org/hybridsjs/hybrids.svg?branch=master)](https://travis-ci.org/hybridsjs/hybrids)
+[![Coverage Status](https://coveralls.io/repos/github/hybridsjs/hybrids/badge.svg?branch=master)](https://coveralls.io/github/hybridsjs/hybrids?branch=master)
 
 Hybrids is a toolkit for creating web components using [Custom Elements](https://www.w3.org/TR/custom-elements/), [Template](https://www.w3.org/TR/html-templates/) and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/) specifications. It supposed to create the simplest and the easiest to use API.
 

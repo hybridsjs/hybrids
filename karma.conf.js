@@ -3,7 +3,7 @@ const webpackConfig = require('./webpack.config');
 module.exports = (config) => {
   config.set({
     frameworks: ['jasmine'],
-    reporters: ['progress', 'coverage'],
+    reporters: ['dots', 'coverage'],
     browsers: process.env.TRAVIS ? ['ChromeTravis'] : ['Chrome'],
     files: ['test/runner.js'],
     preprocessors: {
@@ -18,8 +18,11 @@ module.exports = (config) => {
       stats: 'errors-only'
     },
     coverageReporter: {
-      type: 'html',
       dir: 'coverage/',
+      reporters: [
+        { type: 'html', subdir: 'report-html' },
+        { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
+      ]
     },
     customLaunchers: {
       ChromeTravis: {

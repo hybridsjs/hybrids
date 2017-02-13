@@ -8,15 +8,16 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "karma start",
-    "dev:coverage": "NODE_ENV=coverage npm run dev",
-    "test": "npm run bootstrap && karma start --single-run --reporters progress",
+    "dev:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run dev",
+    "test": "karma start --single-run",
+    "test:coverage": "NODE_ENV=coverage npm run test",
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
     "dist": "rm -rf ./dist && npm run dist:dev && npm run dist:prod",
     "dist:dev": "webpack hybrids=./hybrids.js --optimize-minimize --define process.env.NODE_ENV='\"development\"'",
     "dist:prod": "webpack hybrids.min=./hybrids.js --optimize-minimize --define process.env.NODE_ENV='\"production\"'",
-    "prepublish": "npm run bootstrap && npm run test && npm run dist",
     "prebuild": "ls packages | xargs -I {dir} rm -rf packages/{dir}/lib",
     "build": "ls packages | xargs -I {dir} babel packages/{dir}/src -d packages/{dir}/lib -s inline",
-    "deploy": "npm run test && npm run build && lerna publish"
+    "deploy": "npm run test && npm run build && lerna publish && npm run dist && npm publish"
   },
   "license": "MIT",
   "devDependencies": {
@@ -27,6 +28,7 @@
     "babel-plugin-istanbul": "^3.0.0",
     "babel-preset-es2015": "^6.6.0",
     "core-js": "^2.4.1",
+    "coveralls": "^2.11.16",
     "eslint": "^3.1.1",
     "eslint-config-airbnb-base": "^10.0.1",
     "eslint-loader": "^1.3.0",
