@@ -11,30 +11,57 @@ Name of the project is taken from *hybrid architecture*, which is a core concept
 #### Hybrid Architecture
 
 * Component logic decoupled from custom element prototype
-* Full logic encapsulation with public and private access
-* Attributes and properties mapping with type reflection
+* Full logic encapsulation with flexible public access
+* Public attributes and properties mapping with type reflection
 * Normalized lifecycle callbacks
 * Easily extendable functionality with plugins
-* Helper methods for listen and dispatch events, get children or parent components and more
+* Helpers for listen and dispatch events, get children or parent components and more
 * Future possibility for server side rendering*
 
-### Core Packages
+## Packages
 
-| Package           | Description                           |
-|-------------------|---------------------------------------|
-| `@hybrids/core`   | Hybrid custom elements definition and helper methods |
-| `@hybrids/shim`   | Collection of polyfills for required Web APIs |
-| `@hybrids/debug`  | Helpful documentation in browser DevTools |
+The Hybrids repo is managed as a monorepo. It is composed of the following packages:
 
-### Plugins
+| NPM name       | Type     | UMD | Description                     |
+|----------------|----------|-----|---------------------------------|
+| [`@hybrids/core`](https://www.npmjs.com/package/@hybrids/core) | core | * | Hybrid custom elements definition and Helpers |
+| [`@hybrids/engine`](https://www.npmjs.com/package/@hybrids/engine) | plugin | * | View engine with unidirectional data binding using consistent and predictable micro DSL |
+| [`@hybrids/vdom`](https://www.npmjs.com/package/@hybrids/vdom) | plugin | * | Middleware for connecting any React-like render library |
+| [`@hybrids/shim`](https://www.npmjs.com/package/@hybrids/shim) | utility  | | Collection of polyfills required for new Web APIs |
+| [`@hybrids/debug`](https://www.npmjs.com/package/@hybrids/debug) | utility  | | DevTools console documentation from error messages |
 
-| Package           | Description                           |
-|-------------------|---------------------------------------|
-| `@hybrids/engine` | View engine with unidirectional data binding using consistent and predictable micro DSL |
-| `@hybrids/vdom`   | Middleware for connecting any React-like render library |
-| `@hybrids/store`*  | State management adapted for Hybrid Custom Elements |
+Packages use `process.env.NODE_ENV` to detect if they are used in development mode. Remember to create production bundle with `process.env.NODE_ENV` set to `production`.
 
-\* Not yet implemented
+## Installation
+
+The best way is to use package manager and JavaScript bundler (e.g. [webpack](https://webpack.js.org/)).
+
+```bash
+npm i -S @hybrids/{core,engine}
+```
+
+```javascript
+import { define } from '@hybrids/core';
+import { engine } from '@hybrids/engine';
+```
+
+### Built Version
+
+You can use built version of the toolkit. Bundle contains packages where UMD is set. The packages use unique named exports, so you can access all available API from `window.hybrids` namespace, e.g.: `hybrids.define` or `hybrids.engine`.
+
+```html
+<!-- Development mode -->
+<script src="https://unpkg.com/hybrids/dist/hybrids.js"></script>
+
+<!-- Productiom mode -->
+<script src="https://unpkg.com/hybrids/dist/hybrids.min.js"></script>
+```
+
+These urls target latest version of the toolkit. You can specify version: `.../hybrids@0.6.2/dist/...`.
+
+## Documentation
+
+You can read documention [here](docs/README.md).
 
 ## Getting Started
 
@@ -89,47 +116,6 @@ From now `<my-counter>` is fully working custom element:
 
 However, the definition has not changed. There is only one difference - `options` static property. This object contains metadata required for connecting logic and custom element.
 For example, using `engine` plugin is optional and can be easily replaced with `vdom` package to use React-like library.
-
-## Documentation
-
-Work in progress.
-
-## Installation
-
-#### NPM/Yarn
-
-The best way to use Hybrids is to use package manager and JavaScript bundler (e.g. [webpack](https://webpack.js.org/)):
-
-```bash
-npm install --save @hybrids/core
-
-# install plugins which you will use
-npm install --save @hybrids/engine
-npm install --save @hybrids/vdom
-```
-
-```javascript
-import { define } from '@hybrids/core';
-import { engine } from '@hybrids/engine';
-```
-
-Packages are in development mode by default. Remember to create production package with `process.env.NODE_ENV` set to `production`.
-
-#### In Browsers
-
-Alternatively you can use built version of Hybrids. Bundle contains `core`, `engine` and `vdom` packages exported in global `hybrids` namespace (UMD). All packages has named exports, so you can use all available API like this: `hybrids.define` or `hybrids.engine`.
-
-**Development mode**
-```html
-<script src="https://unpkg.com/hybrids/dist/hybrids.js"></script>
-```
-
-**Production mode**
-```html
-<script src="https://unpkg.com/hybrids/dist/hybrids.min.js"></script>
-```
-
-These urls target latest version. You can specify version by adding postfix: `.../hybrids@0.6.2/...`.
 
 ## Browser Support
 
