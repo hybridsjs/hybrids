@@ -16,7 +16,6 @@ Name of the project is taken from *hybrid architecture*, which is a core concept
 * Normalized lifecycle callbacks
 * Easily extendable functionality with plugins
 * Helpers for listen and dispatch events, get children or parent components and more
-* Future possibility for server side rendering*
 
 ## Packages
 
@@ -27,10 +26,10 @@ The Hybrids repo is managed as a monorepo. It is composed of the following packa
 | [`@hybrids/core`](https://www.npmjs.com/package/@hybrids/core) | core | * | Hybrid custom elements definition and Helpers |
 | [`@hybrids/engine`](https://www.npmjs.com/package/@hybrids/engine) | plugin | * | View engine with unidirectional data binding using consistent and predictable micro DSL |
 | [`@hybrids/vdom`](https://www.npmjs.com/package/@hybrids/vdom) | plugin | * | Middleware for connecting any React-like render library |
-| [`@hybrids/shim`](https://www.npmjs.com/package/@hybrids/shim) | utility  | | Collection of polyfills required for new Web APIs |
+| [`@hybrids/shim`](https://www.npmjs.com/package/@hybrids/shim) | utility  | | Collection of polyfills required for [Custom Elements](https://www.w3.org/TR/custom-elements/), [Template](https://www.w3.org/TR/html-templates/) and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/) specifications |
 | [`@hybrids/debug`](https://www.npmjs.com/package/@hybrids/debug) | utility  | | DevTools console documentation from error messages |
 
-Packages use `process.env.NODE_ENV` to detect if they are used in development mode. Remember to create production bundle with `process.env.NODE_ENV` set to `production`.
+Packages use `process.env.NODE_ENV !== 'production'` to detect if they are used in development mode. Remember to create production bundle with `process.env.NODE_ENV` set to `'production'`.
 
 ## Installation
 
@@ -47,7 +46,7 @@ import { engine } from '@hybrids/engine';
 
 ### Built Version
 
-You can use built version of the toolkit. Bundle contains packages where UMD is set. The packages use unique named exports, so you can access all available API from `window.hybrids` namespace, e.g.: `hybrids.define` or `hybrids.engine`.
+You can use built version of the toolkit. Bundle contains packages listed above where UMD column is checked. The packages use unique named exports, so you can access all available API from `window.hybrids` namespace, e.g.: `hybrids.define` or `hybrids.engine`.
 
 ```html
 <!-- Development mode -->
@@ -63,9 +62,9 @@ These urls target latest version of the toolkit. You can specify version: `.../h
 
 You can read documention [here](docs/README.md).
 
-## Getting Started
+## Example
 
-Simple counter component can be defined like this:
+Simple Counter component can be defined like this:
 
 ```javascript
 class MyCounter {
@@ -79,8 +78,8 @@ class MyCounter {
 }
 ```
 
-There is no inheritance, no dependency injection or difficult structure - just simple definition. How can we make it
-a web component, but still using it's API?
+It has no inheritance, no dependency injection or difficult structure - just a definition. How can we make it
+a web component, but still using it's simple API?
 
 ```javascript
 import { define } from '@hybrids/core';
@@ -104,25 +103,26 @@ class MyCounter {
   }
 }
 
-define({ MyCounter });
+define('my-counter', MyCounter);
 ```
 
 From now `<my-counter>` is fully working custom element:
 
-* It displays current value in Shadow DOM (it uses `@hybrids/engine` plugin)
+* It displays current value in Shadow DOM (with `@hybrids/engine` plugin)
 * Value can be set by attribute `<my-counter value="100"></my-counter>`
 * You can access your element in DOM and set property `myCounter.value = 10`
   or call `myCounter.count()`
 
-However, the definition has not changed. There is only one difference - `options` static property. This object contains metadata required for connecting logic and custom element.
-For example, using `engine` plugin is optional and can be easily replaced with `vdom` package to use React-like library.
+However, the component definition has not changed. There is only one difference - `options` static property. This object contains metadata required for connecting component and custom element.
+
+Example uses `template` option for `@hybrids/engine` plugin, but it can be easily replaced with `@hybrids/vdom` package to use React-like library.
 
 ## Browser Support
 
-Hybrids supports all evergreen browsers and IE11 with polyfills included where needed. Codebase uses ES2015 APIs, so for IE11 you need also include polyfill for that. The easiest way is to use `@hybrids/shim`  and [`core-js`](https://github.com/zloirock/core-js) packages at top of your project:
+Hybrids supports all evergreen browsers and IE11 (When required polyfills are included). Also for IE11 ES2015 API polyfill is required. The easiest way is to use `@hybrids/shim`  and [`core-js`](https://github.com/zloirock/core-js) packages at top of your project:
 
 ```javascript
-import 'core-js/shim'; // only for IE11
+import 'core-js/shim'; // For IE11
 import '@hybrids/shim';
 ...
 ```
@@ -133,3 +133,7 @@ import '@hybrids/shim';
 * Template: [https://github.com/webcomponents/template](https://github.com/webcomponents/template)
 * Shady DOM: [https://github.com/webcomponents/shadydom](https://github.com/webcomponents/shadydom)
 * Shady CSS: [https://github.com/webcomponents/shadycss](https://github.com/webcomponents/shadycss)
+
+## License
+
+The Hybrids toolkit is released under the [MIT License](https://github.com/hybridsjs/hybrids/blob/master/LICENSE).
