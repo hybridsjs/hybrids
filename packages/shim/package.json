@@ -8,7 +8,7 @@
   "main": "lib/index.js",
   "license": "MIT",
   "dependencies": {
-    "@webcomponents/custom-elements": "github:webcomponents/custom-elements",
+    "@webcomponents/custom-elements": "github:webcomponents/custom-elements#e08969160aebb5b5baaf8d3321a9602c53ee3c46",
     "@webcomponents/shadycss": "github:webcomponents/shadycss",
     "@webcomponents/shadydom": "github:webcomponents/shadydom",
     "template": "github:webcomponents/template"
