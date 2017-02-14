@@ -6,65 +6,36 @@
 
 Hybrids is a toolkit for creating web components using [Custom Elements](https://www.w3.org/TR/custom-elements/), [Template](https://www.w3.org/TR/html-templates/) and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/) specifications. It supposed to create the simplest and the easiest to use API.
 
-Name of the project is taken from *hybrid architecture*, which is a core concept of the library.
+Name of the project is taken from *Hybrid Architecture*, which is a core concept of the library.
 
 #### Hybrid Architecture
 
 * Component logic decoupled from custom element prototype
-* Full logic encapsulation with flexible public access
+* Code encapsulation with flexible public access
 * Public attributes and properties mapping with type reflection
 * Normalized lifecycle callbacks
 * Easily extendable functionality with plugins
-* Helpers for listen and dispatch events, get children or parent components and more
+* Helpers for listen and dispatch events, getting children or parent components by definition reference (custom element name decoupled)
 
 ## Packages
 
-The Hybrids repo is managed as a monorepo. It is composed of the following packages:
+Repository is managed as a monorepo. It is composed of the following packages:
 
-| NPM name       | Type     | UMD | Description                     |
-|----------------|----------|-----|---------------------------------|
-| [`@hybrids/core`](https://www.npmjs.com/package/@hybrids/core) | core | * | Hybrid custom elements definition and Helpers |
-| [`@hybrids/engine`](https://www.npmjs.com/package/@hybrids/engine) | plugin | * | View engine with unidirectional data binding using consistent and predictable micro DSL |
+| NPM       | Type     | UMD | Description                     |
+|-----------|----------|-----|---------------------------------|
+| [`@hybrids/core`](https://www.npmjs.com/package/@hybrids/core) | core | * | Custom elements definition using hybrid architecture |
+| [`@hybrids/engine`](https://www.npmjs.com/package/@hybrids/engine) | plugin | * | View Engine with unidirectional data binding using consistent and predictable micro DSL |
 | [`@hybrids/vdom`](https://www.npmjs.com/package/@hybrids/vdom) | plugin | * | Middleware for connecting any React-like render library |
 | [`@hybrids/shim`](https://www.npmjs.com/package/@hybrids/shim) | utility  | | Collection of polyfills required for [Custom Elements](https://www.w3.org/TR/custom-elements/), [Template](https://www.w3.org/TR/html-templates/) and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/) specifications |
-| [`@hybrids/debug`](https://www.npmjs.com/package/@hybrids/debug) | utility  | | DevTools console documentation from error messages |
-
-Packages use `process.env.NODE_ENV !== 'production'` to detect if they are used in development mode. Remember to create production bundle with `process.env.NODE_ENV` set to `'production'`.
-
-## Installation
-
-The best way is to use package manager and JavaScript bundler (e.g. [webpack](https://webpack.js.org/)).
-
-```bash
-npm i -S @hybrids/{core,engine}
-```
-
-```javascript
-import { define } from '@hybrids/core';
-import { engine } from '@hybrids/engine';
-```
-
-### Built Version
-
-You can use built version of the toolkit. Bundle contains packages listed above where UMD column is checked. The packages use unique named exports, so you can access all available API from `window.hybrids` namespace, e.g.: `hybrids.define` or `hybrids.engine`.
-
-```html
-<!-- Development mode -->
-<script src="https://unpkg.com/hybrids/dist/hybrids.js"></script>
-
-<!-- Productiom mode -->
-<script src="https://unpkg.com/hybrids/dist/hybrids.min.js"></script>
-```
-
-These urls target latest version of the toolkit. You can specify version: `.../hybrids@0.6.2/dist/...`.
+| [`@hybrids/debug`](https://www.npmjs.com/package/@hybrids/debug) | utility  | | DevTools console logging documentation from thrown error messages |
 
 ## Documentation
 
 You can read documention [here](docs/README.md).
 
-## Example
+## Getting Started
 
-Simple Counter component can be defined like this:
+A Counter component can be defined like this:
 
 ```javascript
 class MyCounter {
@@ -117,9 +88,52 @@ However, the component definition has not changed. There is only one difference 
 
 Example uses `template` option for `@hybrids/engine` plugin, but it can be easily replaced with `@hybrids/vdom` package to use React-like library.
 
+## Installation
+
+The best way is to use [npm](https://www.npmjs.com/) and JavaScript bundler (e.g. [webpack](https://webpack.js.org/)):
+
+```bash
+npm i -S @hybrids/{core,engine}
+```
+
+And then in your JavaScript module:
+
+```javascript
+import { define } from '@hybrids/core';
+import { engine } from '@hybrids/engine';
+
+define('my-element', ...);
+```
+
+##### Development & Production
+
+Packages use `process.env.NODE_ENV !== 'production'` to detect if they are used in development mode. Remember to create production bundle with `process.env.NODE_ENV` set to `'production'`.
+
+### Built Version
+
+You can also use built version of the library. This is especially created for direct use in browsers.
+
+```html
+<!-- Development mode -->
+<script src="https://unpkg.com/hybrids/dist/hybrids.js"></script>
+
+<!-- Production mode -->
+<script src="https://unpkg.com/hybrids/dist/hybrids.min.js"></script>
+```
+
+These urls target latest version (add postfix to specify: `.../hybrids@0.6.2/dist/...`).
+
+Bundle contains packages with UMD column checked. These packages have unique named exports, so you can access all available API from `window.hybrids` namespace, e.g.:
+
+```html
+<script>
+  hybrids.define('my-element', ...);
+</script>
+```
+
 ## Browser Support
 
-Hybrids supports all evergreen browsers and IE11 (When required polyfills are included). Also for IE11 ES2015 API polyfill is required. The easiest way is to use `@hybrids/shim`  and [`core-js`](https://github.com/zloirock/core-js) packages at top of your project:
+Hybrids supports all evergreen browsers and IE11 (When required polyfills are included). IE11 requires also ES2015 API polyfills. The easiest way is to use `@hybrids/shim`  and [`core-js`](https://github.com/zloirock/core-js) packages at top of your project:
 
 ```javascript
 import 'core-js/shim'; // For IE11
@@ -136,4 +150,4 @@ import '@hybrids/shim';
 
 ## License
 
-The Hybrids toolkit is released under the [MIT License](https://github.com/hybridsjs/hybrids/blob/master/LICENSE).
+Hybrids library is released under the [MIT License](https://github.com/hybridsjs/hybrids/blob/master/LICENSE).
