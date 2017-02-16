@@ -1,0 +1,19 @@
+{
+  "gitbook": "3.2.2",
+  "title": "Hybrids",
+  "plugins": ["edit-link", "prism", "-highlight", "github", "anchorjs"],
+  "pluginsConfig": {
+    "edit-link": {
+      "base": "https://github.com/hybridsjs/hybrids/tree/master",
+      "label": "Edit This Page"
+    },
+    "github": {
+      "url": "https://github.com/hybridsjs/hybrids"
+    },
+    "theme-default": {
+      "styles": {
+        "website": "build/gitbook.css"
+      }
+    }
+  }
+}
