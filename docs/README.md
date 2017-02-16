@@ -1,3 +1,7 @@
 # Table of Contents
 
-Work in progress.
+* [Read me](/README.md)
+* [Introduction](/docs/Introduction.md)
+* [Core](/docs/Core.md)
+
+

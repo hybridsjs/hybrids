@@ -1,5 +1,2 @@
-# Summary
-
-* [Read me](README.md)
-* [Core](core.md)
+/docs/README.md
 
