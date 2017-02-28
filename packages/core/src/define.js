@@ -1,7 +1,7 @@
 import { error } from './debug';
 import Hybrid from './hybrid';
 import { proxy } from './proxy';
-import { camelToDash, normalizeProperty } from './utils';
+import { pascalToDash, normalizeProperty } from './utils';
 import { CONTROLLER, PLUGINS, OPTIONS } from './symbols';
 
 function bootstrap(name, Controller) {
@@ -85,7 +85,7 @@ export default function defineHybrid(...args) {
   switch (typeof args[0]) {
     case 'object':
       return Object.keys(args[0]).reduce((acc, key) => {
-        acc[key] = bootstrap(camelToDash(key), args[0][key]);
+        acc[key] = bootstrap(pascalToDash(key), args[0][key]);
         return acc;
       }, {});
     case 'string':

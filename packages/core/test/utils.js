@@ -1,10 +1,15 @@
 import {
-  camelToDash, dashToCamel, reflectValue, normalizeProperty, queue
+  camelToDash, pascalToDash, dashToCamel, reflectValue, normalizeProperty, queue
 } from '../src/utils';
 
 describe('core | utils -', () => {
   it('camelToDash', () => {
     expect(camelToDash('AsdDsa')).toEqual('asd-dsa');
+  });
+
+  it('pascalToDash', () => {
+    expect(pascalToDash('AsdDsa')).toEqual('asd-dsa');
+    expect(pascalToDash('XContent')).toEqual('x-content');
   });
 
   it('dashToCamel', () => {
