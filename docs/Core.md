@@ -1,4 +1,0 @@
-# This is core documentation
-
-
-

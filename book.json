@@ -1,6 +1,7 @@
 {
   "gitbook": "3.2.2",
   "title": "Hybrids",
+  "root": "./docs",
   "plugins": ["edit-link", "prism", "-highlight", "github", "anchorjs"],
   "pluginsConfig": {
     "edit-link": {
@@ -14,6 +15,11 @@
       "styles": {
         "website": "build/gitbook.css"
       }
+    },
+    "prism": {
+      "css": [
+        "prismjs/themes/prism-tomorrow.css"
+      ]
     }
   }
 }
