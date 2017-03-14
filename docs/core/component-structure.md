@@ -46,9 +46,9 @@ class MyElement {
 
 ### Available Options
 
-* **plugins**: `[...]` - list of plugins, that extend basic functionality of the core \(e.g. view layer engine or data state management\). Read more in [Plugins](../core/plugins.md) section.
-* **properties:** `[...]` - list of properties and methods, that should be a part of custom element API. Read more in [Attribute & Property Mapping](../core/attribute-and-property-mappiung.md) section.
-* **define:** `{ ... }` - map of hybrid components, that will be passed to `define()` method. This feature allows to structure component dependencies. Read more in [Element Definition](../core/element-definition.md) section.
+* **plugins**: `[...]` - list of plugins, that extend basic functionality of the core \(e.g. view layer engine or data state management\). Read more in [Plugins](./plugins.md) section.
+* **properties:** `[...]` - list of properties and methods, that should be a part of custom element API. Read more in [Attribute & Property Mapping](./attribute-and-property-mapping.md) section.
+* **define:** `{ ... }` - map of hybrid components, that will be passed to `define()` method. This feature allows to structure component dependencies. Read more in [Element Definition](./element-definition.md) section.
 
 Other options can be used by plugins to set their configuration.
 
