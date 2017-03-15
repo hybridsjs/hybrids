@@ -1,4 +1,4 @@
-import { mapInstance, callWithContext } from './proxy';
+import { setContext, callWithContext } from './proxy';
 import { dashToCamel, reflectValue, queue } from './utils';
 import { dispatchEvent } from './dispatch-event';
 
@@ -18,7 +18,7 @@ export default class Hybrid extends HTMLBridge {
       });
     });
 
-    mapInstance(this[CONTROLLER], this);
+    setContext(this[CONTROLLER], this);
 
     this.constructor[OPTIONS].properties.forEach(({ property, attr }) => {
       let value = this[CONTROLLER][property];

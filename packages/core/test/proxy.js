@@ -1,4 +1,4 @@
-import { injectable, resolve, callWithContext, proxy, mapInstance } from '../src/proxy';
+import { injectable, resolve, callWithContext, proxy, setContext } from '../src/proxy';
 
 describe('core | proxy', () => {
   describe('injectable & resolve -', () => {
@@ -46,6 +46,10 @@ describe('core | proxy', () => {
       spy = jasmine.createSpy();
       wrapper = injectable(spy);
       Controller = class {
+        constructor() {
+          wrapper('constructor');
+        }
+
         test1() {
           wrapper();
         }
@@ -66,8 +70,14 @@ describe('core | proxy', () => {
     });
 
     beforeEach(() => {
-      ctrl = new Controller();
-      mapInstance(ctrl, context);
+      ctrl = callWithContext(context, () => new Controller());
+
+      setContext(ctrl, context);
+    });
+
+    it('calls wrapper when controller is constructed', () => {
+      expect(spy.calls.mostRecent().args[0]).toEqual(context);
+      expect(spy.calls.mostRecent().args[1]).toEqual('constructor');
     });
 
     it('returns value from method', () => {

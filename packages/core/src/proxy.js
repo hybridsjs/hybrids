@@ -9,7 +9,7 @@ export function injectable(fn) {
   };
 }
 
-export function callWithContext(context, fn) {
+export function callWithContext(context = activeContext, fn) {
   const oldContext = activeContext;
   activeContext = context;
 
@@ -28,7 +28,7 @@ export function resolve(fn) {
 const map = new WeakMap();
 const set = new WeakSet();
 
-export function mapInstance(target, context) {
+export function setContext(target, context) {
   map.set(target, context);
 }
 
