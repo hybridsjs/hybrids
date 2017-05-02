@@ -2,8 +2,6 @@ import { error } from './debug';
 import { injectable } from './proxy';
 import { CONTROLLER } from './symbols';
 
-import { dispatchEvent } from './dispatch-event';
-
 function walk(node, Controller, options, items = []) {
   Array.from(node.children).forEach((child) => {
     if (child.constructor[CONTROLLER] === Controller) {
@@ -15,8 +13,9 @@ function walk(node, Controller, options, items = []) {
   return items;
 }
 
-export function children(host, Controller, options = {}) {
+export function children(host, propertyName, Controller, options = {}) {
   if (process.env.NODE_ENV !== 'production') {
+    if (typeof propertyName !== 'string') error(TypeError, 'children: Invalid arguments');
     if (typeof Controller !== 'function') error(TypeError, 'children: Invalid arguments');
     if (typeof options !== 'object') {
       error(TypeError, 'children: options must be an object: %options', {
@@ -33,7 +32,7 @@ export function children(host, Controller, options = {}) {
     Object.assign(items, temp);
     items.length = temp.length;
 
-    dispatchEvent(host, 'hybrid-update', { bubbles: false });
+    host[CONTROLLER][propertyName] = items;
   };
 
   new MutationObserver(refresh).observe(host, {
@@ -41,8 +40,6 @@ export function children(host, Controller, options = {}) {
   });
 
   host.addEventListener('hybrid-connect', refresh);
-
-  return items;
 }
 
 export default injectable(children);

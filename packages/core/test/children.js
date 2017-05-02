@@ -13,7 +13,7 @@ describe('core | children -', () => {
   class CorePluginsChildren {}
   class CorePluginsChildrenParent {
     constructor() {
-      this.items = wrappedChildren(CorePluginsChildren, options);
+      wrappedChildren('items', CorePluginsChildren, options);
     }
   }
 
