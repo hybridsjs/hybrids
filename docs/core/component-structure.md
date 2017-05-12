@@ -52,7 +52,7 @@ class MyElement {
 
 Other options can be used by plugins to set their configuration.
 
-## Lifecycle callbacks
+## Lifecycle Callbacks
 
 Custom Elements API provides lifecycle callbacks. Library connects `connectedCallback()` as `connect()` and `disconnectedCallback()` as `disconnect()`. These methods are invoked synchronously with corresponding custom element callbacks.
 
@@ -60,7 +60,9 @@ Custom Elements API provides lifecycle callbacks. Library connects `connectedCal
 
 `attributeChangeCallback` is used internally for attribute and property mapping. It has no corresponding method in component definition. Component properties will be set automatically according to your `properties` configuration.
 
-If you want to observe when property is changed, you can use pattern recommended by the specification or use external library.
+## Observing Changes
+
+If you want to observe when component property is changed, you can use pattern recommended by the specification or use external library.
 
 #### Getter / Setter Property
 
