@@ -101,4 +101,4 @@ Example structure of elements looks like this:
 
 ### Observing Changes
 
-`children()` updates list of children mutating array. However updates uses set operation, which can be observed. To listen to children updates, use pattern presented in [Component Structure](../component-structure.md#observing-changes) section.
+`children()` updates list of children mutating array. However updates uses set operation, which can be observed. To listen to children updates, use pattern presented in corresponding [Component Structure](../component-structure.md) section.
