@@ -46,13 +46,13 @@ class MyElement {
 
 ### Available Options
 
-* **plugins**: `[...]` - list of plugins, that extend basic functionality of the core \(e.g. view layer engine or data state management\). Read more in [Plugins](../core/plugins.md) section.
-* **properties:** `[...]` - list of properties and methods, that should be a part of custom element API. Read more in [Attribute & Property Mapping](../core/attribute-and-property-mappiung.md) section.
-* **define:** `{ ... }` - map of hybrid components, that will be passed to `define()` method. This feature allows to structure component dependencies. Read more in [Element Definition](../core/element-definition.md) section.
+* **plugins**: `[...]` - list of plugins, that extend basic functionality of the core \(e.g. view layer engine or data state management\). Read more in [Plugins](./plugins.md) section.
+* **properties:** `[...]` - list of properties and methods, that should be a part of custom element API. Read more in [Attribute & Property Mapping](./attribute-and-property-mapping.md) section.
+* **define:** `{ ... }` - map of hybrid components, that will be passed to `define()` method. This feature allows to structure component dependencies. Read more in [Element Definition](./element-definition.md) section.
 
 Other options can be used by plugins to set their configuration.
 
-## Lifecycle callbacks
+## Lifecycle Callbacks
 
 Custom Elements API provides lifecycle callbacks. Library connects `connectedCallback()` as `connect()` and `disconnectedCallback()` as `disconnect()`. These methods are invoked synchronously with corresponding custom element callbacks.
 
@@ -60,7 +60,9 @@ Custom Elements API provides lifecycle callbacks. Library connects `connectedCal
 
 `attributeChangeCallback` is used internally for attribute and property mapping. It has no corresponding method in component definition. Component properties will be set automatically according to your `properties` configuration.
 
-If you want to observe when property is changed, you can use pattern recommended by the specification or use external library.
+## Observing Changes
+
+If you want to observe when component property is changed, you can use pattern recommended by the specification or use external library.
 
 #### Getter / Setter Property
 

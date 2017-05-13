@@ -52,7 +52,6 @@ function addClass(el, className) {
 export default injectable(addClass);
 
 // my-element.js
-```javascript
 import addClass from './add-class';
 
 export class MyElement {
