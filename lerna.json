@@ -1,10 +1,12 @@
 {
   "lerna": "2.0.0-rc.4",
   "version": "0.6.2",
-  "publishConfig": {
-    "ignore": [
-      "test/**/*.js",
-      "*.md"
-    ]
+  "command": {
+    "publish": {
+      "ignore": [
+        "test/**/*.js",
+        "*.md"
+      ]
+    }
   }
 }
