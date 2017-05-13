@@ -2,13 +2,13 @@
 
 Project is composed by the following packages:
 
-| NPM | Type | Bundle | Description |
+| NPM | Version | Type | Bundle | Description |
 | --- | --- | --- | --- |
-| [`@hybrids/core`](https://www.npmjs.com/package/@hybrids/core) | core | \* | Custom elements definition using hybrid architecture |
-| [`@hybrids/engine`](https://www.npmjs.com/package/@hybrids/engine) | plugin | \* | View Engine with unidirectional data binding using consistent micro DSL |
-| [`@hybrids/vdom`](https://www.npmjs.com/package/@hybrids/vdom) | plugin | \* | Middleware for connecting any React-like render library |
-| [`@hybrids/shim`](https://www.npmjs.com/package/@hybrids/shim) | utility |  | Collection of polyfills required for [Custom Elements](https://www.w3.org/TR/custom-elements/), [Template](https://www.w3.org/TR/html-templates/) and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/) specifications |
-| [`@hybrids/debug`](https://www.npmjs.com/package/@hybrids/debug) | utility |  | DevTools console logging documentation from thrown error messages |
+| [`@hybrids/core`](https://www.npmjs.com/package/@hybrids/core) |  [![npm version](https://badge.fury.io/js/%40hybrids%2Fcore.svg)](https://badge.fury.io/js/%40hybrids%2Fcore) | core | \* | Custom elements definition using hybrid architecture |
+| [`@hybrids/engine`](https://www.npmjs.com/package/@hybrids/engine) | [![npm version](https://badge.fury.io/js/%40hybrids%2Fengine.svg)](https://badge.fury.io/js/%40hybrids%2Fengine) | plugin | \* | View Engine with unidirectional data binding using consistent micro DSL |
+| [`@hybrids/vdom`](https://www.npmjs.com/package/@hybrids/vdom) | [![npm version](https://badge.fury.io/js/%40hybrids%2Fvdom.svg)](https://badge.fury.io/js/%40hybrids%2Fvdom) | plugin | \* | Middleware for connecting any React-like render library |
+| [`@hybrids/shim`](https://www.npmjs.com/package/@hybrids/shim) | [![npm version](https://badge.fury.io/js/%40hybrids%2Fshim.svg)](https://badge.fury.io/js/%40hybrids%2Fshim) | utility |  | Collection of polyfills required for [Custom Elements](https://www.w3.org/TR/custom-elements/), [Template](https://www.w3.org/TR/html-templates/) and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/) specifications |
+| [`@hybrids/debug`](https://www.npmjs.com/package/@hybrids/debug) | [![npm version](https://badge.fury.io/js/%40hybrids%2Fdebug.svg)](https://badge.fury.io/js/%40hybrids%2Fdebug) | utility |  | DevTools console logging documentation from thrown error messages |
 
 ## Recommendation
 
