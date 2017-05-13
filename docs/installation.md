@@ -2,7 +2,7 @@
 
 Project is composed by the following packages:
 
-| NPM | Version | Type | Bundle | Description |
+| NPM | Version | Type | UMD | Description |
 | --- | --- | --- | --- | --- |
 | [`@hybrids/core`](https://www.npmjs.com/package/@hybrids/core) |  [![npm version](https://badge.fury.io/js/%40hybrids%2Fcore.svg)](https://badge.fury.io/js/%40hybrids%2Fcore) | core | \* | Custom elements definition using hybrid architecture |
 | [`@hybrids/engine`](https://www.npmjs.com/package/@hybrids/engine) | [![npm version](https://badge.fury.io/js/%40hybrids%2Fengine.svg)](https://badge.fury.io/js/%40hybrids%2Fengine) | plugin | \* | View Engine with unidirectional data binding using consistent micro DSL |
