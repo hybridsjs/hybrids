@@ -58,8 +58,8 @@ export default class Hybrid extends HTMLBridge {
   }
 
   connectedCallback() {
-    if (this[CONTROLLER].connect) this[CONTROLLER].connect();
     dispatchEvent(this, 'hybrid-connect', { bubbles: false });
+    if (this[CONTROLLER].connect) this[CONTROLLER].connect();
   }
 
   disconnectedCallback() {

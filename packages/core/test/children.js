@@ -15,6 +15,10 @@ describe('core | children -', () => {
     constructor() {
       wrappedChildren('items', CorePluginsChildren, options);
     }
+
+    connect() {
+      this.lengthOnConnect = this.items.length;
+    }
   }
 
   function setupTree(opt) {
@@ -60,7 +64,9 @@ describe('core | children -', () => {
   rafIt('returns direct children list', () => {
     setupTree();
     requestAnimationFrame(() => {
-      expect(parentEl[CONTROLLER].items).toEqual(getControllers('*:not(div):not(span) >', parentEl));
+      const list = getControllers('*:not(div):not(span) >', parentEl);
+      expect(parentEl[CONTROLLER].lengthOnConnect, list.length);
+      expect(parentEl[CONTROLLER].items).toEqual(list);
     });
   });
 
