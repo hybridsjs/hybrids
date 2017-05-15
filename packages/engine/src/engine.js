@@ -63,7 +63,5 @@ export default function engine(options) {
           render
         );
     });
-
-    host.addEventListener('hybrid-update', render);
   };
 }
