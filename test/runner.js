@@ -1,6 +1,5 @@
-import 'core-js/shim';
-import '../packages/shim';
-import './rafIt';
+import '../shim';
+import './test';
 
-const req = require.context('../packages', true, /^\.\/[a-z]+\/test\/(.*\.(js$))$/igm);
+const req = require.context('../spec', true, /\.js$/igm);
 req.keys().forEach(key => req(key));

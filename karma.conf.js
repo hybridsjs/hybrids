@@ -15,14 +15,14 @@ module.exports = (config) => {
     }),
     webpackMiddleware: {
       noInfo: true,
-      stats: 'errors-only'
+      stats: 'errors-only',
     },
     coverageReporter: {
       dir: 'coverage/',
       reporters: [
         { type: 'html', subdir: 'report-html' },
         { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
-      ]
+      ],
     },
     customLaunchers: {
       ChromeTravis: {

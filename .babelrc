@@ -1,11 +1,17 @@
 {
-  "presets": ["es2015"],
+  "presets": [
+    ["env", {
+      "targets": { "browsers": ["last 2 versions"] },
+      "modules": false
+    }],
+    "stage-2"
+  ],
   "env": {
     "coverage": {
       "plugins": [
         ["istanbul", {
           "include": [
-            "packages/**/src/**/*.js"
+            "src/**/*.js"
           ]
         }]
       ]

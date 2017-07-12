@@ -1,6 +1,8 @@
+const path = require('path');
+
 module.exports = {
   output: {
-    path: './dist',
+    path: path.resolve(__dirname, 'dist'),
     filename: '[name].js',
     libraryTarget: 'umd',
     library: 'hybrids',
@@ -8,9 +10,9 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.js$/, loader: 'eslint-loader', include: /packages\/[^/]+\/src/, enforce: 'pre' },
+      { test: /\.js$/, loader: 'eslint-loader', enforce: 'pre' },
       { test: /\.js$/, loader: 'babel-loader' },
-    ]
+    ],
   },
   resolve: {
     mainFields: ['jsnext:main', 'main'],
