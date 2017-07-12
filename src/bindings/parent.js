@@ -10,6 +10,7 @@ export default Component => key => (host, component) => {
 
   host.addEventListener('@connect', () => {
     parentElement = host.parentElement;
+    component[key] = null;
 
     while (parentElement) {
       const parentComponent = parentElement[COMPONENT];
@@ -28,6 +29,9 @@ export default Component => key => (host, component) => {
   host.addEventListener('@disconnect', () => {
     if (parentElement) {
       parentElement.removeEventListener('@change', check);
+
+      parentElement = null;
+      component[key] = null;
     }
   });
 };
