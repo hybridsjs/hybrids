@@ -21,13 +21,13 @@ export default Component => key => (host, component) => {
     }
 
     if (parentElement) {
-      parentElement.addEventListener('@update', check);
+      parentElement.addEventListener('@change', check);
     }
   });
 
   host.addEventListener('@disconnect', () => {
     if (parentElement) {
-      parentElement.removeEventListener('@update', check);
+      parentElement.removeEventListener('@change', check);
     }
   });
 };

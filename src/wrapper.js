@@ -29,12 +29,12 @@ export default class HTMLWrapper extends HTMLBridge {
       Object.defineProperty(this, OBSERVER, {
         value: new Observer(component, Object.keys(component), (changelog) => {
           let result;
-          if (component.updated) {
-            result = component.updated({ host: this, changelog });
+          if (component.changed) {
+            result = component.changed(changelog);
           }
 
           if (result !== false) {
-            this.dispatchEvent(new CustomEvent('@update', {
+            this.dispatchEvent(new CustomEvent('@change', {
               detail: changelog,
               bubbles: true,
             }));

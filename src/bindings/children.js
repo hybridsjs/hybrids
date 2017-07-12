@@ -38,7 +38,7 @@ export default (Component, options = {}) => key => (host, component) => {
 
   host.addEventListener('@connect', resolveItems);
 
-  host.addEventListener('@update', ({ target }) => {
+  host.addEventListener('@change', ({ target }) => {
     if (target !== host && set.has(target[COMPONENT])) {
       host[OBSERVER].check();
     }

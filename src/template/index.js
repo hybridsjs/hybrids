@@ -24,7 +24,7 @@ export default (options) => {
 
     host.addEventListener('@connect', render);
 
-    host.addEventListener('@update', ({ target }) => {
+    host.addEventListener('@change', ({ target }) => {
       if (host === target) render();
     });
   };

@@ -1,5 +1,5 @@
-import { createStore, getStore } from '../../src/bindings/store';
-import { COMPONENT } from '../../src/symbols';
+import { createStore, getStore } from '../../../src/bindings/store';
+import { COMPONENT } from '../../../src/symbols';
 
 describe('Store binding', () => {
   class Store {
@@ -29,7 +29,7 @@ describe('Store binding', () => {
     }
 
     // eslint-disable-next-line
-    updated() {}
+    changed() {}
   }
 
   class StoreReceiver {
@@ -41,7 +41,7 @@ describe('Store binding', () => {
     };
 
     // eslint-disable-next-line
-    updated() {}
+    changed() {}
   }
 
   class StoreBinding {
@@ -66,7 +66,7 @@ describe('Store binding', () => {
         expect(Array.isArray(component.ownStore)).toBe(true);
       },
       'async store update renders component': (el, component) => {
-        const spy = spyOn(component, 'updated');
+        const spy = spyOn(component, 'changed');
         component.store.delayUpdate();
 
         return (done) => {
@@ -92,13 +92,13 @@ describe('Store binding', () => {
         const receiverEl = getElement(el, 'receiver');
         const receiver = receiverEl[COMPONENT];
         const provider = getComponent(el, 'provider');
-        const providerSpy = spyOn(provider, 'updated');
+        const providerSpy = spyOn(provider, 'changed');
 
         receiverEl.parentElement.removeChild(receiverEl);
 
         return (done) => {
           expect(receiver.store).toBe(null);
-          const receiverSpy = spyOn(receiver, 'updated');
+          const receiverSpy = spyOn(receiver, 'changed');
           global.requestAnimationFrame(() => {
             provider.store.value = 'new value';
             global.requestAnimationFrame(() => {
@@ -116,7 +116,7 @@ describe('Store binding', () => {
       'async store update renders provider component': (el) => {
         const receiver = getComponent(el, 'receiver');
         const provider = getComponent(el, 'provider');
-        const spy = spyOn(provider, 'updated');
+        const spy = spyOn(provider, 'changed');
 
         receiver.store.delayUpdate();
 
@@ -130,7 +130,7 @@ describe('Store binding', () => {
       'async store update renders receiver component': (el) => {
         const receiver = getComponent(el, 'receiver');
         const provider = getComponent(el, 'provider');
-        const spy = spyOn(receiver, 'updated');
+        const spy = spyOn(receiver, 'changed');
 
         provider.store.delayUpdate();
 

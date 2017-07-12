@@ -1,6 +1,6 @@
-import define from '../../src/define';
-import { COMPONENT } from '../../src/symbols';
-import property from '../../src/bindings/property';
+import define from '../../../src/define';
+import { COMPONENT } from '../../../src/symbols';
+import property from '../../../src/bindings/property';
 
 describe('Property binding', () => {
   test(

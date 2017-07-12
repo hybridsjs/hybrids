@@ -49,7 +49,7 @@ export const getStore = Store => key => (host, component) => {
           storeKey = el[symbol].key;
           component[key] = el[symbol].store;
 
-          storeHost.addEventListener('@update', check);
+          storeHost.addEventListener('@change', check);
           return;
         }
         el = el.parentElement;
@@ -62,12 +62,12 @@ export const getStore = Store => key => (host, component) => {
   host.addEventListener('@disconnect', () => {
     component[key] = null;
     if (storeHost) {
-      storeHost.removeEventListener('@update', check);
+      storeHost.removeEventListener('@change', check);
       storeHost = null;
     }
   });
 
-  host.addEventListener('@update', ({ target, detail: changelog }) => {
+  host.addEventListener('@change', ({ target, detail: changelog }) => {
     if (target === host && storeHost && changelog[key]) {
       storeHost[OBSERVER].check();
     }

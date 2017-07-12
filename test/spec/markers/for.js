@@ -1,4 +1,4 @@
-import { getNodeContext } from '../../src/template/expression';
+import { getNodeContext } from '../../../src/template/expression';
 
 describe('Marker For:', () => {
   function extractValues(el) {

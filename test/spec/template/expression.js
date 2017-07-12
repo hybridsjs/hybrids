@@ -1,5 +1,5 @@
-import Expression, { setNodeContext } from '../../src/template/expression';
-import Path from '../../src/template/path';
+import Expression, { setNodeContext } from '../../../src/template/expression';
+import Path from '../../../src/template/path';
 
 describe('Template Expression:', () => {
   let path;

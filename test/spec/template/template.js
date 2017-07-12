@@ -1,5 +1,5 @@
-import Template from '../../src/template/template';
-import { TEMPLATE_PREFIX as T } from '../../src/template/parser';
+import Template from '../../../src/template/template';
+import { TEMPLATE_PREFIX as T } from '../../../src/template/parser';
 
 describe('Template:', () => {
   describe('parse -', () => {

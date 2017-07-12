@@ -1,4 +1,4 @@
-import Path from '../../src/template/path';
+import Path from '../../../src/template/path';
 
 describe('Template Path:', () => {
   let context;

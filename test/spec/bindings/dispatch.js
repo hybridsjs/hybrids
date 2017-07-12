@@ -1,5 +1,5 @@
-import define from '../../src/define';
-import dispatch from '../../src/bindings/dispatch';
+import define from '../../../src/define';
+import dispatch from '../../../src/bindings/dispatch';
 
 describe('Binding dispatchEvent', () => {
   test(class {

@@ -1,5 +1,5 @@
-import method from '../../src/bindings/method';
-import define from '../../src/define';
+import method from '../../../src/bindings/method';
+import define from '../../../src/define';
 
 describe('Method binding', () => {
   test(class MethodTest {

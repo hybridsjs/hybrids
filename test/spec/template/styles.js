@@ -1,4 +1,4 @@
-import Template from '../../src/template/template';
+import Template from '../../../src/template/template';
 
 describe('Polyfill styles:', () => {
   const globalEl = document.createElement('div');

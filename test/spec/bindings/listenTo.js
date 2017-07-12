@@ -1,5 +1,5 @@
-import define from '../../src/define';
-import listenTo from '../../src/bindings/listenTo';
+import define from '../../../src/define';
+import listenTo from '../../../src/bindings/listenTo';
 
 describe('Binding listenTo', () => {
   test(class {

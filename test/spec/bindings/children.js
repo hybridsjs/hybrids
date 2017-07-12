@@ -1,6 +1,6 @@
-import { COMPONENT } from '../../src/symbols';
-import property from '../../src/bindings/property';
-import children from '../../src/bindings/children';
+import { COMPONENT } from '../../../src/symbols';
+import property from '../../../src/bindings/property';
+import children from '../../../src/bindings/children';
 
 describe('Children binding', () => {
   const getElement = (el, id) => el.shadowRoot.getElementById(id);
@@ -172,7 +172,7 @@ describe('Children binding', () => {
           };
 
           // eslint-disable-next-line
-          updated() {}
+          changed() {}
         },
         ChildrenTest,
       },
@@ -186,7 +186,7 @@ describe('Children binding', () => {
     'update parent by children update': (el) => {
       const parent = getComponent(el, 'parent');
       const child = getElement(el, 'child');
-      const spy = spyOn(parent, 'updated');
+      const spy = spyOn(parent, 'changed');
 
       return (done) => {
         child.test = 'test';

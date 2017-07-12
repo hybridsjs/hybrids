@@ -3,6 +3,10 @@ describe('Wrapper', () => {
   let disconnect;
 
   class WrapperTest {
+    constructor() {
+      this.value = 'test value';
+    }
+
     // eslint-disable-next-line
     connected(...args) {
       connect = jasmine.createSpy();
@@ -14,6 +18,9 @@ describe('Wrapper', () => {
       disconnect = jasmine.createSpy();
       disconnect(...args);
     }
+
+    // eslint-disable-next-line
+    changed() {}
   }
 
   test(
@@ -33,6 +40,15 @@ describe('Wrapper', () => {
         return (done) => {
           expect(disconnect).toHaveBeenCalledTimes(1);
           expect(disconnect.calls.mostRecent().args[0]).toBe(el);
+          done();
+        };
+      },
+      'calls component changed callback': (el, component) => {
+        const spy = spyOn(component, 'changed');
+        component.value = 'new value';
+
+        return (done) => {
+          expect(spy).toHaveBeenCalledTimes(1);
           done();
         };
       },
