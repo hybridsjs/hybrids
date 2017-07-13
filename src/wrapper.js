@@ -18,12 +18,12 @@ export default class HTMLWrapper extends HTMLBridge {
   }
 
   connectedCallback() {
+    this.dispatchEvent(new CustomEvent('@connect'));
+
     const component = this[COMPONENT];
     if (component.connected) {
       component.connected(this);
     }
-
-    this.dispatchEvent(new CustomEvent('@connect'));
 
     if (!this[OBSERVER]) {
       Object.defineProperty(this, OBSERVER, {
@@ -45,11 +45,11 @@ export default class HTMLWrapper extends HTMLBridge {
   }
 
   disconnectedCallback() {
+    this.dispatchEvent(new CustomEvent('@disconnect'));
+
     if (this[COMPONENT].disconnected) {
       this[COMPONENT].disconnected(this);
     }
-
-    this.dispatchEvent(new CustomEvent('@disconnect'));
   }
 
   attributeChangedCallback(attrName, oldVal, newVal) {
