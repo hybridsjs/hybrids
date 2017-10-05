@@ -1,4 +1,3 @@
-import { State } from 'papillon';
 import Path from './path';
 import Expression, { setNodeContext } from './expression';
 import {
@@ -8,12 +7,16 @@ import {
   stringifyMarker,
 } from './parser';
 
+import defaultMarkers from './markers';
+import defaultFilters from './filters';
+
 const WATCHERS = Symbol('watchers');
 
 export default class Template {
   constructor(input, { markers = {}, filters = {}, name, styles } = {}) {
-    this.markers = markers;
-    this.filters = filters;
+    this.markers = { ...defaultMarkers, ...markers };
+    this.filters = { ...defaultFilters, ...filters };
+
     this.compile = this.compile.bind(this);
 
     if (typeof input === 'object') {
@@ -83,10 +86,10 @@ export default class Template {
             );
 
             const expr = new Expression(node, this.container.p[exprKey], filterList);
-            const fn = marker.call(this, { attr, node, expr }, ...args);
+            const fn = marker.call(this, { attr, node, expr, compile: this.compile }, ...args);
 
             if (fn) {
-              let state = null;
+              let cache;
               let watchers = node[WATCHERS];
 
               if (!watchers) {
@@ -96,20 +99,21 @@ export default class Template {
 
               watchers.push(() => {
                 try {
-                  if (!state) {
-                    state = new State({ get value() { return expr.get(); } });
-                    fn(state.cache.value, { type: 'set' }, this.compile);
-                  } else if (state.isChanged()) {
-                    fn(expr.get(), state.changelog.value, this.compile);
+                  const value = expr.get();
+
+                  if (value !== cache || typeof value === 'object') {
+                    fn(value, cache);
                   }
+
+                  cache = value;
                 } catch (error) {
-                  error.msg += `\n\n Execution failed: ${stringifyMarker(node, attr, this.container.t)}`;
+                  error.message += `\n\n Execution failed: ${stringifyMarker(node, attr, this.container.t)}`;
                   throw error;
                 }
               });
             }
           } catch (error) {
-            error.msg += `\n\n Compilation failed: ${stringifyMarker(node, attr, this.container.t)}`;
+            error.message += `\n\n Compilation failed: ${stringifyMarker(node, attr, this.container.t)}`;
             throw error;
           }
         });

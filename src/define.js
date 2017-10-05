@@ -1,6 +1,7 @@
-import HTMLWrapper from './wrapper';
+import Hybrid from './hybrid';
+import Template from './template/template';
+import bootstrap from './bootstrap';
 import { pascalToDash } from './utils';
-import template from './template';
 
 export default function define(elements) {
   Object.entries(elements)
@@ -15,34 +16,46 @@ export default function define(elements) {
       return true;
     })
     .forEach(([name, tagName, Component]) => {
-      const config = Component.component;
       const attrs = [];
       const className = `HTML${name}Element`;
-      const plugins = [];
+      const properties = [];
+      const view = Component.view;
+      let template;
 
-      class Wrapper extends HTMLWrapper {
-        static get observedAttributes() { return attrs; }
-
-        static get Component() { return Component; }
-        static get plugins() { return plugins; }
-
-        static get name() { return className; }
+      if (view) {
+        if (view.define) define(view.define);
+        template = new Template(view.template, {
+          markers: view.markers,
+          filters: view.filters,
+          styles: view.styles,
+          name: tagName,
+        });
       }
 
-      if (config) {
-        if (config.define) define(config.define);
+      class ExtHybrid extends Hybrid {
+        static get Component() { return Component; }
+        static get observedAttributes() { return attrs; }
+        static get name() { return className; }
 
-        Object.entries(config.bindings || {}).forEach(([key, fn]) => {
-          fn = fn(key, Wrapper, Component);
-          if (fn) plugins.push(fn);
-        });
+        constructor() {
+          super();
 
-        if (config.template) {
-          plugins.push(template({ ...config, is: tagName }));
+          bootstrap({
+            host: this,
+            Component,
+            template,
+            properties,
+          });
         }
       }
 
-      customElements.define(tagName, Wrapper);
-      Object.defineProperty(global, className, { value: Wrapper });
+      Object.entries(Component.properties || {}).forEach(([key, fn]) => {
+        fn = fn(key, ExtHybrid, Component);
+        if (fn) properties.push([key, fn]);
+      });
+
+
+      customElements.define(tagName, ExtHybrid);
+      Object.defineProperty(global, className, { value: ExtHybrid });
     });
 }

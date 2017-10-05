@@ -10,3 +10,14 @@ export function pascalToDash(str) {
 export function dashToCamel(str) {
   return str.replace(/-([a-z])/g, g => g[1].toUpperCase());
 }
+
+export function defer(fn) {
+  let request;
+  return function wrapper() {
+    if (!request) {
+      request = Promise.resolve().then(fn).then(() => {
+        request = undefined;
+      });
+    }
+  };
+}

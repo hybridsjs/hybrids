@@ -1,37 +1,37 @@
-import { COMPONENT, OBSERVER } from '../symbols';
+import { COMPONENT } from '../symbols';
 
-export default Component => key => (host, component) => {
+export default (Component, { observe = true } = {}) => () => (host, get, set) => {
   let parentElement;
   const check = ({ target }) => {
     if (target === parentElement) {
-      host[OBSERVER].check();
+      set(parentElement);
     }
   };
 
   host.addEventListener('@connect', () => {
     parentElement = host.parentElement;
-    component[key] = null;
+    set(null);
 
     while (parentElement) {
       const parentComponent = parentElement[COMPONENT];
       if (parentComponent && parentComponent instanceof Component) {
-        component[key] = parentComponent;
+        set(parentComponent);
         break;
       }
       parentElement = parentElement.parentElement;
     }
 
-    if (parentElement) {
+    if (observe && parentElement) {
       parentElement.addEventListener('@change', check);
     }
   });
 
   host.addEventListener('@disconnect', () => {
     if (parentElement) {
-      parentElement.removeEventListener('@change', check);
+      if (observe) parentElement.removeEventListener('@change', check);
 
       parentElement = null;
-      component[key] = null;
+      set(null);
     }
   });
 };

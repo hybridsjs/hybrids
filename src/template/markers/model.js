@@ -1,5 +1,4 @@
-import { Observer } from 'papillon';
-import Path from '../template/path';
+import Path from '../path';
 
 function bindRadio(node, expr, path) {
   return {
@@ -119,8 +118,10 @@ export default function model({ node, expr }, sourcePath = 'value', eventName) {
 
   node.addEventListener(eventName || 'change', () => {
     flag = true;
-    Observer.requestAnimationFrame(callbacks.up);
-    Observer.requestAnimationFrame(() => (flag = false));
+    global.requestAnimationFrame(() => {
+      callbacks.up();
+      flag = false;
+    });
   });
 
   return (value) => {

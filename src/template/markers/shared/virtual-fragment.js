@@ -1,4 +1,4 @@
-import { setNodeContext, getNodeContext } from '../../template/expression';
+import { setNodeContext, getNodeContext } from '../../expression';
 
 const map = new WeakMap();
 

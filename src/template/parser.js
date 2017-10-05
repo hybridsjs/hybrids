@@ -20,11 +20,11 @@ function interpolate(node) {
           value = value.substr(2, value.length - 4).trim();
 
           node.removeChild(child);
-          node.setAttribute(':text-content', value);
+          node.setAttribute('prop:text-content', value);
         } else {
           const result = child.textContent.replace(
             /{{(([^}]|\n)+)}}/g,
-            (match, expr) => `<span :text-content="${expr.trim()}"></span>`,
+            (match, expr) => `<span prop:text-content="${expr.trim()}"></span>`,
           );
 
           if (result !== child.textContent) {

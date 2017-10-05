@@ -1,4 +1,4 @@
-import { stringifyMarker } from '../template/parser';
+import { stringifyMarker } from '../parser';
 
 export default function on({ node, expr, attr }, eventType, flag) {
   if (process.env.NODE_ENV !== 'production') {
@@ -11,7 +11,7 @@ export default function on({ node, expr, attr }, eventType, flag) {
     try {
       expr.call(event);
     } catch (error) {
-      error.msg += `\n\n Execution failed: ${stringifyMarker(node, attr, this.container.t)}`;
+      error.message += `\n\n Execution failed: ${stringifyMarker(node, attr, this.container.t)}`;
       throw error;
     }
   }, flag === 'capture');
