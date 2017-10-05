@@ -1,6 +1,6 @@
 import Path from '../../../src/template/path';
 
-describe('Template Path:', () => {
+describe('Path:', () => {
   let context;
 
   it('throws for empty input', () => {

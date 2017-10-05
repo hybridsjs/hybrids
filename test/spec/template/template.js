@@ -6,15 +6,15 @@ describe('Template:', () => {
     it('interpolates text to span', () => {
       const template = new Template('{{ something }}');
       expect(template.container.t[0].e.content.childNodes[0].tagName.toLowerCase()).toEqual('span');
-      expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: '', p: [['something', 'textContent']] }));
+      expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: 'prop', p: [['something', 'textContent']] }));
     });
 
     it('interpolates multiple text to spans', () => {
       const template = new Template('{{ something }} {{ else }}');
       expect(template.container.t[0].e.content.childNodes[0].tagName.toLowerCase()).toEqual('span');
       expect(template.container.t[0].e.content.childNodes[2].tagName.toLowerCase()).toEqual('span');
-      expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: '', p: [['something', 'textContent']] }));
-      expect(template.container.t[0].m[1][0]).toEqual(jasmine.objectContaining({ m: '', p: [['else', 'textContent']] }));
+      expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: 'prop', p: [['something', 'textContent']] }));
+      expect(template.container.t[0].m[1][0]).toEqual(jasmine.objectContaining({ m: 'prop', p: [['else', 'textContent']] }));
     });
 
     it('interpolates text to node [text-content] property marker', () => {
@@ -25,10 +25,10 @@ describe('Template:', () => {
       );
       const div = template.container.t[0].e.content.childNodes[0];
       expect(div.tagName.toLowerCase()).toEqual('div');
-      expect(div.hasAttribute(':text-content')).toEqual(true);
+      expect(div.hasAttribute('prop:text-content')).toEqual(true);
       expect(div.getAttribute('some')).toEqual('value');
       expect(div.getAttribute('other-thing')).toEqual('val');
-      expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: '', p: [['something', 'textContent']] }));
+      expect(template.container.t[0].m[0][0]).toEqual(jasmine.objectContaining({ m: 'prop', p: [['something', 'textContent']] }));
     });
 
     it('interpolates template prefix to template marker', () => {
@@ -162,10 +162,10 @@ describe('Template:', () => {
     it('run markers', (done) => {
       const template = new Template(`
         <span marker:="one"></span>
-        <span marker:="two"></span>
       `, { markers: { marker() { return marker; } } });
 
-      template.mount(fragment, { one: 'test' })();
+      const render = template.mount(fragment, { one: 'test' });
+      render();
 
       global.requestAnimationFrame(() => {
         expect(marker).toHaveBeenCalled();

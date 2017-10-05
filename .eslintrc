@@ -16,8 +16,6 @@
     }]
   },
   "globals": {
-    "test": true,
-    "getElement": true,
-    "getComponent": true
+    "hybrid": true
   }
 }

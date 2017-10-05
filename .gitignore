@@ -26,5 +26,6 @@ npm-debug.log
 lerna-debug.log
 
 dist/
+examples/build/
 coverage/
 lib/

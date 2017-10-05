@@ -1,4 +1,4 @@
-import '../shim';
+import '../polyfill';
 import './test';
 
 const req = require.context('./spec', true, /\.js$/igm);

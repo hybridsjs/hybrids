@@ -17,21 +17,21 @@ describe('Polyfill styles:', () => {
   });
 
   const tests = {
-    'styles all divs': (el) => {
+    'styles all divs': ({ el }) => {
       Array.from(el.shadowRoot.querySelectorAll('.testing')).forEach((child) => {
-        const innerCSS = getComputedStyle(child);
+        const innerCSS = global.getComputedStyle(child);
         expect(innerCSS.color).toEqual('rgb(0, 0, 255)');
       });
     },
     'not styles outer divs': () => {
-      const outerCSS = getComputedStyle(globalEl);
+      const outerCSS = global.getComputedStyle(globalEl);
       expect(outerCSS.color).toEqual('rgb(0, 255, 0)');
     },
   };
 
   describe('inline styles', () => {
-    test(class {
-      static component = {
+    const test = hybrid(class {
+      static view = {
         template: `
           <style>
             :host {
@@ -48,12 +48,14 @@ describe('Polyfill styles:', () => {
       constructor() {
         this.items = [1, 2, 3];
       }
-    }, tests);
+    });
+
+    Object.entries(tests).forEach(([name, fn]) => it(name, test(fn)));
   });
 
   describe('external styles', () => {
-    test(class {
-      static component = {
+    const test = hybrid(class {
+      static view = {
         styles: [`
           :host {
             display: block;
@@ -70,7 +72,9 @@ describe('Polyfill styles:', () => {
       constructor() {
         this.items = [1, 2, 3];
       }
-    }, tests);
+    });
+
+    Object.entries(tests).forEach(([name, fn]) => it(name, test(fn)));
   });
 
   describe('external template and styles', () => {
@@ -79,8 +83,8 @@ describe('Polyfill styles:', () => {
       <div *for:="items" class="testing">{{ item }}</div>
     `).export();
 
-    test(class {
-      static component = {
+    const test = hybrid(class {
+      static view = {
         styles: [`
           :host {
             display: block;
@@ -94,6 +98,8 @@ describe('Polyfill styles:', () => {
       constructor() {
         this.items = [1, 2, 3];
       }
-    }, tests);
+    });
+
+    Object.entries(tests).forEach(([name, fn]) => it(name, test(fn)));
   });
 });

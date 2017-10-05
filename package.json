@@ -16,7 +16,8 @@
     "dist:build": "rm -rf ./lib && babel ./src -d ./lib -s inline",
     "dist:dev": "webpack hybrids=./src/index.js --optimize-minimize --define process.env.NODE_ENV='\"development\"'",
     "dist:prod": "webpack hybrids.min=./src/index.js --optimize-minimize --define process.env.NODE_ENV='\"production\"'",
-    "build": "npm run test && npm run dist"
+    "build": "npm run test && npm run dist",
+    "examples": "webpack examples=./examples/examples.js --optimize-minimize --define process.env.NODE_ENV='\"production\"' --output-path ./examples/build && http-server ./examples -o"
   },
   "license": "MIT",
   "devDependencies": {
@@ -35,6 +36,7 @@
     "eslint-import-resolver-webpack": "^0.8.1",
     "eslint-loader": "^1.3.0",
     "eslint-plugin-import": "^2.2.0",
+    "http-server": "^0.10.0",
     "jasmine-core": "^2.4.1",
     "karma": "^1.3.0",
     "karma-chrome-launcher": "^2.0.0",
@@ -45,10 +47,9 @@
     "webpack": "^3.0.0"
   },
   "dependencies": {
-    "papillon": "^1.5.9",
-    "@webcomponents/custom-elements": "github:webcomponents/custom-elements",
-    "@webcomponents/shadycss": "github:webcomponents/shadycss",
-    "@webcomponents/shadydom": "github:webcomponents/shadydom",
-    "@webcomponents/template": "github:webcomponents/template"
+    "@webcomponents/custom-elements": "^1.0.2",
+    "@webcomponents/shadycss": "^1.0.5",
+    "@webcomponents/shadydom": "^1.0.4",
+    "@webcomponents/template": "^1.0.0"
   }
 }

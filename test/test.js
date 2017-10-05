@@ -5,34 +5,38 @@ function randomName() {
   return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
 }
 
-global.getElement = (el, id) => el.shadowRoot.getElementById(id);
-global.getComponent = (el, id) => global.getElement(el, id)[COMPONENT];
-
-global.test = function test(Component, tests) {
+global.hybrid = function hybrid(Component) {
   const tagName = `${randomName()}-${randomName()}`;
   define({ [tagName]: Component });
 
-  Object.entries(tests).forEach(([name, fn]) => {
-    it(`- ${name}`, (done) => {
-      const el = document.createElement(tagName);
-      document.body.appendChild(el);
+  return test => (done) => {
+    const el = document.createElement(tagName);
+    document.body.appendChild(el);
 
+    const clearDone = () => {
+      done();
+      if (el.parentElement) el.parentElement.removeChild(el);
+    };
+
+    Promise.resolve().then(() => {
       global.requestAnimationFrame(() => {
-        const callback = fn(el, el[COMPONENT]);
-
-        global.requestAnimationFrame(() => {
-          if (callback) {
-            callback(() => {
-              done();
-              if (el.parentElement) el.parentElement.removeChild(el);
-            });
-          } else {
-            done();
-          }
-
-          if (el.parentElement) el.parentElement.removeChild(el);
+        const callback = test({
+          el,
+          component: el[COMPONENT],
+          getElement: id => el.shadowRoot.getElementById(id),
+          getComponent: id => el.shadowRoot.getElementById(id)[COMPONENT],
         });
+
+        if (callback) {
+          Promise.resolve().then(() => {
+            global.requestAnimationFrame(() => {
+              callback(clearDone);
+            });
+          }).catch(() => {});
+        } else {
+          clearDone();
+        }
       });
-    });
-  });
+    }).catch(() => {});
+  };
 };
