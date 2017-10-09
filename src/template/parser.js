@@ -146,7 +146,6 @@ function parseNode(node, m, p) {
 
         if (result) {
           const [, marker, id] = result;
-          // if (id) dashToCamel(id);
           markers = markers || [];
 
           if (id) {
@@ -164,10 +163,10 @@ function parseNode(node, m, p) {
               });
             });
           }
-        }
 
-        if (process.env.NODE_ENV === 'production') {
-          node.removeAttribute(attr.name);
+          if (process.env.NODE_ENV === 'production') {
+            node.removeAttribute(attr.name);
+          }
         }
       });
   }
