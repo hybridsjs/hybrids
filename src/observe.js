@@ -17,11 +17,11 @@ function getPropertyDescriptor(target, key) {
   if (desc) {
     if (!desc.configurable) {
       throw new TypeError(
-        `Cannot create proxy for not configurable property '${key}'`);
+        `Cannot observe not configurable property '${key}'`);
     }
     if (!desc.get && !desc.set && !desc.writable) {
       throw new TypeError(
-        `Cannot create proxy for readonly property '${key}'`);
+        `Cannot observe readonly property '${key}'`);
     }
   }
 

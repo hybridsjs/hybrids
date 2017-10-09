@@ -15,7 +15,8 @@ export function defer(fn) {
   let request;
   return function wrapper() {
     if (!request) {
-      request = Promise.resolve().then(fn).then(() => {
+      request = Promise.resolve().then(() => {
+        fn();
         request = undefined;
       });
     }
