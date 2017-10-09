@@ -6,16 +6,13 @@ import { pascalToDash } from './utils';
 export default function define(elements) {
   Object.entries(elements)
     .map(([name, Component]) => ([name, pascalToDash(name), Component]))
-    .filter(([, tagName, Component]) => {
+    .forEach(([name, tagName, Component]) => {
       const CustomElement = global.customElements.get(tagName);
       if (CustomElement) {
-        if (CustomElement.Component === Component) return false;
+        if (CustomElement.Component === Component) return;
         throw Error(`Element '${tagName}' already defined`);
       }
 
-      return true;
-    })
-    .forEach(([name, tagName, Component]) => {
       const attrs = [];
       const className = `HTML${name}Element`;
       const properties = [];
