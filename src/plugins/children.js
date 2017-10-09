@@ -23,7 +23,6 @@ export default (Component, options = {}) => () => (host, get, set) => {
   });
 
   const refreshItems = defer(() => {
-    items = items.slice(0);
     set(items);
   });
 
