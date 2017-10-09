@@ -64,14 +64,6 @@ describe('Plugin Property:', () => {
     };
   }));
 
-  it('custom Constructor from property as object', test(({ el, component }) => {
-    el.json = { test: 'test' };
-    return (done) => {
-      expect(component.json).toEqual({ test: 'test' });
-      done();
-    };
-  }));
-
   it('takes property value when element is upgraded', (done) => {
     class DefaultValueTest {
       static properties = {

@@ -1,6 +1,6 @@
 import { camelToDash } from '../utils';
 
-export default (Constructor = String, { attr = true } = {}) => (key, Wrapper) => {
+export default (Constructor, { attr = true } = {}) => (key, Wrapper) => {
   if (attr) {
     Wrapper.observedAttributes.push(camelToDash(key));
   }
@@ -10,7 +10,7 @@ export default (Constructor = String, { attr = true } = {}) => (key, Wrapper) =>
 
     Object.defineProperty(host, key, {
       get,
-      set: val => set(typeof val === 'object' ? val : Constructor(val)),
+      set: Constructor ? val => set(val ? Constructor(val) : Constructor()) : val => set(val),
     });
 
     if (defaultValue !== undefined) {
