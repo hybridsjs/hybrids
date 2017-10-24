@@ -8,13 +8,9 @@ describe('Plugin Parent:', () => {
   }
 
   class ChildTest {
-    static properties = {
+    static plugins = {
       parent: parent(ParentTest),
     };
-
-    constructor() {
-      this.parent = null;
-    }
 
     changed() {} // eslint-disable-line
   }
@@ -68,6 +64,7 @@ describe('Plugin Parent:', () => {
 
     return (done) => {
       expect(childComponent.changed).toHaveBeenCalledTimes(1);
+      expect(childComponent.parent).toBe(parentComponent);
       done();
     };
   }));

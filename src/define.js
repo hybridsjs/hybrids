@@ -2,6 +2,7 @@ import Hybrid from './hybrid';
 import Template from './template/template';
 import bootstrap from './bootstrap';
 import { pascalToDash } from './utils';
+import { COMPONENT } from './symbols';
 
 export default function define(elements) {
   Object.entries(elements)
@@ -15,7 +16,7 @@ export default function define(elements) {
 
       const attrs = [];
       const className = `HTML${name}Element`;
-      const properties = [];
+      const plugins = [];
       const view = Component.view;
       let template;
 
@@ -37,18 +38,20 @@ export default function define(elements) {
         constructor() {
           super();
 
-          bootstrap({
-            host: this,
-            Component,
-            template,
-            properties,
+          Object.defineProperty(this, COMPONENT, {
+            value: bootstrap({
+              host: this,
+              Component,
+              template,
+              plugins,
+            }),
           });
         }
       }
 
-      Object.entries(Component.properties || {}).forEach(([key, fn]) => {
-        fn = fn(key, ExtHybrid, Component);
-        if (fn) properties.push([key, fn]);
+      Object.entries(Component.plugins || {}).forEach(([key, plugin]) => {
+        const fn = plugin(key, ExtHybrid, Component);
+        if (fn) plugins.push([key, fn]);
       });
 
 

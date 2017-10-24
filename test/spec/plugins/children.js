@@ -12,7 +12,7 @@ describe('Plugin Children:', () => {
       static view = {
         define: {
           ParentDirectTest: class {
-            static properties = {
+            static plugins = {
               children: children(ChildrenTest),
             };
           },
@@ -56,7 +56,7 @@ describe('Plugin Children:', () => {
       static view = {
         define: {
           ParentDeepTest: class {
-            static properties = {
+            static plugins = {
               children: children(ChildrenTest, { deep: true }),
             };
           },
@@ -104,7 +104,7 @@ describe('Plugin Children:', () => {
       static view = {
         define: {
           ParentNestedTest: class {
-            static properties = {
+            static plugins = {
               children: children(ChildrenTest, { deep: true, nested: true }),
             };
           },
@@ -156,7 +156,7 @@ describe('Plugin Children:', () => {
       static view = {
         define: {
           ParentUpdateTest: class {
-            static properties = {
+            static plugins = {
               children: children(ChildrenTest),
             };
 

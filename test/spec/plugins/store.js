@@ -12,7 +12,7 @@ describe('Plugin Store:', () => {
   };
 
   class WithStore {
-    static properties = {
+    static plugins = {
       store: store(globalStore),
     }
 

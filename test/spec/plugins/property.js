@@ -4,7 +4,7 @@ import property from '../../../src/plugins/property';
 
 describe('Plugin Property:', () => {
   const test = hybrid(class PropertyBindingTest {
-    static properties = {
+    static plugins = {
       one: property(),
       twoVal: property(Number),
       three: property(Boolean, { attr: false }),
@@ -66,7 +66,7 @@ describe('Plugin Property:', () => {
 
   it('takes property value when element is upgraded', (done) => {
     class DefaultValueTest {
-      static properties = {
+      static plugins = {
         test: property(),
       };
 

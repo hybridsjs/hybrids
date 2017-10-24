@@ -13,9 +13,8 @@ function walk(node, Component, options, items = []) {
   return items;
 }
 
-export default (Component, options = {}) => () => (host, get, set) => {
+export default (Component, options = {}) => () => (host, set) => {
   let items = [];
-  set(items);
 
   const resolveItems = defer(() => {
     items = walk(host, Component, options);
@@ -39,4 +38,6 @@ export default (Component, options = {}) => () => (host, get, set) => {
   }
 
   resolveItems();
+
+  return items;
 };

@@ -3,7 +3,7 @@ import define from '../../../src/define';
 
 describe('Plugin Method:', () => {
   const test = hybrid(class MethodTest {
-    static properties = {
+    static plugins = {
       test: method(),
     };
 
@@ -23,7 +23,7 @@ describe('Plugin Method:', () => {
 
   it('throws for not existing method', () => {
     expect(() => define({ MethodThrowTest: class {
-      static properties = {
+      static plugins = {
         test: method(),
       };
     } })).toThrow();

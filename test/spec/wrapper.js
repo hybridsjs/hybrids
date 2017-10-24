@@ -3,7 +3,8 @@ describe('Wrapper', () => {
   let disconnect;
 
   class WrapperTest {
-    constructor() {
+    constructor(host) {
+      this.host = host;
       this.value = 'test value';
     }
 
@@ -25,14 +26,14 @@ describe('Wrapper', () => {
 
   const test = hybrid(WrapperTest);
 
-  it('calls component constructor', test(({ component }) => {
+  it('calls component constructor', test(({ component, el }) => {
     expect(component instanceof WrapperTest).toBe(true);
+    expect(component.host).toBe(el);
   }));
 
 
-  it('calls component connected callback', test(({ el }) => {
+  it('calls component connected callback', test(() => {
     expect(connect).toHaveBeenCalledTimes(1);
-    expect(connect.calls.mostRecent().args[0]).toBe(el);
   }));
 
 
@@ -40,7 +41,6 @@ describe('Wrapper', () => {
     document.body.removeChild(el);
     return (done) => {
       expect(disconnect).toHaveBeenCalledTimes(1);
-      expect(disconnect.calls.mostRecent().args[0]).toBe(el);
       done();
     };
   }));
@@ -51,7 +51,9 @@ describe('Wrapper', () => {
 
     return (done) => {
       expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy.calls.mostRecent().args[0]).toEqual({ value: 'test value' });
+      expect(spy.calls.mostRecent().args[0]).toEqual(
+        jasmine.objectContaining({ value: 'test value' }),
+      );
       done();
     };
   }));

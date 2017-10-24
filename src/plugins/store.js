@@ -2,9 +2,9 @@ import observe from '../observe';
 
 const stores = new WeakMap();
 
-export default store => (key) => {
+export default (store) => {
   if (process.env.NODE_ENV !== 'production' && (typeof store !== 'object' || store === null)) {
-    throw TypeError(`Store '${key}' must be an object: ${typeof store}`);
+    throw TypeError(`Store must be an object: ${typeof store}`);
   }
 
   let register = stores.get(store);
@@ -15,21 +15,19 @@ export default store => (key) => {
     Object.keys(store).forEach(propertyName => observe(
       store,
       propertyName,
-      () => register.forEach(cb => cb()),
+      () => register.forEach(set => set(store)),
     ));
   }
 
-  return (host, get, set) => {
-    const update = () => set(store);
-
+  return () => (host, set) => {
     host.addEventListener('@connect', () => {
-      register.add(update);
+      register.add(set);
     });
 
     host.addEventListener('@disconnect', () => {
-      register.delete(update);
+      register.delete(set);
     });
 
-    update();
+    return store;
   };
 };

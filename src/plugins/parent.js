@@ -1,28 +1,28 @@
 import { COMPONENT } from '../symbols';
 
-export default (Component, { observe = true } = {}) => () => (host, get, set) => {
+export default (Component, { observe = true } = {}) => () => (host, set) => {
   let parentElement;
+
   const check = ({ target }) => {
     if (target === parentElement) {
-      set(parentElement);
+      set(parentElement[COMPONENT]);
     }
   };
 
   host.addEventListener('@connect', () => {
     parentElement = host.parentElement;
-    set(null);
 
     while (parentElement) {
-      const parentComponent = parentElement[COMPONENT];
-      if (parentComponent && parentComponent instanceof Component) {
-        set(parentComponent);
-        break;
+      if (parentElement[COMPONENT] && parentElement[COMPONENT] instanceof Component) {
+        set(parentElement[COMPONENT]);
+
+        if (observe) {
+          parentElement.addEventListener('@change', check);
+        }
+
+        return;
       }
       parentElement = parentElement.parentElement;
-    }
-
-    if (observe && parentElement) {
-      parentElement.addEventListener('@change', check);
     }
   });
 
@@ -31,7 +31,10 @@ export default (Component, { observe = true } = {}) => () => (host, get, set) =>
       if (observe) parentElement.removeEventListener('@change', check);
 
       parentElement = null;
+
       set(null);
     }
   });
+
+  return null;
 };
