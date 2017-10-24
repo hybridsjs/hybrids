@@ -5,7 +5,7 @@ export default function bootstrap({ host, Component, template, plugins }) {
   const component = new Component(host);
 
   plugins.forEach(([key, plugin]) => {
-    component[key] = plugin(host, (val) => { component[key] = val; }, component[key]);
+    component[key] = plugin(host, (val) => { component[key] = val; }, () => component[key]);
   });
 
   let render;

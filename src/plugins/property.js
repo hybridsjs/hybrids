@@ -1,5 +1,4 @@
 import { camelToDash } from '../utils';
-import { COMPONENT } from '../symbols';
 
 export default (Constructor, { attr = true } = {}) => (key, Wrapper) => {
   if (process.env.NODE_ENV !== 'production' && (Reflect.has(Wrapper.prototype, key))) {
@@ -17,18 +16,19 @@ export default (Constructor, { attr = true } = {}) => (key, Wrapper) => {
     return Constructor();
   } : val => val;
 
-  Object.defineProperty(Wrapper.prototype, key, {
-    get() { return this[COMPONENT][key]; },
-    set(val) { this[COMPONENT][key] = resolve(val); },
-    enumerable: true,
-  });
+  return (host, set, get) => {
+    let value = get();
 
-  return (host, set, defaultValue) => {
     if ({}.hasOwnProperty.call(host, key)) {
-      defaultValue = host[key];
-      delete host[key];
+      value = host[key];
     }
 
-    return defaultValue;
+    Object.defineProperty(host, key, {
+      get,
+      set(val) { set(resolve(val)); },
+      enumerable: true,
+    });
+
+    return value;
   };
 };
