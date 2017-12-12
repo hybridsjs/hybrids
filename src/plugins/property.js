@@ -16,19 +16,19 @@ export default (Constructor, { attr = true } = {}) => (key, Wrapper) => {
     return Constructor();
   } : val => val;
 
-  return (host, set, get) => {
-    let value = get();
+  return (host, component) => {
+    let value = component[key];
 
     if ({}.hasOwnProperty.call(host, key)) {
       value = host[key];
     }
 
     Object.defineProperty(host, key, {
-      get,
-      set(val) { set(resolve(val)); },
+      get() { return component[key]; },
+      set(val) { component[key] = resolve(val); },
       enumerable: true,
     });
 
-    return value;
+    component[key] = value;
   };
 };

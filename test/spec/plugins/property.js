@@ -78,7 +78,8 @@ describe('Plugin Property:', () => {
     const el = document.createElement('default-value-test');
     document.body.appendChild(el);
     el.test = 'value';
-    define({ DefaultValueTest });
+
+    define('default-value-test', DefaultValueTest);
 
     Promise.resolve().then(() => {
       global.requestAnimationFrame(() => {

@@ -7,7 +7,7 @@ function randomName() {
 
 global.hybrid = function hybrid(Component) {
   const tagName = `${randomName()}-${randomName()}`;
-  define({ [tagName]: Component });
+  define(tagName, Component);
 
   return test => (done) => {
     const el = document.createElement(tagName);

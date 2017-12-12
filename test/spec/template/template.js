@@ -108,11 +108,11 @@ describe('Template:', () => {
       expect(marker).toHaveBeenCalled();
       expect(marker.calls.count()).toEqual(2);
 
-      expect(marker.calls.argsFor(0)[0].node).toEqual(fragment.querySelector('#one'));
+      expect(marker.calls.argsFor(0)[0].node).toEqual(fragment.shadowRoot.querySelector('#one'));
       expect(marker.calls.argsFor(0)[0].expr.get()).toEqual('test 1');
       expect(marker.calls.argsFor(0)[1]).not.toBeDefined();
 
-      expect(marker.calls.argsFor(1)[0].node).toEqual(fragment.querySelector('#two'));
+      expect(marker.calls.argsFor(1)[0].node).toEqual(fragment.shadowRoot.querySelector('#two'));
       expect(marker.calls.argsFor(1)[0].expr.get()).toEqual('test 2');
       expect(marker.calls.argsFor(1)[1]).toEqual('val1');
       expect(marker.calls.argsFor(1)[2]).toEqual('val2');

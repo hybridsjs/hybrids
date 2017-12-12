@@ -10,12 +10,12 @@ export default function style({ node }, ...propertyNames) {
 
       if (changelog) {
         Object.keys(changelog).forEach((key) => {
-          switch (changelog[key].type) {
-            case 'delete':
-              node.style.removeProperty(camelToDash(key));
-              break;
-            default:
-              node.style.setProperty(camelToDash(key), list[key]);
+          const { type, value } = changelog[key];
+
+          if (!value || type === 'delete') {
+            node.style.removeProperty(camelToDash(key));
+          } else {
+            node.style.setProperty(camelToDash(key), value);
           }
         });
       }

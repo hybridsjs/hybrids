@@ -7,8 +7,8 @@ import {
   stringifyMarker,
 } from './parser';
 
-import defaultMarkers from './markers';
-import defaultFilters from './filters';
+import * as defaultMarkers from './markers';
+import * as defaultFilters from './filters';
 
 const WATCHERS = Symbol('watchers');
 
@@ -30,7 +30,7 @@ export default class Template {
           }, {}),
           t: input.t.map((t, index) => {
             if (!index && styles) {
-              [].concat(styles).forEach((style) => { t.e = `<style>${style}</style>${t.e}`; });
+              t.e = `${t.e}<style>${[].concat(styles).join('\n')}</style>`;
             }
 
             const template = document.createElement('template');
@@ -50,7 +50,7 @@ export default class Template {
     }
 
     if (styles) {
-      [].concat(styles).forEach((style) => { input = `<style>${style}</style>${input}`; });
+      input = `${input}<style>${[].concat(styles).join('\n')}</style>`;
     }
 
     const template = document.createElement('template');
@@ -125,7 +125,10 @@ export default class Template {
     return fragment;
   }
 
-  mount(shadowRoot, context) {
+  mount(host, context) {
+    if (global.ShadyCSS) global.ShadyCSS.styleElement(host);
+
+    const shadowRoot = host.attachShadow({ mode: 'open' });
     shadowRoot.appendChild(this.compile());
     setNodeContext(shadowRoot, context);
 
@@ -135,7 +138,7 @@ export default class Template {
         if (watchers) watchers.forEach(fn => fn());
       });
 
-      if (global.ShadyCSS && shadowRoot.host) global.ShadyCSS.styleElement(shadowRoot.host);
+      if (global.ShadyCSS) global.ShadyCSS.styleSubtree(host);
     };
   }
 

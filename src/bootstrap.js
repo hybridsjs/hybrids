@@ -1,21 +1,21 @@
 import observe from './observe';
 import { defer } from './utils';
 
+let globalBlock;
+
 export default function bootstrap({ host, Component, template, plugins }) {
   const component = new Component(host);
 
-  plugins.forEach(([key, plugin]) => {
-    component[key] = plugin(host, (val) => { component[key] = val; }, () => component[key]);
-  });
+  plugins.forEach(plugin => plugin(host, component));
 
   let render;
-  let blockUpdate;
+  let localBlock;
 
   if (template) {
     let raf;
 
     render = template.mount(
-      host.attachShadow({ mode: 'open' }),
+      host,
       component,
     );
 
@@ -24,10 +24,9 @@ export default function bootstrap({ host, Component, template, plugins }) {
     host.addEventListener('@change', ({ target }) => {
       if (target === host && !raf) {
         raf = global.requestAnimationFrame(() => {
-          blockUpdate = true;
+          globalBlock = true;
           render();
-
-          blockUpdate = false;
+          globalBlock = false;
           raf = undefined;
         });
       }
@@ -35,11 +34,11 @@ export default function bootstrap({ host, Component, template, plugins }) {
   }
 
   if (component.connected) {
-    host.addEventListener('@connect', () => component.connected());
+    host.addEventListener('@connect', () => component.connected(host));
   }
 
   if (component.disconnected) {
-    host.addEventListener('@disconnect', () => component.disconnected());
+    host.addEventListener('@disconnect', () => component.disconnected(host));
   }
 
   if (component.changed) {
@@ -47,22 +46,27 @@ export default function bootstrap({ host, Component, template, plugins }) {
 
     host.addEventListener('@change', ({ target }) => {
       if (target === host) {
-        blockUpdate = true;
+        localBlock = true;
+
         component.changed(oldValues);
         oldValues = { ...component };
-        blockUpdate = false;
+
+        localBlock = false;
       }
     });
   }
 
-  const update = defer(() => {
+  const update = () => {
     host.dispatchEvent(new CustomEvent('@change', { bubbles: true }));
-  });
+  };
 
   Object.keys(component).forEach((key) => {
-    observe(component, key, () => {
-      if (!blockUpdate) update();
-    });
+    if (typeof component[key] !== 'function') {
+      observe(component, key, () => {
+        if (globalBlock || localBlock) return;
+        defer(update);
+      });
+    }
   });
 
   return component;

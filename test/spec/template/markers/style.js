@@ -46,6 +46,7 @@ describe('Style Marker:', () => {
       const style = global.getComputedStyle(getElement('list'));
       expect(style.backgroundColor).toEqual('rgb(0, 0, 255)');
       expect(style.color).toEqual('rgb(0, 0, 0)');
+
       done();
     };
   }));

@@ -1,22 +1,10 @@
-import attr from './attr';
-import model from './model';
-import classList from './class';
-import For from './for';
-import If from './if';
-import on from './on';
-import prop from './prop';
-import ref from './ref';
-import style from './style';
-
-export default {
-  attr,
-  model,
-  class: classList,
-  for: For,
-  if: If,
-  on,
-  prop,
-  ref,
-  style,
-  '': prop,
-};
+export { default as attr } from './attr';
+export { default as model } from './model';
+export { default as class } from './class';
+export { default as flex } from './flex';
+export { default as for } from './for';
+export { default as if } from './if';
+export { default as on } from './on';
+export { default as prop } from './prop';
+export { default as ref } from './ref';
+export { default as style } from './style';

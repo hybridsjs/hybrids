@@ -1,15 +1,7 @@
-import { COMPONENT } from '../symbols';
-
-export default () => (key, Wrapper, Component) => {
-  if (!Reflect.has(Component.prototype, key)) {
-    throw Error(`'${key}' not found in ${Component.name} prototype`);
+export default () => key => (host, component) => {
+  if (process.env.NODE_ENV !== 'production' && (Reflect.has(host, key))) {
+    throw TypeError(`Property '${key}' already defined in '${host}'`);
   }
 
-  const temp = {
-    [key](...args) {
-      return this[COMPONENT][key](...args);
-    },
-  };
-
-  Wrapper.prototype[key] = temp[key];
+  host[key] = (...args) => component[key](...args);
 };

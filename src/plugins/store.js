@@ -19,7 +19,9 @@ export default (store) => {
     ));
   }
 
-  return () => (host, set) => {
+  return key => (host, component) => {
+    const set = (value) => { component[key] = value; };
+
     host.addEventListener('@connect', () => {
       register.add(set);
     });
@@ -28,6 +30,6 @@ export default (store) => {
       register.delete(set);
     });
 
-    return store;
+    component[key] = store;
   };
 };

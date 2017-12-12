@@ -5,8 +5,10 @@ export default Component => (baseKey, Wrapper) => {
 
   Object.entries(Component.plugins || {}).forEach(([key, plugin]) => {
     const fn = plugin(key, Wrapper, Component);
-    if (fn) plugins.push([key, fn]);
+    if (fn) plugins.push(fn);
   });
 
-  return host => bootstrap({ Component, host, plugins });
+  return (host, component) => {
+    component[baseKey] = bootstrap({ Component, host, plugins });
+  };
 };

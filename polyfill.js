@@ -5,4 +5,3 @@ if (!document.body.attachShadow) require('@webcomponents/shadydom');
 if (!window.customElements) require('@webcomponents/custom-elements');
 
 require('@webcomponents/shadycss/scoping-shim.min');
-require('@webcomponents/shadycss/apply-shim.min');

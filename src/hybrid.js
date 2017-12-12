@@ -1,4 +1,4 @@
-import { dashToCamel } from './utils';
+import { dashToCamel, defer } from './utils';
 
 // BUG: Babel transpiled class breaks native custom elements
 function HTMLBridge(...args) {
@@ -8,13 +8,13 @@ Object.setPrototypeOf(HTMLBridge.prototype, HTMLElement.prototype);
 
 export default class Hybrid extends HTMLBridge {
   connectedCallback() {
-    Promise.resolve().then(() => {
+    defer(() => {
       this.dispatchEvent(new CustomEvent('@connect'));
     });
   }
 
   disconnectedCallback() {
-    Promise.resolve().then(() => {
+    defer(() => {
       this.dispatchEvent(new CustomEvent('@disconnect'));
     });
   }

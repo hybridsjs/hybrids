@@ -13,31 +13,30 @@ function walk(node, Component, options, items = []) {
   return items;
 }
 
-export default (Component, options = {}) => () => (host, set) => {
+export default (Component, options = {}) => key => (host, component) => {
   let items = [];
 
-  const resolveItems = defer(() => {
+  const resolveItems = () => {
     items = walk(host, Component, options);
-    set(items);
-  });
+    component[key] = items;
+  };
 
-  const refreshItems = defer(() => {
-    set(items);
-  });
+  const refreshItems = () => {
+    component[key] = items;
+  };
 
-  new MutationObserver(resolveItems).observe(host, {
+  new MutationObserver(() => defer(resolveItems)).observe(host, {
     childList: true, subtree: !!options.deep,
   });
 
   if (options.observe !== false) {
     host.addEventListener('@change', ({ target }) => {
       if (target !== host && items && items.includes(target[COMPONENT])) {
-        refreshItems();
+        defer(refreshItems);
       }
     });
   }
 
-  resolveItems();
-
-  return items;
+  defer(resolveItems);
+  component[key] = items;
 };

@@ -1,11 +1,11 @@
 import { COMPONENT } from '../symbols';
 
-export default (Component, { observe = true } = {}) => () => (host, set) => {
+export default (Component, { observe = true } = {}) => key => (host, component) => {
   let parentElement;
 
   const check = ({ target }) => {
     if (target === parentElement) {
-      set(parentElement[COMPONENT]);
+      component[key] = parentElement[COMPONENT];
     }
   };
 
@@ -14,7 +14,7 @@ export default (Component, { observe = true } = {}) => () => (host, set) => {
 
     while (parentElement) {
       if (parentElement[COMPONENT] && parentElement[COMPONENT] instanceof Component) {
-        set(parentElement[COMPONENT]);
+        component[key] = parentElement[COMPONENT];
 
         if (observe) {
           parentElement.addEventListener('@change', check);
@@ -31,10 +31,9 @@ export default (Component, { observe = true } = {}) => () => (host, set) => {
       if (observe) parentElement.removeEventListener('@change', check);
 
       parentElement = null;
-
-      set(null);
+      component[key] = null;
     }
   });
 
-  return null;
+  component[key] = null;
 };
