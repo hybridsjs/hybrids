@@ -26,6 +26,18 @@ describe('State:', () => {
       expect(state.diff(target)).toEqual(null);
     });
 
+    it('switch two keys with new target', () => {
+      const newTarget = {
+        one: 'two',
+        two: 'one',
+      };
+
+      expect(state.diff(newTarget, target)).toEqual({
+        one: { type: 'set', value: 'two', oldValue: 'one', oldKey: 'two', newKey: 'two' },
+        two: { type: 'set', value: 'one', oldValue: 'two', oldKey: 'one', newKey: 'one' },
+      });
+    });
+
     it('switch and add new key', () => {
       target.one = 'two';
       target.two = 'three';

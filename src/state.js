@@ -8,13 +8,13 @@ export default class State {
     target = target || {};
 
     const cache = this.cache.get(cacheTarget) || {};
-    const values = this.values.get(cache);
+    const values = this.values.get(cacheTarget);
 
     const nextCache = {};
     const nextValues = new Map();
 
     this.cache.set(target, nextCache);
-    this.values.set(nextCache, nextValues);
+    this.values.set(target, nextValues);
 
     const log = Object.keys(cache).reduce((acc, key) => {
       if (!{}.hasOwnProperty.call(target, key)) {
@@ -42,11 +42,11 @@ export default class State {
             }
           }
         }
-
-        const keyList = nextValues.get(value) || [];
-        keyList.push(key);
-        nextValues.set(value, keyList);
       }
+
+      const keyList = nextValues.get(value) || [];
+      keyList.push(key);
+      nextValues.set(value, keyList);
 
       nextCache[key] = value;
       return acc;
