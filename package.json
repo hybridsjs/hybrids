@@ -1,6 +1,6 @@
 {
   "name": "hybrids",
-  "version": "0.10.0",
+  "version": "1.0.0",
   "description": "UI library for creating Web Components",
   "main": "lib/index.js",
   "module": "esm/index.js",
@@ -19,6 +19,11 @@
     "build:dist": "rm -rf ./dist && webpack",
     "release": "npm run test && npm run build && standard-version"
   },
+  "keywords": [
+    "web components",
+    "custom elements",
+    "shadow dom"
+  ],
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.18.0",
