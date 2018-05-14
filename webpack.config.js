@@ -1,12 +1,8 @@
-const path = require('path');
-
 module.exports = {
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name].js',
+    filename: 'hybrids.js',
     libraryTarget: 'umd',
     library: 'hybrids',
-    sourceMapFilename: '[file].map',
   },
   module: {
     rules: [
@@ -14,8 +10,6 @@ module.exports = {
       { test: /\.js$/, loader: 'babel-loader' },
     ],
   },
-  resolve: {
-    mainFields: ['jsnext:main', 'main'],
-  },
+  mode: 'production',
   devtool: 'source-map',
 };

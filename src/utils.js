@@ -7,17 +7,30 @@ export function pascalToDash(str) {
   return camelToDash(str);
 }
 
-export function dashToCamel(str) {
-  return str.replace(/-([a-z])/g, g => g[1].toUpperCase());
+export function dispatch(host, eventType, options = {}) {
+  host.dispatchEvent(new CustomEvent(eventType, { bubbles: false, ...options }));
 }
 
-const queue = new Set();
+export function createMap() {
+  const map = new WeakMap();
 
-export function defer(fn) {
-  if (!queue.has(fn)) {
-    Promise.resolve().then(() => {
-      fn();
-      queue.delete(fn);
-    });
-  }
+  return {
+    get(key, defaultValue) {
+      if (map.has(key)) {
+        return map.get(key);
+      }
+
+      if (defaultValue !== undefined) {
+        map.set(key, defaultValue);
+      }
+
+      return defaultValue;
+    },
+    set(key, value) {
+      map.set(key, value);
+      return value;
+    },
+  };
 }
+
+export const IS_IE = 'ActiveXObject' in global;

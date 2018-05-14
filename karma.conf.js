@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const webpackConfig = require('./webpack.config');
 
 module.exports = (config) => {
@@ -9,10 +10,18 @@ module.exports = (config) => {
     preprocessors: {
       'test/runner.js': ['webpack', 'sourcemap'],
     },
-    webpack: Object.assign({}, webpackConfig, {
+    webpack: {
+      module: {
+        ...webpackConfig.module,
+      },
       devtool: 'inline-source-map',
-      entry: undefined,
-    }),
+      mode: 'development',
+      plugins: [
+        new webpack.DefinePlugin({
+          'process.env.NODE_ENV': 'env',
+        }),
+      ],
+    },
     webpackMiddleware: {
       noInfo: true,
       stats: 'errors-only',

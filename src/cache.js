@@ -1,0 +1,90 @@
+const entries = new WeakMap();
+export function getEntry(target, key) {
+  let targetMap = entries.get(target);
+  if (!targetMap) {
+    targetMap = new Map();
+    entries.set(target, targetMap);
+  }
+
+  let entry = targetMap.get(key);
+
+  if (!entry) {
+    entry = {
+      state: 0,
+      value: undefined,
+      invalid: undefined,
+      deps: undefined,
+      checksum: undefined,
+    };
+    targetMap.set(key, entry);
+  }
+
+  return entry;
+}
+
+function calculateChecksum({ state, deps }) {
+  return deps.reduce(
+    (acc, entry) => acc + calculateChecksum(entry),
+    state,
+  );
+}
+
+let context = null;
+export function get(target, key, getter) {
+  const entry = getEntry(target, key);
+
+  if (context === entry) {
+    context = null;
+    throw Error(`[cache] Try to get '${key}' of '${target}' in '${key}' get call`);
+  }
+
+  if (context) {
+    context.deps.push(entry);
+  }
+
+  if (entry.invalid === entry.state) {
+    entry.state += 1;
+    entry.value = undefined;
+  } else if (entry.checksum !== undefined && entry.checksum === calculateChecksum(entry)) {
+    return entry.value;
+  }
+
+  const parentContext = context;
+  context = entry;
+
+  entry.deps = [];
+  entry.value = getter(target, entry.value);
+
+  context = parentContext;
+
+  entry.checksum = calculateChecksum(entry);
+
+  return entry.value;
+}
+
+export function set(target, key, setter, value, callback) {
+  if (context) {
+    context = null;
+    throw Error(`[cache] Try to set '${key}' of '${target}' in get call`);
+  }
+
+  const entry = getEntry(target, key);
+  const newValue = setter(target, value, entry.value);
+
+  if (newValue !== entry.value) {
+    entry.state += 1;
+    entry.value = newValue;
+
+    callback();
+  }
+}
+
+export function invalidate(target, key) {
+  if (context) {
+    context = null;
+    throw Error(`[cache] Try to invalidate '${key}' in '${target}' during get invocation`);
+  }
+
+  const entry = getEntry(target, key);
+  entry.invalid = entry.state;
+}

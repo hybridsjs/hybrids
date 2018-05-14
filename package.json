@@ -1,9 +1,10 @@
 {
   "name": "hybrids",
   "version": "0.10.0",
-  "description": "Web Components Toolkit",
-  "jsnext:main": "src/index.js",
+  "description": "UI library for creating Web Components",
   "main": "lib/index.js",
+  "module": "esm/index.js",
+  "jsnext:main": "esm/index.js",
   "author": "Dominik Lubański <dominik.lubanski@gmail.com>",
   "repository": "https://github.com/hybridsjs/hybrids",
   "scripts": {
@@ -11,43 +12,107 @@
     "dev:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run dev",
     "test": "karma start --single-run",
     "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run test",
-    "coveralls": "npm run test:coverage && cat ./coverage/lcov.info | coveralls",
-    "dist": "rm -rf ./dist && npm run dist:build && npm run dist:dev && npm run dist:prod",
-    "dist:build": "rm -rf ./lib && babel ./src -d ./lib -s inline",
-    "dist:dev": "webpack hybrids=./src/index.js --optimize-minimize --define process.env.NODE_ENV='\"development\"'",
-    "dist:prod": "webpack hybrids.min=./src/index.js --optimize-minimize --define process.env.NODE_ENV='\"production\"'",
-    "build": "npm run test && npm run dist"
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
+    "build": "npm run build:cjs && npm run build:esm && npm run build:dist",
+    "build:cjs": "rm -rf ./lib && NODE_ENV=cjs babel ./src -d ./lib -s inline",
+    "build:esm": "rm -rf ./esm && babel ./src -d ./esm -s inline",
+    "build:dist": "rm -rf ./dist && webpack",
+    "release": "npm run test && npm run build && standard-version"
   },
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-core": "^6.7.6",
-    "babel-eslint": "^7.1.1",
-    "babel-loader": "^7.0.0",
+    "babel-eslint": "^8.2.2",
+    "babel-loader": "^7.1.4",
     "babel-plugin-istanbul": "^4.1.4",
     "babel-preset-env": "^1.5.1",
-    "babel-preset-stage-2": "^6.24.1",
-    "core-js": "^2.4.1",
-    "coveralls": "^2.11.16",
+    "babel-preset-stage-3": "^6.24.1",
+    "core-js": "^2.5.4",
+    "coveralls": "^3.0.0",
     "eslint": "^4.1.1",
-    "eslint-config-airbnb-base": "^11.2.0",
-    "eslint-import-resolver-webpack": "^0.8.1",
-    "eslint-loader": "^1.3.0",
-    "eslint-plugin-import": "^2.2.0",
-    "http-server": "^0.10.0",
-    "jasmine-core": "^2.4.1",
-    "karma": "^1.3.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-loader": "^2.0.0",
+    "eslint-plugin-import": "^2.9.0",
+    "jasmine-core": "^2.99",
+    "karma": "^2.0.0",
     "karma-chrome-launcher": "^2.0.0",
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "^1.0.2",
     "karma-sourcemap-loader": "^0.3.7",
-    "karma-webpack": "^2.0.1",
-    "webpack": "^3.0.0"
+    "karma-webpack": "^3.0.0",
+    "standard-version": "^4.3.0",
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.11"
   },
   "dependencies": {
     "@webcomponents/custom-elements": "^1.0.2",
     "@webcomponents/shadycss": "^1.0.5",
     "@webcomponents/shadydom": "^1.0.4",
-    "@webcomponents/template": "^1.0.0"
+    "@webcomponents/template": "^1.0.0",
+    "@webcomponents/webcomponents-platform": "^1.0.0"
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "extends": "airbnb-base",
+    "env": {
+      "browser": true,
+      "node": true,
+      "jasmine": true
+    },
+    "rules": {
+      "no-debugger": 0,
+      "no-param-reassign": 0,
+      "no-new-func": 0,
+      "no-loop-func": 0,
+      "new-cap": 0,
+      "prefer-destructuring": 0,
+      "import/no-extraneous-dependencies": [
+        "error",
+        {
+          "devDependencies": [
+            "test/**/*.js"
+          ]
+        }
+      ]
+    },
+    "globals": {
+      "test": true
+    }
+  },
+  "babel": {
+    "presets": [
+      [
+        "env",
+        {
+          "modules": false
+        }
+      ],
+      "stage-3"
+    ],
+    "env": {
+      "cjs": {
+        "presets": [
+          [
+            "env",
+            {
+              "modules": "commonjs"
+            }
+          ]
+        ]
+      },
+      "coverage": {
+        "plugins": [
+          [
+            "istanbul",
+            {
+              "include": [
+                "src/**/*.js"
+              ]
+            }
+          ]
+        ]
+      }
+    }
   }
 }
