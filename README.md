@@ -1,13 +1,22 @@
-# hybrids
+<h1 align="center">
+  <img src="docs/assets/hybrids.svg" width="300">
+  <br/>
+  hybrids
+</h1>
 
-[![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/hybrids.svg)](https://www.npmjs.com/package/hybrids)
-[![Build Status](https://img.shields.io/travis/hybridsjs/hybrids.svg?style=flat)](https://travis-ci.org/hybridsjs/hybrids)
-[![Coverage Status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=master)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
-[![license](https://img.shields.io/npm/l/hybrids.svg)](LICENSE)
+<h4 align="center">
+  UI library for creating <a href="https://www.webcomponents.org/">Web Components</a> with simple and functional API
+</h4>
 
-`hybrids` is a UI library for creating [Web Components](https://www.webcomponents.org/) with simple and functional API.
+<p align="center">
+  <a href="https://www.npmjs.com/package/hybrids"><img src="https://img.shields.io/npm/v/hybrids.svg?style=flat" alt="npm version"/></a>
+  <a href="https://www.npmjs.com/package/hybrids"><img src="https://img.shields.io/bundlephobia/minzip/hybrids.svg" alt="bundle size"/></a>
+  <a href="https://travis-ci.org/hybridsjs/hybrids"><img src="https://img.shields.io/travis/hybridsjs/hybrids.svg?style=flat" alt="Build Status"/></a>
+  <a href="https://coveralls.io/github/hybridsjs/hybrids?branch=master"><img src="https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat" alt="Coverage Status"/></a>
+  <a href="https://conventionalcommits.org"><img src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg" alt="Conventional Commits"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/npm/l/hybrids.svg" alt="license"/></a>
+</p>
+
 
 <p align="center">
   <a href="https://codesandbox.io/s/24lvmxw67y?module=%2Fsrc%2Fsimple-counter.js" alt="Edit Simple Counter">
@@ -17,7 +26,7 @@
   </a>
 </p>
 
-## Features
+## Key Features
 
 * **The Simplest Definition**. Rather than using `class` and `this` syntax, the library uses plain objects with property descriptors and pure functions for defining custom elements.
 * **Composition over the Inheritance**. Hybrid property descriptors can be re-used, merged or split between the definitions and many more (for example using spread and rest operators).
