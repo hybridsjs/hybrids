@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="docs/assets/hybrids.svg" width="250">
+  <img src="docs/assets/hybrids-logo.svg" width="250">
   <br/>
   hybrids
 </h1>
