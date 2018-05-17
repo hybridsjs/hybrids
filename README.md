@@ -1,13 +1,21 @@
-# hybrids
+<h1 align="center">
+  <img src="docs/assets/hybrids-logo.svg" width="250">
+  <br/>
+  hybrids
+</h1>
 
-[![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/hybrids.svg)](https://www.npmjs.com/package/hybrids)
-[![Build Status](https://img.shields.io/travis/hybridsjs/hybrids.svg?style=flat)](https://travis-ci.org/hybridsjs/hybrids)
-[![Coverage Status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=master)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
-[![license](https://img.shields.io/npm/l/hybrids.svg)](LICENSE)
+<p align="center">
+  <a href="https://www.npmjs.com/package/hybrids"><img src="https://img.shields.io/npm/v/hybrids.svg?style=flat" alt="npm version"/></a>
+  <a href="https://www.npmjs.com/package/hybrids"><img src="https://img.shields.io/bundlephobia/minzip/hybrids.svg" alt="bundle size"/></a>
+  <a href="https://travis-ci.org/hybridsjs/hybrids"><img src="https://img.shields.io/travis/hybridsjs/hybrids.svg?style=flat" alt="Build Status"/></a>
+  <a href="https://coveralls.io/github/hybridsjs/hybrids?branch=master"><img src="https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat" alt="Coverage Status"/></a>
+  <a href="https://conventionalcommits.org"><img src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg" alt="Conventional Commits"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/npm/l/hybrids.svg" alt="license"/></a>
+</p>
 
-`hybrids` is a UI library for creating [Web Components](https://www.webcomponents.org/) with simple and functional API.
+<p align="center">
+  UI library for creating <a href="https://www.webcomponents.org/">Web Components</a> with simple and functional API
+</p>
 
 <p align="center">
   <a href="https://codesandbox.io/s/24lvmxw67y?module=%2Fsrc%2Fsimple-counter.js" alt="Edit Simple Counter">
@@ -17,14 +25,14 @@
   </a>
 </p>
 
-## Features
+## Key Features
 
 * **The Simplest Definition**. Rather than using `class` and `this` syntax, the library uses plain objects with property descriptors and pure functions for defining custom elements.
-* **Composition over the Inheritance**. Hybrid property descriptors can be re-used, merged or split between the definitions and many more (for example using spread and rest operators).
-* **No Global Lifecycle Callbacks**. The library says no to `will` and `did` - properties are independent and only have `connect` callback in the definition (with support to return `disconnect` callback).
+* **Composition over the Inheritance**. Hybrid property descriptors can be re-used, merged or split between the definitions and many more (for example using object rest/spread properties).
+* **No Global Lifecycle Callbacks**. The library says no to `will` and `did` - properties are independent and only have `connect` callback in the definition (with support for returned `disconnect` callback).
 * **Memoized Property Value**. Property value is cached by default and recalculated only when related properties changes, which makes the library super fast!
 * **Template as You Always Wanted**. Without external tools, with built-in result caching and using tagged template literals, `hybrids` gives you all power to create views with JavaScript included.
-* **Integration with Developer Tools**. The library supports **Hot Module Replacement** - custom elements are live updated without refresh the page.
+* **Integration with Developer Tools**. The library supports **Hot Module Replacement** - custom elements are live updated without the need to refresh the page.
 
 ## Contents
 
@@ -33,9 +41,10 @@
 - [Custom Element Definition](#custom-element-definition)
   - [`define`](#definetagname-string-descriptors-object-wrapper)
 - [Hybrid Property Descriptor](#hybrid-property-descriptor)
-  - [`get`](#get-host-element-lastvalue-any)
-  - [`set`](#set-host-element-value-any-lastvalue-any)
-  - [`connect`](#connect-host-element-key-string-invalidate-function)
+  - [`get`](#get-host-element-lastvalue-any----)
+  - [`set`](#set-host-element-value-any-lastvalue-any--)
+  - [`connect`](#connect-host-element-key-string-invalidate-function----)
+  - [Property Translation](#property-translation)
 - [Factories](#factories)
   - [`property`](#propertydefaultvalue-any-connect-function-object)
   - [`parent`](#parenthybrids-object-object)
@@ -47,7 +56,7 @@
     - [Style](#style)
     - [Mixed Values](#mixed-values)
   - [Event Listeners](#event-listeners)
-  - [Contents](#contents)
+  - [Contents](#contents-1)
     - [Conditions](#conditions)
     - [Nested Templates](#nested-templates)
     - [Arrays](#arrays)
@@ -71,15 +80,15 @@ You can also use the built version of the library (with `hybrids` global namespa
 <script src="https://unpkg.com/hybrids/dist/hybrids.js"></script>
 ```
 
-Public API is available as name exports of the `hybrids` npm package or on the `hybrids` global namespace for the built version.
+> For the built version all name exports of the `hybrids` are available on the `hybrids` global namespace.
 
 ## Browser Support
 
-The library requires ES2015 APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including a list of shims (when required). The easiest way is to add the following code on top of your project:
+The library requires ES2015 APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including list of required polyfills and shims. The easiest way is to add the following code on top of your project:
 
 ```javascript
 import 'core-js/shim'; // ES2015 API support for IE11
-import 'hybrids/shim'; // Web components shims and polyfills (external packages) 
+import 'hybrids/shim'; // Web Components shims and polyfills (external packages)
 ...
 ```
 
@@ -94,7 +103,7 @@ const MyElement = { ... };
 define('my-element', MyElement);
 ```
 
-`define` takes tag name and plain object map of hybrid property descriptors, creates `Wrapper` constructor, applies properties on the `Wrapper.prototype` and defines custom element using `customElements.define()` method.
+`define` takes tag name and plain object with a map of hybrid property descriptors, creates `Wrapper` constructor, applies properties on the `Wrapper.prototype` and defines custom element using `customElements.define()` method.
 
 ### `define(tagName: string, descriptors: Object): Wrapper`
 
@@ -132,7 +141,7 @@ For the callbacks definition, pure functions without side effects are in favor o
 * **returns (required)**:
   * `value` - value of the current state of the property
 
-Value of the hybrid property is cached by default. `get` method is called only if the other hybrid properties used in the body of the getter function have changed. For example, in the following code, `name` property getter is only called if `firstName` or `lastName` has changed:
+Value of the hybrid property is cached by default. `get` method is called only if other hybrid properties used in the body of the getter function have changed. For example, in the following code, `name` property getter is only called if `firstName` or `lastName` has changed:
 
 ```javascript
 const MyElement = {
@@ -141,6 +150,7 @@ const MyElement = {
   name: ({ firstName, lastName }) => `${firstName} ${lastName}`,
 };
 ```
+> The example uses [property translation](#) feature, `name` property is translated to `get` method of property descriptor
 
 ### `set: (host: Element, value: any, lastValue: any) => {...}`
 
@@ -151,7 +161,7 @@ const MyElement = {
 * **returns (required)**: 
   * `nextValue` - a value of the property, which replaces cached value
 
-`set` method is called within every assertion of the property. The cached value is invalidated if returned `nextValue` is not equal to `lastValue` (`nextValue !== lastValue`). However, the `get` method is called in the next get call of the property (it is not recalculated after invalidation). Nonprimitive values should be treated as immutable - property is invalidated when value reference changes.
+`set` method is called within every assertion of the property. The cached value is invalidated if returned `nextValue` is not equal to `lastValue` (`nextValue !== lastValue`). However, `get` method is called in the next get call of the property (it is not recalculated after invalidation). Nonprimitive values should be treated as immutable - property is invalidated when value reference changes.
 
 ### `connect: (host: Element, key: string, invalidate: Function) => { ... }`
 
@@ -166,9 +176,9 @@ const MyElement = {
 
 `invalidate` callback function forces property value recalculation. It can be used to connect to async web APIs or external libraries.
 
-> Invalidate (explicit or by assertion) triggers `@invalidate` custom event on the element (composed and bubbling). It allows observing when an element changes.
+> Invalidate (explicit or by assertion) triggers `@invalidate` custom event on the element (composed and bubbling). It allows observing elements changes.
 
-### Hybrid Property Translation
+### Property Translation
 
 Using explicit hybrid property descriptor structure for defining properties is usually not required because `define` method translates values to built-in factory functions or to property descriptors. Translation is done in the following order:
 
@@ -186,7 +196,7 @@ const MyElement =  {
     get: ({ firstName, lastName }) => `${firstName} ${lastName}`,
   },
 
-  // If value is a primitive value
+  // If value is primitive value
   primitive: 'text', // String, Number, Boolean, ...
   // it equals to `property` factory function:
   primitive: property('text'),
@@ -198,7 +208,7 @@ const MyElement =  {
 };
 ```
 
-Object descriptor passed to the `define` method is not changed and it stays as it was defined. Custom element definition can be a simple structure of values and methods.
+Object descriptor passed to the `define` method is not changed and it stays as it was defined. It means, that custom element definition can be just a simple structure of default values and methods without external dependencies.
 
 ## Factories
 
@@ -231,7 +241,7 @@ To omit transform, `defaultValue` has to be set to `undefined`.
 
 #### Attribute Fallback
 
-All types except `object` and `undefined` create a fallback connection to element attribute (dashed name of the property key). An attribute value is used only once when the element is connected. The library follows HTML specification and properly transforms `boolean` and `string` values from attribute value.
+All types except `object` and `undefined` create a fallback connection to element attribute (dashed name of the property key). An attribute value is used only once when element is connected. The library follows HTML specification and properly transforms attribute to `boolean` and `string` values.
 
 ### Tree Traversing
 
@@ -246,11 +256,11 @@ Rather than using custom element tag name, access to parent or children elements
 * **returns**: 
   * hybrid property descriptor, which resolves to `null` or `Element` instance 
 
-`parent` creates a binding with the custom element (defined with `hybrids`) in upper DOM tree up to `document.body` level (crossing Shadow DOM boundary). The binding is set and updated when custom element is connected and disconnected. 
+`parent` creates a binding with custom element (defined with `hybrids`) in upper DOM tree up to `document.body` level (crossing Shadow DOM boundary). The binding is set and updated when custom element is connected and disconnected.
 
-Resolved parent custom element can be safely used in other hybrid properties. If parent hybrid property invalidates, the value of a related property is invalidated as well. 
+Resolved parent custom element can be safely used in other hybrid properties. If parent hybrid property invalidates, the value of a related property is invalidated as well.
 
-In the following example, `label` relates to `count` property of the `AppStore`. The value of `label` is invalidated and recalculated when `count` changes.
+In the following example, `label` relates to `count` property of the `AppStore`. The value of `label` is invalidated and recalculated when `count` changes:
 
 ```javascript
 import { parent } from 'hybrids';
@@ -336,7 +346,7 @@ const MyElement = {
 
 Updates are scheduled with `requestAnimationFrame()` API triggered by `@invalidate` event listener on document level. For example, the view is updated when one of the hybrid property used in `fn` changes. If execution of the update function passes ~16ms threshold (it counts from the beginning of the schedule), next element in the queue is updated with next `requestAnimationFrame()`.
 
-`render` factory ensures update after invalidation of hybrid property, but it is possible to trigger the update by calling property manually on the element instance.
+`render` factory ensures update after invalidation of hybrid property, but it is possible to trigger update by calling property manually on the element instance.
 
 Property defined with `render` factory uses the same cache mechanism like other hybrid properties. It means that `fn` is only called if hybrid properties invalidate.
 
@@ -356,7 +366,7 @@ Attribute expression set a case-sensitive property of element instance (if it ha
 
 #### Class
 
-`class` attribute expression adds and removes a class from element's `classList`. An expression can be a string, an array of strings or a map of keys with boolean values.
+`class` attribute expression adds or removes a class from element's `classList`. An expression can be a string, an array of strings or a map of keys with boolean values.
 
 ```javascript
 const name = 'one two';
@@ -419,7 +429,7 @@ html`<div innerHTML="${htmlCode}"></div>`;
 
 #### Conditions
 
-Falsy expression clears previous truthy value and is not rendered (except number `0`).
+Falsy expression removes previous truthy value from DOM and render nothing (the exception is number `0`).
 
 ```javascript
 html`<div>${isValid && ...}</div>`;
@@ -448,7 +458,7 @@ In above example `submit` factory function returns an update function created by
 
 #### Arrays
 
-For iteration, an expression should return an `array` with a list of content expressions. Items can be primitive values, nested templates as well as nested arrays.
+For iteration, expression should return an `array` with a list of content expressions. Items can be primitive values, nested templates as well as nested arrays.
 
 ```javascript
 html`
@@ -470,7 +480,7 @@ html`...`.key(id)
 
 #### Promises
 
-An expression can not return a promise, but the library support it by the `html.resolve` helper method.
+Expression does not support promises, but the library support them by the `html.resolve` method.
 
 #### `html.resolve(promise, placeholder, delay = 200)`
 
@@ -498,7 +508,7 @@ html`
 
 ### Resolving Dependencies
 
-For templates, that use other custom elements, update function provides helper method for resolving dependencies dynamically. It takes an object with key/value pairs of hybrids definitions or custom element's constructors and defines them.
+For templates, which use other custom elements, update function provides helper method for resolving dependencies dynamically. It takes an object with key/value pairs of hybrids definitions or custom element's constructors and defines them.
 
 This method helps to avoid defining unused elements and allows creating a tree-like dependency structure. A complex structure may require only one explicit definition at the root level. As the library factories decouple tag name from the definition, elements can be set with custom names.
 
