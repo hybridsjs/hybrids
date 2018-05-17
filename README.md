@@ -196,7 +196,7 @@ const MyElement =  {
     get: ({ firstName, lastName }) => `${firstName} ${lastName}`,
   },
 
-  // If value is a primitive value
+  // If value is primitive value
   primitive: 'text', // String, Number, Boolean, ...
   // it equals to `property` factory function:
   primitive: property('text'),
@@ -208,7 +208,7 @@ const MyElement =  {
 };
 ```
 
-Object descriptor passed to the `define` method is not changed and it stays as it was defined. It means, that custom element definition can be just a simple structure of values and methods without external dependencies.
+Object descriptor passed to the `define` method is not changed and it stays as it was defined. It means, that custom element definition can be just a simple structure of default values and methods without external dependencies.
 
 ## Factories
 
