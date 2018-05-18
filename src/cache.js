@@ -44,7 +44,6 @@ export function get(target, key, getter) {
 
   if (entry.invalid === entry.state) {
     entry.state += 1;
-    entry.value = undefined;
   } else if (entry.checksum !== undefined && entry.checksum === calculateChecksum(entry)) {
     return entry.value;
   }
@@ -85,12 +84,16 @@ export function set(target, key, setter, value, callback) {
   }
 }
 
-export function invalidate(target, key) {
+export function invalidate(target, key, clearValue) {
   if (context) {
     context = null;
     throw Error(`[cache] Try to invalidate '${key}' in '${target}' during get invocation`);
   }
 
   const entry = getEntry(target, key);
+
   entry.invalid = entry.state;
+  if (clearValue) {
+    entry.value = undefined;
+  }
 }

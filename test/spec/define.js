@@ -1,4 +1,5 @@
 import define from '../../src/define';
+import { invalidate } from '../../src/cache';
 
 describe('define:', () => {
   it('should return custom element with a name', () => {
@@ -48,6 +49,13 @@ describe('define:', () => {
     it('should call connect method', () => tree((el) => {
       expect(spy.calls.first().args[0]).toBe(el);
       expect(spy.calls.first().args[1]).toBe('one');
+    }));
+
+    it('should return previus value when invalidate', () => tree((el) => {
+      el.one = 10;
+      expect(el.one).toBe(11);
+      invalidate(el, 'one');
+      expect(el.one).toBe(12);
     }));
   });
 

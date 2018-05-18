@@ -69,7 +69,7 @@ if (process.env.NODE_ENV !== 'production') {
         node.disconnectedCallback();
 
         Object.keys(node.constructor.hybrids).forEach((key) => {
-          cache.invalidate(node, key);
+          cache.invalidate(node, key, true);
         });
 
         node.connectedCallback();
