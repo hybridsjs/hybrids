@@ -113,15 +113,15 @@ describe('render:', () => {
 
     let throwEl;
 
-    Promise.resolve().then(() => {
+    requestAnimationFrame(() => {
       throwEl = document.createElement('test-render-throws-in-render');
       document.body.appendChild(throwEl);
-    }).catch(() => {});
+    });
 
     tree(el => resolveRender(() => {
       expect(el.shadowRoot.children[0].textContent).toBe('0');
       document.body.removeChild(throwEl);
-      done();
+      return Promise.resolve().then(done);
     }));
   });
 
@@ -132,15 +132,15 @@ describe('render:', () => {
 
     let throwEl;
 
-    Promise.resolve().then(() => {
+    requestAnimationFrame(() => {
       throwEl = document.createElement('test-render-throws-in-callback');
       document.body.appendChild(throwEl);
-    }).catch(() => {});
+    });
 
     tree(el => resolveRender(() => {
       expect(el.shadowRoot.children[0].textContent).toBe('0');
       document.body.removeChild(throwEl);
-      done();
+      return Promise.resolve().then(done);
     }));
   });
 });

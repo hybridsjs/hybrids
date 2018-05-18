@@ -1,6 +1,13 @@
 import { html } from '../../src/html';
 import define, { HTMLBridge } from '../../src/define';
 
+class testHtmlDefineExternal extends HTMLBridge {
+  constructor() {
+    super();
+    this.value = 'test';
+  }
+}
+
 describe('html:', () => {
   let fragment;
 
@@ -28,14 +35,6 @@ describe('html:', () => {
   });
 
   describe('define helper', () => {
-    class testHtmlDefineExternal extends HTMLBridge {
-      constructor() {
-        super();
-
-        this.value = 'test';
-      }
-    }
-
     it('defines hybrids', (done) => {
       const testHtmlDefine = { value: 'test' };
       html``.define({ testHtmlDefine });
