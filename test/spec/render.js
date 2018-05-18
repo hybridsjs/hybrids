@@ -103,4 +103,44 @@ describe('render:', () => {
       });
     }));
   });
+
+  it('catches error inside of the passed function', (done) => {
+    define('test-render-throws-in-render', {
+      render: () => {
+        throw Error();
+      },
+    });
+
+    let throwEl;
+
+    Promise.resolve().then(() => {
+      throwEl = document.createElement('test-render-throws-in-render');
+      document.body.appendChild(throwEl);
+    }).catch(() => {});
+
+    tree(el => resolveRender(() => {
+      expect(el.shadowRoot.children[0].textContent).toBe('0');
+      document.body.removeChild(throwEl);
+      done();
+    }));
+  });
+
+  it('catches error inside of the returned function', (done) => {
+    define('test-render-throws-in-callback', {
+      render: () => () => { throw Error; },
+    });
+
+    let throwEl;
+
+    Promise.resolve().then(() => {
+      throwEl = document.createElement('test-render-throws-in-callback');
+      document.body.appendChild(throwEl);
+    }).catch(() => {});
+
+    tree(el => resolveRender(() => {
+      expect(el.shadowRoot.children[0].textContent).toBe('0');
+      document.body.removeChild(throwEl);
+      done();
+    }));
+  });
 });

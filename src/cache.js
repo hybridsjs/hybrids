@@ -53,7 +53,13 @@ export function get(target, key, getter) {
   context = entry;
 
   entry.deps = [];
-  entry.value = getter(target, entry.value);
+
+  try {
+    entry.value = getter(target, entry.value);
+  } catch (e) {
+    context = null;
+    throw e;
+  }
 
   context = parentContext;
 
