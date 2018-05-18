@@ -11,26 +11,39 @@ function update(iterator, startTime) {
   } else {
     const { done, value: target } = iterator.next();
     const nextTime = performance.now();
+    const next = () => update(iterator, nextTime);
 
     if (done) {
       queue.clear();
     } else if (map.has(target)) {
       const key = map.get(target);
       const prevFn = cache.get(target);
-      const nextFn = target[key];
+      let nextFn;
 
-      if (nextFn !== prevFn) {
-        cache.set(target, nextFn);
+      try {
+        nextFn = target[key];
 
-        Promise.resolve().then(() => {
-          nextFn();
-          update(iterator, nextTime);
-        });
-      } else {
-        update(iterator, nextTime);
+        if (nextFn !== prevFn) {
+          cache.set(target, nextFn);
+
+          Promise.resolve().then(() => {
+            try {
+              nextFn();
+              next();
+            } catch (e) {
+              next();
+              throw e;
+            }
+          });
+        } else {
+          next();
+        }
+      } catch (e) {
+        next();
+        throw e;
       }
     } else {
-      update(iterator, nextTime);
+      next();
     }
   }
 }
