@@ -5,7 +5,7 @@ const FPS_THRESHOLD = 1000 / 60; // 60 FPS ~ 16,67ms time window
 const queue = new Set();
 const cache = new WeakMap();
 
-function update(iterator, startTime) {
+export function update(iterator, startTime) {
   if (startTime && (performance.now() - startTime > FPS_THRESHOLD)) {
     requestAnimationFrame(() => update(iterator));
   } else {
@@ -26,7 +26,7 @@ function update(iterator, startTime) {
         if (nextFn !== prevFn) {
           cache.set(target, nextFn);
 
-          Promise.resolve().then(() => {
+          return Promise.resolve().then(() => {
             try {
               nextFn();
               next();
@@ -35,9 +35,8 @@ function update(iterator, startTime) {
               throw e;
             }
           });
-        } else {
-          next();
         }
+        next();
       } catch (e) {
         next();
         throw e;
@@ -46,6 +45,7 @@ function update(iterator, startTime) {
       next();
     }
   }
+  return null;
 }
 
 document.addEventListener('@invalidate', (event) => {

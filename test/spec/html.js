@@ -1,13 +1,6 @@
 import { html } from '../../src/html';
 import define, { HTMLBridge } from '../../src/define';
 
-class testHtmlDefineExternal extends HTMLBridge {
-  constructor() {
-    super();
-    this.value = 'test';
-  }
-}
-
 describe('html:', () => {
   let fragment;
 
@@ -48,28 +41,37 @@ describe('html:', () => {
     });
 
     it('defines custom elements constructor', () => {
-      html``.define({ testHtmlDefineExternal });
+      class TestHtmlDefineExternalA extends HTMLBridge {
+        constructor() {
+          super();
+          this.value = 'test';
+        }
+      }
 
-      const el = document.createElement('test-html-define-external');
+      html``.define({ TestHtmlDefineExternalA });
+
+      const el = document.createElement('test-html-define-external-a');
       expect(el.value).toBe('test');
     });
 
     it('does not throw for multiple define the same constructor', () => {
+      class testHtmlDefineExternalB extends HTMLBridge {}
       expect(() => {
-        html``.define({ testHtmlDefineExternal });
-        html``.define({ testHtmlDefineExternal });
+        html``.define({ testHtmlDefineExternalB });
+        html``.define({ testHtmlDefineExternalB });
       }).not.toThrow();
     });
 
     it('throws for multiple define with different constructor', () => {
       expect(() => {
-        html``.define({ testHtmlDefineExternal: class extends HTMLBridge {} });
+        html``.define({ TestHtmlDefineExternalC: class extends HTMLBridge {} });
+        html``.define({ TestHtmlDefineExternalC: class extends HTMLBridge {} });
       }).toThrow();
     });
 
     it('throws for invalid value', () => {
       expect(() => {
-        html``.define({ testHtmlDefineExternal: 'value' });
+        html``.define({ testHtmlDefineExternalD: 'value' });
       }).toThrow();
     });
 

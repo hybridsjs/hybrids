@@ -1,4 +1,5 @@
 import define from '../../src/define';
+import { update } from '../../src/render';
 
 describe('render:', () => {
   const resolveRender = fn => new Promise((resolve) => {
@@ -104,43 +105,35 @@ describe('render:', () => {
     }));
   });
 
-  it('catches error inside of the passed function', (done) => {
+  it('update function catches error inside of the passed function', (done) => {
     define('test-render-throws-in-render', {
       render: () => {
         throw Error();
       },
     });
 
-    let throwEl;
-
-    requestAnimationFrame(() => {
-      throwEl = document.createElement('test-render-throws-in-render');
-      document.body.appendChild(throwEl);
+    test('<test-render-throws-in-render></test-render-throws-in-render>')((el) => {
+      expect(() => {
+        const set = new Set();
+        set.add(el);
+        update(set.values());
+      }).toThrow();
+      requestAnimationFrame(done);
     });
-
-    tree(el => resolveRender(() => {
-      expect(el.shadowRoot.children[0].textContent).toBe('0');
-      document.body.removeChild(throwEl);
-      return Promise.resolve().then(done);
-    }));
   });
 
-  it('catches error inside of the returned function', (done) => {
+  it('update function catches error inside of the passed function', (done) => {
     define('test-render-throws-in-callback', {
-      render: () => () => { throw Error; },
+      render: () => () => { throw Error('example error'); },
     });
 
-    let throwEl;
-
-    requestAnimationFrame(() => {
-      throwEl = document.createElement('test-render-throws-in-callback');
-      document.body.appendChild(throwEl);
+    test('<test-render-throws-in-callback></test-render-throws-in-callback>')((el) => {
+      const set = new Set();
+      set.add(el);
+      update(set.values()).catch((e) => {
+        expect(e instanceof Error).toBe(true);
+        done();
+      });
     });
-
-    tree(el => resolveRender(() => {
-      expect(el.shadowRoot.children[0].textContent).toBe('0');
-      document.body.removeChild(throwEl);
-      return Promise.resolve().then(done);
-    }));
   });
 });
