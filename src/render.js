@@ -1,34 +1,35 @@
+import { shadyCSS } from './utils';
+
 const map = new WeakMap();
-
-const FPS_THRESHOLD = 1000 / 60; // 60 FPS ~ 16,67ms time window
-
-const queue = new Set();
 const cache = new WeakMap();
+const FPS_THRESHOLD = 1000 / 60; // 60 FPS ~ 16,67ms time window
+let queue = [];
 
-export function update(iterator, startTime) {
+export function update(index = 0, startTime = 0) {
   if (startTime && (performance.now() - startTime > FPS_THRESHOLD)) {
-    requestAnimationFrame(() => update(iterator));
+    requestAnimationFrame(() => update(index));
   } else {
-    const { done, value: target } = iterator.next();
+    const target = queue[index];
     const nextTime = performance.now();
-    const next = () => update(iterator, nextTime);
+    const next = () => update(index + 1, nextTime);
 
-    if (done) {
-      queue.clear();
+    if (!target) {
+      shadyCSS(shady => queue.forEach(t => shady.styleSubtree(t)));
+      queue = [];
     } else if (map.has(target)) {
       const key = map.get(target);
-      const prevFn = cache.get(target);
-      let nextFn;
+      const prevUpdate = cache.get(target);
+      let nextUpdate;
 
       try {
-        nextFn = target[key];
+        nextUpdate = target[key];
 
-        if (nextFn !== prevFn) {
-          cache.set(target, nextFn);
-
+        if (nextUpdate !== prevUpdate) {
+          cache.set(target, nextUpdate);
           return Promise.resolve().then(() => {
             try {
-              nextFn();
+              nextUpdate();
+              if (!prevUpdate) shadyCSS(shady => shady.styleElement(target));
               next();
             } catch (e) {
               next();
@@ -52,10 +53,12 @@ document.addEventListener('@invalidate', (event) => {
   const target = event.composedPath()[0];
 
   if (map.has(target)) {
-    if (!queue.size) {
-      requestAnimationFrame(() => update(queue.values()));
+    if (!queue[0]) {
+      requestAnimationFrame((() => update()));
     }
-    queue.add(target);
+    if (queue.indexOf(target) === -1) {
+      queue.push(target);
+    }
   }
 });
 

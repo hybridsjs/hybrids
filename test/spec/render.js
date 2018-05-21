@@ -1,15 +1,25 @@
-import define from '../../src/define';
+import { define, html, dispatch } from '../../src';
 import { update } from '../../src/render';
 
-describe('render:', () => {
-  const resolveRender = fn => new Promise((resolve) => {
+const resolveRaf = fn => new Promise((resolve) => {
+  requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       Promise.resolve()
         .then(fn)
         .then(resolve);
     });
   });
+});
 
+const resolveTimeout = fn => new Promise((resolve) => {
+  setTimeout(() => {
+    Promise.resolve()
+      .then(fn)
+      .then(resolve);
+  }, 250);
+});
+
+describe('render:', () => {
   define('test-render', {
     value: 0,
     property: '',
@@ -30,14 +40,14 @@ describe('render:', () => {
     }).toThrow();
   });
 
-  it('renders content', done => tree(el => resolveRender(() => {
+  it('renders content', done => tree(el => resolveRaf(() => {
     expect(el.shadowRoot.children[0].textContent).toBe('0');
     done();
   })));
 
-  it('updates content', done => tree(el => resolveRender(() => {
+  it('updates content', done => tree(el => resolveRaf(() => {
     el.value = 1;
-    return resolveRender(() => {
+    return resolveRaf(() => {
       expect(el.shadowRoot.children[0].textContent).toBe('1');
       done();
     });
@@ -47,15 +57,15 @@ describe('render:', () => {
     const fragment = document.createDocumentFragment();
     fragment.appendChild(el);
 
-    return resolveRender(() => {
+    return resolveRaf(() => {
       expect(el.shadowRoot.innerHTML).toBe('');
       done();
     });
   }));
 
-  it('does not render if getter does not change', done => tree(el => resolveRender(() => {
+  it('does not render if getter does not change', done => tree(el => resolveRaf(() => {
     el.property = 'new value';
-    return resolveRender(() => {
+    return resolveRaf(() => {
       expect(el.shadowRoot.children[0].textContent).toBe('0');
       done();
     });
@@ -71,7 +81,7 @@ describe('render:', () => {
     const parent = el.parentElement;
     parent.removeChild(el);
 
-    return resolveRender(() => {
+    return resolveRaf(() => {
       parent.appendChild(el);
       expect(el.shadowRoot).toBe(shadowRoot);
       done();
@@ -82,8 +92,9 @@ describe('render:', () => {
     define('test-render-long', {
       value: '',
       render: ({ value }) => (host, shadowRoot) => {
-        let count = 1000000000;
-        while (count) { count -= 1; }
+        const now = performance.now();
+        while (performance.now() - now < 20);
+
         shadowRoot.innerHTML = `<div>${value}</div>`;
       },
     });
@@ -93,14 +104,18 @@ describe('render:', () => {
         <test-render-long value="one"></test-render-long>
         <test-render-long value="two"></test-render-long>
       </div>
-    `)(el => resolveRender(() => {
-      const [one, two] = el.children;
-      expect(one.shadowRoot.children[0].textContent).toBe('one');
-      expect(two.shadowRoot.children.length).toBe(0);
-
-      return resolveRender(() => {
-        expect(two.shadowRoot.children[0].textContent).toBe('two');
-        done();
+    `)(el => new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const [one, two] = el.children;
+            expect(one.shadowRoot.children[0].textContent).toBe('one');
+            expect(two.shadowRoot.children[0].textContent).toBe('two');
+            expect(two.shadowRoot.children.length).toBe(1);
+            resolve();
+            done();
+          });
+        });
       });
     }));
   });
@@ -114,9 +129,8 @@ describe('render:', () => {
 
     test('<test-render-throws-in-render></test-render-throws-in-render>')((el) => {
       expect(() => {
-        const set = new Set();
-        set.add(el);
-        update(set.values());
+        dispatch(el, '@invlidate', { bubbling: true, composed: true });
+        update();
       }).toThrow();
       requestAnimationFrame(done);
     });
@@ -128,12 +142,62 @@ describe('render:', () => {
     });
 
     test('<test-render-throws-in-callback></test-render-throws-in-callback>')((el) => {
-      const set = new Set();
-      set.add(el);
-      update(set.values()).catch((e) => {
+      dispatch(el, '@invlidate', { bubbling: true, composed: true });
+      update().catch((e) => {
         expect(e instanceof Error).toBe(true);
-        done();
       });
     });
+
+    requestAnimationFrame(done);
+  });
+
+  describe('shady css custom property scope', () => {
+    const TestShadyChild = {
+      value: 0,
+      render: ({ value }) => html`
+        <span>${value}</span>
+        <style>
+          span {
+            color: var(--custom-color);
+          }
+        </style>
+      `,
+    };
+
+    const TestShadyParent = {
+      active: false,
+      render: ({ active }) => html`
+        <test-shady-child class="${{ active }}"></test-shady-child>
+        <style>
+          test-shady-child {
+            --custom-color: red;
+          }
+          test-shady-child.active {
+            --custom-color: blue;
+          }
+        </style>
+      `.define({ TestShadyChild }),
+    };
+
+    define('test-shady-parent', TestShadyParent);
+
+    const shadyTree = test(`
+      <test-shady-parent></test-shady-parent>
+    `);
+
+    it('should set custom property', done => shadyTree(el => resolveTimeout(() => {
+      const { color } = window.getComputedStyle(el.shadowRoot.children[0].shadowRoot.children[0]);
+      expect(color).toBe('rgb(255, 0, 0)');
+      done();
+    })));
+
+    it('should update custom property', done => shadyTree(el => resolveTimeout(() => {
+      el.active = true;
+      return resolveTimeout(() => {
+        const { color } = window.getComputedStyle(el.shadowRoot.children[0].shadowRoot.children[0]);
+        expect(color).toBe('rgb(0, 0, 255)');
+        done();
+      });
+    })));
   });
 });

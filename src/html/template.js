@@ -1,4 +1,4 @@
-import { createMap, IS_IE } from '../utils';
+import { createMap, shadyCSS, IS_IE } from '../utils';
 
 import resolveStyleList from './style';
 import resolveClassList from './classList';
@@ -182,10 +182,17 @@ function createWalker(node) {
   );
 }
 
+const PLACEHOLDER = `{{h-${Date.now()}}}`;
+const PLACEHOLDER_REGEXP = new RegExp(PLACEHOLDER, 'g');
+const ATTR_PREFIX = `--${Date.now()}--`;
+const ATTR_REGEXP = new RegExp(ATTR_PREFIX, 'g');
+
 const preparedTemplates = new WeakMap();
 
 function applyShadyCSS(template, tagName) {
-  if (tagName && typeof window.ShadyCSS === 'object') {
+  if (!tagName) return template;
+
+  return shadyCSS((shady) => {
     let map = preparedTemplates.get(template);
     if (!map) {
       map = new Map();
@@ -200,20 +207,20 @@ function applyShadyCSS(template, tagName) {
 
       map.set(tagName, clone);
 
-      window.ShadyCSS.prepareTemplate(clone, tagName.toLowerCase());
+      const styles = clone.content.querySelectorAll('style');
+
+      Array.from(styles).forEach((style) => {
+        const count = style.childNodes.length + 1;
+        for (let i = 0; i < count; i += 1) {
+          style.parentNode.insertBefore(document.createTextNode(PLACEHOLDER), style);
+        }
+      });
+
+      shady.prepareTemplate(clone, tagName.toLowerCase());
     }
-
     return clone;
-  }
-
-  return template;
+  }, template);
 }
-
-const PLACEHOLDER = `{{h-${Date.now()}}}`;
-const PLACEHOLDER_REGEXP = new RegExp(PLACEHOLDER, 'g');
-
-const ATTR_PREFIX = `--${Date.now()}--`;
-const ATTR_REGEXP = new RegExp(ATTR_PREFIX, 'g');
 
 export function createSignature(parts) {
   const signature = parts.join(PLACEHOLDER);

@@ -1,4 +1,3 @@
-
 import property from './property';
 import render from './render';
 

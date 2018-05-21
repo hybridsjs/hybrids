@@ -33,4 +33,13 @@ export function createMap() {
   };
 }
 
+export function shadyCSS(fn, fallback) {
+  const shady = window.ShadyCSS;
+  if (shady && !shady.nativeShadow) {
+    return fn(shady);
+  }
+
+  return fallback;
+}
+
 export const IS_IE = 'ActiveXObject' in global;

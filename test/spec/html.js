@@ -284,24 +284,25 @@ describe('html:', () => {
 
   describe('text content expression', () => {
     const render = (one, two) => html`
-      <div>values: ${one}, ${two}</div>
+      <style>div { color: red; }</style>
+      <div id="text">values: ${one}, ${two}</div>
     `;
 
     beforeEach(() => render('one', 'two')(fragment));
 
     it('renders values', () => {
-      expect(fragment.children[0].textContent).toBe('values: one, two');
+      expect(fragment.querySelector('div').textContent).toBe('values: one, two');
     });
 
     it('updates values', () => {
       render('two', 'one')(fragment);
-      expect(fragment.children[0].textContent).toBe('values: two, one');
+      expect(fragment.querySelector('div').textContent).toBe('values: two, one');
     });
 
     it('removes values', () => {
       render(false, null)(fragment);
 
-      expect(fragment.children[0].textContent).toBe('values: , ');
+      expect(fragment.querySelector('div').textContent).toBe('values: , ');
     });
   });
 
