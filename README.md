@@ -69,6 +69,7 @@
     - [`html.resolve(promise, placeholder, delay = 200)`](#htmlresolvepromise--placeholder--delay-200)
   - [Resolving Dependencies](#resolving-dependencies)
     - [`` html`...`.define(map: Object) ``](#htmldefinemap--object)
+  - [Limitations](#limitations)
 - [Utils](#utils)
   - [`dispatch(host: Element, eventType: string, options)`](#dispatchhost--element--eventtype--string--options)
 - [License](#license)
@@ -548,6 +549,41 @@ const UiCard = {
 
 In above example, the customer of the `UiCard` element does not have to explicitly define `UiHeader`. It will be defined and processed inside of the rendering process (and only if `withHeader` is rendered).
 
+### Limitations
+
+`<template>` element with expressions is not supported:
+  ```javascript
+  // breaks template
+  html`
+    <custom-element>
+      <template>
+        <div class="${myClass}"></div>
+      </template>
+      <div>${content}</div>
+    </custom-element>
+  `;
+  ```
+  ```javascript
+  // works fine
+  html`
+    <custom-element>
+      <template>
+        <div class="my-static-class"></div>
+      </template>
+      <div>${content}</div>
+    </custom-element>
+  `;
+  ```
+`<table>`, `<tr>`, `<thead>`, `<tbody>`, `<tfoot>` and `<colgroup>` elements with expressions should not have additional text other than whitespace:
+  ```javascript
+  // breaks template
+  html`<tr>${cellOne} ${cellTwo} some text</tr>`;
+  ```
+  ```javascript
+  // works fine
+  html`<tr>${cellOne} ${cellTwo}</tr>`;
+  ```
+
 ## Utils
 
 ### `dispatch(host: Element, eventType: string, options)`
@@ -560,6 +596,23 @@ In above example, the customer of the `UiCard` element does not have to explicit
   * `undefined`
 
 `dispatch` is a helper function, which simplifies event dispatch on element instance. It creates `CustomEvent` with set `options` and dispatches it on given `host` element.
+
+```javascript
+import { html, dispatch } from 'hybrids';
+
+function change(host) {
+  host.value += 1;
+  // Trigger not bubbling `change` custom event
+  dispatch(host, 'change');
+}
+
+const MyElement = {
+  value: 0,
+  render: ({ value }) => html`
+    <button onclick="${change}">You clicked me ${value} times!</button>
+  `,
+};
+```
 
 ## License
 
