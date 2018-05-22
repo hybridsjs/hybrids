@@ -36,34 +36,41 @@
 
 ## Contents
 
+- [Key Features](#key-features)
+- [Contents](#contents)
 - [Installation](#installation)
 - [Browser Support](#browser-support)
 - [Custom Element Definition](#custom-element-definition)
-  - [`define`](#definetagname-string-descriptors-object-wrapper)
+  - [`define(tagName: string, descriptors: Object): Wrapper`](#definetagname--string--descriptors--object--wrapper)
 - [Hybrid Property Descriptor](#hybrid-property-descriptor)
-  - [`get`](#get-host-element-lastvalue-any----)
-  - [`set`](#set-host-element-value-any-lastvalue-any--)
-  - [`connect`](#connect-host-element-key-string-invalidate-function----)
+  - [`get: (host: Element, lastValue: any) => { ... }`](#get--host--element--lastvalue--any)
+  - [`set: (host: Element, value: any, lastValue: any) => {...}`](#set--host--element--value--any--lastvalue--any)
+  - [`connect: (host: Element, key: string, invalidate: Function) => { ... }`](#connect--host--element--key--string--invalidate--function)
   - [Property Translation](#property-translation)
 - [Factories](#factories)
-  - [`property`](#propertydefaultvalue-any-connect-function-object)
-  - [`parent`](#parenthybrids-object-object)
-  - [`children`](#childrenhybrids-object-options-object-object)
-  - [`render`](#renderfn-function-object)
+  - [`property(defaultValue: any, [connect: Function]): Object`](#propertydefaultvalue--any--connect--function--object)
+    - [Transform Matching Types](#transform-matching-types)
+    - [Attribute Fallback](#attribute-fallback)
+  - [Tree Traversing](#tree-traversing)
+  - [`parent(hybrids: Object): Object`](#parenthybrids--object--object)
+  - [`children(hybrids: Object, [options: Object]): Object`](#childrenhybrids--object--options--object--object)
+  - [`render(fn: Function): Object`](#renderfn--function--object)
 - [Templates](#templates)
-  - [Properties & Attributes](#properties--attributes)
+  - [Properties & Attributes](#properties-attributes)
     - [Class](#class)
     - [Style](#style)
     - [Mixed Values](#mixed-values)
   - [Event Listeners](#event-listeners)
-  - [Contents](#contents-1)
+  - [Contents](#contents)
     - [Conditions](#conditions)
     - [Nested Templates](#nested-templates)
     - [Arrays](#arrays)
     - [Promises](#promises)
+    - [`html.resolve(promise, placeholder, delay = 200)`](#htmlresolvepromise--placeholder--delay-200)
   - [Resolving Dependencies](#resolving-dependencies)
+    - [`` html`...`.define(map: Object) ``](#htmldefinemap--object)
 - [Utils](#utils)
-  - [`dispatch`](#dispatchhost-element-eventtype-string-options)
+  - [`dispatch(host: Element, eventType: string, options)`](#dispatchhost--element--eventtype--string--options)
 - [License](#license)
 
 ## Installation
@@ -92,7 +99,9 @@ import 'hybrids/shim'; // Web Components shims and polyfills (external packages)
 ...
 ```
 
-You should be aware of some limitations of the Web Components shims. Read more at the project [documentation](https://github.com/webcomponents/webcomponentsjs#known-issues).
+Web components shims have some limitations. Especially, [`webcomponents/shadycss`](https://github.com/webcomponents/shadycss) approximates CSS scoping and CSS custom properties inheritance. Read more on the [known issues](https://github.com/webcomponents/webcomponentsjs#known-issues) and [custom properties shim limitations](https://www.polymer-project.org/3.0/docs/devguide/custom-css-properties#custom-properties-shim-limitations) pages.
+
+> The library calls shims if they are needed, so direct use is not required.
 
 ## Custom Element Definition
 
