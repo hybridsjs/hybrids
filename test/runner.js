@@ -4,11 +4,6 @@ import '../shim';
 // Set dynamic env variable
 window.env = 'development';
 
-// Set IS_IE to true for testing hacks for support style attribute on IE
-if (!('ActiveXObject' in window)) {
-  window.ActiveXObject = {};
-}
-
 window.test = (html) => {
   const template = document.createElement('template');
   template.innerHTML = html;

@@ -470,6 +470,17 @@ describe('html:', () => {
     });
   });
 
+  describe('table', () => {
+    it('should render table with rows', () => {
+      const renderRow = v => html`<tr><td>${v}</td></tr>`.key(v);
+      const renderTable = html`
+        <table>${[1, 2].map(v => renderRow(v))} ${[3, 4].map(v => renderRow(v))}</table>`;
+
+      renderTable({}, fragment);
+      expect(fragment.children[0].outerHTML).toBe('<table><tr><td>1</td></tr><tr><td>2</td></tr> <tr><td>3</td></tr><tr><td>4</td></tr></table>');
+    });
+  });
+
   describe('resolve method', () => {
     const render = (promise, value, placeholder) => html`
       ${html.resolve(promise.then(() => html`<div>${value}</div>`), placeholder)}`;

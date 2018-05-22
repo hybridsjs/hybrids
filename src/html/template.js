@@ -168,20 +168,6 @@ function resolveProperty(attrName, propertyName, isSVG) {
   }
 }
 
-function getPropertyName(string) {
-  return string.replace(/\s*=\s*['"]*$/g, '').split(' ').pop();
-}
-
-function createWalker(node) {
-  return document.createTreeWalker(
-    node,
-    // eslint-disable-next-line no-bitwise
-    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
-    null,
-    false,
-  );
-}
-
 const PLACEHOLDER = `{{h-${Date.now()}}}`;
 const PLACEHOLDER_REGEXP = new RegExp(PLACEHOLDER, 'g');
 const ATTR_PREFIX = `--${Date.now()}--`;
@@ -223,7 +209,14 @@ function applyShadyCSS(template, tagName) {
 }
 
 export function createSignature(parts) {
-  const signature = parts.join(PLACEHOLDER);
+  const signature = parts.reduce((acc, part, index) => {
+    if (index === 0) {
+      return part;
+    } else if (parts.slice(index).join('').match(/\s*<\/\s*(table|tr|thead|tbody|tfoot|colgroup)>/)) {
+      return `${acc}<!--${PLACEHOLDER}-->${part}`;
+    }
+    return acc + PLACEHOLDER + part;
+  }, '');
 
   if (IS_IE) {
     return signature.replace(
@@ -235,16 +228,51 @@ export function createSignature(parts) {
   return signature;
 }
 
+function getPropertyName(string) {
+  return string.replace(/\s*=\s*['"]*$/g, '').split(' ').pop();
+}
+
+function createWalker(node) {
+  return document.createTreeWalker(
+    node,
+    // eslint-disable-next-line no-bitwise
+    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+    null,
+    false,
+  );
+}
+
+function replaceComments(fragment) {
+  const iterator = document.createNodeIterator(fragment, NodeFilter.SHOW_COMMENT, null, false);
+  let node;
+  // eslint-disable-next-line no-cond-assign
+  while (node = iterator.nextNode()) {
+    if (node.textContent === PLACEHOLDER) {
+      node.parentNode.insertBefore(document.createTextNode(PLACEHOLDER), node);
+      node.parentNode.removeChild(node);
+    }
+  }
+}
+
+const container = document.createElement('div');
 export function compile(signature, rawParts, isSVG) {
   const template = document.createElement('template');
   const parts = [];
 
-  template.innerHTML = signature;
+  if (IS_IE) {
+    template.innerHTML = signature;
+  } else {
+    container.innerHTML = `<template>${signature}</template>`;
+    template.content.appendChild(container.children[0].content);
+  }
+
   if (isSVG) {
     const svgRoot = template.content.firstChild;
     template.content.removeChild(svgRoot);
     Array.from(svgRoot.childNodes).forEach(node => template.content.appendChild(node));
   }
+
+  replaceComments(template.content);
 
   const compileWalker = createWalker(template.content);
   let compileIndex = 0;
@@ -324,10 +352,10 @@ export function compile(signature, rawParts, isSVG) {
       while (renderWalker.nextNode()) {
         const node = renderWalker.currentNode;
 
-        if (IS_IE && node.nodeType === Node.TEXT_NODE) {
+        if (node.nodeType === Node.TEXT_NODE) {
           if (node.textContent === PLACEHOLDER) {
             node.textContent = '';
-          } else {
+          } else if (IS_IE) {
             node.textContent = node.textContent.replace(ATTR_REGEXP, '');
           }
         }
