@@ -25,7 +25,7 @@
   </a>
 </p>
 
-## Key Features
+## Key Features <!-- omit in toc -->
 
 * **The Simplest Definition**. Rather than using `class` and `this` syntax, the library uses plain objects with property descriptors and pure functions for defining custom elements.
 * **Composition over the Inheritance**. Hybrid property descriptors can be re-used, merged or split between the definitions and many more (for example using object rest/spread properties).
@@ -34,44 +34,32 @@
 * **Template as You Always Wanted**. Without external tools, with built-in result caching and using tagged template literals, `hybrids` gives you all power to create views with JavaScript included.
 * **Integration with Developer Tools**. The library supports **Hot Module Replacement** - custom elements are live updated without the need to refresh the page.
 
-## Contents
-
-- [Key Features](#key-features)
-- [Contents](#contents)
+## Contents <!-- omit in toc -->
 - [Installation](#installation)
 - [Browser Support](#browser-support)
 - [Custom Element Definition](#custom-element-definition)
-  - [`define(tagName: string, descriptors: Object): Wrapper`](#definetagname--string--descriptors--object--wrapper)
 - [Hybrid Property Descriptor](#hybrid-property-descriptor)
-  - [`get: (host: Element, lastValue: any) => { ... }`](#get--host--element--lastvalue--any)
-  - [`set: (host: Element, value: any, lastValue: any) => {...}`](#set--host--element--value--any--lastvalue--any)
-  - [`connect: (host: Element, key: string, invalidate: Function) => { ... }`](#connect--host--element--key--string--invalidate--function)
   - [Property Translation](#property-translation)
 - [Factories](#factories)
-  - [`property(defaultValue: any, [connect: Function]): Object`](#propertydefaultvalue--any--connect--function--object)
+  - [Property](#property)
     - [Transform Matching Types](#transform-matching-types)
     - [Attribute Fallback](#attribute-fallback)
-  - [Tree Traversing](#tree-traversing)
-  - [`parent(hybrids: Object): Object`](#parenthybrids--object--object)
-  - [`children(hybrids: Object, [options: Object]): Object`](#childrenhybrids--object--options--object--object)
-  - [`render(fn: Function): Object`](#renderfn--function--object)
+  - [Parent & Children](#parent--children)
+  - [Render](#render)
 - [Templates](#templates)
-  - [Properties & Attributes](#properties-attributes)
+  - [Properties & Attributes](#properties--attributes)
     - [Class](#class)
     - [Style](#style)
     - [Mixed Values](#mixed-values)
   - [Event Listeners](#event-listeners)
-  - [Contents](#contents)
+  - [Values](#values)
     - [Conditions](#conditions)
     - [Nested Templates](#nested-templates)
     - [Arrays](#arrays)
     - [Promises](#promises)
-    - [`html.resolve(promise, placeholder, delay = 200)`](#htmlresolvepromise--placeholder--delay-200)
   - [Resolving Dependencies](#resolving-dependencies)
-    - [`` html`...`.define(map: Object) ``](#htmldefinemap--object)
   - [Limitations](#limitations)
 - [Utils](#utils)
-  - [`dispatch(host: Element, eventType: string, options)`](#dispatchhost--element--eventtype--string--options)
 - [License](#license)
 
 ## Installation
@@ -115,7 +103,7 @@ define('my-element', MyElement);
 
 `define` takes tag name and plain object with a map of hybrid property descriptors, creates `Wrapper` constructor, applies properties on the `Wrapper.prototype` and defines custom element using `customElements.define()` method.
 
-### `define(tagName: string, descriptors: Object): Wrapper`
+#### `define(tagName: string, descriptors: Object): Wrapper` <!-- omit in toc -->
 
 * **arguments**:
   * `tagName` - custom element tag name,
@@ -143,7 +131,7 @@ const MyElement = {
 
 For the callbacks definition, pure functions without side effects are in favor over `this` syntax. Moreover, where it applies the first argument is a `host` - custom element instance. This gives full access to the defined hybrid properties and DOM element API as well as an ability to use argument destructuring.
 
-### `get: (host: Element, lastValue: any) => { ... }`
+#### `get: (host: Element, lastValue: any) => { ... }` <!-- omit in toc -->
 
 * **arguments**:
   * `host` - element instance
@@ -162,7 +150,7 @@ const MyElement = {
 ```
 > The example uses [property translation](#) feature, `name` property is translated to `get` method of property descriptor
 
-### `set: (host: Element, value: any, lastValue: any) => {...}`
+#### `set: (host: Element, value: any, lastValue: any) => {...}` <!-- omit in toc -->
 
 * **arguments**:
   * `host` - an element instance
@@ -173,7 +161,7 @@ const MyElement = {
 
 `set` method is called within every assertion of the property. The cached value is invalidated if returned `nextValue` is not equal to `lastValue` (`nextValue !== lastValue`). However, `get` method is called in the next get call of the property (it is not recalculated after invalidation). Nonprimitive values should be treated as immutable - property is invalidated when value reference changes.
 
-### `connect: (host: Element, key: string, invalidate: Function) => { ... }`
+#### `connect: (host: Element, key: string, invalidate: Function) => { ... }` <!-- omit in toc -->
 
 * **arguments**:
   * `host` - an element instance
@@ -224,7 +212,9 @@ Object descriptor passed to the `define` method is not changed and it stays as i
 
 The factory is a function, which produces hybrid property descriptor. Rather than explicitly describe the property, factories hide implementation details and minimize redundant code. `hybrids` includes four factories, which cover the most important features for creating custom elements.
 
-### `property(defaultValue: any, [connect: Function]): Object`
+### Property
+
+#### `property(defaultValue: any, [connect: Function]): Object` <!-- omit in toc -->
 
 * **arguments**:
   * `defaultValue` - any value
@@ -253,13 +243,13 @@ To omit transform, `defaultValue` has to be set to `undefined`.
 
 All types except `object` and `undefined` create a fallback connection to element attribute (dashed name of the property key). An attribute value is used only once when element is connected. The library follows HTML specification and properly transforms attribute to `boolean` and `string` values.
 
-### Tree Traversing
+### Parent & Children
 
 Rather than using custom element tag name, access to parent or children elements is set by the reference to an object containing hybrid property descriptors. This feature allows avoiding name collision between custom elements because it is irrelevant on what name related custom element is defined.
 
 > Binding can be created only between custom elements defined by the library. Built-in elements or other custom elements are not supported.
 
-### `parent(hybrids: Object): Object`
+#### `parent(hybrids: Object): Object`  <!-- omit in toc -->
 
 * **arguments**:
   * `hybrids` - reference to an object containing hybrid property descriptors
@@ -293,7 +283,7 @@ Possible usage in html (tag names can be different):
 </app-store>
 ```
 
-### `children(hybrids: Object, [options: Object]): Object`
+#### `children(hybrids: Object, [options: Object]): Object`  <!-- omit in toc -->
 
 * **arguments**:
   * `hybrids` - reference to an object containing hybrid property descriptors
@@ -333,7 +323,9 @@ Possible usage in html (tag names can be different):
 </tab-group>
 ```
 
-### `render(fn: Function): Object`
+### Render
+
+#### `render(fn: Function): Object`  <!-- omit in toc -->
 
 * **arguments**:
   * `fn(host: Element): Function` - callback function with `host` argument; returned function have `host` and `shadowRoot` arguments
@@ -426,7 +418,7 @@ const MyElement = {
 
 `host` references to custom element instance (target element is available at `event.target`). The scope of the render function is not required, so a callback can be defined as a pure function.
 
-### Contents
+### Values
 
 `string`, `number` and `object` value resolves to `textContent` (HTML can be set by the `innerHTML` property).
 
@@ -492,7 +484,7 @@ html`...`.key(id)
 
 Expression does not support promises, but the library support them by the `html.resolve` method.
 
-#### `html.resolve(promise, placeholder, delay = 200)`
+#### `html.resolve(promise, placeholder, delay = 200)` <!-- omit in toc -->
 
 * **arguments**:
   * `promise` - promise, which should resolve/reject update function
@@ -524,7 +516,7 @@ This method helps to avoid defining unused elements and allows creating a tree-l
 
 > In the future, when scoped [custom element registers](https://github.com/w3c/webcomponents/issues/716) will be available, `define` helper will benefit from that feature and register elements in the `host` element scope.
 
-#### `` html`...`.define(map: Object) ``
+#### `` html`...`.define(map: Object) `` <!-- omit in toc -->
 
 * **arguments**:
   * `map` - object with pascal case or camel case keys and hybrids definitions or custom element's constructors as values
@@ -586,7 +578,7 @@ In above example, the customer of the `UiCard` element does not have to explicit
 
 ## Utils
 
-### `dispatch(host: Element, eventType: string, options)`
+#### `dispatch(host: Element, eventType: string, options)` <!-- omit in toc -->
 
 * **arguments**:
   * `host` - element instance
