@@ -12,12 +12,13 @@
     "dev:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run dev",
     "test": "karma start --single-run",
     "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run test",
+    "test:all": "npm run test -- --browsers Chrome,Firefox,Safari",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build": "npm run build:cjs && npm run build:esm && npm run build:dist",
     "build:cjs": "rm -rf ./lib && NODE_ENV=cjs babel ./src -d ./lib -s inline",
     "build:esm": "rm -rf ./esm && babel ./src -d ./esm -s inline",
     "build:dist": "rm -rf ./dist && webpack",
-    "release": "npm run test && npm run build && standard-version"
+    "release": "npm run test:all && npm run build && standard-version"
   },
   "keywords": [
     "web components",
@@ -43,7 +44,9 @@
     "karma": "^2.0.0",
     "karma-chrome-launcher": "^2.0.0",
     "karma-coverage": "^1.1.1",
+    "karma-firefox-launcher": "^1.1.0",
     "karma-jasmine": "^1.0.2",
+    "karma-safari-launcher": "^1.0.0",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^3.0.0",
     "standard-version": "^4.3.0",
@@ -51,10 +54,10 @@
     "webpack-cli": "^2.0.11"
   },
   "dependencies": {
-    "@webcomponents/custom-elements": "^1.0.2",
-    "@webcomponents/shadycss": "^1.0.5",
-    "@webcomponents/shadydom": "^1.0.4",
-    "@webcomponents/template": "^1.0.0",
+    "@webcomponents/custom-elements": "github:webcomponents/custom-elements",
+    "@webcomponents/shadycss": "github:webcomponents/shadycss",
+    "@webcomponents/shadydom": "github:webcomponents/shadydom",
+    "@webcomponents/template": "github:webcomponents/template",
     "@webcomponents/webcomponents-platform": "^1.0.0"
   },
   "eslintConfig": {
