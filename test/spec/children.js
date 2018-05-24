@@ -8,25 +8,24 @@ describe('children:', () => {
 
   define('test-children-child', child);
 
-  define('test-children-direct', {
-    direct: children(child),
-    deep: children(child, { deep: true }),
-    nested: children(child, { deep: true, nested: true }),
-  });
-
-  const tree = test(`
-    <test-children-direct>
-      <test-children-child custom-name="one">
-        <test-children-child custom-name="five"></test-children-child>
-      </test-children-child>
-      <test-children-child custom-name="two"></test-children-child>
-      <div>
-        <test-children-child custom-name="three"></test-children-child>
-      </div>
-    </test-children-direct>
-  `);
 
   describe('direct children', () => {
+    define('test-children-direct', {
+      direct: children(child),
+    });
+
+    const tree = test(`
+      <test-children-direct>
+        <test-children-child custom-name="one">
+          <test-children-child custom-name="five"></test-children-child>
+        </test-children-child>
+        <test-children-child custom-name="two"></test-children-child>
+        <div>
+          <test-children-child custom-name="three"></test-children-child>
+        </div>
+      </test-children-direct>
+    `);
+
     it('returns list', () => tree((el) => {
       expect(el.direct).toEqual([
         el.children[0],
@@ -84,6 +83,22 @@ describe('children:', () => {
   });
 
   describe('deep children', () => {
+    define('test-children-deep', {
+      deep: children(child, { deep: true }),
+    });
+
+    const tree = test(`
+      <test-children-deep>
+        <test-children-child custom-name="one">
+          <test-children-child custom-name="five"></test-children-child>
+        </test-children-child>
+        <test-children-child custom-name="two"></test-children-child>
+        <div>
+          <test-children-child custom-name="three"></test-children-child>
+        </div>
+      </test-children-deep>
+    `);
+
     it('returns item list', () => tree((el) => {
       expect(el.deep).toEqual([
         jasmine.objectContaining({ customName: 'one' }),
@@ -97,7 +112,7 @@ describe('children:', () => {
 
       return new Promise((resolve) => {
         requestAnimationFrame(() => {
-          expect(el.direct).toEqual([
+          expect(el.deep).toEqual([
             jasmine.objectContaining({ customName: 'one' }),
             jasmine.objectContaining({ customName: 'two' }),
           ]);
@@ -106,9 +121,42 @@ describe('children:', () => {
         });
       });
     }));
+
+    it('does not update if other children element is invalidated', done => tree(el => new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.children[0].children[0].customName = 'test';
+          requestAnimationFrame(() => {
+            expect(el.deep).toEqual([
+              jasmine.objectContaining({ customName: 'one' }),
+              jasmine.objectContaining({ customName: 'two' }),
+              jasmine.objectContaining({ customName: 'three' }),
+            ]);
+            done();
+            resolve();
+          });
+        });
+      });
+    })));
   });
 
   describe('nested children', () => {
+    define('test-children-nested', {
+      nested: children(child, { deep: true, nested: true }),
+    });
+
+    const tree = test(`
+      <test-children-nested>
+        <test-children-child custom-name="one">
+          <test-children-child custom-name="five"></test-children-child>
+        </test-children-child>
+        <test-children-child custom-name="two"></test-children-child>
+        <div>
+          <test-children-child custom-name="three"></test-children-child>
+        </div>
+      </test-children-nested>
+    `);
+
     it('returns item list', () => tree((el) => {
       expect(el.nested).toEqual([
         jasmine.objectContaining({ customName: 'one' }),

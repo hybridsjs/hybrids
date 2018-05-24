@@ -19,8 +19,23 @@ export default function children(hybrids, options = { deep: false, nested: false
     get(host) { return walk(host, hybrids, options); },
     connect(host, key, invalidate) {
       const observer = new MutationObserver(invalidate);
+      const set = new Set();
+
       const childEventListener = ({ target }) => {
-        if (target !== host && host[key].includes(target)) invalidate(false);
+        if (
+          (!options.deep && target.parentElement === host) ||
+          (target !== host && !set.has(target))
+        ) {
+          if (!set.size) {
+            Promise.resolve().then(() => {
+              if ([...set].some(t => host[key].includes(t))) {
+                invalidate(false);
+              }
+              set.clear();
+            });
+          }
+          set.add(target);
+        }
       };
 
       observer.observe(host, {
