@@ -4,3 +4,4 @@
 *.log
 karma.conf.js
 webpack.config.js
+.vscode
