@@ -1,5 +1,5 @@
 import { define, html, dispatch } from '../../src';
-import { update } from '../../src/render';
+import render, { update } from '../../src/render';
 
 const resolveRaf = fn => new Promise((resolve) => {
   requestAnimationFrame(() => {
@@ -199,5 +199,38 @@ describe('render:', () => {
         done();
       });
     })));
+  });
+
+  it('renders elements in parent slot', (done) => {
+    const TestRenderParentSlot = {
+      render: () => html`<slot></slot>`,
+    };
+
+    define('test-render-parent-slot', TestRenderParentSlot);
+
+    const slotTree = test(`
+      <test-render-parent-slot>
+        <test-render></test-render>
+      </test-render-parent-slot>
+    `);
+
+    slotTree(el => resolveRaf(() => {
+      expect(el.children[0].shadowRoot.children[0].textContent).toBe('0');
+      done();
+    }));
+  });
+
+  it('throws error for duplicate render', () => {
+    const hybrids = {
+      renderOne: render(() => () => {}),
+      renderTwo: render(() => () => {}),
+    };
+
+    const el = document.createElement('div');
+
+    expect(() => {
+      hybrids.connect(el, 'renderOne');
+      hybrids.connect(el, 'renderTwo');
+    }).toThrow();
   });
 });

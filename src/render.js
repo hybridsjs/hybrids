@@ -49,19 +49,6 @@ export function update(index = 0, startTime = 0) {
   return null;
 }
 
-document.addEventListener('@invalidate', (event) => {
-  const target = event.composedPath()[0];
-
-  if (map.has(target)) {
-    if (!queue[0]) {
-      requestAnimationFrame((() => update()));
-    }
-    if (queue.indexOf(target) === -1) {
-      queue.push(target);
-    }
-  }
-});
-
 export default function render(get) {
   if (typeof get !== 'function') {
     throw TypeError(`[render] The first argument must be a function: ${typeof get}`);
@@ -73,8 +60,22 @@ export default function render(get) {
       return () => fn(host, host.shadowRoot);
     },
     connect(host, key) {
+      if (map.has(host)) {
+        throw Error(`[render] Render factory already used in '${map.get(host)}' key`);
+      }
+
       if (!host.shadowRoot) {
         host.attachShadow({ mode: 'open' });
+        host.addEventListener('@invalidate', ({ target }) => {
+          if (host === target && map.has(target)) {
+            if (!queue[0]) {
+              requestAnimationFrame((() => update()));
+            }
+            if (queue.indexOf(target) === -1) {
+              queue.push(target);
+            }
+          }
+        });
       }
 
       map.set(host, key);
