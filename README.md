@@ -18,12 +18,15 @@
 </p>
 
 <p align="center">
-  <a href="https://codesandbox.io/s/24lvmxw67y?module=%2Fsrc%2Fsimple-counter.js" alt="Edit Simple Counter">
-    <img src="docs/assets/simple-counter.png" width="600">
-    <br/>
-    <img src="https://codesandbox.io/static/img/play-codesandbox.svg" width="180">
-  </a>
+  <a href="https://stackblitz.com/edit/hybrids-simple-counter?file=simple-counter.js" alt="Edit Simple Counter">
+    <img src="docs/assets/simple-counter.png" width="600"></a>
 </p>
+
+<h5 align="center">
+  <a href="https://stackblitz.com/edit/hybrids-simple-counter?file=simple-counter.js" alt="Edit Simple Counter">
+    Playground powered by ⚡StackBlitz
+  </a>
+</h5>
 
 ## Key Features <!-- omit in toc -->
 
