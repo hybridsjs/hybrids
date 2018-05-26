@@ -8,7 +8,7 @@ export function pascalToDash(str) {
 }
 
 export function dispatch(host, eventType, options = {}) {
-  host.dispatchEvent(new CustomEvent(eventType, { bubbles: false, ...options }));
+  return host.dispatchEvent(new CustomEvent(eventType, { bubbles: false, ...options }));
 }
 
 export function createMap() {

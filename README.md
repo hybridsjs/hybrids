@@ -589,7 +589,7 @@ In above example, the customer of the `UiCard` element does not have to explicit
   * `eventType` - type of the event to be dispatched
   * `options` - object following `dispatchEvent` DOM API specification
 * **returns**:
-  * `undefined`
+  * `false` if event is cancelable and at least one of the event handlers which handled this event called `preventDefault()`, otherwise it returns `true`
 
 `dispatch` is a helper function, which simplifies event dispatch on element instance. It creates `CustomEvent` with set `options` and dispatches it on given `host` element.
 
