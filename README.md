@@ -469,9 +469,9 @@ For iteration, expression should return an `array` with a list of content expres
 ```javascript
 html`
   <todo-list>
-    ${names.forEach((name) => `Name: ${name}`)}
+    ${names.map((name) => `Name: ${name}`)}
 
-    ${items.forEach(({ id, name }) => 
+    ${items.map(({ id, name }) => 
       html`<todo-item>${name}</todo-item>`.key(id)
     )}
   </todo-list>
