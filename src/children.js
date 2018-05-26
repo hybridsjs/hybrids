@@ -22,20 +22,21 @@ export default function children(hybrids, options = { deep: false, nested: false
       const set = new Set();
 
       const childEventListener = ({ target }) => {
-        if (
-          (!options.deep && target.parentElement === host) ||
-          (target !== host && !set.has(target))
-        ) {
-          if (!set.size) {
-            Promise.resolve().then(() => {
-              if ([...set].some(t => host[key].includes(t))) {
+        if (!set.size) {
+          Promise.resolve().then(() => {
+            const targets = [...set];
+            const list = host[key];
+
+            for (let i = 0; i < list.length; i += 1) {
+              if (list.indexOf(targets[i]) > -1) {
                 invalidate(false);
+                break;
               }
-              set.clear();
-            });
-          }
-          set.add(target);
+            }
+            set.clear();
+          });
         }
+        set.add(target);
       };
 
       observer.observe(host, {

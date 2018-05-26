@@ -1,5 +1,6 @@
 import define from '../../src/define';
 import children from '../../src/children';
+import { html } from '../../src/html';
 
 describe('children:', () => {
   const child = {
@@ -7,7 +8,6 @@ describe('children:', () => {
   };
 
   define('test-children-child', child);
-
 
   describe('direct children', () => {
     define('test-children-direct', {
@@ -181,5 +181,48 @@ describe('children:', () => {
         });
       });
     }));
+  });
+
+  describe('dynamic children', () => {
+    const TestDynamicChild = {
+      name: '',
+    };
+
+    const TestDynamicParent = {
+      items: children(TestDynamicChild),
+      render: ({ items }) => html`
+        <div>
+          ${items.map(({ name }) => html`<div>${name}</div>`.key(name))}
+        </div>
+        <slot></slot>
+      `,
+    };
+
+    define('test-dynamic-wrapper', {
+      items: [],
+      render: ({ items }) => html`
+        <test-dynamic-parent>
+          <test-dynamic-child name="one"></test-dynamic-child>
+          ${items.map(name => html`
+            <test-dynamic-child name="${name}">${name}</test-dynamic-child>
+          `)}
+        </test-dynamic-parent>
+      `.define({ TestDynamicParent, TestDynamicChild }),
+    });
+
+    const tree = test(`
+      <test-dynamic-wrapper></test-dynamic-wrapper>
+    `);
+
+    it('adds dynamic item', done => tree(el => new Promise((resolve) => {
+      setTimeout(() => {
+        el.items = ['two'];
+        setTimeout(() => {
+          expect(el.shadowRoot.children[0].shadowRoot.children[0].children.length).toBe(2);
+          done();
+          resolve();
+        }, 100);
+      }, 100);
+    })));
   });
 });

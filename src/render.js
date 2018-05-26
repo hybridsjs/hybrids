@@ -66,8 +66,9 @@ export default function render(get) {
 
       if (!host.shadowRoot) {
         host.attachShadow({ mode: 'open' });
-        host.addEventListener('@invalidate', ({ target }) => {
-          if (host === target && map.has(target)) {
+        host.addEventListener('@invalidate', (event) => {
+          const target = event.composedPath()[0];
+          if (target === host) {
             if (!queue[0]) {
               requestAnimationFrame((() => update()));
             }
