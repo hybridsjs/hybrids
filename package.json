@@ -34,7 +34,6 @@
     "babel-plugin-istanbul": "^4.1.4",
     "babel-preset-env": "^1.5.1",
     "babel-preset-stage-3": "^6.24.1",
-    "core-js": "^2.5.4",
     "coveralls": "^3.0.0",
     "eslint": "^4.1.1",
     "eslint-config-airbnb-base": "^12.1.0",
@@ -58,7 +57,8 @@
     "@webcomponents/shadycss": "^1.2.1",
     "@webcomponents/shadydom": "^1.0.14",
     "@webcomponents/template": "^1.2.4",
-    "@webcomponents/webcomponents-platform": "^1.0.0"
+    "@webcomponents/webcomponents-platform": "^1.0.0",
+    "core-js": "^2.5.6"
   },
   "eslintConfig": {
     "parser": "babel-eslint",
