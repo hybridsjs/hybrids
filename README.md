@@ -7,6 +7,8 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/hybrids"><img src="https://img.shields.io/npm/v/hybrids.svg?style=flat" alt="npm version"/></a>
   <a href="https://www.npmjs.com/package/hybrids"><img src="https://img.shields.io/bundlephobia/minzip/hybrids.svg" alt="bundle size"/></a>
+  <a href="https://gitter.im/hybridsjs/hybrids"><img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg?colorB=893F77" alt="gitter"></a>
+  <a href="https://twitter.com/hybridsjs"><img src="https://img.shields.io/badge/follow-on%20twitter-4AA1EC.svg" alt="twitter"></a>
   <a href="https://travis-ci.org/hybridsjs/hybrids"><img src="https://img.shields.io/travis/hybridsjs/hybrids.svg?style=flat" alt="Build Status"/></a>
   <a href="https://coveralls.io/github/hybridsjs/hybrids?branch=master"><img src="https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat" alt="Coverage Status"/></a>
   <a href="https://conventionalcommits.org"><img src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg" alt="Conventional Commits"/></a>
