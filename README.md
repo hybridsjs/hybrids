@@ -329,6 +329,8 @@ Possible usage in html (tag names can be different):
 </tab-group>
 ```
 
+##### 🕹 [Play with children factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-children-factory?file=index.html) <!-- omit in toc -->
+
 ### Render
 
 #### `render(fn: Function): Object`  <!-- omit in toc -->
