@@ -64,9 +64,9 @@
     - [Promises](#promises)
   - [Resolving Dependencies](#resolving-dependencies)
   - [Limitations](#limitations)
-    - [`<style>`](#style)
-    - [`<table>`](#table)
-    - [`<template>`](#template)
+    - [Styling](#styling)
+    - [Table Family Elements](#table-family-elements)
+    - [Template Element](#template-element)
 - [Utils](#utils)
 - [License](#license)
 
@@ -292,6 +292,8 @@ Possible usage in html (tag names can be different):
 </app-store>
 ```
 
+###### 🕹 [Live example of parent factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js) <!-- omit in toc -->
+
 #### `children(hybrids: Object, [options: Object]): Object`  <!-- omit in toc -->
 
 * **arguments**:
@@ -332,7 +334,7 @@ Possible usage in html (tag names can be different):
 </tab-group>
 ```
 
-##### 🕹 [Play with children factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-children-factory?file=index.html) <!-- omit in toc -->
+##### 🕹 [Live example of children factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-children-factory?file=index.js) <!-- omit in toc -->
 
 ### Render
 
@@ -567,13 +569,13 @@ In above example, the customer of the `UiCard` element does not have to explicit
 
 ### Limitations
 
-#### `<style>`
+#### Styling
 
 In the browser, which doesn't support Shadow DOM, ShadyCSS is used to create scoped CSS. This process requires moving out `<style>` element from the template and put it into the head of the document. It is done once and before expressions are calculated, so expressions inside style element are not processed correctly.
 
 Expressions inside of the `<style>` element are only supported in native implementation of Shadow DOM. However, creating dynamic styles in the environment, which supports Shadow DOM can be inefficient (styles are not shared between elements instances).
 
-##### Breaks template (using ShadyCSS) <!-- omit in toc -->
+##### Breaks template: (using ShadyCSS) <!-- omit in toc -->
 ```javascript
 html`
   <style>
@@ -583,7 +585,7 @@ html`
 `;
 ```
 
-##### Works fine <!-- omit in toc -->
+##### Works fine: <!-- omit in toc -->
 ```javascript
 html`
   <style>
@@ -594,25 +596,25 @@ html`
 `
 ```
 
-#### `<table>`
+#### Table Family Elements
 
 `<table>`, `<tr>`, `<thead>`, `<tbody>`, `<tfoot>` and `<colgroup>` elements with expressions should not have additional text other than whitespace:
 
-##### Breaks template <!-- omit in toc -->
+##### Breaks template: <!-- omit in toc -->
 ```javascript
 html`<tr>${cellOne} ${cellTwo} some text</tr>`;
 ```
 
-##### Works fine <!-- omit in toc -->
+##### Works fine: <!-- omit in toc -->
   ```javascript
   html`<tr>${cellOne} ${cellTwo}</tr>`;
   ```
 
-#### `<template>`
+#### Template Element
 
 Expressions inside of the `<template>` element are not supported:
 
-##### Breaks template <!-- omit in toc -->
+##### Breaks template: <!-- omit in toc -->
 ```javascript
 html`
   <custom-element>
@@ -623,7 +625,7 @@ html`
   </custom-element>
 `;
 ```
-##### Works fine <!-- omit in toc -->
+##### Works fine: <!-- omit in toc -->
 ```javascript
 html`
   <custom-element>
