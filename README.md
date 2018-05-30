@@ -44,29 +44,20 @@
 - [Browser Support](#browser-support)
 - [Custom Element Definition](#custom-element-definition)
 - [Hybrid Property Descriptor](#hybrid-property-descriptor)
-  - [Property Translation](#property-translation)
 - [Factories](#factories)
   - [Property](#property)
-    - [Transform Matching Types](#transform-matching-types)
-    - [Attribute Fallback](#attribute-fallback)
   - [Parent & Children](#parent--children)
   - [Render](#render)
 - [Templates](#templates)
   - [Properties & Attributes](#properties--attributes)
-    - [Class](#class)
-    - [Style](#style)
-    - [Mixed Values](#mixed-values)
   - [Event Listeners](#event-listeners)
   - [Values](#values)
-    - [Conditions](#conditions)
-    - [Nested Templates](#nested-templates)
-    - [Arrays](#arrays)
-    - [Promises](#promises)
+  - [Conditions](#conditions)
+  - [Nested Templates](#nested-templates)
+  - [Arrays](#arrays)
+  - [Promises](#promises)
   - [Resolving Dependencies](#resolving-dependencies)
   - [Limitations](#limitations)
-    - [Styling](#styling)
-    - [Table Family Elements](#table-family-elements)
-    - [Template Element](#template-element)
 - [Utils](#utils)
 - [License](#license)
 
@@ -185,7 +176,7 @@ const MyElement = {
 
 > Invalidate (explicit or by assertion) triggers `@invalidate` custom event on the element (composed and bubbling). It allows observing elements changes.
 
-### Property Translation
+### Hybrid Property Translation <!-- omit in toc -->
 
 Using explicit hybrid property descriptor structure for defining properties is usually not required because `define` method translates values to built-in factory functions or to property descriptors. Translation is done in the following order:
 
@@ -235,7 +226,7 @@ The factory is a function, which produces hybrid property descriptor. Rather tha
 
 Type of the passed `defaultValue` is used to detect transform function. For example, when `defaultValue` is set to `"text"`, `String` function is used. `defaultValue` can be a transform function itself, which is called when a property value is set.
 
-#### Transform Matching Types
+#### Transform Matching Types <!-- omit in toc -->
 
 * `string` -> `String(value)`
 * `number` -> `Number(value)`
@@ -248,7 +239,7 @@ Object values are frozen to prevent mutation of the own properties, which does n
 
 To omit transform, `defaultValue` has to be set to `undefined`.
 
-#### Attribute Fallback
+#### Attribute Fallback <!-- omit in toc -->
 
 All types except `object` and `undefined` create a fallback connection to element attribute (dashed name of the property key). An attribute value is used only once when element is connected. The library follows HTML specification and properly transforms attribute to `boolean` and `string` values.
 
@@ -379,7 +370,7 @@ html`<div propertyName="${value}"></div>`;
 
 Attribute expression set a case-sensitive property of element instance (if it has that property in `prototype`) with fallback to attribute. There are two exceptions, where it works differently.
 
-#### Class
+#### Class <!-- omit in toc -->
 
 `class` attribute expression adds or removes a class from element's `classList`. An expression can be a string, an array of strings or a map of keys with boolean values.
 
@@ -391,7 +382,7 @@ const map = { one: true, two: false };
 html`<div class="${name || array || map}"></div>`;
 ```
 
-#### Style
+#### Style <!-- omit in toc -->
 
 `style` attribute expression set style properties by the `CSSStyleDeclaration` API. An expression has to be an object with dashed or camel-case keys with values.
 
@@ -417,7 +408,7 @@ const MyElement = {
 };
 ```
 
-#### Mixed Values
+#### Mixed Values <!-- omit in toc -->
 
 Attribute expression with other text resolves to `string` attribute value:
 
@@ -455,7 +446,7 @@ html`<div>Name: ${name}, Count: ${count}</div>`;
 html`<div innerHTML="${htmlCode}"></div>`;
 ```
 
-#### Conditions
+### Conditions
 
 Falsy expression removes previous truthy value from DOM and render nothing (the exception is number `0`).
 
@@ -463,7 +454,7 @@ Falsy expression removes previous truthy value from DOM and render nothing (the 
 html`<div>${isValid && ...}</div>`;
 ```
 
-#### Nested Templates
+### Nested Templates
 
 An expression can return a function, which takes two arguments: `host` and `target` (text node position marker). Update function returned by the `html` is compatible with this API and it can create nested templates.
 
@@ -484,7 +475,7 @@ html`
 
 In above example `submit` factory function returns an update function created by the `html`. The context is propagated, so `fn` callback will get the same `host` argument as the main template.
 
-#### Arrays
+### Arrays
 
 For iteration, expression should return an `array` with a list of content expressions. Items can be primitive values, nested templates as well as nested arrays.
 
@@ -506,7 +497,7 @@ Array `index` identifies rendered expressions. For efficient re-order use `html`
 html`...`.key(id)
 ```
 
-#### Promises
+### Promises
 
 Expression does not support promises, but the library support them by the `html.resolve` method.
 
@@ -569,7 +560,7 @@ In above example, the customer of the `UiCard` element does not have to explicit
 
 ### Limitations
 
-#### Styling
+#### Styling <!-- omit in toc -->
 
 In the browser, which doesn't support Shadow DOM, ShadyCSS is used to create scoped CSS. This process requires moving out `<style>` element from the template and put it into the head of the document. It is done once and before expressions are calculated, so expressions inside style element are not processed correctly.
 
@@ -596,7 +587,7 @@ html`
 `
 ```
 
-#### Table Family Elements
+#### Table Family Elements <!-- omit in toc -->
 
 `<table>`, `<tr>`, `<thead>`, `<tbody>`, `<tfoot>` and `<colgroup>` elements with expressions should not have additional text other than whitespace:
 
@@ -610,7 +601,7 @@ html`<tr>${cellOne} ${cellTwo} some text</tr>`;
   html`<tr>${cellOne} ${cellTwo}</tr>`;
   ```
 
-#### Template Element
+#### Template Element <!-- omit in toc -->
 
 Expressions inside of the `<template>` element are not supported:
 
