@@ -65,6 +65,16 @@ describe('cache:', () => {
       expect(spy).toHaveBeenCalledTimes(2);
     });
 
+    it('updates related value', () => {
+      get(target, 'key', () => {
+        get(target, 'related', () => 'one');
+        return 'one';
+      });
+
+      invalidate(target, 'related');
+      expect(get(target, 'key', () => 'two')).toBe('two');
+    });
+
     it('throws when called inside getter', () => {
       expect(() => {
         get(target, 'key', () => invalidate(target, 'key'));
