@@ -34,8 +34,8 @@
 
 * **The Simplest Definition**. Rather than using `class` and `this` syntax, the library uses plain objects with property descriptors and pure functions for defining custom elements.
 * **Composition over the Inheritance**. Hybrid property descriptors can be re-used, merged or split between the definitions and many more (for example using object rest/spread properties).
-* **No Global Lifecycle Callbacks**. The library says no to `will` and `did` - properties are independent and only have `connect` callback in the definition (with support for returned `disconnect` callback).
-* **Memoized Property Value**. Property value is cached by default and recalculated only when related properties changes, which makes the library super fast!
+* **No Global Lifecycle Callbacks**. The library says no to `will` and `did` - properties are independent and only have `connect` and `disconnect` callbacks in the definition.
+* **Memoized Property Value**. Property value is cached by default and recalculated only when related properties change, which makes the library super fast!
 * **Template as You Always Wanted**. Without external tools, with built-in result caching and using tagged template literals, `hybrids` gives you all power to create views with JavaScript included.
 * **Integration with Developer Tools**. The library supports **Hot Module Replacement** - custom elements are live updated without the need to refresh the page.
 
@@ -79,7 +79,7 @@ You can also use the built version of the library (with `hybrids` global namespa
 
 ## Browser Support
 
-The library requires `Promise` and `Reflect.construct` APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including list of required polyfills and shims. The easiest way is to add the following code on top of your project:
+The library requires `Promise` and `Reflect.construct` APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including a list of required polyfills and shims. The easiest way is to add the following code on top of your project:
 
 ```javascript
 // Promise and Reflect.construct polyfills loaded if IE11 is detected
@@ -174,7 +174,9 @@ const MyElement = {
 
 `invalidate` callback function forces property value recalculation. It can be used to connect to async web APIs or external libraries.
 
-> Invalidate (explicit or by assertion) triggers `@invalidate` custom event on the element (composed and bubbling). It allows observing elements changes.
+###### 🕹 [Live example of Redux integration on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js) <!-- omit in toc -->
+
+> Invalidate (explicit or by the assertion) triggers `@invalidate` custom event on an element (composed and bubbling). It allows observing elements changes.
 
 ### Hybrid Property Translation <!-- omit in toc -->
 
@@ -241,7 +243,7 @@ To omit transform, `defaultValue` has to be set to `undefined`.
 
 #### Attribute Fallback <!-- omit in toc -->
 
-All types except `object` and `undefined` create a fallback connection to element attribute (dashed name of the property key). An attribute value is used only once when element is connected. The library follows HTML specification and properly transforms attribute to `boolean` and `string` values.
+All types except `object` and `undefined` create a fallback connection to element attribute (dashed name of the property key). An attribute value is used only once when an element is connected. The library follows HTML specification and properly transforms attribute to `boolean` and `string` values.
 
 ### Parent & Children
 
@@ -256,7 +258,7 @@ Rather than using custom element tag name, access to parent or children elements
 * **returns**: 
   * hybrid property descriptor, which resolves to `null` or `Element` instance 
 
-`parent` creates a binding with custom element (defined with `hybrids`) in upper DOM tree up to `document.body` level (crossing Shadow DOM boundary). The binding is set and updated when custom element is connected and disconnected.
+`parent` creates a binding with a custom element (defined with `hybrids`) in upper DOM tree up to `document.body` level (crossing Shadow DOM boundary). The binding is set and updated when custom element is connected and disconnected.
 
 Resolved parent custom element can be safely used in other hybrid properties. If parent hybrid property invalidates, the value of a related property is invalidated as well.
 
@@ -352,7 +354,7 @@ const MyElement = {
 
 Updates are scheduled with `requestAnimationFrame()` API triggered by `@invalidate` event listener on document level. For example, the view is updated when one of the hybrid property used in `fn` changes. If execution of the update function passes ~16ms threshold (it counts from the beginning of the schedule), next element in the queue is updated with next `requestAnimationFrame()`.
 
-`render` factory ensures update after invalidation of hybrid property, but it is possible to trigger update by calling property manually on the element instance.
+`render` factory ensures update after invalidation of hybrid property, but it is possible to trigger an update by calling property manually on the element instance.
 
 Property defined with `render` factory uses the same cache mechanism like other hybrid properties. It means that `fn` is only called if hybrid properties invalidate.
 
@@ -448,7 +450,7 @@ html`<div innerHTML="${htmlCode}"></div>`;
 
 ### Conditions
 
-Falsy expression removes previous truthy value from DOM and render nothing (the exception is number `0`).
+Falsy expression removes previous truthy value from DOM and renders nothing (the exception is number `0`).
 
 ```javascript
 html`<div>${isValid && ...}</div>`;
@@ -477,7 +479,7 @@ In above example `submit` factory function returns an update function created by
 
 ### Arrays
 
-For iteration, expression should return an `array` with a list of content expressions. Items can be primitive values, nested templates as well as nested arrays.
+For iteration, an expression should return  `array` with a list of content expressions. Items can be primitive values, nested templates as well as nested arrays.
 
 ```javascript
 html`
@@ -499,7 +501,7 @@ html`...`.key(id)
 
 ### Promises
 
-Expression does not support promises, but the library support them by the `html.resolve` method.
+Promises as a value of the expression are not supported, but the library support them by the `html.resolve` method.
 
 #### `html.resolve(promise, placeholder, delay = 200)` <!-- omit in toc -->
 
@@ -562,7 +564,7 @@ In above example, the customer of the `UiCard` element does not have to explicit
 
 #### Styling <!-- omit in toc -->
 
-In the browser, which doesn't support Shadow DOM, ShadyCSS is used to create scoped CSS. This process requires moving out `<style>` element from the template and put it into the head of the document. It is done once and before expressions are calculated, so expressions inside style element are not processed correctly.
+In the browser, which does not support Shadow DOM, ShadyCSS is used to create scoped CSS. This process requires moving out `<style>` element from the template and put it into the head of the document. It is done once and before expressions are calculated, so expressions inside style element are not processed correctly.
 
 Expressions inside of the `<style>` element are only supported in native implementation of Shadow DOM. However, creating dynamic styles in the environment, which supports Shadow DOM can be inefficient (styles are not shared between elements instances).
 
