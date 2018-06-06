@@ -229,8 +229,8 @@ describe('render:', () => {
     const el = document.createElement('div');
 
     expect(() => {
-      hybrids.connect(el, 'renderOne');
-      hybrids.connect(el, 'renderTwo');
+      hybrids.renderOne.connect(el, 'renderOne');
+      hybrids.renderTwo.connect(el, 'renderTwo');
     }).toThrow();
   });
 });
