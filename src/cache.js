@@ -12,7 +12,6 @@ export function getEntry(target, key) {
     entry = {
       state: 0,
       value: undefined,
-      invalid: undefined,
       deps: undefined,
       checksum: undefined,
     };
@@ -42,11 +41,7 @@ export function get(target, key, getter) {
     context.deps.push(entry);
   }
 
-  if (
-    entry.invalid !== entry.state &&
-    entry.checksum !== undefined &&
-    entry.checksum === calculateChecksum(entry)
-  ) {
+  if (entry.checksum >= entry.state && entry.checksum === calculateChecksum(entry)) {
     return entry.value;
   }
 
@@ -89,13 +84,12 @@ export function set(target, key, setter, value, callback) {
 export function invalidate(target, key, clearValue) {
   if (context) {
     context = null;
-    throw Error(`[cache] Try to invalidate '${key}' in '${target}' during get invocation`);
+    throw Error(`[cache] Try to invalidate '${key}' in '${target}' get call`);
   }
 
   const entry = getEntry(target, key);
 
   entry.state += 1;
-  entry.invalid = entry.state;
 
   if (clearValue) {
     entry.value = undefined;

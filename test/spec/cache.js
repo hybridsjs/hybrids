@@ -61,6 +61,7 @@ describe('cache:', () => {
 
       invalidate(target, 'key');
       get(target, 'key', spy);
+      get(target, 'key', spy);
 
       expect(spy).toHaveBeenCalledTimes(2);
     });
