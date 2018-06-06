@@ -140,7 +140,16 @@ describe('property:', () => {
       });
     });
 
-    it('should throw when set with other type than object', () => empty((el) => {
+    it('set object value', () => empty((el) => {
+      const value = {};
+      el.objProp = value;
+      expect(el.objProp).toBe(value);
+
+      el.objProp = null;
+      expect(el.objProp).toBe(null);
+    }));
+
+    it('throws when set with other type than object', () => empty((el) => {
       expect(() => { el.objProp = false; }).toThrow();
     }));
   });
@@ -162,13 +171,13 @@ describe('property:', () => {
       });
     });
 
-    it('should pass null property without transform', () => empty((el) => {
+    it('passes null property without transform', () => empty((el) => {
       const obj = {};
       el.nullProp = obj;
       expect(el.nullProp).toBe(obj);
     }));
 
-    it('should pass undefined property without transform', () => empty((el) => {
+    it('passes undefined property without transform', () => empty((el) => {
       el.undefinedProp = false;
       expect(el.undefinedProp).toBe(false);
 
@@ -179,7 +188,7 @@ describe('property:', () => {
   });
 
   describe('connect option', () => {
-    it('should be called', () => {
+    it('is called', () => {
       const spy = jasmine.createSpy('connect');
       define('test-property-connect', {
         prop: property(0, spy),

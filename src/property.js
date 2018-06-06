@@ -1,11 +1,12 @@
 import { camelToDash } from './utils';
 
 const defaultTransform = v => v;
-const objectTransform = (v) => {
-  if (typeof v !== 'object') {
-    throw TypeError(`[property] Passed value is not an object: ${typeof v}`);
+
+const objectTransform = (value) => {
+  if (typeof value !== 'object') {
+    throw TypeError(`[property] Argument is not an object: ${typeof v}`);
   }
-  return Object.freeze(v);
+  return value && Object.freeze(value);
 };
 
 export default function property(value, connect) {
@@ -27,7 +28,7 @@ export default function property(value, connect) {
       value = transform();
       break;
     case 'object':
-      Object.freeze(value);
+      if (value) Object.freeze(value);
       transform = objectTransform;
       break;
     default: break;
