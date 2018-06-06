@@ -189,7 +189,7 @@ function applyShadyCSS(template, tagName) {
 
     if (!clone) {
       clone = document.createElement('template');
-      clone.content.appendChild(document.importNode(template.content, true));
+      clone.content.appendChild(template.content.cloneNode(true));
 
       map.set(tagName, clone);
 
@@ -232,16 +232,6 @@ function getPropertyName(string) {
   return string.replace(/\s*=\s*['"]*$/g, '').split(' ').pop();
 }
 
-function createWalker(node) {
-  return document.createTreeWalker(
-    node,
-    // eslint-disable-next-line no-bitwise
-    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
-    null,
-    false,
-  );
-}
-
 function replaceComments(fragment) {
   const iterator = document.createNodeIterator(fragment, NodeFilter.SHOW_COMMENT, null, false);
   let node;
@@ -254,10 +244,41 @@ function replaceComments(fragment) {
   }
 }
 
+const createWalker = typeof window.ShadyDOM === 'object' && window.ShadyDOM.inUse ?
+  (context) => {
+    let node;
+
+    return {
+      get currentNode() { return node; },
+      nextNode() {
+        if (node === undefined) {
+          node = context.childNodes[0];
+        } else if (node.childNodes.length) {
+          node = node.childNodes[0];
+        } else if (node.nextSibling) {
+          node = node.nextSibling;
+        } else {
+          node = node.parentNode.nextSibling;
+        }
+
+        return !!node;
+      },
+    };
+  } : node => document.createTreeWalker(
+    node,
+    // eslint-disable-next-line no-bitwise
+    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+    null,
+    false,
+  );
+
 const container = document.createElement('div');
-export function compile(signature, rawParts, isSVG) {
+export function compile(rawParts, isSVG) {
   const template = document.createElement('template');
   const parts = [];
+
+  let signature = createSignature(rawParts);
+  if (isSVG) signature = `<svg>${signature}</svg>`;
 
   if (IS_IE) {
     template.innerHTML = signature;
@@ -384,11 +405,8 @@ export function compile(signature, rawParts, isSVG) {
       }
     }
 
-    let index = 0;
-
-    data.markers.forEach(([node, fn]) => {
+    data.markers.forEach(([node, fn], index) => {
       fn(host, node, args[index], data);
-      index += 1;
     });
   };
 }

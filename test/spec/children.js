@@ -204,8 +204,8 @@ describe('children:', () => {
         <test-dynamic-parent>
           <test-dynamic-child name="one"></test-dynamic-child>
           ${items.map(name => html`
-            <test-dynamic-child name="${name}">${name}</test-dynamic-child>
-          `)}
+            <test-dynamic-child name="${name}"></test-dynamic-child>
+          `.key(name))}
         </test-dynamic-parent>
       `.define({ TestDynamicParent, TestDynamicChild }),
     });

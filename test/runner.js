@@ -1,4 +1,3 @@
-import 'core-js/shim';
 import '../shim';
 
 // Set dynamic env variable
@@ -12,14 +11,12 @@ window.test = (html) => {
     const wrapper = document.createElement('div');
     document.body.appendChild(wrapper);
 
-    wrapper.appendChild(document.importNode(template.content, true));
+    wrapper.appendChild(template.content.cloneNode(true));
     const promise = spec(wrapper.children[0]);
 
-    if (promise) {
-      promise.then(() => document.body.removeChild(wrapper));
-    } else {
+    Promise.resolve(promise).then(() => {
       document.body.removeChild(wrapper);
-    }
+    });
   };
 };
 

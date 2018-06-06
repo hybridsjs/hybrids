@@ -6,6 +6,11 @@ describe('html:', () => {
 
   beforeEach(() => {
     fragment = document.createElement('div');
+    document.body.appendChild(fragment);
+  });
+
+  afterEach(() => {
+    document.body.removeChild(fragment);
   });
 
   const getArrayValues = f => Array.from(f.children)
@@ -581,6 +586,37 @@ describe('html:', () => {
       document.body.removeChild(one);
       document.body.removeChild(two);
       document.body.removeChild(globalElement);
+    });
+  });
+
+  describe('use external element with shadowRoot', () => {
+    class TestExternalElement extends HTMLBridge {
+      constructor() {
+        super();
+        const shadowRoot = this.attachShadow({ mode: 'open' });
+        shadowRoot.innerHTML = `
+          <div>test</div>
+          <slot></slot>
+        `;
+      }
+    }
+
+    const render = value => html`<test-external-element>${value}</test-external-element>`
+      .define({ TestExternalElement });
+
+    it('renders external element with slotted value', (done) => {
+      const el = document.createElement('div');
+      el.attachShadow({ mode: 'open' });
+
+      document.body.appendChild(el);
+
+      render(0)(el, el.shadowRoot);
+
+      setTimeout(() => {
+        expect(el.shadowRoot.children[0].innerHTML).toBe('0');
+        document.body.removeChild(el);
+        done();
+      }, 100);
     });
   });
 });

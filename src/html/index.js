@@ -1,22 +1,23 @@
-import { compile, createSignature } from './template';
+import { compile } from './template';
 import * as methods from './methods';
 import resolve from './resolve';
 
-const templates = new Map();
+const updates = new Map();
 
 function create(parts, args, isSVG) {
-  let signature = createSignature(parts);
-  if (isSVG) signature = `<svg>${signature}</svg>`;
+  const update = (host, target = host) => {
+    const id = `${isSVG ? 'svg:' : ''}${parts.join('')}`;
+    let render = updates.get(id);
 
-  let render = templates.get(signature);
+    if (!render) {
+      render = compile(parts, isSVG);
+      updates.set(id, render);
+    }
 
-  if (!render) {
-    render = compile(signature, parts, isSVG);
-    templates.set(signature, render);
-  }
+    render(host, target, args);
+  };
 
-  const fn = (host, target = host) => render(host, target, args);
-  return Object.assign(fn, methods);
+  return Object.assign(update, methods);
 }
 
 export function html(parts, ...args) {
