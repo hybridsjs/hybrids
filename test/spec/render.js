@@ -233,4 +233,33 @@ describe('render:', () => {
       hybrids.renderTwo.connect(el, 'renderTwo');
     }).toThrow();
   });
+
+  describe('shadyCSS polyfill', () => {
+    const shadyCSSApplied = typeof window.ShadyCSS === 'object';
+
+    beforeAll(() => {
+      if (!shadyCSSApplied) {
+        window.ShadyCSS = {
+          prepareTemplate: template => template,
+          styleElement: jasmine.createSpy(),
+          styleSubtree: jasmine.createSpy(),
+        };
+      } else {
+        spyOn(window.ShadyCSS, 'styleElement');
+        spyOn(window.ShadyCSS, 'styleSubtree');
+      }
+    });
+
+    afterAll(() => {
+      if (!shadyCSSApplied) {
+        delete window.ShadyCSS;
+      }
+    });
+
+    it('uses styleElement and styleSubtree', done => tree(() => resolveTimeout(() => {
+      expect(window.ShadyCSS.styleElement).toHaveBeenCalled();
+      expect(window.ShadyCSS.styleSubtree).toHaveBeenCalled();
+      done();
+    })));
+  });
 });
