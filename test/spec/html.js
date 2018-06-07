@@ -1,4 +1,5 @@
 import { html } from '../../src/html';
+import { createInternalWalker } from '../../src/html/template';
 import define, { HTMLBridge } from '../../src/define';
 
 describe('html:', () => {
@@ -17,9 +18,19 @@ describe('html:', () => {
     .map(child => child.textContent);
 
   it('renders static content', () => {
-    const render = html`<div>static content</div>`;
+    const render = html`<div>static content<!-- some comment --></div>`;
     render({}, fragment);
-    expect(fragment.children[0].outerHTML).toBe('<div>static content</div>');
+    expect(fragment.children[0].outerHTML).toBe('<div>static content<!-- some comment --></div>');
+  });
+
+  it('creates template unique id', () => {
+    const renderOne = () => html`<div>value:</div>`;
+    const renderTwo = value => html`<div>value:${value}</div>`;
+
+    renderOne()({}, fragment);
+    renderTwo(0)({}, fragment);
+
+    expect(fragment.children[0].textContent).toBe('value:0');
   });
 
   it('reuses the same elements when re-render', () => {
@@ -617,6 +628,21 @@ describe('html:', () => {
         document.body.removeChild(el);
         done();
       }, 100);
+    });
+  });
+
+  describe('ShadyDOM polyfill', () => {
+    it('uses internal TreeWalker', () => {
+      const el = document.createElement('div');
+      el.innerHTML = '<div><div>text</div><div>text<div>text</div></div></div>';
+
+      const walker = createInternalWalker(el);
+      let index = 0;
+      while (walker.nextNode()) {
+        expect(walker.currentNode).not.toBeNull();
+        index += 1;
+      }
+      expect(index).toBe(7);
     });
   });
 });

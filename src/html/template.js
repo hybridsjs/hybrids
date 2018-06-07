@@ -208,7 +208,11 @@ function applyShadyCSS(template, tagName) {
   }, template);
 }
 
-export function createSignature(parts) {
+export function createId(parts, isSVG) {
+  return `${isSVG ? 'svg:' : ''}${parts.join(PLACEHOLDER)}`;
+}
+
+function createSignature(parts) {
   const signature = parts.reduce((acc, part, index) => {
     if (index === 0) {
       return part;
@@ -244,33 +248,38 @@ function replaceComments(fragment) {
   }
 }
 
-const createWalker = typeof window.ShadyDOM === 'object' && window.ShadyDOM.inUse ?
-  (context) => {
-    let node;
+export function createInternalWalker(context) {
+  let node;
 
-    return {
-      get currentNode() { return node; },
-      nextNode() {
-        if (node === undefined) {
-          node = context.childNodes[0];
-        } else if (node.childNodes.length) {
-          node = node.childNodes[0];
-        } else if (node.nextSibling) {
-          node = node.nextSibling;
-        } else {
-          node = node.parentNode.nextSibling;
-        }
+  return {
+    get currentNode() { return node; },
+    nextNode() {
+      if (node === undefined) {
+        node = context.childNodes[0];
+      } else if (node.childNodes.length) {
+        node = node.childNodes[0];
+      } else if (node.nextSibling) {
+        node = node.nextSibling;
+      } else {
+        node = node.parentNode.nextSibling;
+      }
 
-        return !!node;
-      },
-    };
-  } : node => document.createTreeWalker(
-    node,
+      return !!node;
+    },
+  };
+}
+
+function createExternalWalker(context) {
+  return document.createTreeWalker(
+    context,
     // eslint-disable-next-line no-bitwise
     NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
     null,
     false,
   );
+}
+
+const createWalker = typeof window.ShadyDOM === 'object' && window.ShadyDOM.inUse ? createInternalWalker : createExternalWalker;
 
 const container = document.createElement('div');
 export function compile(rawParts, isSVG) {
@@ -315,7 +324,7 @@ export function compile(rawParts, isSVG) {
         if (!IS_IE) node.textContent = '';
         parts.push([compileIndex, resolveValue]);
       }
-    } else {
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
       Array.from(node.attributes).forEach((attr) => {
         const value = attr.value.trim();
         const name = IS_IE ? attr.name.replace(ATTR_PREFIX, '') : attr.name;

@@ -1,4 +1,4 @@
-import { compile } from './template';
+import { compile, createId } from './template';
 import * as methods from './methods';
 import resolve from './resolve';
 
@@ -6,7 +6,7 @@ const updates = new Map();
 
 function create(parts, args, isSVG) {
   const update = (host, target = host) => {
-    const id = `${isSVG ? 'svg:' : ''}${parts.join('')}`;
+    const id = createId(parts, isSVG);
     let render = updates.get(id);
 
     if (!render) {
