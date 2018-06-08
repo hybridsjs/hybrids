@@ -170,11 +170,11 @@ const MyElement = {
 * **returns (not required):**
   * `disconnect` - a function (without arguments)
 
+#### 🕹 [Live example with Redux integration on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js) <!-- omit in toc -->
+
 `connect` method is called synchronously in the `connectedCallback` of the custom element. Similarly, returned `disconnect` function is called in the `disconnectedCallback`.
 
 `invalidate` callback function forces property value recalculation. It can be used to connect to async web APIs or external libraries.
-
-###### 🕹 [Live example of Redux integration on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js) <!-- omit in toc -->
 
 > Invalidate (explicit or by the assertion) triggers `@invalidate` custom event on an element (composed and bubbling). It allows observing elements changes.
 
@@ -277,6 +277,8 @@ const MyElement = {
 }
 ```
 
+#### 🕹 [Live example with parent factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js) <!-- omit in toc -->
+
 Possible usage in html (tag names can be different):
 
 ```html
@@ -284,8 +286,6 @@ Possible usage in html (tag names can be different):
   <my-element></my-element>
 </app-store>
 ```
-
-###### 🕹 [Live example of parent factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js) <!-- omit in toc -->
 
 #### `children(hybrids: Object, [options: Object]): Object`  <!-- omit in toc -->
 
@@ -318,6 +318,8 @@ const TabGroup = {
 };
 ```
 
+#### 🕹 [Live example with children factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-children-factory?file=index.js) <!-- omit in toc -->
+
 Possible usage in html (tag names can be different):
 
 ```html
@@ -326,8 +328,6 @@ Possible usage in html (tag names can be different):
   <tab-item name="two" active></tab-item>
 </tab-group>
 ```
-
-##### 🕹 [Live example of children factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-children-factory?file=index.js) <!-- omit in toc -->
 
 ### Render
 
@@ -351,6 +351,8 @@ const MyElement = {
   }),
 };
 ```
+
+#### 🕹 [Live example with React integration on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js) <!-- omit in toc -->
 
 Updates are scheduled with `requestAnimationFrame()` API triggered by `@invalidate` event listener on document level. For example, the view is updated when one of the hybrid property used in `fn` changes. If execution of the update function passes ~16ms threshold (it counts from the beginning of the schedule), next element in the queue is updated with next `requestAnimationFrame()`.
 
