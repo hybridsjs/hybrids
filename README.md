@@ -127,7 +127,7 @@ const MyElement = {
 };
 ```
 
-> `get` or `set` method is required, `connect` method can be omitted
+> `get` or `set` method is required, `connect` method can be omitted.
 
 For the callbacks definition, pure functions without side effects are in favor over `this` syntax. Moreover, where it applies the first argument is a `host` - custom element instance. This gives full access to the defined hybrid properties and DOM element API as well as an ability to use argument destructuring.
 
@@ -148,7 +148,7 @@ const MyElement = {
   name: ({ firstName, lastName }) => `${firstName} ${lastName}`,
 };
 ```
-> The example uses [property translation](#) feature, `name` property is translated to `get` method of property descriptor
+> This example uses [property translation](#hybrid-property-translation-) feature - `name` property is translated to `get` method of property descriptor.
 
 #### `set: (host: Element, value: any, lastValue: any) => {...}` <!-- omit in toc -->
 
@@ -170,7 +170,7 @@ const MyElement = {
 * **returns (not required):**
   * `disconnect` - a function (without arguments)
 
-#### 🕹 [Live example with Redux integration on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js) <!-- omit in toc -->
+#### 🕹 [Live example with Redux integration](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js) <!-- omit in toc -->
 
 `connect` method is called synchronously in the `connectedCallback` of the custom element. Similarly, returned `disconnect` function is called in the `disconnectedCallback`.
 
@@ -277,7 +277,7 @@ const MyElement = {
 }
 ```
 
-#### 🕹 [Live example with parent factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js) <!-- omit in toc -->
+#### 🕹 [Live example with parent factory](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js) <!-- omit in toc -->
 
 Possible usage in html (tag names can be different):
 
@@ -318,7 +318,7 @@ const TabGroup = {
 };
 ```
 
-#### 🕹 [Live example with children factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-children-factory?file=index.js) <!-- omit in toc -->
+#### 🕹 [Live example with children factory](https://stackblitz.com/edit/hybrids-children-factory?file=index.js) <!-- omit in toc -->
 
 Possible usage in html (tag names can be different):
 
@@ -352,7 +352,7 @@ const MyElement = {
 };
 ```
 
-#### 🕹 [Live example with React integration on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js) <!-- omit in toc -->
+#### 🕹 [Live example with React integration](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js) <!-- omit in toc -->
 
 Updates are scheduled with `requestAnimationFrame()` API triggered by `@invalidate` event listener on document level. For example, the view is updated when one of the hybrid property used in `fn` changes. If execution of the update function passes ~16ms threshold (it counts from the beginning of the schedule), next element in the queue is updated with next `requestAnimationFrame()`.
 
