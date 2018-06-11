@@ -18,10 +18,8 @@ function compile(Hybrid, hybrids) {
     let config = hybrids[key];
     const type = typeof config;
 
-    if (key === 'render') {
-      config = render(config);
-    } else if (type === 'function') {
-      config = { get: config };
+    if (type === 'function') {
+      config = key === 'render' ? render(config) : { get: config };
     } else if (config === null || type !== 'object' || (type === 'object' && !config.get && !config.set)) {
       config = property(config);
     }

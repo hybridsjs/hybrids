@@ -2,7 +2,7 @@ import define from '../../src/define';
 import { invalidate } from '../../src/cache';
 
 describe('define:', () => {
-  it('should return custom element with a name', () => {
+  it('returns custom element with a name', () => {
     const CustomElement = define('test-define-custom-element', {});
     expect({}.isPrototypeOf.call(HTMLElement.prototype, CustomElement.prototype)).toBe(true);
     expect(CustomElement.name).toBe('test-define-custom-element');
@@ -32,26 +32,26 @@ describe('define:', () => {
       spy = jasmine.createSpy();
     });
 
-    it('should set getter and setter', () => tree((el) => {
+    it('sets getter and setter', () => tree((el) => {
       el.one = 10;
       expect(el.one).toBe(11);
     }));
 
-    it('should set setter and default getter', () => tree((el) => {
+    it('sets setter and default getter', () => tree((el) => {
       el.two = 10;
       expect(el.two).toBe(100);
     }));
 
-    it('should set property for empty descriptor', () => tree((el) => {
+    it('sets property for empty descriptor', () => tree((el) => {
       expect(el.three).toEqual({ one: 'one', two: 'two' });
     }));
 
-    it('should call connect method', () => tree((el) => {
+    it('calls connect method', () => tree((el) => {
       expect(spy.calls.first().args[0]).toBe(el);
       expect(spy.calls.first().args[1]).toBe('one');
     }));
 
-    it('should return previus value when invalidate', () => tree((el) => {
+    it('returns previus value when invalidate', () => tree((el) => {
       el.one = 10;
       expect(el.one).toBe(11);
       invalidate(el, 'one');
@@ -68,7 +68,7 @@ describe('define:', () => {
       <test-define-primitive></test-define-primitive>
     `);
 
-    it('should apply property module with passed argument', () => tree((el) => {
+    it('applys property module with passed argument', () => tree((el) => {
       expect(el.testProperty).toBe('value');
     }));
   });
@@ -82,9 +82,35 @@ describe('define:', () => {
       <test-define-function></test-define-function>
     `);
 
-    it('should set it as getter of the element property', () => tree((el) => {
+    it('sets it as getter of the element property', () => tree((el) => {
       expect(el.getter).toBe('some value');
     }));
+  });
+
+  describe('for render key', () => {
+    it('uses render factory if value is a function', () => {
+      define('test-define-render', {
+        render: () => {},
+      });
+
+      const tree = test('<test-define-render></test-define-render>');
+
+      tree((el) => {
+        expect(typeof el.render).toBe('function');
+      });
+    });
+
+    it('does not use render factory if value is not a function', () => {
+      define('test-define-render-other', {
+        render: [],
+      });
+
+      const tree = test('<test-define-render-other></test-define-render-other>');
+
+      tree((el) => {
+        expect(typeof el.render).toBe('object');
+      });
+    });
   });
 
   describe('for empty object descriptor', () => {
@@ -100,7 +126,7 @@ describe('define:', () => {
       <test-define-empty-object></test-define-empty-object>
     `);
 
-    it('should set object as a property', () => tree((el) => {
+    it('sets object as a property', () => tree((el) => {
       expect(el.one).toBe(one);
       expect(el.two).toBe(two);
     }));
@@ -118,7 +144,7 @@ describe('define:', () => {
       window.env = 'development';
     });
 
-    it('should return the same custom element', () => {
+    it('returns the same custom element', () => {
       window.env = 'development';
       expect(define('test-define-multiple', hybrids)).toBe(CustomElement);
 
@@ -127,7 +153,7 @@ describe('define:', () => {
     });
 
     describe('in dev environment', () => {
-      it('should update when hybrids does not match', (done) => {
+      it('updates when hybrids does not match', (done) => {
         test(`
           <test-define-multiple>
             <test-define-multiple-two></test-define-multiple-two>
@@ -154,7 +180,7 @@ describe('define:', () => {
         });
       });
 
-      it('should update elements in shadowRoot', (done) => {
+      it('updates elements in shadowRoot', (done) => {
         test('<div></div>')((el) => {
           const connect = jasmine.createSpy();
 
@@ -171,7 +197,7 @@ describe('define:', () => {
       });
     });
 
-    it('in prod environment should throw when hybrids does not match', () => {
+    it('in prod environment throws when hybrids does not match', () => {
       window.env = 'production';
       expect(() => define('test-define-multiple', {})).toThrow();
 

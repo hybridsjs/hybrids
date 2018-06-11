@@ -35,7 +35,7 @@ describe('render:', () => {
   it('throws if an argument is not a function', () => {
     expect(() => {
       define('test-render-throws', {
-        render: {},
+        render: render({}),
       });
     }).toThrow();
   });

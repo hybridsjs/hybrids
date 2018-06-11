@@ -182,31 +182,36 @@ const MyElement = {
 
 Using explicit hybrid property descriptor structure for defining properties is usually not required because `define` method translates values to built-in factory functions or to property descriptors. Translation is done in the following order:
 
-```javascript
-const MyElement =  {
-  // If a key is "render"
-  render: () => {},
-  // it equals to `render` factory function:
-  render: render(() => {}),
+1. Property with `render` key and value set as a function translates to render factory:
+    ```javascript
+    import { render } from 'hybrids';
 
-  // If value is a function
-  computedValue: ({ firstName, lastName }) => `${firstName} ${lastName}`, 
-  // it equals to object with `get` key:
-  computedValue: {
-    get: ({ firstName, lastName }) => `${firstName} ${lastName}`,
-  },
+    { render: () => { ... } }
+    // Translates to:
+    { render: render(() => {...}) }
+    ```
+2. Property with value set as a function translates to descriptor with get method:
+    ```javascript
+    { propertyName: () => {...} }
+    // Translates to:
+    { propertyName: { get: () => {...} } }
+    ```
+3. Property with value set as a primitive translates to property factory:
+    ```javascript
+    import { property } from 'hybrids';
 
-  // If value is primitive value
-  primitive: 'text', // String, Number, Boolean, ...
-  // it equals to `property` factory function:
-  primitive: property('text'),
+    { propertyName: 'text' } // String, Number, Boolean, ...
+    // Translates to:
+    { propertyName: property('text') }
+    ```
+4. Property with value set as an object without `get` and `set` properties translates to property factory:
+    ```javascript
+    import { property } from 'hybrids';
 
-  // If value is an object without `get` and `set` properties
-  emptyArray: [],
-  // it equals to `property` factory function:
-  emptyArray: property([]),
-};
-```
+    { propertyName: [] }
+    // Translates to:
+    { propertyName: property([]) }
+    ```
 
 Object descriptor passed to the `define` method is not changed and it stays as it was defined. It means, that custom element definition can be just a simple structure of default values and methods without external dependencies.
 
@@ -354,7 +359,7 @@ const MyElement = {
 
 #### 🕹 [Live example with React integration](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js) <!-- omit in toc -->
 
-Updates are scheduled with `requestAnimationFrame()` API triggered by `@invalidate` event listener on document level. For example, the view is updated when one of the hybrid property used in `fn` changes. If execution of the update function passes ~16ms threshold (it counts from the beginning of the schedule), next element in the queue is updated with next `requestAnimationFrame()`.
+Updates are scheduled with `requestAnimationFrame()` API triggered by `@invalidate` event listener. For example, the view is updated when one of the hybrid property used in `fn` changes. However, if execution of the update function passes ~16ms threshold (it counts from the beginning of the schedule), following elements in the queue are updated with next `requestAnimationFrame()`.
 
 `render` factory ensures update after invalidation of hybrid property, but it is possible to trigger an update by calling property manually on the element instance.
 
