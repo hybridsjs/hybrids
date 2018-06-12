@@ -88,19 +88,21 @@ function resolveArray(host, target, value) {
   let previousSibling = target;
   const lastIndex = value.length - 1;
   const data = dataMap.get(target);
-  const { arrayMap } = data;
+  const { arrayEntries } = data;
 
-  data.arrayMap = value.reduce((map, item, index) => {
-    const id = typeof item === 'function' ? item.id : index;
-
-    if (map.has(id)) {
-      throw Error(`[html] '${id}' key already set. Use 'html\`...\`.key(id)' helper to set unique key.`);
+  data.arrayEntries = value.reduce((entries, item, index) => {
+    let id = item;
+    if (typeof item === 'function') {
+      id = Object.prototype.hasOwnProperty.call(item, 'id') ? item.id : index;
     }
 
+    const entry = arrayEntries && arrayEntries
+      .find(entryItem => entryItem[0] && entryItem[1] === id);
+
     let placeholder;
-    if (arrayMap && arrayMap.has(id)) {
-      placeholder = arrayMap.get(id);
-      arrayMap.delete(id);
+    if (entry) {
+      placeholder = entry[2];
+      entry[0] = false;
 
       if (placeholder.previousSibling !== previousSibling) {
         movePlaceholder(placeholder, previousSibling);
@@ -117,15 +119,17 @@ function resolveArray(host, target, value) {
     if (index === 0) data.startNode = placeholder;
     if (index === lastIndex) data.endNode = previousSibling;
 
-    map.set(id, placeholder);
+    entries.push([true, id, placeholder]);
 
-    return map;
-  }, new Map());
+    return entries;
+  }, []);
 
-  if (arrayMap) {
-    arrayMap.forEach((placeholder) => {
-      removeTemplate(placeholder);
-      placeholder.parentNode.removeChild(placeholder);
+  if (arrayEntries) {
+    arrayEntries.forEach(([available,, placeholder]) => {
+      if (available) {
+        removeTemplate(placeholder);
+        placeholder.parentNode.removeChild(placeholder);
+      }
     });
   }
 }

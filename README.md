@@ -79,11 +79,11 @@ You can also use the built version of the library (with `hybrids` global namespa
 
 ## Browser Support
 
-The library requires `Promise` and `Reflect.construct` APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including a list of required polyfills and shims. The easiest way is to add the following code on top of your project:
+The library requires some of the ES2015 APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including a list of required polyfills and shims. The easiest way is to add the following code on top of your project:
 
 ```javascript
-// Promise and Reflect.construct polyfills loaded if IE11 is detected
-// Web Components shims and polyfills (external packages)
+// ES2015 selected APIs polyfills loaded in IE11
+// Web Components shims and polyfills loaded if needed (external packages)
 import 'hybrids/shim'; 
 ...
 ```

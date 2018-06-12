@@ -386,10 +386,10 @@ describe('html:', () => {
     });
 
     it('re-renders an array', () => {
-      const itemEl = fragment.children[0];
+      const items = Array.from(fragment.children);
 
       render([1, 2, 3, 4])(fragment);
-      expect(fragment.children[0]).toBe(itemEl);
+      expect(Array.from(fragment.children).slice(0, 3)).toEqual(items);
       expect(getArrayValues(fragment)).toEqual(['1', '2', '3', '4']);
     });
 
@@ -411,10 +411,17 @@ describe('html:', () => {
       expect(fragment.children[2]).toBe(firstItem);
     });
 
-    it('throws for duplicated id from key helper method', () => {
+    it('reuse DOM elements using string id', () => {
+      render(['one', 'one', 'two'])(fragment);
+      const items = Array.from(fragment.children);
+      render(['two', 'one', 'one'])(fragment);
+      expect(Array.from(fragment.children)).toEqual([items[2], items[0], items[1]]);
+    });
+
+    it('does not throw for duplicated id from key helper method', () => {
       expect(() => {
         html`${[1, 2, 3].map(() => html``.key(1))}`(fragment);
-      }).toThrow();
+      }).not.toThrow();
     });
   });
 
