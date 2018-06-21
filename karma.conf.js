@@ -1,11 +1,57 @@
 const webpack = require('webpack');
 const webpackConfig = require('./webpack.config');
 
+const IS_COVERAGE = process.env.NODE_ENV === 'coverage';
+const IS_TRAVIS = !!process.env.TRAVIS;
+
+const customLaunchers = {
+  SL_Chrome: {
+    base: 'SauceLabs', browserName: 'chrome', platform: 'Windows 10', version: 'latest',
+  },
+  SL_Chrome_1: {
+    base: 'SauceLabs', browserName: 'chrome', platform: 'Windows 10', version: 'latest-1',
+  },
+  SL_Firefox: {
+    base: 'SauceLabs', browserName: 'firefox', platform: 'Windows 10', version: 'latest',
+  },
+  SL_Firefox_1: {
+    base: 'SauceLabs', browserName: 'firefox', platform: 'Windows 10', version: 'latest-1',
+  },
+  SL_Safari_1: {
+    base: 'SauceLabs', browserName: 'safari', platform: 'OS X 10.12', version: 'latest-1',
+  },
+  SL_Safari: {
+    base: 'SauceLabs', browserName: 'safari', platform: 'OS X 10.12', version: 'latest',
+  },
+  SL_IE_11: {
+    base: 'SauceLabs', browserName: 'internet explorer', platform: 'Windows 8.1', version: '11',
+  },
+  SL_EDGE: {
+    base: 'SauceLabs', browserName: 'microsoftedge', platform: 'Windows 10', version: 'latest',
+  },
+  SL_EDGE_1: {
+    base: 'SauceLabs', browserName: 'microsoftedge', platform: 'Windows 10', version: 'latest-1',
+  },
+  SL_iOS_10: {
+    base: 'SauceLabs', browserName: 'iphone', platform: 'OS X 10.12', version: '10.3',
+  },
+  SL_iOS_11: {
+    base: 'SauceLabs', browserName: 'iphone', platform: 'OS X 10.12', version: '11.2',
+  },
+};
+
+const reporters = ['dots'];
+
+if (IS_COVERAGE) reporters.push('coverage');
+if (IS_TRAVIS) reporters.push('saucelabs');
+
 module.exports = (config) => {
   config.set({
     frameworks: ['jasmine'],
-    reporters: ['dots', 'coverage'],
-    browsers: process.env.TRAVIS ? ['ChromeTravis'] : ['Chrome'],
+    reporters,
+    browsers: IS_TRAVIS
+      ? Object.keys(customLaunchers)
+      : ['ChromeHeadless', 'FirefoxHeadless'],
     files: ['test/runner.js'],
     preprocessors: {
       'test/runner.js': ['webpack', 'sourcemap'],
@@ -33,11 +79,15 @@ module.exports = (config) => {
         { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
       ],
     },
-    customLaunchers: {
-      ChromeTravis: {
-        base: 'Chrome',
-        flags: ['--no-sandbox'],
-      },
+    concurrency: IS_TRAVIS ? 5 : Infinity,
+    captureTimeout: 120000,
+    browserNoActivityTimeout: 300000,
+    browserDisconnectTolerance: 2,
+    customLaunchers,
+    sauceLabs: {
+      testName: 'Hybrids Unit Tests',
+      build: `TRAVIS #${process.env.TRAVIS_BUILD_NUMBER} (${process.env.TRAVIS_BUILD_ID})`,
+      tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
     },
     autoWatch: true,
     singleRun: false,

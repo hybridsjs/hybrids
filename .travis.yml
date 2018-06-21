@@ -6,11 +6,6 @@ node_js: stable
 notifications:
   email: false
 
-before_install:
-  - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-  - sudo dpkg -i google-chrome*.deb
-  - export CHROME_BIN=/usr/bin/google-chrome
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  - sleep 3
-script: npm run test:coverage && npm run coveralls
+script: 
+  - npm run test
+  - npm run coveralls

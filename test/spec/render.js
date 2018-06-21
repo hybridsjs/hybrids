@@ -1,4 +1,4 @@
-import { define, html, dispatch } from '../../src';
+import { define, html } from '../../src';
 import render, { update } from '../../src/render';
 
 const resolveRaf = fn => new Promise((resolve) => {
@@ -91,7 +91,7 @@ describe('render:', () => {
   it('defer next update tasks after threshold', (done) => {
     define('test-render-long', {
       value: '',
-      render: ({ value }) => (host, shadowRoot) => {
+      render: ({ value }) => (target, shadowRoot) => {
         const now = performance.now();
         while (performance.now() - now < 20);
 
@@ -108,7 +108,8 @@ describe('render:', () => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            const [one, two] = el.children;
+            const one = el.children[0];
+            const two = el.children[1];
             expect(one.shadowRoot.children[0].textContent).toBe('one');
             expect(two.shadowRoot.children[0].textContent).toBe('two');
             expect(two.shadowRoot.children.length).toBe(1);
@@ -120,35 +121,36 @@ describe('render:', () => {
     }));
   });
 
-  it('update function catches error inside of the passed function', (done) => {
+  it('update function catches error in render function', (done) => {
+    let fn = () => { throw Error(); };
     define('test-render-throws-in-render', {
-      render: () => {
-        throw Error();
-      },
+      render: () => fn(),
     });
 
-    test('<test-render-throws-in-render></test-render-throws-in-render>')((el) => {
+    test('<test-render-throws-in-render></test-render-throws-in-render>')(() => {
       expect(() => {
-        dispatch(el, '@invlidate', { bubbling: true, composed: true });
         update();
       }).toThrow();
-      requestAnimationFrame(done);
+      fn = () => {};
+      done();
     });
   });
 
-  it('update function catches error inside of the passed function', (done) => {
-    define('test-render-throws-in-callback', {
-      render: () => () => { throw Error('example error'); },
-    });
-
-    test('<test-render-throws-in-callback></test-render-throws-in-callback>')((el) => {
-      dispatch(el, '@invlidate', { bubbling: true, composed: true });
-      update().catch((e) => {
-        expect(e instanceof Error).toBe(true);
+  it('update function catches error in result of render function', (done) => {
+    setTimeout(() => {
+      let fn = () => { throw Error('example error'); };
+      define('test-render-throws-in-callback', {
+        render: () => fn,
       });
-    });
 
-    requestAnimationFrame(done);
+      test('<test-render-throws-in-callback></test-render-throws-in-callback>')(() => {
+        Promise.resolve(update()).catch((e) => {
+          expect(e instanceof Error).toBe(true);
+          fn = () => {};
+          done();
+        });
+      });
+    }, 100);
   });
 
   describe('shady css custom property scope', () => {
