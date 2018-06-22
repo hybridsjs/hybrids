@@ -156,7 +156,7 @@ function resolveProperty(attrName, propertyName, isSVG) {
     case 'class': return resolveClassList;
     default:
       return (host, target, value) => {
-        if (!isSVG && propertyName in target) {
+        if (!isSVG && !(target instanceof SVGElement) && (propertyName in target)) {
           if (target[propertyName] !== value) {
             target[propertyName] = value;
           }
@@ -340,22 +340,26 @@ export function compile(rawParts, isSVG) {
         } else {
           const results = value.match(PLACEHOLDER_REGEXP);
           if (results) {
+            const partialName = `attr__${name}`;
             parts.push([compileIndex, (host, target, attrValue) => {
-              target.setAttribute(name, value.replace(PLACEHOLDER, attrValue == null ? '' : attrValue));
+              const data = dataMap.get(target, {});
+              data[partialName] = value.replace(PLACEHOLDER, attrValue == null ? '' : attrValue);
+              if (results.length === 1) target.setAttribute(name, data[partialName]);
             }]);
 
             for (let i = 1; i < results.length; i += 1) {
               parts.push([compileIndex, (host, target, attrValue) => {
-                const previousValue = target.getAttribute(name);
-                target.setAttribute(name, previousValue.replace(PLACEHOLDER, attrValue == null ? '' : attrValue));
+                const data = dataMap.get(target, {});
+                data[partialName] = data[partialName].replace(PLACEHOLDER, attrValue == null ? '' : attrValue);
+                if (i + 1 === results.length) target.setAttribute(name, data[partialName]);
               }]);
             }
 
-            attr.value = value.replace(PLACEHOLDER_REGEXP, '');
+            attr.value = '';
 
             if (IS_IE && name !== attr.name) {
-              node.setAttribute(name, attr.value);
               node.removeAttribute(attr.name);
+              node.setAttribute(name, '');
             }
           }
         }

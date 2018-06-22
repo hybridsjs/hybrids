@@ -652,4 +652,20 @@ describe('html:', () => {
       expect(index).toBe(7);
     });
   });
+
+  describe('svg element', () => {
+    it('sets attribute from an expression', () => {
+      const render = html`<svg viewBox="${'0 0 100 100'}"></svg>`;
+      render({}, fragment);
+
+      expect(fragment.firstChild.getAttribute('viewBox')).toBe('0 0 100 100');
+    });
+
+    it('sets attribute from string with an expression', () => {
+      const render = html`<svg viewBox="0 0 ${'100'} ${'100'}"></svg>`;
+      render({}, fragment);
+
+      expect(fragment.firstChild.getAttribute('viewBox')).toBe('0 0 100 100');
+    });
+  });
 });
