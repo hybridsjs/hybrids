@@ -24,31 +24,38 @@
     <img src="docs/assets/simple-counter.png" width="600"></a>
 </p>
 
-<h5 align="center">
-  <a href="https://stackblitz.com/edit/hybrids-simple-counter?file=simple-counter.js" alt="Edit Simple Counter">
-    Playground powered by ⚡StackBlitz
-  </a>
-</h5>
 
-## Key Features <!-- omit in toc -->
+## 🏆 Key Features <!-- omit in toc -->
 
 * **The Simplest Definition**. Rather than using `class` and `this` syntax, the library uses plain objects with property descriptors and pure functions for defining custom elements.
-* **Composition over the Inheritance**. Hybrid property descriptors can be re-used, merged or split between the definitions and many more (for example using object rest/spread properties).
-* **No Global Lifecycle Callbacks**. The library says no to `will` and `did` - properties are independent and only have `connect` and `disconnect` callbacks in the definition.
+* **Composition over the Inheritance**. Property descriptors can be re-used, merged, split and many more (for example using object rest/spread properties).
+* **No Global Lifecycle Callbacks**. The library says no to `will` and `did` - properties are independent and have own `connect` and `disconnect` callbacks in the definition.
 * **Memoized Property Value**. Property value is cached by default and recalculated only when related properties change, which makes the library super fast!
-* **Template as You Always Wanted**. Without external tools, with built-in result caching and using tagged template literals, `hybrids` gives you all power to create views with JavaScript included.
-* **Integration with Developer Tools**. The library supports **Hot Module Replacement** - custom elements are live updated without the need to refresh the page.
+* **Template as You Always Wanted**. The library uses tagged template literals to give you all the power to create rich views with JavaScript expressions.
+* **Integration with Developer Tools**. The library supports **Hot Module Replacement** - custom elements can be live updated without the need to refresh the page.
 
-## Contents <!-- omit in toc -->
-- [Installation](#installation)
-- [Browser Support](#browser-support)
-- [Custom Element Definition](#custom-element-definition)
-- [Hybrid Property Descriptor](#hybrid-property-descriptor)
-- [Factories](#factories)
+## 🕹 Live Examples <!-- omit in toc -->
+
+Live examples of the custom elements built with the `hybrids` library:
+
+* [`<simple-counter>` - custom element with a button for changing own state](https://stackblitz.com/edit/hybrids-simple-counter?file=simple-counter.js) 
+* [`<redux-counter>` - custom element using `Redux` library for state management](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js)
+* [`<react-counter>` - custom element using `render` factory and `React` library for rendering in shadow DOM](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js)
+* [`<app-todos>` - todo list using `parent` factory for state management](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js)
+* [`<tab-group>` - switching tabs using `children` factory](https://stackblitz.com/edit/hybrids-children-factory?file=index.js)
+
+> Playground powered by ⚡StackBlitz
+
+## 📚 Documentation <!-- omit in toc -->
+- [💡 Installation](#-installation)
+- [📱 Browser Support](#-browser-support)
+- [🏗 Custom Element Definition](#-custom-element-definition)
+- [📝 Property Descriptors](#-property-descriptors)
+- [🏭 Factories](#-factories)
   - [Property](#property)
   - [Parent & Children](#parent--children)
   - [Render](#render)
-- [Templates](#templates)
+- [🎨 Templates](#-templates)
   - [Properties & Attributes](#properties--attributes)
   - [Event Listeners](#event-listeners)
   - [Values](#values)
@@ -58,10 +65,10 @@
   - [Promises](#promises)
   - [Resolving Dependencies](#resolving-dependencies)
   - [Limitations](#limitations)
-- [Utils](#utils)
-- [License](#license)
+- [⚙️ Utils](#️-utils)
+- [📃 License](#-license)
 
-## Installation
+## 💡 Installation
 
 The recommended way is to use the `npm` registry:
 ```bash
@@ -75,9 +82,9 @@ You can also use the built version of the library (with `hybrids` global namespa
 <script src="https://unpkg.com/hybrids/dist/hybrids.js"></script>
 ```
 
-> For the built version all name exports of the `hybrids` are available on the `hybrids` global namespace.
+> ⚠️ For the built version all name exports are available on the `hybrids` global namespace.
 
-## Browser Support
+## 📱 Browser Support
 
 [![Build Status](https://saucelabs.com/browser-matrix/hybrids.svg)](https://saucelabs.com/u/hybrids)
 
@@ -92,9 +99,9 @@ import 'hybrids/shim';
 
 Web components shims have some limitations. Especially, [`webcomponents/shadycss`](https://github.com/webcomponents/shadycss) approximates CSS scoping and CSS custom properties inheritance. Read more on the [known issues](https://github.com/webcomponents/webcomponentsjs#known-issues) and [custom properties shim limitations](https://www.polymer-project.org/3.0/docs/devguide/custom-css-properties#custom-properties-shim-limitations) pages.
 
-> The library calls shims if they are needed, so direct use is not required.
+> ⚠️ The library calls shims if they are needed, so direct use is not required.
 
-## Custom Element Definition
+## 🏗 Custom Element Definition
 
 ```javascript
 import { define } from 'hybrids';
@@ -108,14 +115,14 @@ define('my-element', MyElement);
 #### `define(tagName: string, descriptors: Object): Wrapper` <!-- omit in toc -->
 
 * **arguments**:
-  * `tagName` - custom element tag name,
-  * `descriptors` - object with a map of hybrid property descriptors
+  * `tagName` - a custom element tag name,
+  * `descriptors` - an object with a map of hybrid property descriptors
 * **returns**: 
   * `Wrapper` - custom element constructor (extends `HTMLElement`)
 
-## Hybrid Property Descriptor
+## 📝 Property Descriptors
 
-The following code shows a complete structure of the hybrid property descriptor: 
+The following code shows a complete structure of the property descriptor: 
 ```javascript
 const MyElement = {
   propertyName: {
@@ -129,19 +136,17 @@ const MyElement = {
 };
 ```
 
-> `get` or `set` method is required, `connect` method can be omitted.
-
-For the callbacks definition, pure functions without side effects are in favor over `this` syntax. Moreover, where it applies the first argument is a `host` - custom element instance. This gives full access to the defined hybrid properties and DOM element API as well as an ability to use argument destructuring.
+One of the `get` or `set` method has to be defined, `connect` method can be omitted. If only `set` method is defined, for `get` method a default getter is used, which returns last cached value.
 
 #### `get: (host: Element, lastValue: any) => { ... }` <!-- omit in toc -->
 
 * **arguments**:
-  * `host` - element instance
+  * `host` - an element instance
   * `lastValue` - last cached value of the property
 * **returns (required)**:
-  * `value` - value of the current state of the property
+  * `value` - a value of the current state of the property
 
-Value of the hybrid property is cached by default. `get` method is called only if other hybrid properties used in the body of the getter function have changed. For example, in the following code, `name` property getter is only called if `firstName` or `lastName` has changed:
+Value of the property is cached by default. `get` method is called only if other hybrid properties used in the body of the getter function have changed. For example, in the following code, `name` property getter is only called again if `firstName` or `lastName` has changed:
 
 ```javascript
 const MyElement = {
@@ -150,7 +155,7 @@ const MyElement = {
   name: ({ firstName, lastName }) => `${firstName} ${lastName}`,
 };
 ```
-> This example uses [property translation](#hybrid-property-translation-) feature - `name` property is translated to `get` method of property descriptor.
+> ⚠️ This example uses [property translation](#property-translation) - `name` property is translated to `get` method of the property descriptor.
 
 #### `set: (host: Element, value: any, lastValue: any) => {...}` <!-- omit in toc -->
 
@@ -161,7 +166,7 @@ const MyElement = {
 * **returns (required)**: 
   * `nextValue` - a value of the property, which replaces cached value
 
-`set` method is called within every assertion of the property. The cached value is invalidated if returned `nextValue` is not equal to `lastValue` (`nextValue !== lastValue`). However, `get` method is called in the next get call of the property (it is not recalculated after invalidation). Nonprimitive values should be treated as immutable - property is invalidated when value reference changes.
+`set` method is called within every assertion of the property. The cached value is invalidated if returned `nextValue` is not equal to `lastValue` (`nextValue !== lastValue`). However, `get` method is called in the next get call of the property (it is not recalculated after invalidation). Nonprimitive values should be treated as immutable - property is invalidated only if value reference has changed.
 
 #### `connect: (host: Element, key: string, invalidate: Function) => { ... }` <!-- omit in toc -->
 
@@ -172,17 +177,17 @@ const MyElement = {
 * **returns (not required):**
   * `disconnect` - a function (without arguments)
 
-#### 🕹 [Live example with Redux integration](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js) <!-- omit in toc -->
-
 `connect` method is called synchronously in the `connectedCallback` of the custom element. Similarly, returned `disconnect` function is called in the `disconnectedCallback`.
 
 `invalidate` callback function forces property value recalculation. It can be used to connect to async web APIs or external libraries.
 
-> Invalidate (explicit or by the assertion) triggers `@invalidate` custom event on an element (composed and bubbling). It allows observing elements changes.
+🕹 [Click and play with a live example of `redux` integration](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js)
 
-### Hybrid Property Translation <!-- omit in toc -->
+> ⚠️ Invalidate (explicit or by the assertion) dispatches `@invalidate` custom event (composed and bubbling), which allows observing element's hybrid properties.
 
-Using explicit hybrid property descriptor structure for defining properties is usually not required because `define` method translates values to built-in factory functions or to property descriptors. Translation is done in the following order:
+### Property Translation<!-- omit in toc -->
+
+Using property descriptor structure for defining hybrid properties is usually not required because `define` method translates values to built-in factory functions or to property descriptors. Translation is done in the following order:
 
 1. Property with `render` key and value set as a function translates to render factory:
     ```javascript
@@ -217,9 +222,9 @@ Using explicit hybrid property descriptor structure for defining properties is u
 
 Object descriptor passed to the `define` method is not changed and it stays as it was defined. It means, that custom element definition can be just a simple structure of default values and methods without external dependencies.
 
-## Factories
+## 🏭 Factories
 
-The factory is a function, which produces hybrid property descriptor. Rather than explicitly describe the property, factories hide implementation details and minimize redundant code. `hybrids` includes four factories, which cover the most important features for creating custom elements.
+The factory is a function, which produces property descriptor. Rather than explicitly describe a property, factories hide implementation details and minimize redundant code. `hybrids` includes four factories, which cover the most important features for creating custom elements.
 
 ### Property
 
@@ -229,7 +234,7 @@ The factory is a function, which produces hybrid property descriptor. Rather tha
   * `defaultValue` - any value
   * `connect` - a connect callback function of the property descriptor
 * **returns**:
-  * hybrid property descriptor, which resolves to value
+  * a property descriptor, which resolves to value
 
 `property` creates property binding with fallback to corresponding element's attribute. `property` uses a transform function, which ensures the strict type of the value set by an attribute or a property.
 
@@ -248,24 +253,43 @@ Object values are frozen to prevent mutation of the own properties, which does n
 
 To omit transform, `defaultValue` has to be set to `undefined`.
 
+The following example uses `moment` library as a function for `defaultValue` to transform `date` property value:
+
+```javascript
+import moment from 'moment';
+import { property } from 'hybrids';
+
+const MyElement = {
+  date: property(moment),
+};
+```
+
+> Possible usage in html (tag name can be different):
+
+```html
+<my-element date="2018-01-01"></my-element>
+```
+
 #### Attribute Fallback <!-- omit in toc -->
 
-All types except `object` and `undefined` create a fallback connection to element attribute (dashed name of the property key). An attribute value is used only once when an element is connected. The library follows HTML specification and properly transforms attribute to `boolean` and `string` values.
+All transform matching types except `object` and `undefined` create a fallback connection to element attribute (dashed name of the property key). An attribute value is used **only once when an element is connected for the first time to the document**. It means, that attributes can be used only to set static values in HTML templates. Only properties can be used to dynamically update values. 
+
+The library follows HTML specification and properly transforms attribute to `boolean` and `string` values.
 
 ### Parent & Children
 
 Rather than using custom element tag name, access to parent or children elements is set by the reference to an object containing hybrid property descriptors. This feature allows avoiding name collision between custom elements because it is irrelevant on what name related custom element is defined.
 
-> Binding can be created only between custom elements defined by the library. Built-in elements or other custom elements are not supported.
+> ⚠️ Binding can be created only between custom elements defined by the library. Built-in elements or other custom elements are not supported.
 
 #### `parent(hybrids: Object): Object`  <!-- omit in toc -->
 
 * **arguments**:
   * `hybrids` - reference to an object containing hybrid property descriptors
 * **returns**: 
-  * hybrid property descriptor, which resolves to `null` or `Element` instance 
+  * a property descriptor, which resolves to `null` or `Element` instance 
 
-`parent` creates a binding with a custom element (defined with `hybrids`) in upper DOM tree up to `document.body` level (crossing Shadow DOM boundary). The binding is set and updated when custom element is connected and disconnected.
+`parent` creates a binding with a custom element (defined with `hybrids`) in upper DOM tree up to `document.body` level (crossing Shadow DOM boundary). The binding is set and updated when the custom element is connected and disconnected.
 
 Resolved parent custom element can be safely used in other hybrid properties. If parent hybrid property invalidates, the value of a related property is invalidated as well.
 
@@ -284,15 +308,15 @@ const MyElement = {
 }
 ```
 
-#### 🕹 [Live example with parent factory](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js) <!-- omit in toc -->
-
-Possible usage in html (tag names can be different):
+> Possible usage in html (tag names can be different):
 
 ```html
 <app-store count="42">
   <my-element></my-element>
 </app-store>
 ```
+
+🕹 [Click and play with a live example using `parent` factory](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js)
 
 #### `children(hybrids: Object, [options: Object]): Object`  <!-- omit in toc -->
 
@@ -325,9 +349,7 @@ const TabGroup = {
 };
 ```
 
-#### 🕹 [Live example with children factory](https://stackblitz.com/edit/hybrids-children-factory?file=index.js) <!-- omit in toc -->
-
-Possible usage in html (tag names can be different):
+> Possible usage in html (tag names can be different):
 
 ```html
 <tab-group>
@@ -335,6 +357,8 @@ Possible usage in html (tag names can be different):
   <tab-item name="two" active></tab-item>
 </tab-group>
 ```
+
+🕹 [Click and play with a live example using `children` factory](https://stackblitz.com/edit/hybrids-children-factory?file=index.js)
 
 ### Render
 
@@ -345,7 +369,7 @@ Possible usage in html (tag names can be different):
 * **returns**:
   * hybrid property descriptor, which resolves to function
 
-`render` creates views in the custom element Shadow DOM. It is template agnostic - passed `fn` should return function for updating DOM. The preferred way is to use template engine from the library, but it can be used with any external UI library, that renders DOM.
+`render` creates views in the custom element Shadow DOM. It is template agnostic - passed `fn` should return function for updating DOM. The preferred way is to use the template engine from the library, but it can be used with any external UI library, that renders DOM.
 
 ```javascript
 import { render } from 'hybrids';
@@ -359,19 +383,19 @@ const MyElement = {
 };
 ```
 
-#### 🕹 [Live example with React integration](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js) <!-- omit in toc -->
+🕹 [Click and play with a live example using `render` factory and  `React` library](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js)
 
-Updates are scheduled with `requestAnimationFrame()` API triggered by `@invalidate` event listener. For example, the view is updated when one of the hybrid property used in `fn` changes. However, if execution of the update function passes ~16ms threshold (it counts from the beginning of the schedule), following elements in the queue are updated with next `requestAnimationFrame()`.
+Updates are scheduled with `requestAnimationFrame()` API triggered by `@invalidate` event listener. For example, the view is updated when one of the hybrid property used in `fn` changes. However, if execution of the update function passes ~16ms threshold (it counts from the beginning of the schedule), the following elements in the queue are updated with next `requestAnimationFrame()`.
 
 `render` factory ensures update after invalidation of hybrid property, but it is possible to trigger an update by calling property manually on the element instance.
 
 Property defined with `render` factory uses the same cache mechanism like other hybrid properties. It means that `fn` is only called if hybrid properties invalidate.
 
-## Templates
+## 🎨 Templates
 
 The main concept is inspired by the [`lit-html`](https://github.com/Polymer/lit-html), but the implementation is different and follows own conventions. The library provides `html` and `svg` functions for creating templates (both have the same interface, but `svg` uses SVG namespace). They use tagged template literals syntax to create  DOM and update dynamic parts leaving static content untouched.
 
-> For the best development experience, check if your code editor supports highlighting HTML in tagged template literals
+> ️⚠️ For the best development experience, check if your code editor supports highlighting HTML in tagged template literals
 
 ### Properties & Attributes
 
@@ -383,7 +407,7 @@ Attribute expression set a case-sensitive property of element instance (if it ha
 
 #### Class <!-- omit in toc -->
 
-`class` attribute expression adds or removes a class from element's `classList`. An expression can be a string, an array of strings or a map of keys with boolean values.
+`class` attribute expression adds or removes a class from an element's `classList`. An expression can be a string, an array of strings or a map of keys with boolean values.
 
 ```javascript
 const name = 'one two';
@@ -542,7 +566,7 @@ For templates, which use other custom elements, update function provides helper 
 
 This method helps to avoid defining unused elements and allows creating a tree-like dependency structure. A complex structure may require only one explicit definition at the root level. As the library factories decouple tag name from the definition, elements can be set with custom names.
 
-> In the future, when scoped [custom element registers](https://github.com/w3c/webcomponents/issues/716) will be available, `define` helper will benefit from that feature and register elements in the `host` element scope.
+> ⚠️ In the future, when scoped [custom element registers](https://github.com/w3c/webcomponents/issues/716) will be available, `define` helper will benefit from that feature and register elements in the `host` element scope.
 
 #### `` html`...`.define(map: Object) `` <!-- omit in toc -->
 
@@ -639,7 +663,7 @@ html`
 `;
 ```
 
-## Utils
+## ⚙️ Utils
 
 #### `dispatch(host: Element, eventType: string, options)` <!-- omit in toc -->
 
@@ -669,6 +693,6 @@ const MyElement = {
 };
 ```
 
-## License
+## 📃 License
 
 `hybrids` is released under the [MIT License](LICENSE.md).
