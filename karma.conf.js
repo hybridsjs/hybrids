@@ -2,7 +2,7 @@ const webpack = require('webpack');
 const webpackConfig = require('./webpack.config');
 
 const IS_COVERAGE = process.env.NODE_ENV === 'coverage';
-const IS_TRAVIS = !!process.env.TRAVIS;
+const IS_SAUCE_LABS = !!process.env.TRAVIS && process.env.TRAVIS_BRANCH === 'master' && process.env.TRAVIS_PULL_REQUEST === 'false';
 
 const customLaunchers = {
   SL_Chrome: {
@@ -43,13 +43,13 @@ const customLaunchers = {
 const reporters = ['dots'];
 
 if (IS_COVERAGE) reporters.push('coverage');
-if (IS_TRAVIS) reporters.push('saucelabs');
+if (IS_SAUCE_LABS) reporters.push('saucelabs');
 
 module.exports = (config) => {
   config.set({
     frameworks: ['jasmine'],
     reporters,
-    browsers: IS_TRAVIS
+    browsers: IS_SAUCE_LABS
       ? Object.keys(customLaunchers)
       : ['ChromeHeadless', 'FirefoxHeadless'],
     files: ['test/runner.js'],
@@ -79,7 +79,7 @@ module.exports = (config) => {
         { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
       ],
     },
-    concurrency: IS_TRAVIS ? 5 : Infinity,
+    concurrency: IS_SAUCE_LABS ? 2 : Infinity,
     captureTimeout: 120000,
     browserNoActivityTimeout: 300000,
     browserDisconnectTolerance: 2,
