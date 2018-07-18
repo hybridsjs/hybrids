@@ -138,6 +138,8 @@ const MyElement = {
 
 One of the `get` or `set` method has to be defined, `connect` method can be omitted. If only `set` method is defined, for `get` method a default getter is used, which returns last cached value.
 
+------------------------
+
 #### `get: (host: Element, lastValue: any) => { ... }` <!-- omit in toc -->
 
 * **arguments**:
@@ -157,6 +159,8 @@ const MyElement = {
 ```
 > ⚠️ This example uses [property translation](#property-translation) - `name` property is translated to `get` method of the property descriptor.
 
+------------------------
+
 #### `set: (host: Element, value: any, lastValue: any) => {...}` <!-- omit in toc -->
 
 * **arguments**:
@@ -167,6 +171,8 @@ const MyElement = {
   * `nextValue` - a value of the property, which replaces cached value
 
 `set` method is called within every assertion of the property. The cached value is invalidated if returned `nextValue` is not equal to `lastValue` (`nextValue !== lastValue`). However, `get` method is called in the next get call of the property (it is not recalculated after invalidation). Nonprimitive values should be treated as immutable - property is invalidated only if value reference has changed.
+
+------------------------
 
 #### `connect: (host: Element, key: string, invalidate: Function) => { ... }` <!-- omit in toc -->
 
@@ -184,6 +190,8 @@ const MyElement = {
 🕹 [Click and play with a live example of `redux` integration](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js)
 
 > ⚠️ Invalidate (explicit or by the assertion) dispatches `@invalidate` custom event (composed and bubbling), which allows observing element's hybrid properties.
+
+------------------------
 
 ### Property Translation<!-- omit in toc -->
 
@@ -282,6 +290,8 @@ Rather than using custom element tag name, access to parent or children elements
 
 > ⚠️ Binding can be created only between custom elements defined by the library. Built-in elements or other custom elements are not supported.
 
+------------------------
+
 #### `parent(hybridsOrFn: Object | Function: (hybrids) => {...}: Boolean): Object`  <!-- omit in toc -->
 
 * **arguments**:
@@ -320,7 +330,7 @@ const MyElement = {
 
 #### Complex Conditions <!-- omit in toc -->
 
-Use a `function` as an argument for complex conditions. For example, you can check if a part of the hybrids contains specific property, or you can use it for self reference - a parent, which is an element defined with the same property descriptors.
+Use a `function` as an argument for complex conditions. For example, you can check if a part of the hybrids contains specific property, or you can use it for self reference - looking for a parent, which is an element with the same definition.
 
 ```javascript
 const MyElement = {
@@ -328,10 +338,12 @@ const MyElement = {
 };
 ```
 
-#### `children(hybrids: Object, [options: Object]): Object`  <!-- omit in toc -->
+------------------------
+
+#### `children(hybridsOrFn: Object | Function: (hybrids) => {...}: Boolean, [options: Object]): Object`  <!-- omit in toc -->
 
 * **arguments**:
-  * `hybrids` - reference to an object containing hybrid property descriptors
+  * `hybridsOrFn` - reference to an object containing property descriptors or a function, which should return `true` when current `hybrids` meets the condition
   * `options` - object with available keys:
     * `deep` - boolean, defaults to `false`
     * `nested` - boolean, defaults to `false`
@@ -369,6 +381,18 @@ const TabGroup = {
 ```
 
 🕹 [Click and play with a live example using `children` factory](https://stackblitz.com/edit/hybrids-children-factory?file=index.js)
+
+#### Complex Conditions <!-- omit in toc -->
+
+Use a `function` as an argument for complex conditions. For example, you can check if a part of the hybrids contains specific property, or you can use it for self reference - looking for children, which are elements with the same definition.
+
+```javascript
+const MyElement = {
+  property: children(hybrids => hybrids === MyElement),
+};
+```
+
+------------------------
 
 ### Render
 

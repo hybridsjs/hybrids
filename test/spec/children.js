@@ -82,6 +82,22 @@ describe('children:', () => {
     }));
   });
 
+  describe('function condition', () => {
+    define('test-children-fn', {
+      direct: children(hybrids => hybrids === child),
+    });
+
+    const tree = test(`
+      <test-children-fn>
+        <test-children-child></test-children-child>
+      </test-children-fn>
+    `);
+
+    it('returns item list', () => tree((el) => {
+      expect(el.direct).toEqual([...el.children]);
+    }));
+  });
+
   describe('deep children', () => {
     define('test-children-deep', {
       deep: children(child, { deep: true }),
