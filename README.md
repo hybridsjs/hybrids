@@ -282,10 +282,10 @@ Rather than using custom element tag name, access to parent or children elements
 
 > ⚠️ Binding can be created only between custom elements defined by the library. Built-in elements or other custom elements are not supported.
 
-#### `parent(hybrids: Object): Object`  <!-- omit in toc -->
+#### `parent(hybridsOrFn: Object | Function: (hybrids) => {...}: Boolean): Object`  <!-- omit in toc -->
 
 * **arguments**:
-  * `hybrids` - reference to an object containing hybrid property descriptors
+  * `hybridsOrFn` - reference to an object containing property descriptors or a function, which should return `true` when current `hybrids` meets the condition
 * **returns**: 
   * a property descriptor, which resolves to `null` or `Element` instance 
 
@@ -317,6 +317,16 @@ const MyElement = {
 ```
 
 🕹 [Click and play with a live example using `parent` factory](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js)
+
+#### Complex Conditions <!-- omit in toc -->
+
+Use a `function` as an argument for complex conditions. For example, you can check if a part of the hybrids contains specific property, or you can use it for self reference - a parent, which is an element defined with the same property descriptors.
+
+```javascript
+const MyElement = {
+  property: parent(hybrids => hybrids === MyElement),
+};
+```
 
 #### `children(hybrids: Object, [options: Object]): Object`  <!-- omit in toc -->
 

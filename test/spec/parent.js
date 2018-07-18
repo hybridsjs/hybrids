@@ -15,6 +15,10 @@ describe('parent:', () => {
     },
   });
 
+  define('test-parent-child-fn', {
+    parent: parent(hybrids => hybrids === parentHybrids),
+  });
+
   const directParentTree = test(`
     <test-parent-parent>
       <test-parent-child></test-parent-child>
@@ -33,12 +37,18 @@ describe('parent:', () => {
   const shadowParentTree = test('<test-parent-parent></test-parent-parent>');
   const noParentTree = test('<test-parent-child></test-parent-child>');
 
-  it('should connect with direct parent element', () => directParentTree((el) => {
+  const fnParentTree = test(`
+    <test-parent-parent>
+      <test-parent-child-fn></test-parent-child-fn>
+    </test-parent-parent>
+  `);
+
+  it('connects with direct parent element', () => directParentTree((el) => {
     const child = el.children[0];
     expect(child.parent).toBe(el);
   }));
 
-  it('should disconnect from parent element', done => directParentTree((el) => {
+  it('disconnects from parent element', done => directParentTree((el) => {
     const child = el.children[0];
     expect(child.parent).toBe(el);
 
@@ -51,12 +61,12 @@ describe('parent:', () => {
     });
   }));
 
-  it('should connect with indirect parent element', () => indirectParentTree((el) => {
+  it('connects to indirect parent element', () => indirectParentTree((el) => {
     const child = el.children[0].children[0];
     expect(child.parent).toBe(el);
   }));
 
-  it('should connect to out of the shadow parent element', () => shadowParentTree((el) => {
+  it('connects to out of the shadow parent element', () => shadowParentTree((el) => {
     const shadowRoot = el.attachShadow({ mode: 'open' });
     shadowRoot.innerHTML = `
       <div>
@@ -68,11 +78,16 @@ describe('parent:', () => {
     expect(child.parent).toBe(el);
   }));
 
-  it('should return null for no parent', () => noParentTree((el) => {
+  it('connects to parent by a function argument', () => fnParentTree((el) => {
+    const child = el.children[0];
+    expect(child.parent).toBe(el);
+  }));
+
+  it('returns null for no parent', () => noParentTree((el) => {
     expect(el.parent).toBe(null);
   }));
 
-  it('should update child computed property', () => directParentTree((el) => {
+  it('updates child computed property', () => directParentTree((el) => {
     const spy = jasmine.createSpy('event callback');
     const child = el.children[0];
 

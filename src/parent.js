@@ -5,13 +5,13 @@ document.addEventListener('@invalidate', (event) => {
   if (set) set.forEach(fn => fn());
 });
 
-function walk(node, hybrids) {
+function walk(node, fn) {
   let parentElement = node.parentElement || node.parentNode.host;
 
   while (parentElement) {
-    const parentHybrids = parentElement.constructor.hybrids;
+    const hybrids = parentElement.constructor.hybrids;
 
-    if (parentHybrids === hybrids) {
+    if (fn(hybrids)) {
       return parentElement;
     }
 
@@ -22,9 +22,10 @@ function walk(node, hybrids) {
   return parentElement || null;
 }
 
-export default function parent(hybrids) {
+export default function parent(hybridsOrFn) {
+  const fn = typeof hybridsOrFn === 'function' ? hybridsOrFn : hybrids => hybrids === hybridsOrFn;
   return {
-    get: host => walk(host, hybrids),
+    get: host => walk(host, fn),
     connect(host, key, invalidate) {
       const target = host[key];
 
