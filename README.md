@@ -695,4 +695,4 @@ const MyElement = {
 
 ## 📃 License
 
-`hybrids` is released under the [MIT License](LICENSE.md).
+`hybrids` is released under the [MIT License](LICENSE).
