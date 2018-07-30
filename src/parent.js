@@ -11,7 +11,7 @@ function walk(node, fn) {
   while (parentElement) {
     const hybrids = parentElement.constructor.hybrids;
 
-    if (fn(hybrids)) {
+    if (hybrids && fn(hybrids)) {
       return parentElement;
     }
 
