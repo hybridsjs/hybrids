@@ -15,8 +15,8 @@ function walk(node, fn) {
       return parentElement;
     }
 
-    parentElement = parentElement.parentElement ||
-      (parentElement.parentNode && parentElement.parentNode.host);
+    parentElement = parentElement.parentElement
+      || (parentElement.parentNode && parentElement.parentNode.host);
   }
 
   return parentElement || null;

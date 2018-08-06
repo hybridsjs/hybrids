@@ -17,8 +17,7 @@ function getTemplateEnd(node) {
 
 function removeTemplate(target) {
   if (target.nodeType !== Node.TEXT_NODE) {
-    Array.from(target.childNodes).forEach(child =>
-      child.parentNode.removeChild(child));
+    Array.from(target.childNodes).forEach(child => child.parentNode.removeChild(child));
   } else {
     const data = dataMap.get(target);
     const startNode = data.startNode;
@@ -220,7 +219,8 @@ function createSignature(parts) {
   const signature = parts.reduce((acc, part, index) => {
     if (index === 0) {
       return part;
-    } else if (parts.slice(index).join('').match(/\s*<\/\s*(table|tr|thead|tbody|tfoot|colgroup)>/)) {
+    }
+    if (parts.slice(index).join('').match(/\s*<\/\s*(table|tr|thead|tbody|tfoot|colgroup)>/)) {
       return `${acc}<!--${PLACEHOLDER}-->${part}`;
     }
     return acc + PLACEHOLDER + part;

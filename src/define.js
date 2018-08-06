@@ -90,7 +90,8 @@ export default function define(tagName, hybrids) {
   if (CustomElement) {
     if (CustomElement.hybrids === hybrids) {
       return CustomElement;
-    } else if (process.env.NODE_ENV !== 'production' && CustomElement.hybrids) {
+    }
+    if (process.env.NODE_ENV !== 'production' && CustomElement.hybrids) {
       Object.keys(CustomElement.hybrids).forEach((key) => {
         delete CustomElement.prototype[key];
       });

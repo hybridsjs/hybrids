@@ -37,8 +37,8 @@ export default function property(value, connect) {
   return {
     get: (host, val = value) => val,
     set: (host, val = value, oldValue) => transform(val, oldValue),
-    connect: type !== 'object' && type !== 'undefined' ?
-      (host, key, invalidate) => {
+    connect: type !== 'object' && type !== 'undefined'
+      ? (host, key, invalidate) => {
         if (host[key] === value) {
           const attrName = camelToDash(key);
 
@@ -49,6 +49,7 @@ export default function property(value, connect) {
         }
 
         return connect && connect(host, key, invalidate);
-      } : connect,
+      }
+      : connect,
   };
 }
