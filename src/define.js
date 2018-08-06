@@ -60,19 +60,27 @@ if (process.env.NODE_ENV !== 'production') {
     }
   };
 
-  update = (Hybrid) => {
-    walkInShadow(document.body, (node) => {
-      if (node.constructor === Hybrid) {
-        node.disconnectedCallback();
+  const updateQueue = new Map();
+  update = (Hybrid, lastHybrids) => {
+    if (!updateQueue.size) {
+      Promise.resolve().then(() => {
+        walkInShadow(document.body, (node) => {
+          if (updateQueue.has(node.constructor)) {
+            const hybrids = updateQueue.get(node.constructor);
+            node.disconnectedCallback();
 
-        Object.keys(node.constructor.hybrids).forEach((key) => {
-          cache.invalidate(node, key, true);
+            Object.keys(node.constructor.hybrids).forEach((key) => {
+              cache.invalidate(node, key, node[key] === hybrids[key]);
+            });
+
+            node.connectedCallback();
+            dispatchInvalidate(node);
+          }
         });
-
-        node.connectedCallback();
-        dispatchInvalidate(node);
-      }
-    });
+        updateQueue.clear();
+      });
+    }
+    updateQueue.set(Hybrid, lastHybrids);
   };
 }
 
@@ -96,8 +104,10 @@ export default function define(tagName, hybrids) {
         delete CustomElement.prototype[key];
       });
 
+      const lastHybrids = CustomElement.hybrids;
+
       compile(CustomElement, hybrids);
-      update(CustomElement);
+      update(CustomElement, lastHybrids);
 
       return CustomElement;
     }

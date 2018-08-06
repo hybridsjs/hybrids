@@ -11,42 +11,29 @@ export function update(index = 0, startTime = 0) {
   } else {
     const target = queue[index];
     const nextTime = performance.now();
-    const next = () => update(index + 1, nextTime);
 
     if (!target) {
       shadyCSS(shady => queue.forEach(t => shady.styleSubtree(t)));
       queue = [];
-    } else if (map.has(target)) {
-      const key = map.get(target);
-      const prevUpdate = cache.get(target);
-      let nextUpdate;
-
-      try {
-        nextUpdate = target[key];
-
-        if (nextUpdate !== prevUpdate) {
-          cache.set(target, nextUpdate);
-          return Promise.resolve().then(() => {
-            try {
-              nextUpdate();
-              if (!prevUpdate) shadyCSS(shady => shady.styleElement(target));
-              next();
-            } catch (e) {
-              next();
-              throw e;
-            }
-          });
-        }
-        next();
-      } catch (e) {
-        next();
-        throw e;
-      }
     } else {
-      next();
+      if (map.has(target)) {
+        const key = map.get(target);
+        const prevUpdate = cache.get(target);
+        try {
+          const nextUpdate = target[key];
+          if (nextUpdate !== prevUpdate) {
+            cache.set(target, nextUpdate);
+            nextUpdate();
+            if (!prevUpdate) shadyCSS(shady => shady.styleElement(target));
+          }
+        } catch (e) {
+          update(index + 1, nextTime);
+          throw e;
+        }
+      }
+      update(index + 1, nextTime);
     }
   }
-  return null;
 }
 
 export default function render(get) {

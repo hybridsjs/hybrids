@@ -1,16 +1,7 @@
 import defineElement from '../define';
 import { pascalToDash } from '../utils';
 
-const queue = new Map();
-
 export function define(elements) {
-  if (!queue.size) {
-    Promise.resolve().then(() => {
-      queue.forEach((hybrids, tagName) => defineElement(tagName, hybrids));
-      queue.clear();
-    });
-  }
-
   Object.keys(elements).forEach((name) => {
     const type = typeof elements[name];
     if (type !== 'object' && type !== 'function') {
@@ -27,13 +18,7 @@ export function define(elements) {
         throw Error(`[html] Element '${tagName}' already defined`);
       }
     } else {
-      const item = queue.get(tagName);
-
-      if (!item) {
-        queue.set(tagName, elements[name]);
-      } else if (item !== elements[name]) {
-        throw Error(`[html] Duplicated <${tagName}> tag name for the definition in '${name}' key`);
-      }
+      defineElement(tagName, elements[name]);
     }
   });
 

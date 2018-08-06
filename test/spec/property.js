@@ -194,8 +194,7 @@ describe('property:', () => {
         prop: property(0, spy),
       });
 
-      test('<test-property-connect></test-property-connect>')(() =>
-        expect(spy).toHaveBeenCalledTimes(1));
+      test('<test-property-connect></test-property-connect>')(() => expect(spy).toHaveBeenCalledTimes(1));
     });
   });
 });

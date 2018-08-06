@@ -137,20 +137,18 @@ describe('render:', () => {
   });
 
   it('update function catches error in result of render function', (done) => {
-    setTimeout(() => {
-      let fn = () => { throw Error('example error'); };
-      define('test-render-throws-in-callback', {
-        render: () => fn,
-      });
+    let fn = () => { throw Error('example error'); };
+    define('test-render-throws-in-callback', {
+      render: () => fn,
+    });
 
-      test('<test-render-throws-in-callback></test-render-throws-in-callback>')(() => {
-        Promise.resolve(update()).catch((e) => {
-          expect(e instanceof Error).toBe(true);
-          fn = () => {};
-          done();
-        });
-      });
-    }, 100);
+    test('<test-render-throws-in-callback></test-render-throws-in-callback>')(() => {
+      expect(() => {
+        update();
+      }).toThrow();
+      fn = () => {};
+      done();
+    });
   });
 
   describe('shady css custom property scope', () => {

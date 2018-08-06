@@ -70,37 +70,15 @@ describe('html:', () => {
       expect(el.value).toBe('test');
     });
 
-    it('does not throw for multiple define the same constructor', () => {
-      class testHtmlDefineExternalB extends HTMLBridge {}
-      expect(() => {
-        html``.define({ testHtmlDefineExternalB });
-        html``.define({ testHtmlDefineExternalB });
-      }).not.toThrow();
-    });
-
-    it('throws for multiple define with different constructor', () => {
-      expect(() => {
-        html``.define({ TestHtmlDefineExternalC: class extends HTMLBridge {} });
-        html``.define({ TestHtmlDefineExternalC: class extends HTMLBridge {} });
-      }).toThrow();
-    });
-
     it('throws for invalid value', () => {
       expect(() => {
         html``.define({ testHtmlDefineExternalD: 'value' });
       }).toThrow();
     });
-
-    it('throws for duplicated tag name', () => {
-      expect(() => {
-        html``.define({ 'test-element': {}, testElement: {} });
-      }).toThrow();
-    });
   });
 
   describe('attribute expression with combined text value', () => {
-    const render = (two, three) =>
-      html`<div name="test" class="class-one ${two} ${three}"></div>`;
+    const render = (two, three) => html`<div name="test" class="class-one ${two} ${three}"></div>`;
 
     it('sets attribute', () => {
       render('class-two', 'class-three')({}, fragment);
