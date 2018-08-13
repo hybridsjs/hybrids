@@ -133,8 +133,10 @@ describe('html:', () => {
     });
 
     it('sets div hidden property', () => {
-      html`<div class="a b c" hidden  =${true} id="asd" />`(fragment);
-      expect(fragment.children[0].hidden).toBe(true);
+      html`<div hidden="${false}" dsa="${'one'}" asd="${'two'}"></div>`(fragment);
+      expect(fragment.children[0].hidden).toBe(false);
+      expect(fragment.children[0].getAttribute('dsa')).toBe('one');
+      expect(fragment.children[0].getAttribute('asd')).toBe('two');
     });
 
     it('sets property using camelCase name', () => {
@@ -532,29 +534,14 @@ describe('html:', () => {
   });
 
   describe('shadyCSS polyfill', () => {
-    const shadyCSSApplied = typeof window.ShadyCSS === 'object';
-
-    beforeAll(() => {
-      if (!shadyCSSApplied) {
-        window.ShadyCSS = {
-          prepareTemplate: template => template,
-        };
-      }
-    });
-
-    afterAll(() => {
-      if (!shadyCSSApplied) {
-        delete window.ShadyCSS;
-      }
-    });
-
-    const render = () => html`
-      <div>text</div>
+    const render = text => html`
+      <div>${text}</div>
       <style>
         div {
           color: red;
         }
       </style>
+      <div>${text}</div>
     `;
 
     it('applies CSS scope', () => {
@@ -565,15 +552,18 @@ describe('html:', () => {
       one.attachShadow({ mode: 'open' });
       two.attachShadow({ mode: 'open' });
 
-      render()(one, one.shadowRoot);
+      render('test')(one, one.shadowRoot);
       // run second time to check if prepare template is not called twice
-      render()(one, one.shadowRoot);
+      render('test')(one, one.shadowRoot);
 
-      render()(two, two.shadowRoot);
+      render('test')(two, two.shadowRoot);
 
       document.body.appendChild(one);
       document.body.appendChild(two);
       document.body.appendChild(globalElement);
+
+      expect(one.shadowRoot.children[0].innerHTML).toBe('test');
+      expect(one.shadowRoot.children[one.shadowRoot.children.length - 1].innerHTML).toBe('test');
 
       expect(getComputedStyle(one.shadowRoot.children[0]).color).toBe('rgb(255, 0, 0)');
       expect(getComputedStyle(two.shadowRoot.children[0]).color).toBe('rgb(255, 0, 0)');

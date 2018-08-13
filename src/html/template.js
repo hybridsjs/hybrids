@@ -171,9 +171,15 @@ function resolveProperty(attrName, propertyName, isSVG) {
   }
 }
 
-const PLACEHOLDER = `{{h-${Date.now()}}}`;
-const PLACEHOLDER_REGEXP = new RegExp(PLACEHOLDER, 'g');
-const ATTR_PREFIX = `--${Date.now()}--`;
+const TIMESTAMP = Date.now();
+
+const getPlaceholder = (id = 0) => `{{h-${TIMESTAMP}-${id}}}`;
+
+const PLACEHOLDER_REGEXP_TEXT = getPlaceholder('(\\d+)');
+const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
+const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, 'g');
+
+const ATTR_PREFIX = `--${TIMESTAMP}--`;
 const ATTR_REGEXP = new RegExp(ATTR_PREFIX, 'g');
 
 const preparedTemplates = new WeakMap();
@@ -201,7 +207,7 @@ function applyShadyCSS(template, tagName) {
       Array.from(styles).forEach((style) => {
         const count = style.childNodes.length + 1;
         for (let i = 0; i < count; i += 1) {
-          style.parentNode.insertBefore(document.createTextNode(PLACEHOLDER), style);
+          style.parentNode.insertBefore(document.createTextNode(getPlaceholder()), style);
         }
       });
 
@@ -212,7 +218,7 @@ function applyShadyCSS(template, tagName) {
 }
 
 export function createId(parts, isSVG) {
-  return `${isSVG ? 'svg:' : ''}${parts.join(PLACEHOLDER)}`;
+  return `${isSVG ? 'svg:' : ''}${parts.join(getPlaceholder())}`;
 }
 
 function createSignature(parts) {
@@ -221,9 +227,9 @@ function createSignature(parts) {
       return part;
     }
     if (parts.slice(index).join('').match(/\s*<\/\s*(table|tr|thead|tbody|tfoot|colgroup)>/)) {
-      return `${acc}<!--${PLACEHOLDER}-->${part}`;
+      return `${acc}<!--${getPlaceholder(index - 1)}-->${part}`;
     }
-    return acc + PLACEHOLDER + part;
+    return acc + getPlaceholder(index - 1) + part;
   }, '');
 
   if (IS_IE) {
@@ -245,8 +251,8 @@ function replaceComments(fragment) {
   let node;
   // eslint-disable-next-line no-cond-assign
   while (node = iterator.nextNode()) {
-    if (node.textContent === PLACEHOLDER) {
-      node.parentNode.insertBefore(document.createTextNode(PLACEHOLDER), node);
+    if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
+      node.parentNode.insertBefore(document.createTextNode(node.textContent), node);
       node.parentNode.removeChild(node);
     }
   }
@@ -315,45 +321,62 @@ export function compile(rawParts, isSVG) {
     const node = compileWalker.currentNode;
 
     if (node.nodeType === Node.TEXT_NODE) {
-      if (node.textContent !== PLACEHOLDER) {
-        node.textContent.replace(
-          PLACEHOLDER,
-          (text, offset) => {
-            node.splitText(offset > 0 ? offset : text.length);
-          },
-        );
+      const text = node.textContent;
+
+      if (!text.match(PLACEHOLDER_REGEXP_EQUAL)) {
+        const results = text.match(PLACEHOLDER_REGEXP_ALL);
+        if (results) {
+          let currentNode = node;
+          results
+            .reduce((acc, placeholder) => {
+              const [before, next] = acc.pop().split(placeholder);
+              if (before) acc.push(before);
+              acc.push(placeholder);
+              if (next) acc.push(next);
+              return acc;
+            }, [text])
+            .forEach((part, index) => {
+              if (index === 0) {
+                currentNode.textContent = part;
+              } else {
+                currentNode = currentNode.parentNode
+                  .insertBefore(document.createTextNode(part), currentNode.nextSibling);
+              }
+            });
+        }
       }
 
-      if (node.textContent === PLACEHOLDER) {
+      const equal = node.textContent.match(PLACEHOLDER_REGEXP_EQUAL);
+      if (equal) {
         if (!IS_IE) node.textContent = '';
-        parts.push([compileIndex, resolveValue]);
+        parts[equal[1]] = [compileIndex, resolveValue];
       }
     } else if (node.nodeType === Node.ELEMENT_NODE) {
       Array.from(node.attributes).forEach((attr) => {
         const value = attr.value.trim();
         const name = IS_IE ? attr.name.replace(ATTR_PREFIX, '') : attr.name;
-
-        if (value === PLACEHOLDER) {
-          const propertyName = getPropertyName(rawParts[parts.length]);
-          parts.push([compileIndex, resolveProperty(name, propertyName, isSVG)]);
+        const equal = value.match(PLACEHOLDER_REGEXP_EQUAL);
+        if (equal) {
+          const propertyName = getPropertyName(rawParts[equal[1]]);
+          parts[equal[1]] = [compileIndex, resolveProperty(name, propertyName, isSVG)];
           node.removeAttribute(attr.name);
         } else {
-          const results = value.match(PLACEHOLDER_REGEXP);
+          const results = value.match(PLACEHOLDER_REGEXP_ALL);
           if (results) {
             const partialName = `attr__${name}`;
-            parts.push([compileIndex, (host, target, attrValue) => {
-              const data = dataMap.get(target, {});
-              data[partialName] = value.replace(PLACEHOLDER, attrValue == null ? '' : attrValue);
-              if (results.length === 1) target.setAttribute(name, data[partialName]);
-            }]);
 
-            for (let i = 1; i < results.length; i += 1) {
-              parts.push([compileIndex, (host, target, attrValue) => {
+            results.forEach((placeholder, index) => {
+              const [, id] = placeholder.match(PLACEHOLDER_REGEXP_EQUAL);
+              parts[id] = [compileIndex, (host, target, attrValue) => {
                 const data = dataMap.get(target, {});
-                data[partialName] = data[partialName].replace(PLACEHOLDER, attrValue == null ? '' : attrValue);
-                if (i + 1 === results.length) target.setAttribute(name, data[partialName]);
-              }]);
-            }
+                data[partialName] = (data[partialName] || value).replace(placeholder, attrValue == null ? '' : attrValue);
+
+                if ((results.length === 1) || (index + 1 === results.length)) {
+                  target.setAttribute(name, data[partialName]);
+                  data[partialName] = undefined;
+                }
+              }];
+            });
 
             attr.value = '';
 
@@ -391,7 +414,7 @@ export function compile(rawParts, isSVG) {
         const node = renderWalker.currentNode;
 
         if (node.nodeType === Node.TEXT_NODE) {
-          if (node.textContent === PLACEHOLDER) {
+          if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
             node.textContent = '';
           } else if (IS_IE) {
             node.textContent = node.textContent.replace(ATTR_REGEXP, '');
