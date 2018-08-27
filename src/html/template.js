@@ -89,19 +89,33 @@ function resolveArray(host, target, value) {
   const data = dataMap.get(target);
   const { arrayEntries } = data;
 
-  data.arrayEntries = value.reduce((entries, item, index) => {
-    let id = item;
-    if (typeof item === 'function') {
-      id = Object.prototype.hasOwnProperty.call(item, 'id') ? item.id : index;
-    }
+  const indexedValue = value.map((item, index) => [
+    Object.prototype.hasOwnProperty.call(item, 'id') ? item.id : index,
+    item,
+  ]);
 
+  if (arrayEntries) {
+    const ids = new Set();
+    indexedValue.forEach(([id]) => ids.add(id));
+
+    arrayEntries.forEach((entry) => {
+      const { id, placeholder } = entry;
+      if (!ids.has(id)) {
+        removeTemplate(placeholder);
+        placeholder.parentNode.removeChild(placeholder);
+        entry.available = false;
+      }
+    });
+  }
+
+  data.arrayEntries = indexedValue.reduce((entries, [id, item], index) => {
     const entry = arrayEntries && arrayEntries
-      .find(entryItem => entryItem[0] && entryItem[1] === id);
+      .find(entryItem => entryItem.available && entryItem.id === id);
 
     let placeholder;
     if (entry) {
-      placeholder = entry[2];
-      entry[0] = false;
+      entry.available = false;
+      placeholder = entry.placeholder;
 
       if (placeholder.previousSibling !== previousSibling) {
         movePlaceholder(placeholder, previousSibling);
@@ -118,13 +132,14 @@ function resolveArray(host, target, value) {
     if (index === 0) data.startNode = placeholder;
     if (index === lastIndex) data.endNode = previousSibling;
 
-    entries.push([true, id, placeholder]);
+    entries.push({ available: true, id, placeholder });
 
     return entries;
   }, []);
 
   if (arrayEntries) {
-    arrayEntries.forEach(([available,, placeholder]) => {
+    arrayEntries.forEach((entry) => {
+      const { available, placeholder } = entry;
       if (available) {
         removeTemplate(placeholder);
         placeholder.parentNode.removeChild(placeholder);
