@@ -10,10 +10,12 @@ export function getEntry(target, key) {
 
   if (!entry) {
     entry = {
-      state: 0,
+      target,
+      key,
       value: undefined,
-      deps: undefined,
-      checksum: undefined,
+      deps: new Set(),
+      state: 1,
+      checksum: 0,
     };
     targetMap.set(key, entry);
   }
@@ -22,10 +24,16 @@ export function getEntry(target, key) {
 }
 
 function calculateChecksum({ state, deps }) {
-  return deps.reduce(
-    (acc, entry) => acc + calculateChecksum(entry),
-    state,
-  );
+  let checksum = state;
+  deps.forEach((entry) => {
+    if (!entry.checksum) {
+      // eslint-disable-next-line no-unused-expressions
+      entry.target[entry.key];
+    }
+    checksum += entry.state;
+  });
+
+  return checksum;
 }
 
 let context = null;
@@ -34,32 +42,37 @@ export function get(target, key, getter) {
 
   if (context === entry) {
     context = null;
-    throw Error(`[cache] Try to get '${key}' of '${target}' in '${key}' get call`);
+    throw Error(`[cache] Circular '${key}' get invocation in '${target}'`);
   }
 
   if (context) {
-    context.deps.push(entry);
-  }
-
-  if (entry.checksum >= entry.state && entry.checksum === calculateChecksum(entry)) {
-    return entry.value;
+    context.deps.add(entry);
   }
 
   const parentContext = context;
   context = entry;
 
-  entry.deps = [];
+  if (entry.checksum && entry.checksum === calculateChecksum(entry)) {
+    context = parentContext;
+    return entry.value;
+  }
+
+  entry.deps.clear();
 
   try {
-    entry.value = getter(target, entry.value);
+    const nextValue = getter(target, entry.value);
+
+    if (nextValue !== entry.value) {
+      entry.state += 1;
+      entry.value = nextValue;
+    }
+
+    entry.checksum = calculateChecksum(entry);
+    context = parentContext;
   } catch (e) {
     context = null;
     throw e;
   }
-
-  context = parentContext;
-
-  entry.checksum = calculateChecksum(entry);
 
   return entry.value;
 }
@@ -89,7 +102,7 @@ export function invalidate(target, key, clearValue) {
 
   const entry = getEntry(target, key);
 
-  entry.state += 1;
+  entry.checksum = 0;
 
   if (clearValue) {
     entry.value = undefined;

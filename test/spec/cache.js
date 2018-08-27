@@ -1,38 +1,53 @@
 import { get, set, invalidate } from '../../src/cache';
 
 describe('cache:', () => {
-  const fn = (host, v) => v;
   let target;
+  let getSpy;
+  let setSpy;
 
   beforeEach(() => {
-    target = {};
+    getSpy = jasmine.createSpy('getter');
+    setSpy = jasmine.createSpy('setter');
+
+    target = {
+      value: 1,
+      get one() {
+        return get(target, 'one', (host, lastValue) => {
+          getSpy(lastValue);
+          return this.value;
+        });
+      },
+      set one(value) {
+        set(target, 'one', () => {
+          this.value = value;
+          return value;
+        }, value, setSpy);
+      },
+      get two() {
+        return get(target, 'two', () => this.one);
+      },
+    };
   });
 
   it('calls getter once', () => {
-    const spy = jasmine.createSpy();
-    const getter = () => {
-      spy();
-      return 'value';
-    };
-
-    expect(get(target, 'key', getter)).toBe('value');
-    expect(get(target, 'key', getter)).toBe('value');
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(target.one).toBe(1);
+    expect(target.one).toBe(1);
+    expect(getSpy).toHaveBeenCalledTimes(1);
   });
 
   it('set value', () => {
-    set(target, 'key', fn, 'value', () => {});
-    expect(get(target, 'key', fn)).toBe('value');
+    target.one = 'value';
+    expect(target.one).toBe('value');
+    expect(setSpy).toHaveBeenCalledTimes(1);
   });
 
   it('does not call get when set not changes value', () => {
-    get(target, 'key', () => 'value');
-    set(target, 'key', () => 'value', 'value', () => {});
+    expect(target.one).toBe(1);
+    target.one = 1;
 
-    const spy = jasmine.createSpy('getter');
-    get(target, 'key', spy);
+    expect(target.one).toBe(1);
 
-    expect(spy).toHaveBeenCalledTimes(0);
+    expect(getSpy).toHaveBeenCalledTimes(1);
   });
 
   it('throws when set value while get another', () => {
@@ -55,25 +70,33 @@ describe('cache:', () => {
   });
 
   describe('invalidate', () => {
-    it('updates state', () => {
-      const spy = jasmine.createSpy('getter');
-      get(target, 'key', spy);
+    it('clears checksum', () => {
+      expect(target.one).toBe(1);
+      invalidate(target, 'one');
 
-      invalidate(target, 'key');
-      get(target, 'key', spy);
-      get(target, 'key', spy);
+      expect(target.one).toBe(1);
+      expect(target.one).toBe(1);
 
-      expect(spy).toHaveBeenCalledTimes(2);
+      expect(getSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('clears value', () => {
+      expect(target.one).toBe(1);
+      invalidate(target, 'one', true);
+
+      expect(target.one).toBe(1);
+      expect(target.one).toBe(1);
+
+      expect(getSpy).toHaveBeenCalledTimes(2);
+      expect(getSpy.calls.mostRecent().args[0]).toBe(undefined);
     });
 
     it('updates related value', () => {
-      get(target, 'key', () => {
-        get(target, 'related', () => 'one');
-        return 'one';
-      });
+      expect(target.two).toBe(1);
 
-      invalidate(target, 'related');
-      expect(get(target, 'key', () => 'two')).toBe('two');
+      invalidate(target, 'one');
+      expect(target.two).toBe(1);
+      expect(getSpy).toHaveBeenCalledTimes(2);
     });
 
     it('throws when called inside getter', () => {
@@ -85,32 +108,47 @@ describe('cache:', () => {
 
   describe('with deps', () => {
     let deps;
+    let withDeps;
     let spy;
 
-    const getDepsKey = () => get(deps, 'key', (host, v) => v);
-    const setDepsKey = value => set(deps, 'key', () => value, 'value', () => {});
-    const getTargetKey = () => get(target, 'key', () => {
-      spy();
-      return getDepsKey();
-    });
-
     beforeEach(() => {
-      deps = {};
+      deps = {
+        get source() { return get(deps, 'source', (host, v) => v); },
+        set source(value) {
+          set(deps, 'source', () => value, value, () => {});
+        },
+      };
+      withDeps = {
+        get key() {
+          return get(withDeps, 'key', () => {
+            spy();
+            return get(deps, 'source', (host, v) => v);
+          });
+        },
+      };
+
       spy = jasmine.createSpy();
 
-      setDepsKey('value');
-      getTargetKey();
+      deps.source = 'value';
     });
 
     it('uses cache value', () => {
-      getTargetKey();
+      expect(withDeps.key).toBe('value');
+      expect(withDeps.key).toBe('value');
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('uses cache when invalidate without change', () => {
+      expect(withDeps.key).toBe('value');
+      invalidate(deps, 'key');
+      expect(withDeps.key).toBe('value');
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
     it('recalculates value when deps changes', () => {
-      setDepsKey('new value');
-      getTargetKey();
-      getTargetKey();
+      expect(withDeps.key).toBe('value');
+      deps.source = 'new value';
+      expect(withDeps.key).toBe('new value');
       expect(spy).toHaveBeenCalledTimes(2);
     });
   });
