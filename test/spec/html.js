@@ -43,40 +43,6 @@ describe('html:', () => {
     expect(div.innerHTML).toBe('1');
   });
 
-  describe('define helper', () => {
-    it('defines hybrids', (done) => {
-      const testHtmlDefine = { value: 'test' };
-      html``.define({ testHtmlDefine });
-      html``.define({ testHtmlDefine });
-
-      requestAnimationFrame(() => {
-        const el = document.createElement('test-html-define');
-        expect(el.value).toBe('test');
-        done();
-      });
-    });
-
-    it('defines custom elements constructor', () => {
-      class TestHtmlDefineExternalA extends HTMLBridge {
-        constructor() {
-          super();
-          this.value = 'test';
-        }
-      }
-
-      html``.define({ TestHtmlDefineExternalA });
-
-      const el = document.createElement('test-html-define-external-a');
-      expect(el.value).toBe('test');
-    });
-
-    it('throws for invalid value', () => {
-      expect(() => {
-        html``.define({ testHtmlDefineExternalD: 'value' });
-      }).toThrow();
-    });
-  });
-
   describe('attribute expression with combined text value', () => {
     const render = (two, three) => html`<div name="test" class="class-one ${two} ${three}"></div>`;
 

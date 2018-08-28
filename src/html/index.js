@@ -1,6 +1,17 @@
+import define from '../define';
+
 import { compile, createId } from './template';
-import * as methods from './methods';
 import resolve from './resolve';
+
+function defineElements(elements) {
+  define(elements);
+  return this;
+}
+
+function key(id) {
+  this.id = id;
+  return this;
+}
 
 const updates = new Map();
 
@@ -17,7 +28,7 @@ function create(parts, args, isSVG) {
     render(host, target, args);
   };
 
-  return Object.assign(update, methods);
+  return Object.assign(update, { define: defineElements, key });
 }
 
 export function html(parts, ...args) {

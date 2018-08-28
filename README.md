@@ -103,22 +103,46 @@ Web components shims have some limitations. Especially, [`webcomponents/shadycss
 
 ## 🏗 Custom Element Definition
 
-```javascript
-import { define } from 'hybrids';
+Custom element definition works in two modes. In the first mode, `define` method takes tag name and plain object with a map of property descriptors. In the second mode, `define` takes a map of descriptors. 
 
-const MyElement = { ... };
-define('my-element', MyElement);
-```
+During the definition process, it creates `Wrapper` constructor for one or more configurations, applies properties on the `Wrapper.prototype` and defines custom elements using `customElements.define()` method.
 
-`define` takes tag name and plain object with a map of hybrid property descriptors, creates `Wrapper` constructor, applies properties on the `Wrapper.prototype` and defines custom element using `customElements.define()` method.
+> ⚠️ To simplify using external custom elements with those created by the library, you can pass `constructor` instead of a plain object with property descriptors. Then `define` works exactly the same as the `customElements.define()` method.
 
-#### `define(tagName: string, descriptors: Object): Wrapper` <!-- omit in toc -->
+------------------------
+
+#### `define(tagName: string, descriptorsOrConstructor: Object | Function): Wrapper` <!-- omit in toc -->
 
 * **arguments**:
   * `tagName` - a custom element tag name,
-  * `descriptors` - an object with a map of hybrid property descriptors
+  * `descriptorsOrConstructor` - an object with a map of hybrid property descriptors or constructor
 * **returns**: 
   * `Wrapper` - custom element constructor (extends `HTMLElement`)
+
+```javascript
+import { define } from 'hybrids';
+
+// Define one element with explicit tag name
+define('my-element', MyElement);
+```
+
+------------------------
+
+#### `define({ tagName: descriptorsOrConstructor, ... }): { tagName: Wrapper, ... }` <!-- omit in toc -->
+
+* **arguments**:
+  * `tagName` - a custom element tag name in pascal case or camel case,
+  * `descriptorsOrConstructor` - an object with a map of hybrid property descriptors or constructor
+* **returns**: 
+  * `{ tagName: Wrapper, ...}` - a map of custom element constructors (extends `HTMLElement`)
+
+```javascript
+import { define } from 'hybrids';
+import { MyElement, OtherElement } from 'some-elements';
+
+// Define one or more elements
+define({ MyElement, OtherElement, ... });
+```
 
 ## 📝 Property Descriptors
 
@@ -596,7 +620,7 @@ html`
 
 ### Resolving Dependencies
 
-For templates, which use other custom elements, update function provides helper method for resolving dependencies dynamically. It takes an object with key/value pairs of hybrids definitions or custom element's constructors and defines them.
+For templates, which use other custom elements, update function provides helper method for resolving dependencies dynamically. It uses `define` method, so its API is the same as explained in the first section of the documentation. However, to work with templates it returns template update function.
 
 This method helps to avoid defining unused elements and allows creating a tree-like dependency structure. A complex structure may require only one explicit definition at the root level. As the library factories decouple tag name from the definition, elements can be set with custom names.
 
@@ -605,7 +629,7 @@ This method helps to avoid defining unused elements and allows creating a tree-l
 #### `` html`...`.define(map: Object) `` <!-- omit in toc -->
 
 * **arguments**:
-  * `map` - object with pascal case or camel case keys and hybrids definitions or custom element's constructors as values
+  * `map` - object with hybrids definitions or custom element's constructors
 * **returns**:
   * update function compatible with content expression 
 

@@ -1,4 +1,4 @@
-import define from '../../src/define';
+import define, { HTMLBridge } from '../../src/define';
 import { invalidate } from '../../src/cache';
 
 describe('define:', () => {
@@ -6,6 +6,41 @@ describe('define:', () => {
     const CustomElement = define('test-define-custom-element', {});
     expect({}.isPrototypeOf.call(HTMLElement.prototype, CustomElement.prototype)).toBe(true);
     expect(CustomElement.name).toBe('test-define-custom-element');
+  });
+
+  describe('for map argument', () => {
+    it('defines hybrids', (done) => {
+      const testHtmlDefine = { value: 'test' };
+      define({ testHtmlDefine });
+      define({ testHtmlDefine });
+
+      requestAnimationFrame(() => {
+        const el = document.createElement('test-html-define');
+        expect(el.value).toBe('test');
+        done();
+      });
+    });
+
+    it('defines custom elements constructor', () => {
+      class TestHtmlDefineExternalA extends HTMLBridge {
+        constructor() {
+          super();
+          this.value = 'test';
+        }
+      }
+
+      define({ TestHtmlDefineExternalA });
+      define({ TestHtmlDefineExternalA });
+
+      const el = document.createElement('test-html-define-external-a');
+      expect(el.value).toBe('test');
+    });
+
+    it('throws for invalid value', () => {
+      expect(() => {
+        define({ testHtmlDefineExternalD: 'value' });
+      }).toThrow();
+    });
   });
 
   describe('for object descriptor', () => {

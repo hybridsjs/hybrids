@@ -2,7 +2,7 @@ import property from './property';
 import render from './render';
 
 import * as cache from './cache';
-import { dispatch } from './utils';
+import { dispatch, pascalToDash } from './utils';
 
 function dispatchInvalidate(host) {
   dispatch(host, '@invalidate', { bubbles: true, composed: true });
@@ -92,11 +92,23 @@ Object.setPrototypeOf(HTMLBridge.prototype, HTMLElement.prototype);
 
 const connects = new WeakMap();
 
-export default function define(tagName, hybrids) {
+function defineElement(tagName, hybridsOrConstructor) {
+  const type = typeof hybridsOrConstructor;
+  if (type !== 'object' && type !== 'function') {
+    throw TypeError('[define] Invalid second argument. It must be an object or a function');
+  }
+
   const CustomElement = window.customElements.get(tagName);
 
+  if (type === 'function') {
+    if (CustomElement !== hybridsOrConstructor) {
+      return window.customElements.define(tagName, hybridsOrConstructor);
+    }
+    return CustomElement;
+  }
+
   if (CustomElement) {
-    if (CustomElement.hybrids === hybrids) {
+    if (CustomElement.hybrids === hybridsOrConstructor) {
       return CustomElement;
     }
     if (process.env.NODE_ENV !== 'production' && CustomElement.hybrids) {
@@ -106,7 +118,7 @@ export default function define(tagName, hybrids) {
 
       const lastHybrids = CustomElement.hybrids;
 
-      compile(CustomElement, hybrids);
+      compile(CustomElement, hybridsOrConstructor);
       update(CustomElement, lastHybrids);
 
       return CustomElement;
@@ -135,8 +147,25 @@ export default function define(tagName, hybrids) {
     }
   }
 
-  compile(Hybrid, hybrids);
+  compile(Hybrid, hybridsOrConstructor);
   customElements.define(tagName, Hybrid);
 
   return Hybrid;
+}
+
+function defineMap(elements) {
+  return Object.keys(elements).reduce((acc, key) => {
+    const tagName = pascalToDash(key);
+    acc[key] = defineElement(tagName, elements[key]);
+
+    return acc;
+  }, {});
+}
+
+export default function define(...args) {
+  if (typeof args[0] === 'object') {
+    return defineMap(args[0]);
+  }
+
+  return defineElement(...args);
 }
