@@ -1,4 +1,6 @@
-import { createMap, shadyCSS, IS_IE } from '../utils';
+import {
+  createMap, shadyCSS, stringifyElement, IS_IE,
+} from '../utils';
 
 import resolveStyleList from './style';
 import resolveClassList from './classList';
@@ -433,6 +435,10 @@ export function compile(rawParts, isSVG) {
             node.textContent = '';
           } else if (IS_IE) {
             node.textContent = node.textContent.replace(ATTR_REGEXP, '');
+          }
+        } else if (process.env.NODE_ENV !== 'production' && node.nodeType === Node.ELEMENT_NODE) {
+          if (node.tagName.indexOf('-') > -1 && !customElements.get(node.tagName.toLowerCase())) {
+            throw Error(`[html] Missing '${stringifyElement(node)}' element definition in '${stringifyElement(host)}'`);
           }
         }
 

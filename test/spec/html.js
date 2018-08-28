@@ -43,6 +43,16 @@ describe('html:', () => {
     expect(div.innerHTML).toBe('1');
   });
 
+  it('throws for missing custom element in dev environment', () => {
+    window.env = 'development';
+    expect(() => (html`<missing-element></missing-element>`)(fragment)).toThrow();
+  });
+
+  it('does not throw for missing custom element in prod environment', () => {
+    window.env = 'production';
+    expect(() => (html`<missing-element></missing-element>`)(fragment)).not.toThrow();
+  });
+
   describe('attribute expression with combined text value', () => {
     const render = (two, three) => html`<div name="test" class="class-one ${two} ${three}"></div>`;
 

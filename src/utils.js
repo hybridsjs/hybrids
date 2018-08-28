@@ -42,4 +42,9 @@ export function shadyCSS(fn, fallback) {
   return fallback;
 }
 
+export function stringifyElement(element) {
+  const tagName = String(element.tagName).toLowerCase();
+  return `<${tagName}>`;
+}
+
 export const IS_IE = 'ActiveXObject' in global;
