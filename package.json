@@ -1,6 +1,6 @@
 {
   "name": "hybrids",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "UI library for creating Web Components",
   "main": "lib/index.js",
   "module": "esm/index.js",
