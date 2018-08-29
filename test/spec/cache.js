@@ -117,12 +117,15 @@ describe('cache:', () => {
         set source(value) {
           set(deps, 'source', () => value, value, () => {});
         },
+        get other() {
+          return get(deps, 'other', () => deps.source);
+        },
       };
       withDeps = {
         get key() {
           return get(withDeps, 'key', () => {
             spy();
-            return get(deps, 'source', (host, v) => v);
+            return deps.other;
           });
         },
       };

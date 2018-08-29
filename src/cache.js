@@ -28,10 +28,8 @@ export function getEntry(target, key) {
 function calculateChecksum({ state, deps }) {
   let checksum = state;
   deps.forEach((entry) => {
-    if (!entry.checksum) {
-      // eslint-disable-next-line no-unused-expressions
-      entry.target[entry.key];
-    }
+    // eslint-disable-next-line no-unused-expressions
+    entry.target[entry.key];
     checksum += entry.state;
   });
 
