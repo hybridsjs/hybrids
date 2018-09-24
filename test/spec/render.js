@@ -262,4 +262,53 @@ describe('render:', () => {
       done();
     })));
   });
+
+  describe('options object with shadowRoot option', () => {
+    it('for false appends template to light DOM', (done) => {
+      define('test-render-light-dom', {
+        test: true,
+        render: render(({ test }) => (test
+          ? html`
+            <div>true</div>
+          `
+          : html`
+            <div>false</div>
+          `), { shadowRoot: false }),
+      });
+
+      test(`
+        <test-render-light-dom>
+          <div>other content</div>
+        </test-render-light-dom>
+      `)(el => resolveRaf(() => {
+        expect(el.children.length).toBe(2);
+        expect(el.children[0].innerHTML).toBe('other content');
+        expect(el.children[1].innerHTML).toBe('true');
+
+        el.test = false;
+
+        return resolveRaf(() => {
+          expect(el.children.length).toBe(2);
+          expect(el.children[0].innerHTML).toBe('other content');
+          expect(el.children[1].innerHTML).toBe('false');
+          done();
+        });
+      }));
+    });
+
+    it('for object creates shadowRoot with "delegatesFocus" option', () => {
+      const TestRenderCustomShadow = define('test-render-custom-shadow', {
+        render: render(() => html`
+          <input type="text" />
+        `, { shadowRoot: { delegatesFocus: true } }),
+      });
+      const spy = spyOn(TestRenderCustomShadow.prototype, 'attachShadow');
+
+      test(`
+        <test-render-custom-shadow></test-render-custom-shadow>
+      `)(() => {
+        expect(spy).toHaveBeenCalledWith({ mode: 'open', delegatesFocus: true });
+      });
+    });
+  });
 });

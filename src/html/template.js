@@ -18,23 +18,19 @@ function getTemplateEnd(node) {
 }
 
 function removeTemplate(target) {
-  if (target.nodeType !== Node.TEXT_NODE) {
-    Array.from(target.childNodes).forEach(child => child.parentNode.removeChild(child));
-  } else {
-    const data = dataMap.get(target);
-    const startNode = data.startNode;
+  const data = dataMap.get(target);
+  const startNode = data.startNode;
 
-    if (startNode) {
-      const endNode = getTemplateEnd(data.endNode);
+  if (startNode) {
+    const endNode = getTemplateEnd(data.endNode);
 
-      let node = startNode;
-      const lastNextSibling = endNode.nextSibling;
+    let node = startNode;
+    const lastNextSibling = endNode.nextSibling;
 
-      while (node) {
-        const nextSibling = node.nextSibling;
-        node.parentNode.removeChild(node);
-        node = nextSibling !== lastNextSibling && nextSibling;
-      }
+    while (node) {
+      const nextSibling = node.nextSibling;
+      node.parentNode.removeChild(node);
+      node = nextSibling !== lastNextSibling && nextSibling;
     }
   }
 }
@@ -450,12 +446,12 @@ export function compile(rawParts, isSVG) {
         renderIndex += 1;
       }
 
+      const childList = Array.from(fragment.childNodes);
+
+      data.startNode = childList[0];
+      data.endNode = childList[childList.length - 1];
+
       if (target.nodeType === Node.TEXT_NODE) {
-        const childList = Array.from(fragment.childNodes);
-
-        data.startNode = childList[0];
-        data.endNode = childList[childList.length - 1];
-
         let previousChild = target;
         childList.forEach((child) => {
           target.parentNode.insertBefore(child, previousChild.nextSibling);
