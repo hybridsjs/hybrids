@@ -420,40 +420,78 @@ const MyElement = {
 
 ### Render
 
-#### `render(fn: Function): Object`  <!-- omit in toc -->
+#### `render(fn: Function, options: Object = { shadowRoot: true }): Object`  <!-- omit in toc -->
 
 * **arguments**:
-  * `fn(host: Element): Function` - callback function with `host` argument; returned function have `host` and `shadowRoot` arguments
+  * `fn(host: Element): Function` - callback function with `host` argument; returned function have `host` and `target` arguments
+  * `options: Object` - an object, which has a following structure:
+    * `{ shadowRoot: true }` (default value) - initializes Shadow DOM and set `target` as `shadowRoot`
+    * `{ shadowRoot: false }` - sets `target` argument as `host`,
+    * `{ shadowRoot: { extraOption: true, ... } }` - initializes Shadow DOM with passed options for `attachShadow()` method
 * **returns**:
-  * hybrid property descriptor, which resolves to function
+  * hybrid property descriptor, which resolves to a function
 
-`render` creates views in the custom element Shadow DOM. It is template agnostic - passed `fn` should return function for updating DOM. The preferred way is to use the template engine from the library, but it can be used with any external UI library, that renders DOM.
+`render` adds update function to the global render scheduler. Also, it initializes `shadowRoot` for the element and passes it as `target` argument to the update function. Shadow DOM can be disabled if `options` object is passed with `shadowRoot` set to `false`. Then, `target` argument is a `host`.
+
+`fn` should return function for updating DOM. The preferred way is to use the template engine from the library, but it can be used with any external UI library, that renders DOM.
+
+
 
 ```javascript
-import { render } from 'hybrids';
+import { render, html } from 'hybrids';
 
-const MyElement = {
+// html template, shadowRoot enabled (default)
+const UsingTemplate = {
   customRender: render((host) => {
-    return (host, shadowRoot) => {
-      // Update DOM here
-    };
+    return html`
+      <div>...</div>
+    `;
   }),
+}
+
+// Custom update function, shadowRoot disabled
+const CustomUpdate = {
+  customRender: render((host) => {
+    return (host, target) => {
+      // Update target here
+    };
+  }, { shadowRoot: false }),
 };
 ```
 
 🕹 [Click and play with a live example using `render` factory and  `React` library](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js)
 
+Usually, direct usage of the `render` factory is not required because of property translation feature. If you want to use Shadow DOM and `render` key, you can define your component just like this:
+
+```javascript
+import { html } from 'hybrids';
+
+const MyElement = {
+  value: 1,
+  render: ({ value }) => html`
+    <div>${value}</div>
+  `,
+};
+```
+
+#### Update Mechanism <!-- omit in toc -->
+
 Updates are scheduled with `requestAnimationFrame()` API triggered by `@invalidate` event listener. For example, the view is updated when one of the hybrid property used in `fn` changes. However, if execution of the update function passes ~16ms threshold (it counts from the beginning of the schedule), the following elements in the queue are updated with next `requestAnimationFrame()`.
 
 `render` factory ensures update after invalidation of hybrid property, but it is possible to trigger an update by calling property manually on the element instance.
 
-Property defined with `render` factory uses the same cache mechanism like other hybrid properties. It means that `fn` is only called if hybrid properties invalidate.
+```javascript
+const myElement = document.getElementsByTagName('my-element')[0];
+myElement.render();
+```
+
+> ⚠️ Property defined with `render` factory uses the same cache mechanism like other hybrid properties. It means that `fn` is only called if hybrid properties invalidate.
 
 ## 🎨 Templates
 
 The main concept is inspired by the [`lit-html`](https://github.com/Polymer/lit-html), but the implementation is different and follows own conventions. The library provides `html` and `svg` functions for creating templates (both have the same interface, but `svg` uses SVG namespace). They use tagged template literals syntax to create  DOM and update dynamic parts leaving static content untouched.
 
-> ️⚠️ For the best development experience, check if your code editor supports highlighting HTML in tagged template literals
+> ️❤️ For the best development experience, check if your code editor supports highlighting HTML in tagged template literals
 
 ### Properties & Attributes
 
