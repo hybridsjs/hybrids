@@ -26,20 +26,18 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.18.0",
-    "babel-core": "^6.7.6",
-    "babel-eslint": "^8.2.6",
-    "babel-loader": "^7.1.5",
-    "babel-plugin-istanbul": "^4.1.4",
-    "babel-preset-env": "^1.5.1",
-    "babel-preset-stage-3": "^6.24.1",
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "babel-loader": "^8.0.4",
+    "babel-plugin-istanbul": "^5.1.0",
     "coveralls": "^3.0.2",
-    "eslint": "^5.3.0",
-    "eslint-config-airbnb-base": "^13.0.0",
-    "eslint-loader": "^2.1.0",
-    "eslint-plugin-import": "^2.13.0",
-    "jasmine-core": "^3.1.0",
-    "karma": "^2.0.5",
+    "eslint": "^5.6.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-loader": "^2.1.1",
+    "eslint-plugin-import": "^2.14.0",
+    "jasmine-core": "^3.2.1",
+    "karma": "^3.0.0",
     "karma-chrome-launcher": "^2.0.0",
     "karma-coverage": "^1.1.1",
     "karma-firefox-launcher": "^1.1.0",
@@ -47,21 +45,20 @@
     "karma-safari-launcher": "^1.0.0",
     "karma-sauce-launcher": "^1.2.0",
     "karma-sourcemap-loader": "^0.3.7",
-    "karma-webpack": "^3.0.0",
+    "karma-webpack": "^3.0.5",
     "standard-version": "^4.4.0",
-    "webpack": "^4.16.5",
-    "webpack-cli": "^3.1.0"
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2"
   },
   "dependencies": {
-    "@webcomponents/custom-elements": "^1.2.0",
-    "@webcomponents/shadycss": "^1.5.0",
+    "@webcomponents/custom-elements": "^1.2.1",
+    "@webcomponents/shadycss": "^1.5.2",
     "@webcomponents/shadydom": "^1.2.0",
     "@webcomponents/template": "^1.4.0",
     "@webcomponents/webcomponents-platform": "^1.0.0",
     "core-js": "^2.5.7"
   },
   "eslintConfig": {
-    "parser": "babel-eslint",
     "extends": "airbnb-base",
     "env": {
       "browser": true,
@@ -83,26 +80,22 @@
           ]
         }
       ]
-    },
-    "globals": {
-      "test": true
     }
   },
   "babel": {
     "presets": [
       [
-        "env",
+        "@babel/preset-env",
         {
           "modules": false
         }
-      ],
-      "stage-3"
+      ]
     ],
     "env": {
       "cjs": {
         "presets": [
           [
-            "env",
+            "@babel/preset-env",
             {
               "modules": "commonjs"
             }
@@ -112,7 +105,7 @@
       "coverage": {
         "plugins": [
           [
-            "istanbul",
+            "babel-plugin-istanbul",
             {
               "include": [
                 "src/**/*.js"
