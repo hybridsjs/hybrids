@@ -84,12 +84,6 @@ if (process.env.NODE_ENV !== 'production') {
   };
 }
 
-// BUG: Babel v6 transpiled class breaks native custom elements
-export function HTMLBridge(...args) {
-  return Reflect.construct(HTMLElement, args, this.constructor);
-}
-Object.setPrototypeOf(HTMLBridge.prototype, HTMLElement.prototype);
-
 const connects = new WeakMap();
 
 function defineElement(tagName, hybridsOrConstructor) {
@@ -127,7 +121,7 @@ function defineElement(tagName, hybridsOrConstructor) {
     throw Error(`[define] Element '${tagName}' already defined`);
   }
 
-  class Hybrid extends HTMLBridge {
+  class Hybrid extends HTMLElement {
     static get name() { return tagName; }
 
     connectedCallback() {

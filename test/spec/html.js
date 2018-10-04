@@ -1,6 +1,6 @@
 import { html } from '../../src/html';
 import { createInternalWalker } from '../../src/html/template';
-import define, { HTMLBridge } from '../../src/define';
+import define from '../../src/define';
 
 describe('html:', () => {
   let fragment;
@@ -552,7 +552,7 @@ describe('html:', () => {
   });
 
   describe('use external element with shadowRoot', () => {
-    class TestExternalElement extends HTMLBridge {
+    class TestExternalElement extends HTMLElement {
       constructor() {
         super();
         const shadowRoot = this.attachShadow({ mode: 'open' });

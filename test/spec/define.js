@@ -1,5 +1,5 @@
 import { test } from '../helpers';
-import define, { HTMLBridge } from '../../src/define';
+import define from '../../src/define';
 import { invalidate } from '../../src/cache';
 
 describe('define:', () => {
@@ -23,7 +23,7 @@ describe('define:', () => {
     });
 
     it('defines custom elements constructor', () => {
-      class TestHtmlDefineExternalA extends HTMLBridge {
+      class TestHtmlDefineExternalA extends HTMLElement {
         constructor() {
           super();
           this.value = 'test';

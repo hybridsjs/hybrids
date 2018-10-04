@@ -3,7 +3,6 @@
 // Web APIs polyfills for IE11
 if ('ActiveXObject' in window) {
   require('core-js/fn/array/find');
-  require('core-js/fn/reflect/construct');
   require('core-js/es6/promise');
 }
 
