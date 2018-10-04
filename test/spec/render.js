@@ -1,23 +1,6 @@
+import { test, resolveRaf, resolveTimeout } from '../helpers';
 import { define, html } from '../../src';
 import render, { update } from '../../src/render';
-
-const resolveRaf = fn => new Promise((resolve) => {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      Promise.resolve()
-        .then(fn)
-        .then(resolve);
-    });
-  });
-});
-
-const resolveTimeout = fn => new Promise((resolve) => {
-  setTimeout(() => {
-    Promise.resolve()
-      .then(fn)
-      .then(resolve);
-  }, 250);
-});
 
 describe('render:', () => {
   define('test-render', {
@@ -266,8 +249,8 @@ describe('render:', () => {
   describe('options object with shadowRoot option', () => {
     it('for false appends template to light DOM', (done) => {
       define('test-render-light-dom', {
-        test: true,
-        render: render(({ test }) => (test
+        testValue: true,
+        render: render(({ testValue }) => (testValue
           ? html`
             <div>true</div>
           `
@@ -285,7 +268,7 @@ describe('render:', () => {
         expect(el.children[0].innerHTML).toBe('other content');
         expect(el.children[1].innerHTML).toBe('true');
 
-        el.test = false;
+        el.testValue = false;
 
         return resolveRaf(() => {
           expect(el.children.length).toBe(2);

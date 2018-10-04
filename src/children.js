@@ -25,11 +25,9 @@ export default function children(hybridsOrFn, options = { deep: false, nested: f
       const childEventListener = ({ target }) => {
         if (!set.size) {
           Promise.resolve().then(() => {
-            const targets = [...set];
             const list = host[key];
-
             for (let i = 0; i < list.length; i += 1) {
-              if (list.indexOf(targets[i]) > -1) {
+              if (set.has(list[i])) {
                 invalidate(false);
                 break;
               }

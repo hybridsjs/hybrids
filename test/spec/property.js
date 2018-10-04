@@ -1,3 +1,4 @@
+import { test } from '../helpers';
 import define from '../../src/define';
 import property from '../../src/property';
 

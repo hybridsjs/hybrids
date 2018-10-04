@@ -1,3 +1,4 @@
+import { test } from '../helpers';
 import define, { HTMLBridge } from '../../src/define';
 import { invalidate } from '../../src/cache';
 
@@ -86,7 +87,7 @@ describe('define:', () => {
       expect(spy.calls.first().args[1]).toBe('one');
     }));
 
-    it('returns previus value when invalidate', () => tree((el) => {
+    it('returns previous value when invalidate', () => tree((el) => {
       el.one = 10;
       expect(el.one).toBe(11);
       invalidate(el, 'one');
@@ -103,7 +104,7 @@ describe('define:', () => {
       <test-define-primitive></test-define-primitive>
     `);
 
-    it('applys property module with passed argument', () => tree((el) => {
+    it('applies property module with passed argument', () => tree((el) => {
       expect(el.testProperty).toBe('value');
     }));
   });
