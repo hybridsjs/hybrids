@@ -47,4 +47,4 @@ export function stringifyElement(element) {
   return `<${tagName}>`;
 }
 
-export const IS_IE = 'ActiveXObject' in global;
+export const IS_IE = 'ActiveXObject' in window;
