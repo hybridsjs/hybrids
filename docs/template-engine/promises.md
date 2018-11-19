@@ -1,0 +1,27 @@
+# Promises
+
+Promise as a value of the expression are not supported. However, the library support promises by the `html.resolve` method.
+
+**`html.resolve(promise, placeholder, delay = 200)`**
+
+* **arguments**:
+  * `promise` - promise, which should resolve/reject update function
+  * `placeholder` - update function for render content until promise is resolved or rejected
+  * `delay` - delay in milliseconds, after which placeholder is rendered 
+* **returns**:
+  * update function compatible with content expression 
+
+```javascript
+const promise = asyncApi().then(...);
+
+html`
+  <div>
+    ${html.resolve(
+      promise
+        .then((value) => html`<div>${value}</div>`)
+        .catch(() => html`<div>Error!</div>`),
+      html`Loading...`,
+    )}
+  </div>
+`
+```
