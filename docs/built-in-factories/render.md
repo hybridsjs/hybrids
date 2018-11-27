@@ -26,9 +26,9 @@ export const MyElement = {
 ```
 👆 [Click and play with `render` factory using  `React` library on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js)
 
-Render factory provides a solution for creating an internal DOM structure of your custom element. It works out of the box with built-in [template engine](../template-engine/introduction.md), but the passed `fn` function may use any external UI library, that renders DOM.
+Render factory creates and updates the DOM structure of your custom element. It works out of the box with built-in [template engine](../template-engine/introduction.md), but the passed `fn` function may use any external UI library, that renders DOM.
 
-The `render` key of the property is not required. However, the first rule of the [translation](../core-concepts/translation.md) makes possible to pass `fn` function as a `render` property value to use render factory:
+The `render` key of the property is not mandatory. However, the first rule of the [translation](../core-concepts/translation.md) makes possible to pass `fn` function as a `render` property value to use render factory:
 
 ```javascript
 import { html } from 'hybrids';
@@ -41,11 +41,11 @@ const MyElement = {
 };
 ```
 
-For default, the factory uses Shadow DOM, which is created synchronously in `connect` callback. It can be disabled in the `options` object. Then, `target` argument of update function is a `host`. However, `options` object can be passed only with explicit definition using `render` factory function.
+The factory uses Shadow DOM, which is created synchronously in `connect` callback. It can be disabled in the `options` object. Then, `target` argument of update function is a `host`. However, `options` object can be passed only with explicit definition using `render` factory function.
 
 ## Update Mechanism
 
-Render factory updates an element using global render scheduler. It listens to `@invalidate` event trigger by the change detection mechanism. Then it schedules update with `requestAnimationFrame()` API and adds an element to the queue. It means that the DOM is updated when one of the properties used in `fn` changes.
+Render factory updates an element using global render scheduler. It listens to `@invalidate` event trigger by the change detection. It schedules update with `requestAnimationFrame()` API and adds an element to the queue. The DOM is updated when one of the properties used in `fn` changes.
 
 However, if execution of the update passes ~16ms threshold (it counts from the beginning of the schedule), the following elements in the queue are updated with next `requestAnimationFrame()`.
 
@@ -58,4 +58,4 @@ const myElement = document.getElementsByTagName('my-element')[0];
 myElement.render();
 ```
 
-Property defined with `render` factory uses the same cache mechanism like other properties. It means that the update process calls `fn` if related properties invalidate.
+Property defined with `render` factory uses the same cache mechanism like other properties. The update process calls `fn` only if related properties have changed.

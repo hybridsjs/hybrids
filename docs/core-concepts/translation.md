@@ -1,8 +1,8 @@
 # Translation
 
-You can always define properties using [property descriptor](descriptors.md) objects. However, the translation concept provides a set of rules for translating properties that do not match property descriptor structure. The value can be a primitive, a function, or even an object, but without get and set methods.
+You can always define properties using [property descriptor](descriptors.md) objects. However, the translation concept provides a set of rules for translating the definition that does not match property descriptor structure. The value can be a primitive, a function, or even an object, but without get and set methods.
 
-Mainly, the translation expands shorter syntax or applies built-in factories using passed values. The translation is made in the following order:
+The translation expands shorter syntax or applies built-in factories using passed values. The translation is done in the following order:
 
 1. **`render` key value as a function.** It translates to `render` factory:
     ```javascript
@@ -35,7 +35,7 @@ Mainly, the translation expands shorter syntax or applies built-in factories usi
     { propertyName: property([]) }
     ```
 
-The translation process does not change the original structure of the definition. The library translates it when an element is defined. It means, that custom element definition can be just a simple structure of default values and methods without external dependencies.
+The translation process does not change the original structure of the definition. The library translates it when an element is defined. Custom element definition can be just a simple structure of default values and methods without external dependencies.
 
 Instead of defining something like this:
 

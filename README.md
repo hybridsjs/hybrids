@@ -10,7 +10,7 @@
 [![gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg?colorB=893F77)](https://gitter.im/hybridsjs/hybrids)
 [![twitter](https://img.shields.io/badge/follow-on%20twitter-4AA1EC.svg)](https://twitter.com/hybridsjs)
 
-**Hybrids** is a UI library for creating [Web Components](https://www.webcomponents.org/), which favors plain objects and pure functions over the `class` and `this` syntax. In the result, it provides simple and functional API for creating custom elements.
+**Hybrids** is a UI library for creating [Web Components](https://www.webcomponents.org/), which favors plain objects and pure functions over  `class` and `this` syntax. It provides simple and functional API for creating custom elements.
 
 * **The simplest definition** — just plain objects and pure functions
 * **Composition over inheritance** — easy re-use, merge or split property definitions
@@ -65,11 +65,11 @@ You can also use the built version from [unpkg.com](https://unpkg.com) CDN (with
 
 There are some common patterns among JavaScript UI libraries like class syntax, complex lifecycle or stateful architecture. What can we say about them?
 
-Classes can be confusing, especially about how to use `this`, binding or `super()` calls. They are also really hard to compose. Complex lifecycle callbacks have to be studied to understand very well. Also, a stateful approach can open doors for creating hard to maintain, imperative code. Is there any way out from all of that problems?
+Classes can be confusing, especially about how to use `this`, binding or `super()` calls. They are also hard to compose. Complex lifecycle callbacks have to be studied to understand very well. A stateful approach can open doors for difficult to maintain, imperative code. Is there any way out from all of those challenges?
 
-After all, class syntax in JavaScript is only sugar on top of the constructors and prototypes. Because of that, the component structure can be switched to a map of properties applied to the prototype of the custom element class constructor. Moreover, lifecycle callbacks can be minimized with smart change detection and cache mechanism. They can be implemented independently in the property scope rather than globally in the component definition.
+After all, class syntax in JavaScript is only sugar on top of the constructors and prototypes. Because of that, we can switch the component structure to a map of properties applied to the prototype of the custom element class constructor. Lifecycle callbacks can be minimized with smart change detection and cache mechanism. Moreover, they can be implemented independently in the property scope rather than globally in the component definition.
 
-With all of that, the code becomes simple to understand, and data flow is written in a declarative way. Not yet sold? You can read more in the [Core Concepts](docs/core-concepts/README.md) section of the project documentation.
+With all of that, the code may become simple to understand, and the code is written in a declarative way. Not yet sold? You can read more in the [Core Concepts](docs/core-concepts/README.md) section of the project documentation.
 
 ## Documentation
 

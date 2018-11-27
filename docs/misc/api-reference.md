@@ -88,6 +88,26 @@ html`<div property="${value}">${value}</div>` : Function
 * **returns**:
   * an update function, which takes `host` and `target` arguments
 
+```typescript
+html`...`.define(map: Object): Function
+```
+
+* **arguments**:
+  * `map` - object with hybrids definitions or custom element's constructors
+* **returns**:
+  * update function compatible with content expression 
+
+```typescript
+html.resolve(promise: Promise, placeholder: Function, delay = 200): Function
+```
+
+* **arguments**:
+  * `promise` - promise, which should resolve/reject update function
+  * `placeholder` - update function for render content until promise is resolved or rejected
+  * `delay` - delay in milliseconds, after which placeholder is rendered 
+* **returns**:
+  * update function compatible with content expression 
+
 ## svg
 
 ```typescript
@@ -99,6 +119,26 @@ svg`<circle property="${value}">${value}</circle>` : Function
   * `value` - dynamic values as a property values or element content
 * **returns**:
   * an update function, which takes `host` and `target` arguments
+
+```typescript
+svg`...`.define(map: Object): Function
+```
+
+* **arguments**:
+  * `map` - object with hybrids definitions or custom element's constructors
+* **returns**:
+  * update function compatible with content expression 
+
+```typescript
+svg.resolve(promise: Promise, placeholder: Function, delay = 200): Function
+```
+
+* **arguments**:
+  * `promise` - promise, which should resolve/reject update function
+  * `placeholder` - update function for render content until promise is resolved or rejected
+  * `delay` - delay in milliseconds, after which placeholder is rendered 
+* **returns**:
+  * update function compatible with content expression 
 
 ## dispatch
 

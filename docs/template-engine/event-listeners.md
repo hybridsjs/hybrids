@@ -1,6 +1,6 @@
 # Event Listeners
 
-`on*` attribute expression resolves to event listener set by the `addEventListener` API. The part of the attribute after `on` prefix is used as an event type. The function returned by the expression is called in an event listener callback.
+An expression in the `on*` attribute resolves to event listener set by the `addEventListener` API. The part of the attribute after `on` prefix is used as an event type (exact characters). The function returned by the expression is called in an event listener callback.
 
 ```javascript
 function send(host, event) {
@@ -20,4 +20,4 @@ const MyElement = {
 };
 ```
 
-The first argument of the callback function is the custom element instance (event target element is available at `event.target`). In the result, access to the element in the render function is not required and callback can be defined as a pure function.
+The first argument of the callback function is the custom element instance (event target element is available at `event.target`). Access to the element in the render function is not required, so callback can be defined as a pure function.

@@ -8,5 +8,5 @@
 - [Iteration](iteration.md)
 - [Nested Templates](nested-templates.md)
 - [Promises](promises.md)
-- [Resolving Dependencies](resolving-dependencies.md)
+- [Dependencies](dependencies.md)
 - [Limitations](limitations.md)

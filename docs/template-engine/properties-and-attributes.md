@@ -8,35 +8,38 @@ Expression in the attribute set corresponding property of an element instance. E
 
 ## Attribute Fallback
 
-If the property name is not found in the prototype of an element, it fallbacks to attribute value. The attribute name is not translated from camel-case to dash or yet another type. For example, if you use a custom element, which only supports attributes, use the original name:
+If the property is not found in the prototype of an element, it fallbacks to attribute value. The attribute name is not translated from camel-case to dash or in another way. If your template contains a custom element, which only supports attributes, you can use the original name:
 
 ```javascript
 html`<external-calender start-date="${myDate}"></external-calender>`
 ```
 
-Custom elements defined with the hybrids support both, properties and attribute values (with the dashed name). An attribute fallback should be used only for static values:
+Custom elements defined with the hybrids support property and attribute value (with the dashed name):
 
 ```javascript
+// Attribute: static value, but only a string
 html`<my-calendar start-date="2020-01-01"></my-calendar>`;
-```
 
-Dynamic expressions should use property name:
+// Property: static value, any type
+html`<my-calendar startDate=${[2020, 1, 1]}></my-calendar>`;
 
-```javascript
+// Property: the only way to create dynamically changing value
 html`<my-calendar startDate=${dynamicDate}></my-calendar>`;
 ```
 
+Even though you can use attributes, the preferred way is to pass values using properties for static and dynamic content. If you consider performance issues, you can fallback to attribute with static string value and avoid creating an additional dynamic part in the template.
+
 ## Mixed Values
 
-Multiple expressions defined in the one property always set attribute (never a property) with concatenated `string` value. It is never set a property, even for special cases described in following sections.
+If the attribute value contains additional characters or multiple expressions, then the engine fallbacks to attribute value with concatenated characters. It has precedence even over the following behaviors.
 
 ```javascript
 html`<div id="el" class="button ${buttonType} ${buttonColor}"></div>`
 ```
 
-## Special Behavior
+## Special Cases
 
-The default behavior for `class` and `style` would not work as expected, as they are implemented differently in the DOM. `class` attribute is reflected to `classList` or `className` properties. And, `style` property returns `CSSStyleDeclaration` rather than simple string value. Because of that, the template engine supports them differently.
+The default action for `class` and `style` attributes would not work as expected, as they are implemented differently in the DOM. `class` attribute is reflected to `classList` and `className` properties. And, `style` property returns `CSSStyleDeclaration` rather than simple string value. Because of that, the template engine supports them differently.
 
 ### Class
 
@@ -52,7 +55,7 @@ html`<div class="${name || array || map}"></div>`;
 
 ### Style
 
-`style` attribute expression set style properties by the `CSSStyleDeclaration` API. An expression has to be an object with dashed or camel-case keys with values.
+`style` attribute expression sets style properties by the `CSSStyleDeclaration` API. An expression has to be an object with dashed or camel-case keys with values.
 
 ```javascript
 const styles = {

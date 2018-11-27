@@ -18,15 +18,15 @@ const MyElement = {
 };
 ```
 
-Property factory provides two main features. It holds a property value with the type transformation and it fallbacks to the corresponding attribute value.
+Property factory holds a property value with the type transform with fallback to the corresponding attribute value.
 
-The [translation](../core-concepts/translation.md) has two rules, that use property factory. You can set property value as primitive or an object without get and set methods to define it using property factory.
+The [translation](../core-concepts/translation.md) has two rules, which use property factory. You can set property value as primitive or an object without `get` and `set` methods to define it using property factory.
 
 ## Transform
 
-`property` uses a transform function, which ensures the strict type of the value set by an attribute or a property. 
+`property` uses a transform function, which ensures the strict type of the value set by a property or an attribute. 
 
-The type of a passed `defaultValue` is used to detect transform function. For example, when `defaultValue` is set to `"text"`, `String` function is used. If the `defaultValue` is a function, it is called when a property value is set.
+The type of the `defaultValue` is used to detect transform function. For example, when `defaultValue` is set to `"text"`, `String` function is used. If the `defaultValue` is a function, it is called when a property value is set.
 
 ### Transform Types
 
@@ -58,7 +58,7 @@ const MyElement = {
 
 ## Attribute Fallback
 
-All transform types except `object` and `undefined` create a fallback connection to element attribute (with dashed name of the property key):
+All detected types except `object` and `undefined` create a fallback connection to element attribute with a dashed name of the property key:
 
 ```javascript
 const MyElement = {
@@ -70,13 +70,13 @@ const MyElement = {
 <my-element some-value="100"></my-element>
 ```
 
-An attribute value is used **only once when an element connects for the first time to the document**. It means that attributes can be used to set static values in HTML templates, but only properties can dynamically update them:
+An attribute value is used **only once when an element connects for the first time to the document**. Attributes should be used to set static values in HTML templates. Only properties can dynamically update them:
 
 ```javascript
-// Wrong (it does not change property value):
+// Wrong (it does not change property value)
 myElement.setAttribute('some-value', 1000);
 
-// Correct (it changes property value):
+// Correct (it changes property value)
 myElement.someValue = 1000;
 ```
 

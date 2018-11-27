@@ -1,10 +1,10 @@
 # Parent & Children
 
-Parent and children factories provide a smart way for connecting related elements with the property definition.
+Parent and children factories connect related elements with the property definition.
 
-Rather than using custom element tag name, access to parent or children elements is made by the reference to an object containing property descriptors. This feature allows avoiding name collision between custom elements because it is irrelevant on what name those custom elements are defined.
+Rather than using a custom element tag name, access to parent or children elements is made by the reference to an object containing property descriptors. This feature allows avoiding name collision between custom elements because it is irrelevant on what name those custom elements are defined.
 
-However, binding can be created only between custom elements defined by the library. Built-in elements or other custom elements are not supported.
+However, the relation can be created only between custom elements defined by the library. Built-in elements or other custom elements are not supported.
 
 ## Parent
 
@@ -17,9 +17,9 @@ parent(hybridsOrFn: Object | Function: (hybrids) => {...}: Boolean): Object
 * **returns**: 
   * a property descriptor, which resolves to `null` or `Element` instance 
 
-Parent factory connects a custom element (defined with `hybrids`) in upper DOM tree up to `document.body` level (crossing Shadow DOM boundary). The binding updates when the custom element is connected and disconnected.
+Parent factory connects a custom element (defined with `hybrids`) in upper DOM tree up to `document.body` level (crossing Shadow DOM boundary). The relation updates when the custom element is connected and disconnected.
 
-Resolved parent custom element can be safely used in other properties. If the parent property invalidates, a value of the related properties is invalidated as well.
+Resolved parent custom element can be safely used in other properties. If one of the parent property invalidates, a value of the related properties is invalidated as well.
 
 In the following example, `label` relates to `count` property of the `AppStore`. The value of `label` is invalidated and recalculated when `count` changes:
 
@@ -61,7 +61,7 @@ children(hybridsOrFn: Object | Function: (hybrids) => {...}: Boolean, [options: 
 Children factory connects children elements (only from the light DOM). Without options, only direct children of the element are in the list. `deep` option allows traversing
 deeper children. `nested` option allows adding nested children of that element if the condition is met (`nested` option works only with turn on `deep` option).
 
-In the same way, as parent factory works, it invalidates a list when a property of one of the elements from the list invalidates. 
+In the same way, as parent factory works, it invalidates a list when a property of one of the elements from the list invalidates:
 
 ```javascript
 import { children } from 'hybrids';
@@ -99,4 +99,3 @@ const MyElement = {
 ```
 
 Use a `function` as an argument for complex conditions. For example, you can check if a part of the hybrids contains specific property, or you can use it for self-reference.
-

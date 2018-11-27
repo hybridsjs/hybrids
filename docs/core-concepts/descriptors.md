@@ -1,14 +1,12 @@
 # Descriptors
 
-Rather than using `customElements.define()` explicitly, the library provides own `define` function (with similar API), which under the hood calls Custom Element API after all (read more in [Definition](./definition.md) section). 
+The library provides own `define` function, which under the hood calls Custom Element API (read more in [Definition](./definition.md) section). Because of that, the library has all control over the parameters of the custom element definition. It creates class wrapper constructor dynamically, applies properties on its prototype, and finally defines custom element using `customElements.define()` method.
 
-The most important benefit is that we have all control over the input of the custom element definition. We can create class wrapper constructor dynamically and apply properties on its prototype so that the descriptor structure can be custom. The hybrids heavily use that pattern to provide its unique features. The component definition as a map of property descriptors applied on the prototype of the constructor.
-
-The "descriptor" name came from the third argument of the `Object.defineProperty(obj, prop, descriptor)` method, which is used to set those descriptors on the `prototype` of the custom element constructor.
+Property definitions are known as a *property descriptor*. The name came from the third argument of the `Object.defineProperty(obj, prop, descriptor)` method, which is used to set those properties on the `prototype` of the custom element constructor.
 
 ## Structure
 
-A shape of the descriptor is similar to what `Object.defineProperty()` requires for defining getter/setter property:
+The descriptor structure is similar to what `Object.defineProperty()` requires for getter/setter property:
 
 ```javascript
 const MyElement = {
@@ -27,9 +25,9 @@ However, there are a few differences. First of all, instead of using function co
 
 The second most significant change is the cache mechanism, which controls and holds current property value. By the specs, getter/setter property requires external variable for keeping the value. In the hybrids, cache covers that for you.
 
-**Despite the [factories](factories.md) and [translation](translation.md) concepts, you can always define properties using descriptors**. The only requirement is that your definition has to include at least one of the `get` or `set` methods. `connect` can be omitted. If you set only `set`, `get` defaults to a function, which returns last cached value.
+**Despite the [factories](factories.md) and [translation](translation.md) concepts, you can always define any property using descriptor**. The only requirement is that your definition has to include at least one of the `get` or `set` methods. `connect` can be omitted. If you set only `set`, `get` defaults to a function, which returns last cached value.
 
-The following sections describe more deeply available properties in the descriptor.
+The following sections describe more deeply available methods of the descriptor.
 
 ### Get
 
@@ -87,9 +85,9 @@ set: (host: Element, value: any, lastValue: any) => {
 
 Every assertion of the property calls `set` method (like `myElement.property = 'new value'`). Cache value is invalidated if returned `nextValue` is not equal to `lastValue`. Only if cache invalidates `get` method is called. 
 
-However, `set` method doesn't call `get` immediately. The next access to the property calls `get` method despite the fact, that `set` returned a new value. It means, that `get` method takes this value as the `lastValue` argument, use it to calculate `nextValue` and return it.
+However, `set` method doesn't call `get` immediately. The next access to the property calls `get` method, although `set` returned a new value. Then `get` method takes this value as the `lastValue` argument, calculates `nextValue` and returns new value.
 
-The following example shows `power` property using the default `get`, and `set` method, which calculates the power of the number passed to the property:
+The following example shows `power` property using the default `get`, and defined `set` method, which calculates the power of the number passed to the property:
 
 ```javascript
 const MyElement = {
@@ -127,9 +125,9 @@ connect: (host: Element, key: string, invalidate: Function) => {
 * **returns (not required):**
   * `disconnect` - a function (without arguments)
 
-Whenever you insert, remove or relocate an element in the DOM tree, `connect` or `disconnect` is called synchronously (by the `connectedCallback` and `disconnectedCallback` callbacks of the Custom Elements API).
+When you insert, remove or relocate an element in the DOM tree, `connect` or `disconnect` is called synchronously (in the `connectedCallback` and `disconnectedCallback` callbacks of the Custom Elements API).
 
-You can use `connect` to attach event listeners, initialize property value (using `key` argument) and many more. To clean up subscriptions return a `disconnect` function, where you remove attached listeners and other things.
+You can use `connect` to attach event listeners, initialize property value (using `key` argument) and many more. To clean up subscriptions return a `disconnect` function, where you can remove attached listeners and other things.
 
 ## Change detection
 
@@ -137,9 +135,9 @@ You can use `connect` to attach event listeners, initialize property value (usin
 myElement.addEventListener('@invalidate', () => { ...});
 ```
 
-When property cache value invalidates, change detection mechanism dispatches `@invalidate` custom event  (composed and bubbling), which allows observing changes of the element properties. The event is dispatched implicit when you set new value by the assertion or explicit by calling `invalidate` in `connect` callback. The event type was chosen to avoid name collision with those created by the custom elements authors.
+When property cache value invalidates, change detection dispatches `@invalidate` custom event (composed and bubbling). You can listen to this event and observe changes in the element properties. It is dispatched implicit when you set new value by the assertion or explicit by calling `invalidate` in `connect` callback. The event type was chosen to avoid name collision with those created by the custom elements authors.
 
-If the third party code is responsible for the property value, you can use `invalidate` callback to update it and trigger change detection. For example, it can be used to connect to async web APIs or external libraries:
+If the third party code is responsible for the property value, you can use `invalidate` callback to update it and trigger event dispatch. For example, it can be used to connect to async web APIs or external libraries:
 
 ```javascript
 import reduxStore from './store';

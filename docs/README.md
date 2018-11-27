@@ -25,7 +25,7 @@
 - [Iteration](template-engine/iteration.md)
 - [Nested Templates](template-engine/nested-templates.md)
 - [Promises](template-engine/promises.md)
-- [Resolving Dependencies](template-engine/resolving-dependencies.md)
+- [Dependencies](template-engine/dependencies.md)
 - [Limitations](template-engine/limitations.md)
 
 ## Misc

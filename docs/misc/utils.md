@@ -13,6 +13,11 @@ dispatch(host: Element, eventType: string, options): Boolean
 * **returns**:
   * `false` if event is cancelable and at least one of the event handlers which handled this event called `preventDefault()`, otherwise it returns `true`
 
+
+`dispatch` is a helper function, which simplifies event dispatch on element instance. It creates `CustomEvent` with set `options` and dispatches it on given `host` element.
+
+For example, it can be used to dispatch `change` event and notify a user of the custom element, that value has changed:
+
 ```javascript
 import { html, dispatch } from 'hybrids';
 
@@ -30,5 +35,4 @@ const MyElement = {
 };
 ```
 
-`dispatch` is a helper function, which simplifies event dispatch on element instance. It creates `CustomEvent` with set `options` and dispatches it on given `host` element.
 

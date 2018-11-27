@@ -1,10 +1,12 @@
 # Limitations
 
-## Styling
+The engine tries to support all required features for creating reach HTML templates, but there are a few cases where expressions cannot be used or have some limitations.
 
-In the browser, which does not support Shadow DOM, ShadyCSS is used to create scoped CSS. This process requires moving out `<style>` element from the template and put it into the head of the document. It is done once, and before expressions are calculated, so expressions inside style element are not processed correctly.
+## Style Element
 
-Expressions inside of the `<style>` element are only supported in native implementation of Shadow DOM. However, creating dynamic styles in the environment, which supports Shadow DOM can be inefficient (styles are not shared between elements instances).
+In the browsers, which don't support Shadow DOM, ShadyCSS is used to create scoped CSS. The shim moves out `<style>` element from the template, scopes selectors and puts styles into the head of the document. It is done once, and before expressions are calculated, so expressions inside the style element cannot be processed correctly.
+
+Expressions inside of the `<style>` element are only supported in native implementation of the Shadow DOM. Although, creating dynamic styles can be inefficient (styles are not shared between elements instances).
 
 ### Breaks template: (using ShadyCSS) <!-- omit in toc -->
 
@@ -31,7 +33,7 @@ html`
 
 ## Table Family Elements
 
-`<table>`, `<tr>`, `<thead>`, `<tbody>`, `<tfoot>` and `<colgroup>` elements with expressions should not have additional text other than whitespace:
+`<table>`, `<tr>`, `<thead>`, `<tbody>`, `<tfoot>` and `<colgroup>` elements with expressions should not have additional text other than a whitespace:
 
 ### Breaks template: <!-- omit in toc -->
 

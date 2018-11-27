@@ -1,8 +1,10 @@
 # Promises
 
-Promise as a value of the expression are not supported. However, the library support promises by the `html.resolve` method.
+Promise as a value of an expression is not supported. However, the library supports promises by the `html.resolve` method.
 
-**`html.resolve(promise, placeholder, delay = 200)`**
+```typescript
+html.resolve(promise: Promise, placeholder: Function, delay = 200): Function
+```
 
 * **arguments**:
   * `promise` - promise, which should resolve/reject update function
