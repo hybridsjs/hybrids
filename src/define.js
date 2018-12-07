@@ -47,6 +47,7 @@ function compile(Hybrid, hybrids) {
 }
 
 let update;
+/* istanbul ignore else */
 if (process.env.NODE_ENV !== 'production') {
   const walkInShadow = (node, fn) => {
     fn(node);
