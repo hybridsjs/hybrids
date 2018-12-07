@@ -1,0 +1,23 @@
+{
+  "extends": "airbnb-base",
+  "env": {
+    "browser": true,
+    "jasmine": true
+  },
+  "rules": {
+    "no-debugger": 0,
+    "no-param-reassign": 0,
+    "no-new-func": 0,
+    "no-loop-func": 0,
+    "new-cap": 0,
+    "prefer-destructuring": 0,
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [
+          "test/**/*.js"
+        ]
+      }
+    ]
+  }
+}

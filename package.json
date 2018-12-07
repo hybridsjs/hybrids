@@ -22,7 +22,10 @@
   "keywords": [
     "web components",
     "custom elements",
-    "shadow dom"
+    "shadow dom",
+    "user interface",
+    "framework",
+    "pwa"
   ],
   "license": "MIT",
   "devDependencies": {
@@ -57,63 +60,5 @@
     "@webcomponents/template": "^1.4.0",
     "@webcomponents/webcomponents-platform": "^1.0.0",
     "core-js": "^2.5.7"
-  },
-  "eslintConfig": {
-    "extends": "airbnb-base",
-    "env": {
-      "browser": true,
-      "node": true,
-      "jasmine": true
-    },
-    "rules": {
-      "no-debugger": 0,
-      "no-param-reassign": 0,
-      "no-new-func": 0,
-      "no-loop-func": 0,
-      "new-cap": 0,
-      "prefer-destructuring": 0,
-      "import/no-extraneous-dependencies": [
-        "error",
-        {
-          "devDependencies": [
-            "test/**/*.js"
-          ]
-        }
-      ]
-    }
-  },
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "modules": false
-        }
-      ]
-    ],
-    "env": {
-      "cjs": {
-        "presets": [
-          [
-            "@babel/preset-env",
-            {
-              "modules": "commonjs"
-            }
-          ]
-        ]
-      },
-      "coverage": {
-        "plugins": [
-          [
-            "babel-plugin-istanbul",
-            {
-              "include": [
-                "src/**/*.js"
-              ]
-            }
-          ]
-        ]
-      }
-    }
   }
 }

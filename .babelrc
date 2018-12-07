@@ -1,0 +1,17 @@
+{
+  "presets": [
+    ["@babel/preset-env", { "modules": false }]
+  ],
+  "env": {
+    "cjs": {
+      "presets": [
+        ["@babel/preset-env", { "modules": "commonjs" }]
+      ]
+    },
+    "coverage": {
+      "plugins": [
+        ["babel-plugin-istanbul", { "include": ["src/**/*.js"] }]
+      ]
+    }
+  }
+}

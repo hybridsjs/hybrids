@@ -6,3 +6,5 @@ karma.conf.js
 webpack.config.js
 .vscode
 .travis.yml
+.eslintrc
+.gitbook.yml
