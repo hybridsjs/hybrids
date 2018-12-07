@@ -36,7 +36,7 @@ export default function property(value, connect) {
 
   return {
     get: (host, val = value) => val,
-    set: (host, val = value, oldValue) => transform(val, oldValue),
+    set: (host, val, oldValue) => transform(val, oldValue),
     connect: type !== 'object' && type !== 'undefined'
       ? (host, key, invalidate) => {
         if (host[key] === value) {
