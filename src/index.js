@@ -6,4 +6,4 @@ export { default as render } from './render';
 
 export { dispatch } from './utils';
 
-export { html, svg } from './html';
+export { html, svg } from './template';

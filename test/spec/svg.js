@@ -1,4 +1,4 @@
-import { svg } from '../../src/html';
+import { svg } from '../../src/template';
 
 describe('svg:', () => {
   let fragment;

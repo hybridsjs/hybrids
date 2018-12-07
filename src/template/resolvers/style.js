@@ -1,13 +1,15 @@
-import { camelToDash } from '../utils';
+import { camelToDash, stringifyElement } from '../../utils';
 
-export default function resolveStyle(host, target, value, data) {
+const styleMap = new WeakMap();
+
+export default function resolveStyle(host, target, value) {
   if (value === null || typeof value !== 'object') {
-    throw TypeError('Style value must be an object instance');
+    throw TypeError(`Style value must be an object instance in ${stringifyElement(target)}:`, value);
   }
 
-  const previousMap = data.styleMap || new Map();
+  const previousMap = styleMap.get(target) || new Map();
 
-  data.styleMap = Object.keys(value).reduce((map, key) => {
+  const nextMap = Object.keys(value).reduce((map, key) => {
     const dashKey = camelToDash(key);
     const styleValue = value[key];
 
@@ -24,4 +26,6 @@ export default function resolveStyle(host, target, value, data) {
   }, new Map());
 
   previousMap.forEach((styleValue, key) => { target.style[key] = ''; });
+
+  styleMap.set(target, nextMap);
 }

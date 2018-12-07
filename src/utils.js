@@ -11,30 +11,10 @@ export function dispatch(host, eventType, options = {}) {
   return host.dispatchEvent(new CustomEvent(eventType, { bubbles: false, ...options }));
 }
 
-export function createMap() {
-  const map = new WeakMap();
-
-  return {
-    get(key, defaultValue) {
-      if (map.has(key)) {
-        return map.get(key);
-      }
-
-      if (defaultValue !== undefined) {
-        map.set(key, defaultValue);
-      }
-
-      return defaultValue;
-    },
-    set(key, value) {
-      map.set(key, value);
-      return value;
-    },
-  };
-}
-
 export function shadyCSS(fn, fallback) {
   const shady = window.ShadyCSS;
+
+  /* istanbul ignore next */
   if (shady && !shady.nativeShadow) {
     return fn(shady);
   }

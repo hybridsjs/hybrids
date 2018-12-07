@@ -10,11 +10,13 @@ function normalizeValue(value, set = new Set()) {
   return set;
 }
 
-export default function resolveClassList(host, target, value, data) {
-  const previousList = data.classSet || new Set();
+const classMap = new WeakMap();
+
+export default function resolveClassList(host, target, value) {
+  const previousList = classMap.get(target) || new Set();
   const list = normalizeValue(value);
 
-  data.classSet = list;
+  classMap.set(target, list);
 
   list.forEach((className) => {
     target.classList.add(className);

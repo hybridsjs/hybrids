@@ -1,5 +1,5 @@
-import { html } from '../../src/html';
-import { createInternalWalker } from '../../src/html/template';
+import { html } from '../../src/template';
+import { createInternalWalker } from '../../src/template/core';
 import define from '../../src/define';
 
 describe('html:', () => {
@@ -34,7 +34,7 @@ describe('html:', () => {
   });
 
   it('reuses the same elements when re-render', () => {
-    const render = value => html`<div>${value}</div>`;
+    const render = value => html`<!-- some comment --><div>${value}</div>`;
     render(0)(fragment);
     const div = fragment.children[0];
     render(1)(fragment);
@@ -215,20 +215,27 @@ describe('html:', () => {
   });
 
   describe('event attribute expression', () => {
-    const render = fn => html`<button onclick="${fn}"></button>`;
-    const renderWithQuotes = fn => html`<button onclick="${fn}"></button>`;
+    const render = value => html`<button onclick=${value}></button>`;
+    const renderWithQuotes = value => html`<button onclick="${value}"></button>`;
 
     const click = () => fragment.children[0].click();
     let spy;
 
     beforeEach(() => {
       spy = jasmine.createSpy('event callback');
-      render(spy)(fragment);
+    });
+
+    it('throws for other type than function', () => {
+      expect(() => {
+        render({})(fragment);
+      }).toThrow();
     });
 
     it('attaches event listener', () => {
+      render(spy)(fragment);
       click();
       expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy.calls.first().args[0]).toBe(fragment);
     });
 
     it('attaches event listener in quotes', () => {
@@ -237,20 +244,47 @@ describe('html:', () => {
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
-    it('detaches event listener', () => {
+    it('detaches event listener without options', () => {
+      render(spy)(fragment);
+      click();
       render()(fragment);
       click();
-      expect(spy).toHaveBeenCalledTimes(0);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('detaches event listener with options', () => {
+      spy.options = true;
+      render(spy)(fragment);
+      click();
+      render()(fragment);
+      click();
+      expect(spy).toHaveBeenCalledTimes(1);
     });
 
     it('replaces event listener', () => {
+      render(spy)(fragment);
       click();
-      const newSpy = jasmine.createSpy('event callback');
+
+      const newSpy = jasmine.createSpy('new event callback');
       render(newSpy)(fragment);
       click();
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(newSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('applies the third options argument', () => {
+      const callback = (host, event) => spy(event.eventPhase);
+      callback.options = true;
+
+      html`
+        <div onclick="${callback}">
+          <button></button>
+        </div>
+      `(fragment);
+
+      fragment.children[0].children[0].click();
+      expect(spy.calls.first().args[0]).toBe(1);
     });
   });
 
@@ -301,6 +335,11 @@ describe('html:', () => {
     beforeEach(() => { render([1, 2, 3])(fragment); });
 
     it('renders an array', () => {
+      render([1, 2, 3])(fragment);
+      expect(fragment.innerHTML).toBe('123');
+    });
+
+    it('re-renders an array', () => {
       expect(fragment.innerHTML).toBe('123');
     });
 
@@ -368,10 +407,10 @@ describe('html:', () => {
     });
 
     it('reuse DOM elements using string id', () => {
-      render(['one', 'one', 'two'])(fragment);
+      render(['one', 'one', 'one', 'two'])(fragment);
       const items = Array.from(fragment.children);
       render(['two', 'one', 'one'])(fragment);
-      expect(Array.from(fragment.children)).toEqual([items[2], items[0], items[1]]);
+      expect(Array.from(fragment.children)).toEqual([items[3], items[0], items[1]]);
     });
 
     it('does not throw for duplicated id from key helper method', () => {

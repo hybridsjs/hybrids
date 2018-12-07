@@ -1,7 +1,7 @@
 import { test, resolveRaf, resolveTimeout } from '../helpers';
 import define from '../../src/define';
 import children from '../../src/children';
-import { html } from '../../src/html';
+import { html } from '../../src/template';
 
 describe('children:', () => {
   const child = {

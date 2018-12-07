@@ -1,6 +1,4 @@
-import { createMap } from '../utils';
-
-const map = createMap();
+const promiseMap = new WeakMap();
 
 export default function resolve(promise, placeholder, delay = 200) {
   return (host, target) => {
@@ -16,13 +14,14 @@ export default function resolve(promise, placeholder, delay = 200) {
       }, delay);
     }
 
-    map.set(target, promise);
+    promiseMap.set(target, promise);
+
     promise.then((template) => {
       if (timeout) clearTimeout(timeout);
 
-      if (map.get(target) === promise) {
+      if (promiseMap.get(target) === promise) {
         template(host, target);
-        map.set(target, null);
+        promiseMap.set(target, null);
       }
     });
   };

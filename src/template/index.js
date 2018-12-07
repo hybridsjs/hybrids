@@ -1,6 +1,6 @@
 import define from '../define';
 
-import { compile, createId } from './template';
+import { compile, createId } from './core';
 import resolve from './resolve';
 
 function defineElements(elements) {
