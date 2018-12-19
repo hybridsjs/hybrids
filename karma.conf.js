@@ -79,7 +79,6 @@ module.exports = (config) => {
         { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
       ],
     },
-    concurrency: IS_SAUCE_LABS ? 2 : Infinity,
     captureTimeout: 120000,
     browserNoActivityTimeout: 300000,
     browserDisconnectTolerance: 2,
