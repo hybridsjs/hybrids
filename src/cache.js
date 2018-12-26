@@ -1,7 +1,20 @@
+// @flow
+
 import { stringifyElement } from './utils';
 
+type CacheTarget = any;
+type CacheKey = string;
+type CacheValue = any;
+type CacheEntry = {|
+  target: CacheTarget,
+  key: CacheKey, state: number,
+  checksum: number,
+  deps: Set<CacheEntry>,
+  value: CacheValue
+|};
+
 const entries = new WeakMap();
-export function getEntry(target, key) {
+export function getEntry(target: CacheTarget, key: CacheKey): CacheEntry {
   let targetMap = entries.get(target);
   if (!targetMap) {
     targetMap = new Map();
@@ -25,7 +38,7 @@ export function getEntry(target, key) {
   return entry;
 }
 
-function calculateChecksum({ state, deps }) {
+function calculateChecksum({ state, deps }: CacheEntry): number {
   let checksum = state;
   deps.forEach((entry) => {
     // eslint-disable-next-line no-unused-expressions
@@ -37,7 +50,7 @@ function calculateChecksum({ state, deps }) {
 }
 
 let context = null;
-export function get(target, key, getter) {
+export function get(target: CacheTarget, key: CacheKey, getter: (CacheTarget, CacheValue) => CacheValue): CacheValue {
   const entry = getEntry(target, key);
 
   if (context === entry) {
@@ -77,7 +90,13 @@ export function get(target, key, getter) {
   return entry.value;
 }
 
-export function set(target, key, setter, value, callback) {
+export function set(
+  target: CacheTarget,
+  key: CacheKey,
+  setter: (CacheTarget, CacheValue, CacheValue) => CacheValue,
+  value: CacheValue,
+  callback: () => void
+): void {
   if (context) {
     context = null;
     throw Error(`[cache] Try to set '${key}' of '${stringifyElement(target)}' in get call`);
@@ -94,7 +113,7 @@ export function set(target, key, setter, value, callback) {
   }
 }
 
-export function invalidate(target, key, clearValue) {
+export function invalidate(target: Element, key: CacheKey, clearValue: boolean): void {
   if (context) {
     context = null;
     throw Error(`[cache] Try to invalidate '${key}' in '${stringifyElement(target)}' get call`);
