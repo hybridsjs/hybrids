@@ -4,6 +4,7 @@
     "browser": true,
     "jasmine": true
   },
+  "parser": "babel-eslint",
   "rules": {
     "no-debugger": 0,
     "no-param-reassign": 0,
