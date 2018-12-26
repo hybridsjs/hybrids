@@ -17,7 +17,9 @@
     "build:cjs": "rm -rf ./lib && NODE_ENV=cjs babel ./src -d ./lib -s inline",
     "build:esm": "rm -rf ./esm && babel ./src -d ./esm -s inline",
     "build:dist": "rm -rf ./dist && webpack",
-    "release": "npm run test && npm run build && standard-version"
+    "release": "npm run test && npm run build && standard-version",
+    "flow": "flow",
+    "watch:flow-status": "watch 'npm run flow status' src -d -u"
   },
   "keywords": [
     "web components",
@@ -31,6 +33,7 @@
   "devDependencies": {
     "@babel/cli": "^7.2.0",
     "@babel/core": "^7.2.2",
+    "@babel/plugin-transform-flow-strip-types": "^7.2.3",
     "@babel/preset-env": "^7.2.0",
     "babel-loader": "^8.0.4",
     "babel-plugin-istanbul": "^5.1.0",
@@ -39,6 +42,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-loader": "^2.1.1",
     "eslint-plugin-import": "^2.14.0",
+    "flow-bin": "^0.89.0",
     "jasmine-core": "^3.3.0",
     "karma": "^3.1.4",
     "karma-chrome-launcher": "^2.0.0",
@@ -50,6 +54,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^3.0.5",
     "standard-version": "^4.4.0",
+    "watch": "^1.0.2",
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2"
   },

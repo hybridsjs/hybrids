@@ -2,6 +2,7 @@
   "presets": [
     ["@babel/preset-env", { "modules": false }]
   ],
+  "plugins": ["@babel/plugin-transform-flow-strip-types"],
   "env": {
     "cjs": {
       "presets": [
