@@ -42,7 +42,7 @@ export function get(target, key, getter) {
 
   if (context === entry) {
     context = null;
-    throw Error(`[cache] Circular '${key}' get invocation in '${stringifyElement(target)}'`);
+    throw Error(`Circular '${key}' get invocation in '${stringifyElement(target)}'`);
   }
 
   if (context) {
@@ -80,7 +80,7 @@ export function get(target, key, getter) {
 export function set(target, key, setter, value, callback) {
   if (context) {
     context = null;
-    throw Error(`[cache] Try to set '${key}' of '${stringifyElement(target)}' in get call`);
+    throw Error(`Try to set '${key}' of '${stringifyElement(target)}' in get call`);
   }
 
   const entry = getEntry(target, key);
@@ -97,7 +97,7 @@ export function set(target, key, setter, value, callback) {
 export function invalidate(target, key, clearValue) {
   if (context) {
     context = null;
-    throw Error(`[cache] Try to invalidate '${key}' in '${stringifyElement(target)}' get call`);
+    throw Error(`Try to invalidate '${key}' in '${stringifyElement(target)}' get call`);
   }
 
   const entry = getEntry(target, key);

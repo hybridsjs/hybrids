@@ -90,7 +90,7 @@ const connects = new WeakMap();
 function defineElement(tagName, hybridsOrConstructor) {
   const type = typeof hybridsOrConstructor;
   if (type !== 'object' && type !== 'function') {
-    throw TypeError('[define] Invalid second argument. It must be an object or a function');
+    throw TypeError(`Second argument must be an object or a function: ${type}`);
   }
 
   const CustomElement = window.customElements.get(tagName);
@@ -119,7 +119,7 @@ function defineElement(tagName, hybridsOrConstructor) {
       return CustomElement;
     }
 
-    throw Error(`[define] Element '${tagName}' already defined`);
+    throw Error(`Element '${tagName}' already defined`);
   }
 
   class Hybrid extends HTMLElement {

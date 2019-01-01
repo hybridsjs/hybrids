@@ -50,7 +50,7 @@ function addToQueue(event) {
 
 export default function render(get, customOptions = {}) {
   if (typeof get !== 'function') {
-    throw TypeError(`[render] The first argument must be a function: ${typeof get}`);
+    throw TypeError(`The first argument must be a function: ${typeof get}`);
   }
 
   const options = { shadowRoot: true, ...customOptions };
@@ -62,7 +62,7 @@ export default function render(get, customOptions = {}) {
     },
     connect(host, key) {
       if (map.has(host)) {
-        throw Error(`[render] Render factory already used in '${map.get(host)}' key`);
+        throw Error(`Render factory already used in '${map.get(host)}' key`);
       }
 
       if (options.shadowRoot && !host.shadowRoot) {
