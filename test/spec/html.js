@@ -548,6 +548,36 @@ describe('html:', () => {
     });
   });
 
+  describe('style helper', () => {
+    const render = html`<div>content</div>`;
+
+    it('adds single style with text content', () => {
+      const container = fragment.attachShadow({ mode: 'open' });
+
+      render.style('div { color: red }')(fragment, container);
+
+      expect(getComputedStyle(container.children[0]).color).toBe('rgb(255, 0, 0)');
+    });
+
+    it('adds multiple styles with text content', () => {
+      const container = fragment.attachShadow({ mode: 'open' });
+
+      render.style('div { color: red }', 'div { padding-top: 20px }')(fragment, container);
+
+      expect(getComputedStyle(container.children[0]).color).toBe('rgb(255, 0, 0)');
+      expect(getComputedStyle(container.children[0]).paddingTop).toBe('20px');
+    });
+
+    it('creates unique template id for styled version', () => {
+      const container = fragment.attachShadow({ mode: 'open' });
+      render.style('div { color: red }')({}, container);
+      expect(container.children.length).toBe(2);
+
+      html`<div>content</div>`({}, container);
+      expect(container.children.length).toBe(1);
+    });
+  });
+
   describe('shadyCSS polyfill', () => {
     const render = text => html`
       <div>${text}</div>

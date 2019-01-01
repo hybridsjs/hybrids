@@ -6,7 +6,7 @@ import resolveProperty from './resolvers/property';
 
 const TIMESTAMP = Date.now();
 
-const getPlaceholder = (id = 0) => `{{h-${TIMESTAMP}-${id}}}`;
+export const getPlaceholder = (id = 0) => `{{h-${TIMESTAMP}-${id}}}`;
 
 const PLACEHOLDER_REGEXP_TEXT = getPlaceholder('(\\d+)');
 const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
@@ -51,12 +51,8 @@ function applyShadyCSS(template, tagName) {
   }, template);
 }
 
-export function createId(parts, isSVG) {
-  return `${isSVG ? 'svg:' : ''}${parts.join(getPlaceholder())}`;
-}
-
-function createSignature(parts) {
-  const signature = parts.reduce((acc, part, index) => {
+function createSignature(parts, styles) {
+  let signature = parts.reduce((acc, part, index) => {
     if (index === 0) {
       return part;
     }
@@ -65,6 +61,10 @@ function createSignature(parts) {
     }
     return acc + getPlaceholder(index - 1) + part;
   }, '');
+
+  if (styles) {
+    signature += `<style>${styles.join('\n')}</style>`;
+  }
 
   /* istanbul ignore if */
   if (IS_IE) {
@@ -128,11 +128,11 @@ function createExternalWalker(context) {
 const createWalker = typeof window.ShadyDOM === 'object' && window.ShadyDOM.inUse ? createInternalWalker : createExternalWalker;
 
 const container = document.createElement('div');
-export function compile(rawParts, isSVG) {
+export function compile(rawParts, isSVG, styles) {
   const template = document.createElement('template');
   const parts = [];
 
-  let signature = createSignature(rawParts);
+  let signature = createSignature(rawParts, styles);
   if (isSVG) signature = `<svg>${signature}</svg>`;
 
   /* istanbul ignore if */

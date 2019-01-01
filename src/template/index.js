@@ -1,34 +1,43 @@
-import define from '../define';
+import defineElements from '../define';
 
-import { compile, createId } from './core';
+import { compile, getPlaceholder } from './core';
 import resolve from './resolve';
 
-function defineElements(elements) {
-  define(elements);
-  return this;
-}
+const PLACEHOLDER = getPlaceholder();
 
-function key(id) {
-  this.id = id;
-  return this;
-}
+const templatesMap = new Map();
+const stylesMap = new WeakMap();
 
-const updates = new Map();
+const helpers = {
+  define(elements) {
+    defineElements(elements);
+    return this;
+  },
+  key(id) {
+    this.id = id;
+    return this;
+  },
+  style(...styles) {
+    stylesMap.set(this, styles);
+    return this;
+  },
+};
 
 function create(parts, args, isSVG) {
-  const update = (host, target = host) => {
-    const id = createId(parts, isSVG);
-    let render = updates.get(id);
+  const fn = (host, target = host) => {
+    const styles = stylesMap.get(fn);
+    const id = `${parts.join(PLACEHOLDER)}${styles ? styles.join(PLACEHOLDER) : ''}${isSVG ? 'svg' : ''}`;
 
+    let render = templatesMap.get(id);
     if (!render) {
-      render = compile(parts, isSVG);
-      updates.set(id, render);
+      render = compile(parts, isSVG, styles);
+      templatesMap.set(id, render);
     }
 
     render(host, target, args);
   };
 
-  return Object.assign(update, { define: defineElements, key });
+  return Object.assign(fn, helpers);
 }
 
 export function html(parts, ...args) {
