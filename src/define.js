@@ -4,6 +4,9 @@ import render from './render';
 import * as cache from './cache';
 import { dispatch, pascalToDash } from './utils';
 
+// eslint-disable-next-line
+try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; }
+
 function dispatchInvalidate(host) {
   dispatch(host, '@invalidate', { bubbles: true, composed: true });
 }

@@ -4,6 +4,9 @@ import { dataMap, removeTemplate } from './utils';
 import resolveValue from './resolvers/value';
 import resolveProperty from './resolvers/property';
 
+// eslint-disable-next-line
+try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; }
+
 const TIMESTAMP = Date.now();
 
 export const getPlaceholder = (id = 0) => `{{h-${TIMESTAMP}-${id}}}`;
