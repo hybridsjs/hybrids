@@ -66,7 +66,7 @@ function createSignature(parts, styles) {
   }, '');
 
   if (styles) {
-    signature += `<style>${styles.join('\n')}</style>`;
+    signature += `<style>\n${styles.join('\n/*------*/\n')}\n</style>`;
   }
 
   /* istanbul ignore if */
