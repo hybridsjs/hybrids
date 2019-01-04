@@ -3,8 +3,7 @@ export function camelToDash(str) {
 }
 
 export function pascalToDash(str) {
-  str = str[0].toLowerCase() + str.slice(1);
-  return camelToDash(str);
+  return camelToDash(str.replace(/((?!([A-Z]{2}|^))[A-Z])/g, '-$1'));
 }
 
 export function dispatch(host, eventType, options = {}) {
