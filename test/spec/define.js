@@ -12,12 +12,19 @@ describe('define:', () => {
   describe('for map argument', () => {
     it('defines hybrids', (done) => {
       const testHtmlDefine = { value: 'test' };
-      define({ testHtmlDefine });
-      define({ testHtmlDefine });
+      const TestPascal = { value: 'value-test-pascal' };
+      const HTMLDefine = { value: 'value-html-define' };
+      define({ testHtmlDefine, TestPascal, HTMLDefine });
 
       requestAnimationFrame(() => {
-        const el = document.createElement('test-html-define');
-        expect(el.value).toBe('test');
+        const testHtmlDefineEl = document.createElement('test-html-define');
+        const testPascalEl = document.createElement('test-pascal');
+        const htmlDefineEl = document.createElement('html-define');
+
+        expect(testHtmlDefineEl.value).toBe('test');
+        expect(testPascalEl.value).toBe('value-test-pascal');
+        expect(htmlDefineEl.value).toBe('value-html-define');
+
         done();
       });
     });
