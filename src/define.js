@@ -4,30 +4,36 @@ import render from './render';
 import * as cache from './cache';
 import { dispatch, pascalToDash } from './utils';
 
-// eslint-disable-next-line
-try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; }
+/* istanbul ignore next */
+try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
 
 function dispatchInvalidate(host) {
   dispatch(host, '@invalidate', { bubbles: true, composed: true });
 }
 
-const defaultGet = (host, value) => value;
+const defaultMethod = (host, value) => value;
 
 function compile(Hybrid, hybrids) {
   Hybrid.hybrids = hybrids;
   Hybrid.connects = [];
 
   Object.keys(hybrids).forEach((key) => {
-    let config = hybrids[key];
-    const type = typeof config;
+    const value = hybrids[key];
+    const type = typeof value;
+
+    let config;
 
     if (type === 'function') {
-      config = key === 'render' ? render(config) : { get: config };
-    } else if (config === null || type !== 'object' || (type === 'object' && !config.get && !config.set)) {
-      config = property(config);
+      config = key === 'render' ? render(value) : { get: value };
+    } else if (value === null || type !== 'object' || (type === 'object' && !value.get && !value.set && !value.connect)) {
+      config = property(value);
+    } else {
+      config = {
+        get: value.get || defaultMethod,
+        set: value.set || (!value.get && defaultMethod) || undefined,
+        connect: value.connect,
+      };
     }
-
-    config.get = config.get || defaultGet;
 
     Object.defineProperty(Hybrid.prototype, key, {
       get: function get() {

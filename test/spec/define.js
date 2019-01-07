@@ -60,6 +60,11 @@ describe('define:', () => {
         one: 'one',
         two: 'two',
       },
+      four: {
+        connect: (host, key) => {
+          host[key] = 'four';
+        },
+      },
     });
 
     const tree = test('<test-define-object></test-define-object>');
@@ -73,13 +78,17 @@ describe('define:', () => {
       expect(el.one).toBe(11);
     }));
 
-    it('sets setter and default getter', () => tree((el) => {
+    it('sets setter and uses default getter', () => tree((el) => {
       el.two = 10;
       expect(el.two).toBe(100);
     }));
 
     it('sets property for empty descriptor', () => tree((el) => {
       expect(el.three).toEqual({ one: 'one', two: 'two' });
+    }));
+
+    it('uses default get and set methods when both omitted', () => tree((el) => {
+      expect(el.four).toEqual('four');
     }));
 
     it('calls connect method', () => tree((el) => {

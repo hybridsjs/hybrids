@@ -4,8 +4,8 @@ import { dataMap, removeTemplate } from './utils';
 import resolveValue from './resolvers/value';
 import resolveProperty from './resolvers/property';
 
-// eslint-disable-next-line
-try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; }
+/* istanbul ignore next */
+try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
 
 const TIMESTAMP = Date.now();
 
