@@ -98,6 +98,15 @@ html`...`.define(map: Object): Function
   * update function compatible with content expression 
 
 ```typescript
+html`...`.style(styles: string, [styles: string]...): Function
+```
+
+* **arguments**:
+  * `styles` - text content of CSS stylesheet
+* **returns**:
+  * update function compatible with content expression 
+
+```typescript
 html.resolve(promise: Promise, placeholder: Function, delay = 200): Function
 ```
 
@@ -126,6 +135,15 @@ svg`...`.define(map: Object): Function
 
 * **arguments**:
   * `map` - object with hybrids definitions or custom element's constructors
+* **returns**:
+  * update function compatible with content expression 
+
+```typescript
+svg`...`.style(styles: string, [styles: string]...): Function
+```
+
+* **arguments**:
+  * `styles` - text content of CSS stylesheet
 * **returns**:
   * update function compatible with content expression 
 

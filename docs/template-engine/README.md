@@ -7,6 +7,7 @@
 - [Conditions](conditions.md)
 - [Iteration](iteration.md)
 - [Nested Templates](nested-templates.md)
+- [Styling](styling.md)
 - [Promises](promises.md)
 - [Dependencies](dependencies.md)
 - [Limitations](limitations.md)

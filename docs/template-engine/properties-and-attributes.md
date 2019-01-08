@@ -66,15 +66,4 @@ const styles = {
 html`<div style="${styles}"></div>`;
 ```
 
-However, the preferred way to style elements is using `<style>` element inside of the template body:
-
-```javascript
-const MyElement = {
-  render: () => html`
-    <style>
-      div { background-color: red }
-    </style>
-    <div>...</div>
-  `,
-};
-```
+However, the preferred way to style elements is using `<style>` element inside of the template body. Read more in [Styling](styling.md) section.

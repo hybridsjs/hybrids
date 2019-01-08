@@ -21,13 +21,36 @@ const MyElement = {
 };
 ```
 
-However, there are a few differences. First of all, instead of using function context (`this` keyword), the first argument of all methods is the instance of an element. It allows using arrow functions and destructuring function arguments.
+However, there are a few differences. Instead of using function context (`this` keyword), the first argument of all methods is the instance of an element. It allows using arrow functions and destructuring function arguments.
 
-The second most significant change is the cache mechanism, which controls and holds current property value. By the specs, getter/setter property requires external variable for keeping the value. In the hybrids, cache covers that for you.
+The second most change is the cache mechanism, which controls and holds current property value. By the specs, getter/setter property requires external variable for keeping the value. In the hybrids, cache covers that for you.
 
-**Despite the [factories](factories.md) and [translation](translation.md) concepts, you can always define any property using descriptor**. The only requirement is that your definition has to include at least one of the `get` or `set` methods. `connect` can be omitted. If you set only `set`, `get` defaults to a function, which returns last cached value.
+**Despite the [factories](factories.md) and [translation](translation.md) concepts, you can always define properties using descriptors**. The only requirement is that your definition has to include at least one of the `get`, `set` or `connect` methods. 
 
-The following sections describe more deeply available methods of the descriptor.
+The library uses default `get` or `set` method if they are not defined. The fallback method returns last saved value for `get`, and saves passed value for `set`. If `get` method is defined, `set` method does not fallback to default. It allows creating read-only property.
+
+```javascript
+const MyElement = {
+  defined: {
+    get: () => {...},
+    set: () => {...},
+  },
+  readonly: {
+    get: () => {...},
+  },
+  defaultGet: {
+    // get: (host, value) => value,
+    set: () => {...},
+  },
+  defaultGetAndSet: {
+    // get: (host, value) => value,
+    // set: (host, value) => value,
+    connect: () => {...},
+  },
+}
+```
+
+In the above example `readonly` and `defaultGet` properties might have `connect` method but is not required. `defaultGetAndSet` applies only when `connect` method is defined.
 
 ### Get
 

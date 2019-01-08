@@ -88,10 +88,15 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 - [&lt;app-todos&gt;](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js) - todo list using parent factory for state management
 - [&lt;tab-group&gt;](https://stackblitz.com/edit/hybrids-children-factory?file=index.js) - switching tabs using children factory
 
-### Resources
+### Articles
 
-* [Taste the Future with Functional Web Components](https://youtu.be/WZ1MEHuxHGg) (EN, 29/10/2018 - ConFrontJS Conference)
-* [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) (PL, 12/07/2018 - WarsawJS Meetup #46)
+* [Do we really need classes in JavaScript after all?](https://dev.to/smalluban/do-we-really-need-classes-in-javascript-after-all-91n)
+* [Let's Build Web Components! Part 7: Hybrids](https://dev.to/bennypowers/lets-build-web-components-part-7-hybrids-187l)
+
+### Videos
+
+* [Taste the Future with Functional Web Components](https://youtu.be/WZ1MEHuxHGg) (EN, ConFrontJS Conference)
+* [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) (PL, WarsawJS Meetup #46)
   
 ## Browser Support
 

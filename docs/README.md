@@ -24,6 +24,7 @@
 - [Conditions](template-engine/conditions.md)
 - [Iteration](template-engine/iteration.md)
 - [Nested Templates](template-engine/nested-templates.md)
+- [Styling](template-engine/styling.md)
 - [Promises](template-engine/promises.md)
 - [Dependencies](template-engine/dependencies.md)
 - [Limitations](template-engine/limitations.md)

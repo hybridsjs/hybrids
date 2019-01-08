@@ -26,7 +26,7 @@ The translation expands shorter syntax or applies built-in factories using passe
     // Translates to:
     { propertyName: property('text') }
     ```
-4. **The value as an object without `get` and `set` properties.** It translates to `property` factory:
+4. **The value as an object without `get`, `set` and `connect` properties.** It translates to `property` factory:
     ```javascript
     import { property } from 'hybrids';
 
@@ -45,7 +45,7 @@ import { property, render, html } from 'hybrids';
 export const MyElement = {
   count: property(0),
   render: render(({ count }) => html`
-    <button ...>${count}</button>
+    <button>${count}</button>
   `),
 }
 ```
@@ -58,7 +58,7 @@ import { html } from 'hybrids';
 export const MyElement = {
   count: 0,
   render: ({ count }) => html`
-    <button ...>${count}</button>
+    <button>${count}</button>
   `,
 }
 ```
