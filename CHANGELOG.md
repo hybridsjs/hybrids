@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### BREAKING CHANGES
 
-* **define:** Descriptor property with `connect` key will not translate to `property(value)`.
+* **define:** Property as an object with `connect` key will not translate to `property(value)`.
 
 
 

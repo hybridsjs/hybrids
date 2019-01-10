@@ -1,6 +1,6 @@
 # Styling
 
-To style your custom element, you can create `<style>` element directly in the template, use a nested template with styles, or pass text content of thy CSS file.
+To style your custom element, you can create `<style>` element directly in the template, use a nested template with styles, or pass text content of CSS file.
 
 ## Style Element
 
@@ -84,10 +84,11 @@ For external CSS content, use `style` helper method from the result of the `html
   * **returns**:
     * update function compatible with content expression 
 
-Style helper works best with bundlers, which support importing text content of the CSS files (for [Webpack](https://github.com/webpack/webpack) use [css-loader](https://github.com/webpack-contrib/css-loader) without [style-loader](https://github.com/webpack-contrib/style-loader)):
+Style helper works the best with bundlers, which support importing text content of the CSS files (for [Webpack](https://github.com/webpack/webpack) use [css-loader](https://github.com/webpack-contrib/css-loader) without [style-loader](https://github.com/webpack-contrib/style-loader)):
 
 ```javascript
-import styles from './MyElement.css'; // `styles` should contain text content of CSS file
+// `styles` should contain text content of CSS file
+import styles from './MyElement.css';
 
 const MyElement = {
   render: () => html`

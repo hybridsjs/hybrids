@@ -1,6 +1,6 @@
 # Translation
 
-You can always define properties using [property descriptor](descriptors.md) objects. However, the translation concept provides a set of rules for translating the definition that does not match property descriptor structure. The value can be a primitive, a function, or even an object, but without get and set methods.
+You can always define properties using [property descriptor](descriptors.md) objects. However, the translation concept provides a set of rules for translating the definition that does not match property descriptor structure. The value can be a primitive, a function, or even an object, but without get, set and connect methods.
 
 The translation expands shorter syntax or applies built-in factories using passed values. The translation is done in the following order:
 
