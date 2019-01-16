@@ -35,13 +35,29 @@ import { html } from 'hybrids';
 
 const MyElement = {
   value: 1,
-  render: ({ value }) => html`
-    <div>${value}</div>
-  `,
+  render: ({ value }) => html`<div>${value}</div>`,
 };
 ```
 
-The factory uses Shadow DOM, which is created synchronously in `connect` callback. It can be disabled in the `options` object. Then, `target` argument of update function is a `host`. However, `options` object can be passed only with explicit definition using `render` factory function.
+### Shadow DOM
+
+The factory by default uses [Shadow DOM](https://developer.mozilla.org/docs/Web/Web_Components/Using_shadow_DOM) as a `target`, which is created synchronously in `connect` callback. It is expected behavior, so usually you can omit `options` object and use [translation](../core-concepts/translation.md) rule for the render factory. 
+
+Although, If your element does not require [style encapsulation](https://developers.google.com/web/fundamentals/web-components/shadowdom#styling) and [children distribution](https://developers.google.com/web/fundamentals/web-components/shadowdom#composition_slot) (`<slot>` element can be used only inside of the `shadowRoot`) you can disable Shadow DOM in the `options` object. Then, `target` argument of the update function become a `host`. In the result, your template will replace children content of the custom element (in Light DOM).
+
+Keep in mind, that the `options` can be passed only with `render(fn, options)` factory function called explicitly:
+
+```javascript
+import { html, render } from 'hybrids';
+
+const MyElement = {
+  value: 1,
+  render: render(
+    ({ value }) => html`<div>${value}</div>`,
+    { shadowRoot: false },
+  ),
+};
+```
 
 ## Update Mechanism
 
@@ -59,3 +75,61 @@ myElement.render();
 ```
 
 Property defined with `render` factory uses the same cache mechanism like other properties. The update process calls `fn` only if related properties have changed.
+
+## Unit Testing
+
+Because of the asynchronous update mechanism with threshold, it might be tricky to test if custom element instance renders correctly. However, you can create your unit tests on the basis of the definition itself. 
+
+The render key is usually a function, which returns update function. It can be called synchronously with mocked host and arbitrary target element (for example `<div>` element):
+
+```javascript
+import { html } from 'hybrids';
+
+const MyElement = {
+  value: 1,
+  render: ({ value }) => html`
+    <div>${value}</div>
+  `,
+};
+
+it('should render value "1"', () => {
+  const div = document.createElement('div');
+  const host = { value: 1 };
+
+  // "render" key is a function
+  const update = MyElement.render(host);
+
+  // Updates target element
+  update(host, div);
+
+  // Check results synchronously
+  expect(div.children[0].textContent).toBe('1');
+});
+```
+
+If you use `render` factory explicitly, your template definition can be defined outside of the factory call:
+
+```javascript
+import { html, render } from 'hybrids';
+
+// Take out template definition
+const renderTemplate = ({ value }) => html`<div>${value}</div>`;
+
+const MyElement = {
+  value: 1,
+  render: render(renderTemplate, { shadowRoot: false }),
+};
+
+it('should render value "1"', () => {
+  const div = document.createElement('div');
+  const host = { value: 1 };
+
+  const update = renderTemplate(host);
+
+  // Updates target element
+  update(host, div);
+
+  // Check results synchronously
+  expect(div.children[0].textContent).toBe('1');
+});
+```
