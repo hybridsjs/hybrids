@@ -29,6 +29,19 @@ define('my-element', MyElement);
 
 Even though the above code might look straightforward, there are applied unique concepts, that make it possible. This example relays on the three property-related ideas used together: [descriptors](descriptors.md), [factories](factories.md) and [translation](translation.md). Additionally, the library uses change detection and cache mechanism to simplify the lifecycle of the component.
 
+### Customized Built-in Elements
+
+The concept decouples component definition from its corresponding class constructor. Property descriptors are independent - they can be easily shared between definitions, so they can't depend on the specific base class, like `HTMLAnchorElement`. The library always uses `HTMLElement` as a base class. 
+
+[Customized built-in elements](https://developer.mozilla.org/docs/Web/Web_Components/Using_custom_elements#Customized_built-in_elements) are not supported, and only [autonomous custom elements](https://developer.mozilla.org/docs/Web/Web_Components/Using_custom_elements#Autonomous_custom_elements) can be defined. However, you can easily create custom element containing built-in elements:
+
+```javascript
+const MyLink = {
+  href: '',
+  render: ({ href }) => html`<a href=${href}>...</a>`,
+};
+```
+
 ## Simplified Lifecycle
 
 The lifecycle of the component is redesigned. With the help of the cache and change detection, it is possible to have only `connect` and `disconnect` callbacks in the scope of the property descriptor. 
