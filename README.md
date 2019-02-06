@@ -80,6 +80,21 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 - [Template Engine](docs/template-engine/README.md)
 - [Misc](docs/misc/README.md)
 
+### Articles
+
+* [Do we really need classes in JavaScript after all?](https://dev.to/smalluban/do-we-really-need-classes-in-javascript-after-all-91n)
+* [Let's Build Web Components! Part 7: Hybrids](https://dev.to/bennypowers/lets-build-web-components-part-7-hybrids-187l)
+
+#### Core Concepts Series
+
+* [From classes to plain objects and pure functions](https://dev.to/smalluban/from-classes-to-plain-objects-and-pure-functions-2gip)
+* [Say goodbye to lifecycle methods, and focus on productive code](https://dev.to/smalluban/how-to-say-goodbye-to-lifecycle-methods-and-focus-on-productive-code-175)
+
+### Videos
+
+* [Taste the Future with Functional Web Components](https://youtu.be/WZ1MEHuxHGg) (EN, ConFrontJS Conference)
+* [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) (PL, WarsawJS Meetup #46)
+
 ### Live Examples
 
 - [&lt;simple-counter&gt;](https://stackblitz.com/edit/hybrids-simple-counter?file=simple-counter.js) - a button with counter controlled by own state
@@ -87,17 +102,8 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 - [&lt;react-counter&gt;](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js)  - render factory and React library for rendering in shadow DOM
 - [&lt;app-todos&gt;](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js) - todo list using parent factory for state management
 - [&lt;tab-group&gt;](https://stackblitz.com/edit/hybrids-children-factory?file=index.js) - switching tabs using children factory
+- [&lt;async-user&gt;](https://stackblitz.com/edit/hybrids-async-user?file=async-user.js) - async data in the template
 
-### Articles
-
-* [Do we really need classes in JavaScript after all?](https://dev.to/smalluban/do-we-really-need-classes-in-javascript-after-all-91n)
-* [Let's Build Web Components! Part 7: Hybrids](https://dev.to/bennypowers/lets-build-web-components-part-7-hybrids-187l)
-
-### Videos
-
-* [Taste the Future with Functional Web Components](https://youtu.be/WZ1MEHuxHGg) (EN, ConFrontJS Conference)
-* [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) (PL, WarsawJS Meetup #46)
-  
 ## Browser Support
 
 [![Build Status](https://saucelabs.com/browser-matrix/hybrids.svg)](https://saucelabs.com/u/hybrids)

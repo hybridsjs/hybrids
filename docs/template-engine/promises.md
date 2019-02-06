@@ -27,3 +27,5 @@ html`
   </div>
 `
 ```
+
+👆 [Click and play with &lt;async-user&gt; custom element on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-async-user?file=async-user.js)
