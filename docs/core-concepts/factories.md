@@ -46,7 +46,7 @@ define('title-counter', SimpleCounter);
 
 ## Built-in Factories
 
-The hybrids uses factories to provide all the features required for building reach custom elements:
+The hybrids uses factories to provide all the features required for building rich custom elements:
 
 * create [properties](../built-in-factories/property.md) connected to the attribute value with type transform
 * [render](../built-in-factories/render.md) DOM structure of the element
