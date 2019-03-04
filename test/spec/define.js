@@ -237,12 +237,14 @@ describe('define:', () => {
           const connect = jasmine.createSpy();
 
           el.attachShadow({ mode: 'open' });
-          el.shadowRoot.innerHTML = '<test-define-multiple></test-define-multiple>';
+          const child = document.createElement('test-define-multiple');
+          el.shadowRoot.appendChild(child);
 
           define('test-define-multiple', { one: { get: () => 'text', connect } });
 
           return Promise.resolve().then(() => {
             expect(connect).toHaveBeenCalledTimes(1);
+            expect(child.one).toBe('text');
             done();
           });
         });

@@ -69,13 +69,11 @@ describe('parent:', () => {
 
   it('connects to out of the shadow parent element', () => shadowParentTree((el) => {
     const shadowRoot = el.attachShadow({ mode: 'open' });
-    shadowRoot.innerHTML = `
-      <div>
-        <test-parent-child></test-parent-child>
-      </div>
-    `;
+    const child = document.createElement('test-parent-child');
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(child);
 
-    const child = shadowRoot.children[0].children[0];
+    shadowRoot.appendChild(wrapper);
     expect(child.parent).toBe(el);
   }));
 
