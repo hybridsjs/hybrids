@@ -59,7 +59,8 @@ function createSignature(parts, styles) {
     if (index === 0) {
       return part;
     }
-    if (parts.slice(index).join('').match(/\s*<\/\s*(table|tr|thead|tbody|tfoot|colgroup)>/)) {
+
+    if (parts.slice(index).join('').match(/^\s*<\/\s*(table|tr|thead|tbody|tfoot|colgroup)>/)) {
       return `${acc}<!--${getPlaceholder(index - 1)}-->${part}`;
     }
     return acc + getPlaceholder(index - 1) + part;

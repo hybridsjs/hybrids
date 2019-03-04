@@ -492,10 +492,38 @@ describe('html:', () => {
     it('should render table with rows', () => {
       const renderRow = v => html`<tr><td>${v}</td></tr>`.key(v);
       const renderTable = html`
-        <table>${[1, 2].map(v => renderRow(v))} ${[3, 4].map(v => renderRow(v))}</table>`;
+        <table><tbody>${[1, 2].map(v => renderRow(v))} ${[3, 4].map(v => renderRow(v))}</tbody></table>`;
 
       renderTable({}, fragment);
-      expect(fragment.children[0].outerHTML).toBe('<table><tr><td>1</td></tr><tr><td>2</td></tr> <tr><td>3</td></tr><tr><td>4</td></tr></table>');
+      expect(fragment.children[0].outerHTML)
+        .toBe('<table><tbody><tr><td>1</td></tr><tr><td>2</td></tr> <tr><td>3</td></tr><tr><td>4</td></tr></tbody></table>');
+    });
+
+    it('should set single expression in <tr> element', () => {
+      const render = html`
+        <table><tbody><tr>  ${'test'}  </tr></tbody></table>
+      `;
+
+      render({}, fragment);
+      expect(fragment.children[0].outerHTML).toBe('<table><tbody><tr>  test  </tr></tbody></table>');
+    });
+
+    it('should set multiple expression in <tr> element', () => {
+      const render = html`
+        <table><tbody><tr>  ${'test 1'} ${'test 2'}  </tr></tbody></table>
+      `;
+
+      render({}, fragment);
+      expect(fragment.children[0].outerHTML).toBe('<table><tbody><tr>  test 1 test 2  </tr></tbody></table>');
+    });
+
+    it('should set <td> inner element property', () => {
+      const render = html`
+        <table><tbody><tr><td><div class=${'one'}>${'two'}</div></td></tr></tbody></table>
+      `;
+
+      render({}, fragment);
+      expect(fragment.children[0].outerHTML).toBe('<table><tbody><tr><td><div class="one">two</div></td></tr></tbody></table>');
     });
   });
 
