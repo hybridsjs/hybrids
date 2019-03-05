@@ -486,6 +486,29 @@ describe('html:', () => {
       expect(getArrayValues(fragment))
         .toEqual(['1', '2', '3', '4', '10', '7', '8', '5', '1', '6']);
     });
+
+    it('clears root array and re-render elements', () => {
+      const dataStart = [
+        { id: 1 },
+        { id: 2 },
+      ];
+      const dataFiltered = [
+        { id: 1, children: [{ id: 3 }] },
+        { id: 2 },
+      ];
+      const renderData = item => html`
+        <span>${item.id}</span>
+        ${item.children && item.children.map(renderData)}
+      `.key(item.id);
+
+      const renderWrapper = list => html`
+        ${list.map(renderData)}
+      `;
+
+      renderWrapper(dataFiltered)(fragment);
+      renderWrapper(dataStart)(fragment);
+      renderWrapper(dataFiltered)(fragment);
+    });
   });
 
   describe('table', () => {

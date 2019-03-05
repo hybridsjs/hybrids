@@ -1,6 +1,6 @@
 import { dataMap, removeTemplate } from '../utils';
 // eslint-disable-next-line import/no-cycle
-import resolveArray from './array';
+import resolveArray, { arrayMap } from './array';
 
 export default function resolveValue(host, target, value) {
   const type = Array.isArray(value) ? 'array' : typeof value;
@@ -8,6 +8,8 @@ export default function resolveValue(host, target, value) {
 
   if (data.type !== type) {
     removeTemplate(target);
+    if (type === 'array') arrayMap.delete(target);
+
     data = dataMap.set(target, { type });
 
     if (target.textContent !== '') {

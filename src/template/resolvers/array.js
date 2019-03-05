@@ -5,7 +5,7 @@ import {
 // eslint-disable-next-line import/no-cycle
 import resolveValue from './value';
 
-const arrayMap = new WeakMap();
+export const arrayMap = new WeakMap();
 
 function movePlaceholder(target, previousSibling) {
   const data = dataMap.get(target);
