@@ -1,14 +1,14 @@
 import defineElements from '../define';
 
 import { compile, getPlaceholder } from './core';
-import resolve from './resolve';
+import * as helpers from './helpers';
 
 const PLACEHOLDER = getPlaceholder();
 
 const templatesMap = new Map();
 const stylesMap = new WeakMap();
 
-const helpers = {
+const methods = {
   define(elements) {
     defineElements(elements);
     return this;
@@ -37,7 +37,7 @@ function create(parts, args, isSVG) {
     render(host, target, args);
   };
 
-  return Object.assign(fn, helpers);
+  return Object.assign(fn, methods);
 }
 
 export function html(parts, ...args) {
@@ -48,5 +48,5 @@ export function svg(parts, ...args) {
   return create(parts, args, true);
 }
 
-Object.assign(html, { resolve });
-Object.assign(svg, { resolve });
+Object.assign(html, helpers);
+Object.assign(svg, helpers);

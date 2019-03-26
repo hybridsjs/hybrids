@@ -1,6 +1,7 @@
 import { html } from '../../src/template';
 import { createInternalWalker } from '../../src/template/core';
 import define from '../../src/define';
+import { dispatch } from '../../src/utils';
 
 describe('html:', () => {
   let fragment;
@@ -413,7 +414,7 @@ describe('html:', () => {
       expect(Array.from(fragment.children)).toEqual([items[3], items[0], items[1]]);
     });
 
-    it('does not throw for duplicated id from key helper method', () => {
+    it('does not throw for duplicated id from key method', () => {
       expect(() => {
         html`${[1, 2, 3].map(() => html``.key(1))}`(fragment);
       }).not.toThrow();
@@ -550,7 +551,45 @@ describe('html:', () => {
     });
   });
 
-  describe('resolve method', () => {
+  describe('set helper', () => {
+    let host;
+
+    beforeEach(() => {
+      host = { firstName: '' };
+    });
+
+    it('uses "value" from input', () => {
+      const render = html`<input type="text" oninput=${html.set('firstName')} />`;
+      render(host, fragment);
+
+      const input = fragment.children[0];
+      input.value = 'John';
+      dispatch(input, 'input');
+
+      expect(host.firstName).toBe('John');
+    });
+
+    it('set custom value', () => {
+      const render = html`<input type="text" oninput=${html.set('firstName', undefined)} />`;
+      render(host, fragment);
+
+      const input = fragment.children[0];
+      dispatch(input, 'input');
+
+      expect(host.firstName).toBe(undefined);
+    });
+
+    it('saves callback in the cache', () => {
+      expect(html.set('value')).toBe(html.set('value'));
+      expect(html.set('value')).not.toBe(html.set('otherValue'));
+    });
+
+    it('throws if property name is not set', () => {
+      expect(() => html.set(undefined)).toThrow();
+    });
+  });
+
+  describe('resolve helper', () => {
     const render = (promise, value, placeholder) => html`
       ${html.resolve(promise.then(() => html`<div>${value}</div>`), placeholder)}`;
 
@@ -599,7 +638,7 @@ describe('html:', () => {
     });
   });
 
-  describe('style helper', () => {
+  describe('style method', () => {
     const render = html`<div>content</div>`;
 
     it('adds single style with text content', () => {
