@@ -1,5 +1,3 @@
-import '../shim';
-
 // Set dynamic env variable
 window.env = 'development';
 

@@ -55,8 +55,15 @@ export default function resolveArray(host, target, value) {
   const data = dataMap.get(target);
 
   entries.forEach((entry, index) => {
-    const matchedEntry = lastEntries
-      && lastEntries.find(item => item.available && item.id === entry.id);
+    let matchedEntry;
+    if (lastEntries) {
+      for (let i = 0; i < lastEntries.length; i += 1) {
+        if (lastEntries[i].available && lastEntries[i].id === entry.id) {
+          matchedEntry = lastEntries[i];
+          break;
+        }
+      }
+    }
 
     let placeholder;
     if (matchedEntry) {

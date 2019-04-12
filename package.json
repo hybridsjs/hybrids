@@ -32,6 +32,7 @@
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.3.4",
     "@babel/preset-env": "^7.3.4",
+    "@webcomponents/webcomponentsjs": "^2.2.8",
     "babel-loader": "^8.0.5",
     "babel-plugin-istanbul": "^5.1.1",
     "coveralls": "^3.0.3",
@@ -52,13 +53,5 @@
     "standard-version": "^5.0.1",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3"
-  },
-  "dependencies": {
-    "@webcomponents/custom-elements": "^1.2.1",
-    "@webcomponents/shadycss": "^1.9.0",
-    "@webcomponents/shadydom": "^1.5.0",
-    "@webcomponents/template": "^1.4.0",
-    "@webcomponents/webcomponents-platform": "^1.0.0",
-    "core-js": "^2.6.5"
   }
 }

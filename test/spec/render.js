@@ -218,7 +218,7 @@ describe('render:', () => {
   });
 
   describe('shadyCSS polyfill', () => {
-    const shadyCSSApplied = typeof window.ShadyCSS === 'object';
+    const shadyCSSApplied = window.ShadyCSS && !window.ShadyCSS.nativeShadow;
 
     beforeAll(() => {
       if (!shadyCSSApplied) {

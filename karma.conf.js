@@ -52,7 +52,10 @@ module.exports = (config) => {
     browsers: IS_SAUCE_LABS
       ? Object.keys(customLaunchers)
       : ['ChromeHeadless', 'FirefoxHeadless'],
-    files: ['test/runner.js'],
+    files: [
+      'node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js',
+      'test/runner.js',
+    ],
     preprocessors: {
       'test/runner.js': ['webpack', 'sourcemap'],
     },

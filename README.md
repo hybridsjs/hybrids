@@ -108,18 +108,18 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 
 [![Build Status](https://saucelabs.com/browser-matrix/hybrids.svg)](https://saucelabs.com/u/hybrids)
 
-The library requires some of the ES2015 APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including a list of required polyfills and shims. The easiest way is to add the following code on top of your project:
+The library requires some of the ES2015 APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including a list of required polyfills and shims. The easiest way is to add bundle from [`@webcomponents/webcomponentsjs`](https://github.com/webcomponents/webcomponentsjs) package on top of your project:
 
 ```javascript
-// ES2015 selected APIs polyfills loaded in IE11
-// Web Components shims and polyfills loaded if needed (external packages)
-import 'hybrids/shim'; 
+import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
+import { define, ... } from 'hybrids';
+
 ...
 ```
 
-Web components shims have some limitations. Especially, [`webcomponents/shadycss`](https://github.com/webcomponents/shadycss) approximates CSS scoping and CSS custom properties inheritance. Read more on the [known issues](https://github.com/webcomponents/webcomponentsjs#known-issues) and [custom properties shim limitations](https://www.polymer-project.org/3.0/docs/devguide/custom-css-properties#custom-properties-shim-limitations) pages.
+The polyfill package provides two modes in which you can use it (`webcomponents-bundle.js` and `webcomponents-loader.js`). Read more in the [How to use](https://github.com/webcomponents/webcomponentsjs#how-to-use) section of the documentation.
 
-The library calls shims if needed, so direct use is not required.
+Web components shims have some limitations. Especially, [`webcomponents/shadycss`](https://github.com/webcomponents/shadycss) approximates CSS scoping and CSS custom properties inheritance. Read more on the [known issues](https://github.com/webcomponents/webcomponentsjs#known-issues) and [custom properties shim limitations](https://www.polymer-project.org/3.0/docs/devguide/custom-css-properties#custom-properties-shim-limitations) pages.
 
 ## License
 
