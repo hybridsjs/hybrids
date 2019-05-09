@@ -5,10 +5,10 @@
 ## Core Concepts
 
 - [Introduction](core-concepts/introduction.md)
+- [Definition](core-concepts/definition.md)
 - [Descriptors](core-concepts/descriptors.md)
 - [Factories](core-concepts/factories.md)
 - [Translation](core-concepts/translation.md)
-- [Definition](core-concepts/definition.md)
 
 ## Built-in Factories
 - [Property](built-in-factories/property.md)
