@@ -281,17 +281,18 @@ export function compile(rawParts, isSVG, styles) {
         renderIndex += 1;
       }
 
-      const childList = Array.from(fragment.childNodes);
-
-      data.startNode = childList[0];
-      data.endNode = childList[childList.length - 1];
+      data.startNode = fragment.childNodes[0];
+      data.endNode = fragment.childNodes[fragment.childNodes.length - 1];
 
       if (target.nodeType === Node.TEXT_NODE) {
         let previousChild = target;
-        childList.forEach((child) => {
+
+        let child = fragment.childNodes[0];
+        while (child) {
           target.parentNode.insertBefore(child, previousChild.nextSibling);
           previousChild = child;
-        });
+          child = fragment.childNodes[0];
+        }
       } else {
         target.appendChild(fragment);
       }

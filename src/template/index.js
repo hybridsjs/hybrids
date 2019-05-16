@@ -26,7 +26,9 @@ const methods = {
 function create(parts, args, isSVG) {
   const fn = (host, target = host) => {
     const styles = stylesMap.get(fn);
-    const id = `${parts.join(PLACEHOLDER)}${styles ? styles.join(PLACEHOLDER) : ''}${isSVG ? 'svg' : ''}`;
+    let id = parts.join(PLACEHOLDER);
+    if (styles) id += styles.join(PLACEHOLDER);
+    if (isSVG) id += getPlaceholder('svg');
 
     let render = templatesMap.get(id);
     if (!render) {
