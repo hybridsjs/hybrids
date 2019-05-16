@@ -57,7 +57,9 @@ export function get(target, key, getter) {
     return entry.value;
   }
 
-  entry.deps.clear();
+  if (entry.deps.size) {
+    entry.deps.clear();
+  }
 
   try {
     const nextValue = getter(target, entry.value);
