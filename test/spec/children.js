@@ -74,7 +74,7 @@ describe('children:', () => {
       });
     }));
 
-    it('updates parent computed property', done => tree((el) => {
+    it('updates parent computed property', done => tree(el => resolveTimeout(() => {
       expect(el.customName).toBe('one');
       el.children[0].customName = 'four';
       let called = false;
@@ -88,7 +88,7 @@ describe('children:', () => {
         expect(el.customName).toBe('four');
         done();
       });
-    }));
+    })));
   });
 
   describe('function condition', () => {

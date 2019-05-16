@@ -1,3 +1,5 @@
+import { deferred } from './utils';
+
 function walk(node, fn, options, items = []) {
   Array.from(node.children).forEach((child) => {
     const hybrids = child.constructor.hybrids;
@@ -24,7 +26,7 @@ export default function children(hybridsOrFn, options = { deep: false, nested: f
 
       const childEventListener = ({ target }) => {
         if (!set.size) {
-          Promise.resolve().then(() => {
+          deferred.then(() => {
             const list = host[key];
             for (let i = 0; i < list.length; i += 1) {
               if (set.has(list[i])) {

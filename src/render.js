@@ -1,50 +1,74 @@
-import { shadyCSS } from './utils';
+import { deferred, shadyCSS } from './utils';
 
 const map = new WeakMap();
 const cache = new WeakMap();
-const FPS_THRESHOLD = 1000 / 60; // 60 FPS ~ 16,67ms time window
+
 let queue = [];
+let index = 0;
+let startTime = 0;
 
-export function update(index = 0, startTime = 0) {
-  if (startTime && (performance.now() - startTime > FPS_THRESHOLD)) {
-    requestAnimationFrame(() => update(index));
-  } else {
-    const target = queue[index];
-    const nextTime = performance.now();
+const FPS_THRESHOLD = 1000 / 60; // 60 FPS ~ 16,67ms time window
 
-    if (!target) {
-      shadyCSS(shady => queue.forEach(t => shady.styleSubtree(t)));
-      queue = [];
-    } else {
+export function update() {
+  try {
+    if (!startTime) {
+      startTime = performance.now();
+    }
+
+    for (; index < queue.length; index += 1) {
+      const target = queue[index];
+
       if (map.has(target)) {
         const key = map.get(target);
         const prevUpdate = cache.get(target);
-        try {
-          const nextUpdate = target[key];
-          if (nextUpdate !== prevUpdate) {
-            cache.set(target, nextUpdate);
-            nextUpdate();
-            if (!prevUpdate) shadyCSS(shady => shady.styleElement(target));
+        const nextUpdate = target[key];
+
+        if (nextUpdate !== prevUpdate) {
+          cache.set(target, nextUpdate);
+          nextUpdate();
+          if (!prevUpdate) {
+            shadyCSS(shady => shady.styleElement(target));
+          } else {
+            shadyCSS(shady => shady.styleSubtree(target));
           }
-        } catch (e) {
-          update(index + 1, nextTime);
-          throw e;
+        }
+
+        if (index + 1 < queue.length && (performance.now() - startTime) > FPS_THRESHOLD) {
+          throw queue;
         }
       }
-      update(index + 1, nextTime);
     }
+
+    queue = [];
+    index = 0;
+    deferred.then(() => { startTime = 0; });
+  } catch (e) {
+    index += 1;
+    requestAnimationFrame(update);
+    deferred.then(() => { startTime = 0; });
+
+    if (e !== queue) throw e;
   }
 }
 
 function addToQueue(event) {
-  const target = event.composedPath()[0];
-  if (target === event.currentTarget) {
-    if (!queue[0]) {
-      requestAnimationFrame((() => update()));
+  if (event.target === event.currentTarget && map.has(event.target)) {
+    if (!startTime) {
+      if (!queue.length) {
+        requestAnimationFrame(update);
+      } else {
+        queue.splice(index, 0, event.target);
+        return;
+      }
+    } else if (!queue.length) {
+      if ((performance.now() - startTime) > FPS_THRESHOLD) {
+        requestAnimationFrame(update);
+      } else {
+        deferred.then(update);
+      }
     }
-    if (queue.indexOf(target) === -1) {
-      queue.push(target);
-    }
+
+    queue.push(event.target);
   }
 }
 

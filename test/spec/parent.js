@@ -86,17 +86,26 @@ describe('parent:', () => {
     expect(el.parent).toBe(null);
   }));
 
-  it('updates child computed property', () => directParentTree((el) => {
-    const spy = jasmine.createSpy('event callback');
-    const child = el.children[0];
+  it('updates child computed property', done => directParentTree((el) => {
+    Promise.resolve().then(() => {
+      const spy = jasmine.createSpy('event callback');
+      const child = el.children[0];
 
-    expect(el.customProperty).toBe('value');
-    expect(child.computed).toBe('value other value');
+      expect(el.customProperty).toBe('value');
+      expect(child.computed).toBe('value other value');
 
-    child.addEventListener('@invalidate', spy);
-    el.customProperty = 'new value';
+      child.addEventListener('@invalidate', spy);
 
-    expect(child.computed).toBe('new value other value');
-    expect(spy).toHaveBeenCalledTimes(1);
+      el.customProperty = 'new value';
+
+      Promise.resolve().then(() => {
+        Promise.resolve().then(() => {
+          expect(spy).toHaveBeenCalledTimes(1);
+          expect(child.computed).toBe('new value other value');
+
+          done();
+        });
+      });
+    });
   }));
 });

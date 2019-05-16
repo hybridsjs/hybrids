@@ -27,3 +27,5 @@ export function stringifyElement(element) {
 }
 
 export const IS_IE = 'ActiveXObject' in window;
+
+export const deferred = Promise.resolve();

@@ -111,11 +111,13 @@ describe('render:', () => {
     });
 
     test('<test-render-throws-in-render></test-render-throws-in-render>')(() => {
-      expect(() => {
-        update();
-      }).toThrow();
-      fn = () => {};
-      done();
+      Promise.resolve().then(() => {
+        expect(() => {
+          update();
+        }).toThrow();
+        fn = () => {};
+        done();
+      });
     });
   });
 
@@ -126,11 +128,13 @@ describe('render:', () => {
     });
 
     test('<test-render-throws-in-callback></test-render-throws-in-callback>')(() => {
-      expect(() => {
-        update();
-      }).toThrow();
-      fn = () => {};
-      done();
+      Promise.resolve().then(() => {
+        expect(() => {
+          update();
+        }).toThrow();
+        fn = () => {};
+        done();
+      });
     });
   });
 
@@ -239,10 +243,17 @@ describe('render:', () => {
       }
     });
 
-    it('uses styleElement and styleSubtree', done => tree(() => resolveTimeout(() => {
+    it('uses styleElement on first paint', done => tree(() => resolveTimeout(() => {
       expect(window.ShadyCSS.styleElement).toHaveBeenCalled();
-      expect(window.ShadyCSS.styleSubtree).toHaveBeenCalled();
       done();
+    })));
+
+    it('uses styleSubtree on sequential paint', done => tree(el => resolveRaf(() => {
+      el.value = 1;
+      return resolveTimeout(() => {
+        expect(window.ShadyCSS.styleSubtree).toHaveBeenCalled();
+        done();
+      });
     })));
   });
 

@@ -1,10 +1,3 @@
-const map = new WeakMap();
-
-document.addEventListener('@invalidate', (event) => {
-  const set = map.get(event.composedPath()[0]);
-  if (set) set.forEach(fn => fn());
-});
-
 function walk(node, fn) {
   let parentElement = node.parentElement || node.parentNode.host;
 
@@ -28,18 +21,15 @@ export default function parent(hybridsOrFn) {
     get: host => walk(host, fn),
     connect(host, key, invalidate) {
       const target = host[key];
+      const cb = (event) => {
+        if (event.target === target) invalidate(false);
+      };
 
       if (target) {
-        let set = map.get(target);
-        if (!set) {
-          set = new Set();
-          map.set(target, set);
-        }
-
-        set.add(invalidate);
+        target.addEventListener('@invalidate', cb);
 
         return () => {
-          set.delete(invalidate);
+          target.removeEventListener('@invalidate', cb);
           invalidate();
         };
       }

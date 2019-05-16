@@ -158,7 +158,7 @@ You can use `connect` to attach event listeners, initialize property value (usin
 myElement.addEventListener('@invalidate', () => { ...});
 ```
 
-When property cache value invalidates, change detection dispatches `@invalidate` custom event (composed and bubbling). You can listen to this event and observe changes in the element properties. It is dispatched implicit when you set new value by the assertion or explicit by calling `invalidate` in `connect` callback. The event type was chosen to avoid name collision with those created by the custom elements authors.
+When property cache value invalidates, change detection dispatches `@invalidate` custom event (bubbling). You can listen to this event and observe changes in the element properties. It is dispatched implicit when you set new value by the assertion or explicit by calling `invalidate` in `connect` callback. The event type was chosen to avoid name collision with those created by the custom elements authors.
 
 If the third party code is responsible for the property value, you can use `invalidate` callback to update it and trigger event dispatch. For example, it can be used to connect to async web APIs or external libraries:
 

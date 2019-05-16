@@ -2,13 +2,22 @@ import property from './property';
 import render from './render';
 
 import * as cache from './cache';
-import { dispatch, pascalToDash } from './utils';
+import { dispatch, pascalToDash, deferred } from './utils';
 
 /* istanbul ignore next */
 try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
 
+const dispatchSet = new Set();
+
 function dispatchInvalidate(host) {
-  dispatch(host, '@invalidate', { bubbles: true, composed: true });
+  if (!dispatchSet.size) {
+    deferred.then(() => {
+      dispatchSet.forEach(target => dispatch(target, '@invalidate', { bubbles: true }));
+      dispatchSet.clear();
+    });
+  }
+
+  dispatchSet.add(host);
 }
 
 const defaultMethod = (host, value) => value;
@@ -73,7 +82,7 @@ if (process.env.NODE_ENV !== 'production') {
   const updateQueue = new Map();
   update = (Hybrid, lastHybrids) => {
     if (!updateQueue.size) {
-      Promise.resolve().then(() => {
+      deferred.then(() => {
         walkInShadow(document.body, (node) => {
           if (updateQueue.has(node.constructor)) {
             const hybrids = updateQueue.get(node.constructor);
