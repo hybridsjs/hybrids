@@ -1,5 +1,11 @@
+const camelToDashMap = new Map();
 export function camelToDash(str) {
-  return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+  let result = camelToDashMap.get(str);
+  if (result === undefined) {
+    result = str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+    camelToDashMap.set(str, result);
+  }
+  return result;
 }
 
 export function pascalToDash(str) {
