@@ -71,18 +71,21 @@ describe('render:', () => {
     });
   }));
 
-  it('defer next update tasks after threshold', (done) => {
+  describe('defer next update tasks after threshold', () => {
     define('test-render-long', {
+      nested: false,
+      delay: false,
       value: '',
-      render: ({ value }) => (target, shadowRoot) => {
+      render: ({ nested, delay, value }) => (target, shadowRoot) => {
         let template = `<div>${value}</div>`;
 
-        if (value) {
+        if (nested) {
           template += `
-            <test-render-long></test-render-long>
-            <test-render-long></test-render-long>
+            <test-render-long delay></test-render-long>
+            <test-render-long delay></test-render-long>
           `;
-        } else {
+        }
+        if (delay) {
           const now = performance.now();
           while (performance.now() - now < 20);
         }
@@ -91,25 +94,39 @@ describe('render:', () => {
       },
     });
 
-    test(`
+    it('renders nested elements', done => test(`
       <div>
-        <test-render-long value="one"></test-render-long>
+        <test-render-long nested value="one"></test-render-long>
       </div>
     `)(el => new Promise((resolve) => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             const one = el.children[0];
-            // const two = el.children[1];
             expect(one.shadowRoot.children[0].textContent).toBe('one');
-            // expect(two.shadowRoot.children[0].textContent).toBe('two');
-            // expect(two.shadowRoot.children.length).toBe(2);
             resolve();
             done();
           });
         });
       });
-    }));
+    })));
+
+    it('renders nested elements with delay', done => test(`
+      <div>
+        <test-render-long nested delay value="one"></test-render-long>
+      </div>
+    `)(el => new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const one = el.children[0];
+            expect(one.shadowRoot.children[0].textContent).toBe('one');
+            resolve();
+            done();
+          });
+        });
+      });
+    })));
   });
 
   it('update function catches error in render function', (done) => {

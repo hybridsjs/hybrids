@@ -11,10 +11,9 @@ const FPS_THRESHOLD = 1000 / 60; // 60 FPS ~ 16,67ms time window
 
 export function update() {
   try {
-    if (!startTime) {
-      startTime = performance.now();
-      requestAnimationFrame(() => { startTime = 0; });
-    }
+    let offset = 1;
+
+    startTime = performance.now();
 
     for (; index < queue.length; index += 1) {
       const target = queue[index];
@@ -34,17 +33,23 @@ export function update() {
           }
         }
 
-        if (index + 1 < queue.length && (performance.now() - startTime) > FPS_THRESHOLD) {
-          throw queue;
+        if (index % offset === 0) {
+          if (index + 1 < queue.length && (performance.now() - startTime) > FPS_THRESHOLD) {
+            throw queue;
+          } else {
+            offset *= 2;
+          }
         }
       }
     }
 
     queue = [];
     index = 0;
+    deferred.then(() => { startTime = 0; });
   } catch (e) {
     index += 1;
     requestAnimationFrame(update);
+    deferred.then(() => { startTime = 0; });
 
     if (e !== queue) throw e;
   }
