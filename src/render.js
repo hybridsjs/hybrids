@@ -13,6 +13,7 @@ export function update() {
   try {
     if (!startTime) {
       startTime = performance.now();
+      requestAnimationFrame(() => { startTime = 0; });
     }
 
     for (; index < queue.length; index += 1) {
@@ -41,11 +42,9 @@ export function update() {
 
     queue = [];
     index = 0;
-    deferred.then(() => { startTime = 0; });
   } catch (e) {
     index += 1;
     requestAnimationFrame(update);
-    deferred.then(() => { startTime = 0; });
 
     if (e !== queue) throw e;
   }
