@@ -95,7 +95,7 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 * [Taste the Future with Functional Web Components](https://youtu.be/WZ1MEHuxHGg) (EN, ConFrontJS Conference)
 * [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) (PL, WarsawJS Meetup #46)
 
-### Live Examples
+## Live Examples
 
 - [&lt;simple-counter&gt;](https://stackblitz.com/edit/hybrids-simple-counter?file=simple-counter.js) - a button with counter controlled by own state
 - [&lt;redux-counter&gt;](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js) - Redux library for state management
