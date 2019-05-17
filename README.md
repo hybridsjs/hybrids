@@ -54,11 +54,30 @@ Finally, use your custom element in HTML:
 <simple-counter count="10"></simple-counter>
 ```
 
+### ES Modules
+
+If you target modern browsers and do not want to use external tooling (like [webpack](https://webpack.js.org) or [parcel](https://parceljs.org/)), you can use ES modules:
+
+```html
+<script type="module">
+  // We can use "/src" here - browsers, which support modules also support ES2015
+  import { html, define } from 'https://unpkg.com/hybrids@[PUT_VERSION_HERE:x.x.x]/src';
+  ...
+</script>
+```
+
+Please take to account, that it does not provide code minification and loads all required files in separate requests.
+
 ### Built Version
 
-You can also use the built version from [unpkg.com](https://unpkg.com) CDN (with `window.hybrids` global namespace): 
+For older browsers support you can use the built version (with `window.hybrids` global namespace):
+
 ```html
 <script src="https://unpkg.com/hybrids@[PUT_VERSION_HERE:x.x.x]/dist/hybrids.js"></script>
+<script>
+  const { html, define } = window.hybrids;
+  ...
+</script>
 ```
 
 ## Overview
