@@ -24,9 +24,12 @@ export const MyElement = {
   }, { shadowRoot: ... })
 };
 ```
+
 👆 [Click and play with `render` factory using  `React` library on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js)
 
 Render factory creates and updates the DOM structure of your custom element. It works out of the box with built-in [template engine](../template-engine/introduction.md), but the passed `fn` function may use any external UI library, that renders DOM.
+
+👆 [Click and play with `render` factory using  `lit-html` library on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-lit-html-counter?file=lit-counter.js)
 
 The `render` key of the property is not mandatory. However, the first rule of the [translation](../core-concepts/translation.md) makes possible to pass `fn` function as a `render` property value to use render factory:
 
@@ -61,9 +64,9 @@ const MyElement = {
 
 ## Update Mechanism
 
-Render factory updates an element using global render scheduler. It listens to `@invalidate` event trigger by the change detection. It schedules update with `requestAnimationFrame()` API and adds an element to the queue. The DOM is updated when one of the properties used in `fn` changes.
+Render factory updates an element using global render scheduler. It listens to `@invalidate` event triggered by the change detection. It schedules update with `requestAnimationFrame()` API and adds an element to the queue. The DOM is updated when one of the properties used in `fn` changes.
 
-However, if execution of the update passes ~16ms threshold (it counts from the beginning of the schedule), the following elements in the queue are updated with next `requestAnimationFrame()`.
+However, if execution of the update passes ~16ms threshold (it counts from the beginning of the schedule), the following elements in the queue are updated within the next `requestAnimationFrame()`.
 
 ### Manual Update
 

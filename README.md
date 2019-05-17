@@ -99,7 +99,8 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 
 - [&lt;simple-counter&gt;](https://stackblitz.com/edit/hybrids-simple-counter?file=simple-counter.js) - a button with counter controlled by own state
 - [&lt;redux-counter&gt;](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js) - Redux library for state management
-- [&lt;react-counter&gt;](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js)  - render factory and React library for rendering in shadow DOM
+- [&lt;react-counter&gt;](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js) - render factory and [React](https://reactjs.org/) library for rendering in shadow DOM
+- [&lt;lit-counter&gt;](https://stackblitz.com/edit/hybrids-lit-html-counter?file=lit-counter.js) - render factory and [lit-html](https://lit-html.polymer-project.org/) for rendering in shadow DOM
 - [&lt;app-todos&gt;](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js) - todo list using parent factory for state management
 - [&lt;tab-group&gt;](https://stackblitz.com/edit/hybrids-children-factory?file=index.js) - switching tabs using children factory
 - [&lt;async-user&gt;](https://stackblitz.com/edit/hybrids-async-user?file=async-user.js) - async data in the template
