@@ -2,16 +2,25 @@ export function test(html) {
   const template = document.createElement('template');
   template.innerHTML = html;
 
-  return (spec) => {
+  return spec => (done) => {
     const wrapper = document.createElement('div');
     document.body.appendChild(wrapper);
-
     wrapper.appendChild(template.content.cloneNode(true));
-    const promise = spec(wrapper.children[0]);
+    const result = spec(wrapper.children[0]);
 
-    Promise.resolve(promise).then(() => {
-      document.body.removeChild(wrapper);
-    });
+    if (result) {
+      Promise.resolve(result).then(() => {
+        requestAnimationFrame(() => {
+          document.body.removeChild(wrapper);
+          done();
+        });
+      });
+    } else {
+      requestAnimationFrame(() => {
+        document.body.removeChild(wrapper);
+        done();
+      });
+    }
   };
 }
 

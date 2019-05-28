@@ -1,4 +1,5 @@
 import { stringifyElement } from './utils';
+import * as emitter from './emitter';
 
 const entries = new WeakMap();
 export function getEntry(target, key) {
@@ -15,9 +16,11 @@ export function getEntry(target, key) {
       target,
       key,
       value: undefined,
-      deps: new Set(),
+      contexts: undefined,
+      deps: undefined,
       state: 1,
       checksum: 0,
+      observed: false,
     };
     targetMap.set(key, entry);
   }
@@ -25,15 +28,22 @@ export function getEntry(target, key) {
   return entry;
 }
 
-function calculateChecksum({ state, deps }) {
-  let checksum = state;
-  deps.forEach((entry) => {
-    // eslint-disable-next-line no-unused-expressions
-    entry.target[entry.key];
-    checksum += entry.state;
-  });
+function calculateChecksum(entry) {
+  let checksum = entry.state;
+  if (entry.deps) {
+    entry.deps.forEach((depEntry) => {
+      // eslint-disable-next-line no-unused-expressions
+      depEntry.target[depEntry.key];
+      checksum += depEntry.state;
+    });
+  }
 
   return checksum;
+}
+
+function dispatchDeep(entry) {
+  if (entry.observed) emitter.dispatch(entry);
+  if (entry.contexts) entry.contexts.forEach(dispatchDeep);
 }
 
 let context = null;
@@ -46,7 +56,13 @@ export function get(target, key, getter) {
   }
 
   if (context) {
+    context.deps = context.deps || new Set();
     context.deps.add(entry);
+  }
+
+  if (context && (context.observed || (context.contexts && context.contexts.size))) {
+    entry.contexts = entry.contexts || new Set();
+    entry.contexts.add(context);
   }
 
   const parentContext = context;
@@ -57,8 +73,11 @@ export function get(target, key, getter) {
     return entry.value;
   }
 
-  if (entry.deps.size) {
-    entry.deps.clear();
+  if (entry.deps && entry.deps.size) {
+    entry.deps.forEach((depEntry) => {
+      if (depEntry.contexts) depEntry.contexts.delete(entry);
+    });
+    entry.deps = undefined;
   }
 
   try {
@@ -67,6 +86,8 @@ export function get(target, key, getter) {
     if (nextValue !== entry.value) {
       entry.state += 1;
       entry.value = nextValue;
+
+      dispatchDeep(entry);
     }
 
     entry.checksum = calculateChecksum(entry);
@@ -79,7 +100,7 @@ export function get(target, key, getter) {
   return entry.value;
 }
 
-export function set(target, key, setter, value, callback) {
+export function set(target, key, setter, value) {
   if (context) {
     context = null;
     throw Error(`Try to set '${key}' of '${stringifyElement(target)}' in get call`);
@@ -92,7 +113,7 @@ export function set(target, key, setter, value, callback) {
     entry.state += 1;
     entry.value = newValue;
 
-    callback();
+    dispatchDeep(entry);
   }
 }
 
@@ -105,8 +126,15 @@ export function invalidate(target, key, clearValue) {
   const entry = getEntry(target, key);
 
   entry.checksum = 0;
+  dispatchDeep(entry);
 
   if (clearValue) {
     entry.value = undefined;
   }
+}
+
+export function observe(target, key, fn) {
+  const entry = getEntry(target, key);
+  entry.observed = true;
+  emitter.subscribe(entry, fn);
 }

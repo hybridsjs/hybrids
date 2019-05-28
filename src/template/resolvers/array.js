@@ -54,7 +54,8 @@ export default function resolveArray(host, target, value) {
   const lastIndex = value.length - 1;
   const data = dataMap.get(target);
 
-  entries.forEach((entry, index) => {
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index];
     let matchedEntry;
     if (lastEntries) {
       for (let i = 0; i < lastEntries.length; i += 1) {
@@ -88,7 +89,7 @@ export default function resolveArray(host, target, value) {
     if (index === lastIndex) data.endNode = previousSibling;
 
     entry.placeholder = placeholder;
-  });
+  }
 
   if (lastEntries) {
     lastEntries.forEach((entry) => {

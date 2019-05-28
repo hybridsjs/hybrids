@@ -1,4 +1,4 @@
-import { test } from '../helpers';
+import { test, resolveRaf } from '../helpers';
 import define from '../../src/define';
 import { invalidate } from '../../src/cache';
 
@@ -52,13 +52,18 @@ describe('define:', () => {
   });
 
   describe('for object descriptor', () => {
-    let spy;
+    let connectSpy;
+    let observeSpy;
+    let disconnectSpy;
 
     define('test-define-object', {
       one: {
         get: (host, v) => v + 1,
         set: (host, newVal) => newVal,
-        connect: (...args) => spy(...args),
+        connect: (...args) => {
+          connectSpy(...args);
+          return disconnectSpy;
+        },
       },
       two: {
         set: (host, value) => value * value,
@@ -72,20 +77,25 @@ describe('define:', () => {
           host[key] = 'four';
         },
       },
+      five: {
+        observe: (...args) => observeSpy(...args),
+      },
     });
 
     const tree = test('<test-define-object></test-define-object>');
 
     beforeEach(() => {
-      spy = jasmine.createSpy();
+      connectSpy = jasmine.createSpy();
+      observeSpy = jasmine.createSpy();
+      disconnectSpy = jasmine.createSpy();
     });
 
-    it('sets getter and setter', () => tree((el) => {
+    it('sets getter and setter', tree((el) => {
       el.one = 10;
       expect(el.one).toBe(11);
     }));
 
-    it('sets setter and uses default getter', () => tree((el) => {
+    it('sets setter and uses default getter', tree((el) => {
       el.two = 10;
       expect(el.two).toBe(100);
     }));
@@ -94,20 +104,47 @@ describe('define:', () => {
       expect(el.three).toEqual(undefined);
     }));
 
-    it('uses default get and set methods when both omitted', () => tree((el) => {
+    it('uses default get and set methods when both omitted', tree((el) => {
       expect(el.four).toEqual('four');
     }));
 
-    it('calls connect method', () => tree((el) => {
-      expect(spy.calls.first().args[0]).toBe(el);
-      expect(spy.calls.first().args[1]).toBe('one');
+    it('calls connect method', tree((el) => {
+      expect(connectSpy.calls.first().args[0]).toBe(el);
+      expect(connectSpy.calls.first().args[1]).toBe('one');
     }));
 
-    it('returns previous value when invalidate', () => tree((el) => {
+    it('calls disconnect method', tree((el) => {
+      el.parentElement.removeChild(el);
+      expect(disconnectSpy).toHaveBeenCalledTimes(1);
+    }));
+
+    it('returns previous value when invalidate', tree((el) => {
       el.one = 10;
       expect(el.one).toBe(11);
       invalidate(el, 'one');
       expect(el.one).toBe(12);
+    }));
+
+    it('calls observe method', tree((el) => {
+      expect(observeSpy).toHaveBeenCalledTimes(0);
+      el.five = 1;
+      return resolveRaf(() => {
+        expect(observeSpy).toHaveBeenCalledTimes(1);
+        expect(observeSpy).toHaveBeenCalledWith(el, 1, undefined);
+      });
+    }));
+
+    it('does not call observe method if value did not change', tree((el) => {
+      el.five = 1;
+      return resolveRaf(() => {
+        expect(observeSpy).toHaveBeenCalledTimes(1);
+        el.one = 1;
+        el.five = 2;
+        el.five = 1;
+        return resolveRaf(() => {
+          expect(observeSpy).toHaveBeenCalledTimes(1);
+        });
+      });
     }));
   });
 
@@ -120,7 +157,7 @@ describe('define:', () => {
       <test-define-primitive></test-define-primitive>
     `);
 
-    it('applies property module with passed argument', () => tree((el) => {
+    it('applies property module with passed argument', tree((el) => {
       expect(el.testProperty).toBe('value');
     }));
   });
@@ -134,25 +171,25 @@ describe('define:', () => {
       <test-define-function></test-define-function>
     `);
 
-    it('sets it as getter of the element property', () => tree((el) => {
+    it('sets it as getter of the element property', tree((el) => {
       expect(el.getter).toBe('some value');
     }));
   });
 
   describe('for render key', () => {
-    it('uses render factory if value is a function', () => {
+    it('uses render factory if value is a function', (done) => {
       define('test-define-render', {
-        render: () => {},
+        render: () => () => {},
       });
 
       const tree = test('<test-define-render></test-define-render>');
 
       tree((el) => {
         expect(typeof el.render).toBe('function');
-      });
+      })(done);
     });
 
-    it('does not use render factory if value is not a function', () => {
+    it('does not use render factory if value is not a function', (done) => {
       define('test-define-render-other', {
         render: [],
       });
@@ -161,7 +198,7 @@ describe('define:', () => {
 
       tree((el) => {
         expect(typeof el.render).toBe('object');
-      });
+      })(done);
     });
   });
 
@@ -176,7 +213,7 @@ describe('define:', () => {
       <test-define-empty-object></test-define-empty-object>
     `);
 
-    it('sets object as a property', () => tree((el) => {
+    it('sets object as a property', tree((el) => {
       expect(el.one).toBe(one);
     }));
   });
@@ -224,9 +261,8 @@ describe('define:', () => {
             expect(el.children[0].one).toBe('text');
 
             expect(spy).toHaveBeenCalledTimes(2);
-            done();
           });
-        });
+        })(done);
       });
 
       it('updates elements in shadowRoot', (done) => {
@@ -242,9 +278,8 @@ describe('define:', () => {
           return Promise.resolve().then(() => {
             expect(connect).toHaveBeenCalledTimes(1);
             expect(child.one).toBe('text');
-            done();
           });
-        });
+        })(done);
       });
     });
 

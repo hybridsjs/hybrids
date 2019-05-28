@@ -14,6 +14,7 @@ describe('children:', () => {
     define('test-children-direct', {
       direct: children(child),
       customName: ({ direct }) => direct && direct[0] && direct[0].customName,
+      render: ({ customName }) => html`${customName}`,
     });
 
     const tree = test(`
@@ -28,25 +29,24 @@ describe('children:', () => {
       </test-children-direct>
     `);
 
-    it('returns list', () => tree((el) => {
+    it('returns list', tree((el) => {
       expect(el.direct).toEqual([
         el.children[0],
         el.children[1],
       ]);
     }));
 
-    it('removes item from list', done => tree((el) => {
+    it('removes item from list', tree((el) => {
       el.removeChild(el.children[1]);
 
       return resolveRaf(() => {
         expect(el.direct).toEqual([
           jasmine.objectContaining({ customName: 'one' }),
         ]);
-        done();
       });
     }));
 
-    it('adds item to list', done => tree((el) => {
+    it('adds item to list', tree((el) => {
       const newItem = document.createElement('test-children-child');
       newItem.customName = 'four';
 
@@ -58,11 +58,10 @@ describe('children:', () => {
           jasmine.objectContaining({ customName: 'two' }),
           jasmine.objectContaining({ customName: 'four' }),
         ]);
-        done();
       });
     }));
 
-    it('reorder list items', done => tree((el) => {
+    it('reorder list items', tree((el) => {
       el.insertBefore(el.children[1], el.children[0]);
 
       return resolveRaf(() => {
@@ -70,23 +69,15 @@ describe('children:', () => {
           jasmine.objectContaining({ customName: 'two' }),
           jasmine.objectContaining({ customName: 'one' }),
         ]);
-        done();
       });
     }));
 
-    it('updates parent computed property', done => tree(el => resolveTimeout(() => {
+    it('updates parent computed property', tree(el => resolveTimeout(() => {
       expect(el.customName).toBe('one');
       el.children[0].customName = 'four';
-      let called = false;
-
-      el.addEventListener('@invalidate', ({ target }) => {
-        if (target === el) called = true;
-      });
 
       return resolveRaf(() => {
-        expect(called).toBe(true);
-        expect(el.customName).toBe('four');
-        done();
+        expect(el.shadowRoot.innerHTML).toBe('four');
       });
     })));
   });
@@ -102,7 +93,7 @@ describe('children:', () => {
       </test-children-fn>
     `);
 
-    it('returns item list', () => tree((el) => {
+    it('returns item list', tree((el) => {
       expect(el.direct.length).toBe(1);
       expect(el.direct[0]).toBe(el.children[0]);
     }));
@@ -125,7 +116,7 @@ describe('children:', () => {
       </test-children-deep>
     `);
 
-    it('returns item list', () => tree((el) => {
+    it('returns item list', tree((el) => {
       expect(el.deep).toEqual([
         jasmine.objectContaining({ customName: 'one' }),
         jasmine.objectContaining({ customName: 'two' }),
@@ -133,7 +124,7 @@ describe('children:', () => {
       ]);
     }));
 
-    it('removes item from list', done => tree((el) => {
+    it('removes item from list', tree((el) => {
       el.children[2].innerHTML = '';
 
       return resolveRaf(() => {
@@ -141,11 +132,10 @@ describe('children:', () => {
           jasmine.objectContaining({ customName: 'one' }),
           jasmine.objectContaining({ customName: 'two' }),
         ]);
-        done();
       });
     }));
 
-    it('does not update if other children element is invalidated', done => tree(el => resolveRaf(() => {
+    it('does not update if other children element is invalidated', tree(el => resolveRaf(() => {
       el.children[0].children[0].customName = 'test';
       return resolveRaf(() => {
         expect(el.deep).toEqual([
@@ -153,7 +143,6 @@ describe('children:', () => {
           jasmine.objectContaining({ customName: 'two' }),
           jasmine.objectContaining({ customName: 'three' }),
         ]);
-        done();
       });
     })));
   });
@@ -175,7 +164,7 @@ describe('children:', () => {
       </test-children-nested>
     `);
 
-    it('returns item list', () => tree((el) => {
+    it('returns item list', tree((el) => {
       expect(el.nested).toEqual([
         jasmine.objectContaining({ customName: 'one' }),
         jasmine.objectContaining({ customName: 'five' }),
@@ -184,7 +173,7 @@ describe('children:', () => {
       ]);
     }));
 
-    it('removes item from list', done => tree((el) => {
+    it('removes item from list', tree((el) => {
       el.children[0].innerHTML = '';
 
       return resolveRaf(() => {
@@ -193,7 +182,6 @@ describe('children:', () => {
           jasmine.objectContaining({ customName: 'two' }),
           jasmine.objectContaining({ customName: 'three' }),
         ]);
-        done();
       });
     }));
   });
@@ -229,11 +217,10 @@ describe('children:', () => {
       <test-dynamic-wrapper></test-dynamic-wrapper>
     `);
 
-    it('adds dynamic item', done => tree(el => resolveTimeout(() => {
+    it('adds dynamic item', tree(el => resolveTimeout(() => {
       el.items = ['two'];
       return resolveTimeout(() => {
         expect(el.shadowRoot.children[0].shadowRoot.children[0].children.length).toBe(2);
-        done();
       });
     })));
   });

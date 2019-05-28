@@ -20,13 +20,22 @@ const MyElement = {
 
 Property factory holds a property value with the type transform with fallback to the corresponding attribute value.
 
-The [translation](../core-concepts/translation.md) has two rules, which use property factory. You can set property value as primitive or an object without `get` and `set` methods to define it using property factory.
+### Translation
+
+The [translation](../core-concepts/translation.md) allows using property factory implicitly. You can set a property as a primitive or an array to create descriptor by the property factory under the hood:
+
+```javascript
+const MyElement = {
+  value: 0,
+  items: [],
+};
+```
 
 ## Transform
 
-`property` uses a transform function, which ensures the strict type of the value set by a property or an attribute. 
+`property` factory uses a transform function, which ensures the strict type of the value set by property or an attribute.
 
-The type of the `defaultValue` is used to detect transform function. For example, when `defaultValue` is set to `"text"`, `String` function is used. If the `defaultValue` is a function, it is called when a property value is set.
+The type of `defaultValue` is used to detect the transform function. For example, when `defaultValue` is set to `"text"`, `String` function is used. If the `defaultValue` is a function, it is called when a property value is set.
 
 ### Transform Types
 
@@ -37,7 +46,7 @@ The type of the `defaultValue` is used to detect transform function. For example
 * `object` -> `Object.freeze(value)`
 * `undefined` -> `value`
 
-Object values are frozen to prevent mutation of the own properties, which does not invalidate cached value. Moreover, `defaultValue` is shared between custom element instances, so any of them should not change it.
+Object values are frozen to prevent mutation of their properties, which does not invalidate cached value. Moreover, `defaultValue` is shared between custom element instances, so any of them should not change it.
 
 To omit transform, `defaultValue` has to be set to `undefined`.
 

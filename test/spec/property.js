@@ -26,15 +26,15 @@ describe('property:', () => {
       <test-property string-prop="default value"></test-property>
     `);
 
-    it('uses value from configuration', () => empty((el) => {
+    it('uses value from configuration', empty((el) => {
       expect(el.stringProp).toBe('value');
     }));
 
-    it('uses host attribute', () => tree((el) => {
+    it('uses host attribute', tree((el) => {
       expect(el.stringProp).toBe('default value');
     }));
 
-    it('uses host attribute value only once', done => tree((el) => {
+    it('uses host attribute value only once', tree((el) => {
       const parent = el.parentElement;
 
       el.stringProp = 'new value';
@@ -45,7 +45,6 @@ describe('property:', () => {
 
         Promise.resolve().then(() => {
           expect(el.stringProp).toBe('new value');
-          done();
           resolve();
         });
       });
@@ -69,11 +68,11 @@ describe('property:', () => {
       <test-property number-prop="321"></test-property>
     `);
 
-    it('transforms attribute to number', () => tree((el) => {
+    it('transforms attribute to number', tree((el) => {
       expect(el.numberProp).toBe(321);
     }));
 
-    it('transforms property to number', () => empty((el) => {
+    it('transforms property to number', empty((el) => {
       el.numberProp = '321';
       expect(el.numberProp).toBe(321);
     }));
@@ -84,17 +83,19 @@ describe('property:', () => {
       <test-property bool-prop></test-property>
     `);
 
-    it('transforms attribute to boolean', () => {
+    it('transforms unset attribute to boolean', (done) => {
       empty((el) => {
         expect(el.boolProp).toBe(false);
-      });
-
-      tree((el) => {
-        expect(el.boolProp).toBe(true);
-      });
+      })(done);
     });
 
-    it('transforms property to number', () => empty((el) => {
+    it('transforms set attribute to boolean', (done) => {
+      tree((el) => {
+        expect(el.boolProp).toBe(true);
+      })(done);
+    });
+
+    it('transforms property to number', empty((el) => {
       el.boolProp = 'value';
       expect(el.boolProp).toBe(true);
 
@@ -122,7 +123,7 @@ describe('property:', () => {
       });
     });
 
-    it('transforms property with function', () => empty((el) => {
+    it('transforms property with function', empty((el) => {
       el.funcProp = false;
       expect(el.funcProp).toEqual({
         value: false,
@@ -135,13 +136,11 @@ describe('property:', () => {
       <test-property obj-prop="asd"></test-property>
     `);
 
-    it('does not transform attribute', () => {
-      tree((el) => {
-        expect(el.objProp).toBe(objProp);
-      });
-    });
+    it('does not transform attribute', tree((el) => {
+      expect(el.objProp).toBe(objProp);
+    }));
 
-    it('set object value', () => empty((el) => {
+    it('set object value', empty((el) => {
       const value = {};
       el.objProp = value;
       expect(el.objProp).toBe(value);
@@ -150,7 +149,7 @@ describe('property:', () => {
       expect(el.objProp).toBe(null);
     }));
 
-    it('throws when set with other type than object', () => empty((el) => {
+    it('throws when set with other type than object', empty((el) => {
       expect(() => { el.objProp = false; }).toThrow();
     }));
   });
@@ -160,25 +159,22 @@ describe('property:', () => {
       <test-property null-prop="test value" undefined-prop="test value"></test-property>
     `);
 
-    it('does not transform attribute', () => {
-      empty((el) => {
-        expect(el.nullProp).toBe(null);
-        expect(el.undefinedProp).toBe(undefined);
-      });
+    it('does not transform attribute', empty((el) => {
+      expect(el.nullProp).toBe(null);
+      expect(el.undefinedProp).toBe(undefined);
+    }));
+    it('does not transform attribute', tree((el) => {
+      expect(el.nullProp).toBe(null);
+      expect(el.undefinedProp).toBe(undefined);
+    }));
 
-      tree((el) => {
-        expect(el.nullProp).toBe(null);
-        expect(el.undefinedProp).toBe(undefined);
-      });
-    });
-
-    it('passes null property without transform', () => empty((el) => {
+    it('passes null property without transform', empty((el) => {
       const obj = {};
       el.nullProp = obj;
       expect(el.nullProp).toBe(obj);
     }));
 
-    it('passes undefined property without transform', () => empty((el) => {
+    it('passes undefined property without transform', empty((el) => {
       el.undefinedProp = false;
       expect(el.undefinedProp).toBe(false);
 
@@ -189,13 +185,13 @@ describe('property:', () => {
   });
 
   describe('connect option', () => {
-    it('is called', () => {
+    it('is called', (done) => {
       const spy = jasmine.createSpy('connect');
       define('test-property-connect', {
         prop: property(0, spy),
       });
 
-      test('<test-property-connect></test-property-connect>')(() => expect(spy).toHaveBeenCalledTimes(1));
+      test('<test-property-connect></test-property-connect>')(() => expect(spy).toHaveBeenCalledTimes(1))(done);
     });
   });
 });
