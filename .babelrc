@@ -1,11 +1,11 @@
 {
   "presets": [
-    ["@babel/preset-env", { "modules": false }]
+    ["@babel/preset-env", { "modules": false, "targets": "IE 11" }]
   ],
   "env": {
     "cjs": {
       "presets": [
-        ["@babel/preset-env", { "modules": "commonjs" }]
+        ["@babel/preset-env", { "modules": "commonjs", "targets": "IE 11" }]
       ]
     },
     "coverage": {
