@@ -1,7 +1,7 @@
 {
   "name": "hybrids",
   "version": "4.0.0",
-  "description": "UI library for creating Web Components",
+  "description": "Web Components from plain objects and pure functions!",
   "main": "lib/index.js",
   "module": "esm/index.js",
   "jsnext:main": "esm/index.js",
@@ -25,7 +25,8 @@
     "shadow dom",
     "user interface",
     "framework",
-    "pwa"
+    "pwa",
+    "pure functions"
   ],
   "license": "MIT",
   "devDependencies": {
