@@ -34,7 +34,7 @@ function compile(Hybrid, hybrids) {
 
     if (type === 'function') {
       config = key === 'render' ? render(value) : { get: value };
-    } else if (value === null || type !== 'object' || (type === 'object' && !value.get && !value.set && !value.connect)) {
+    } else if (value === null || type !== 'object' || (Array.isArray(value))) {
       config = property(value);
     } else {
       config = {

@@ -90,8 +90,8 @@ describe('define:', () => {
       expect(el.two).toBe(100);
     }));
 
-    it('sets property for empty descriptor', () => tree((el) => {
-      expect(el.three).toEqual({ one: 'one', two: 'two' });
+    it('does not set property for object descriptor', () => tree((el) => {
+      expect(el.three).toEqual(undefined);
     }));
 
     it('uses default get and set methods when both omitted', () => tree((el) => {
@@ -165,13 +165,11 @@ describe('define:', () => {
     });
   });
 
-  describe('for empty object descriptor', () => {
-    const one = {};
-    const two = [];
+  describe('for array descriptor', () => {
+    const one = [];
 
     define('test-define-empty-object', {
       one,
-      two,
     });
 
     const tree = test(`
@@ -180,7 +178,6 @@ describe('define:', () => {
 
     it('sets object as a property', () => tree((el) => {
       expect(el.one).toBe(one);
-      expect(el.two).toBe(two);
     }));
   });
 
