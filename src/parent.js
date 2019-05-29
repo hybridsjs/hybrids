@@ -21,19 +21,9 @@ export default function parent(hybridsOrFn) {
     get: host => walk(host, fn),
     connect(host, key, invalidate) {
       const target = host[key];
-      const cb = (event) => {
-        if (event.target === target) invalidate(false);
-      };
-
       if (target) {
-        target.addEventListener('@invalidate', cb);
-
-        return () => {
-          target.removeEventListener('@invalidate', cb);
-          invalidate();
-        };
+        return invalidate;
       }
-
       return false;
     },
   };

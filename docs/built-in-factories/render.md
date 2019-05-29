@@ -25,13 +25,19 @@ export const MyElement = {
 };
 ```
 
+Render factory creates and updates the DOM structure of your custom element. It works out of the box with built-in [template engine](../template-engine/introduction.md), but the passed `fn` function may use any external UI library, that renders DOM.
+
 👆 [Click and play with `render` factory using  `React` library on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js)
 
-Render factory creates and updates the DOM structure of your custom element. It works out of the box with built-in [template engine](../template-engine/introduction.md), but the passed `fn` function may use any external UI library, that renders DOM.
+Render factory trigger update of the DOM by the `observe` method of the descriptor. It means that an update is scheduled with the internal queue and executed in the next animation frame. The passed `fn` is always called for the first time and when related properties change.
+
+If you use render factory for wrapping other UI libraries remember to access required properties from the `host` synchronously in the body of `fn` function (only then cache mechanism can save dependencies for the update). Otherwise, your function might be called only once.
 
 👆 [Click and play with `render` factory using  `lit-html` library on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-lit-html-counter?file=lit-counter.js)
 
-The `render` key of the property is not mandatory. However, the first rule of the [translation](../core-concepts/translation.md) makes possible to pass `fn` function as a `render` property value to use render factory:
+### Translation
+
+The `render` key of the property is not mandatory. However, the first rule of the [translation](../core-concepts/translation.md) makes possible to pass `fn` function as a `render` property to use render factory:
 
 ```javascript
 import { html } from 'hybrids';
@@ -42,13 +48,24 @@ const MyElement = {
 };
 ```
 
-### Shadow DOM
+## Manual Update
 
-The factory by default uses [Shadow DOM](https://developer.mozilla.org/docs/Web/Web_Components/Using_shadow_DOM) as a `target`, which is created synchronously in `connect` callback. It is expected behavior, so usually you can omit `options` object and use [translation](../core-concepts/translation.md) rule for the render factory. 
+It is possible to trigger an update by calling property manually on the element instance:
+
+```javascript
+const myElement = document.getElementsByTagName('my-element')[0];
+myElement.render();
+```
+
+Property defined with `render` factory uses the same cache mechanism like other properties. The update process calls `fn` only if related properties have changed.
+
+## Shadow DOM
+
+The factory by default uses [Shadow DOM](https://developer.mozilla.org/docs/Web/Web_Components/Using_shadow_DOM) as a `target`, which is created synchronously in `connect` callback. It is expected behavior, so usually you can omit `options` object and use [translation](../core-concepts/translation.md) rule for the render factory.
 
 Although, If your element does not require [style encapsulation](https://developers.google.com/web/fundamentals/web-components/shadowdom#styling) and [children distribution](https://developers.google.com/web/fundamentals/web-components/shadowdom#composition_slot) (`<slot>` element can be used only inside of the `shadowRoot`) you can disable Shadow DOM in the `options` object. Then, `target` argument of the update function become a `host`. In the result, your template will replace children content of the custom element (in Light DOM).
 
-Keep in mind, that the `options` can be passed only with `render(fn, options)` factory function called explicitly:
+Keep in mind that the `options` can be passed only with `render(fn, options)` factory function called explicitly:
 
 ```javascript
 import { html, render } from 'hybrids';
@@ -62,28 +79,11 @@ const MyElement = {
 };
 ```
 
-## Update Mechanism
-
-Render factory updates an element using global render scheduler. It listens to `@invalidate` event triggered by the change detection. It schedules update with `requestAnimationFrame()` API and adds an element to the queue. The DOM is updated when one of the properties used in `fn` changes.
-
-However, if execution of the update passes ~16ms threshold (it counts from the beginning of the schedule), the following elements in the queue are updated within the next `requestAnimationFrame()`.
-
-### Manual Update
-
-It is possible to trigger an update by calling property manually on the element instance:
-
-```javascript
-const myElement = document.getElementsByTagName('my-element')[0];
-myElement.render();
-```
-
-Property defined with `render` factory uses the same cache mechanism like other properties. The update process calls `fn` only if related properties have changed.
-
 ## Unit Testing
 
-Because of the asynchronous update mechanism with threshold, it might be tricky to test if custom element instance renders correctly. However, you can create your unit tests on the basis of the definition itself. 
+Because of the asynchronous update mechanism with threshold, it might be tricky to test if the custom element instance renders correctly. However, you can create your unit tests based on the definition itself.
 
-The render key is usually a function, which returns update function. It can be called synchronously with mocked host and arbitrary target element (for example `<div>` element):
+The render key is usually a function, which returns the update function. It can be called synchronously with mocked host and arbitrary target element (for example `<div>` element):
 
 ```javascript
 import { html } from 'hybrids';

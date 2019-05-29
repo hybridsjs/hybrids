@@ -132,7 +132,7 @@ function createExternalWalker(context) {
 const createWalker = typeof window.ShadyDOM === 'object' && window.ShadyDOM.inUse ? createInternalWalker : createExternalWalker;
 
 const container = document.createElement('div');
-export function compile(rawParts, isSVG, styles) {
+export function compileTemplate(rawParts, isSVG, styles) {
   const template = document.createElement('template');
   const parts = [];
 
@@ -239,7 +239,7 @@ export function compile(rawParts, isSVG, styles) {
     compileIndex += 1;
   }
 
-  return (host, target, args) => {
+  return function updateTemplateInstance(host, target, args) {
     const data = dataMap.get(target, { type: 'function' });
 
     if (template !== data.template) {
@@ -255,7 +255,8 @@ export function compile(rawParts, isSVG, styles) {
 
       const markers = [];
 
-      Object.assign(data, { template, markers });
+      data.template = template;
+      data.markers = markers;
 
       while (renderWalker.nextNode()) {
         const node = renderWalker.currentNode;
@@ -298,10 +299,24 @@ export function compile(rawParts, isSVG, styles) {
       }
     }
 
-    data.markers.forEach(([node, fn], index) => {
-      if (data.lastArgs && data.lastArgs[index] === args[index]) return;
-      fn(host, node, args[index], data.lastArgs ? data.lastArgs[index] : undefined);
-    });
+    for (let index = 0; index < data.markers.length; index += 1) {
+      const [node, marker] = data.markers[index];
+      if (!data.lastArgs || data.lastArgs[index] !== args[index]) {
+        marker(host, node, args[index], data.lastArgs ? data.lastArgs[index] : undefined);
+      }
+    }
+
+    if (target.nodeType !== Node.TEXT_NODE) {
+      shadyCSS((shady) => {
+        if (host.shadowRoot) {
+          if (data.lastArgs) {
+            shady.styleSubtree(host);
+          } else {
+            shady.styleElement(host);
+          }
+        }
+      });
+    }
 
     data.lastArgs = args;
   };

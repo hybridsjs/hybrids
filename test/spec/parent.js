@@ -44,12 +44,12 @@ describe('parent:', () => {
     </test-parent-parent>
   `);
 
-  it('connects with direct parent element', () => directParentTree((el) => {
+  it('connects with direct parent element', directParentTree((el) => {
     const child = el.children[0];
     expect(child.parent).toBe(el);
   }));
 
-  it('disconnects from parent element', done => directParentTree((el) => {
+  it('disconnects from parent element', directParentTree((el) => {
     const child = el.children[0];
     expect(child.parent).toBe(el);
 
@@ -58,16 +58,15 @@ describe('parent:', () => {
 
     return Promise.resolve().then(() => {
       expect(child.parent).toBe(null);
-      done();
     });
   }));
 
-  it('connects to indirect parent element', () => indirectParentTree((el) => {
+  it('connects to indirect parent element', indirectParentTree((el) => {
     const child = el.children[0].children[0];
     expect(child.parent).toBe(el);
   }));
 
-  it('connects to out of the shadow parent element', () => shadowParentTree((el) => {
+  it('connects to out of the shadow parent element', shadowParentTree((el) => {
     const shadowRoot = el.attachShadow({ mode: 'open' });
     const child = document.createElement('test-parent-child');
     const wrapper = document.createElement('div');
@@ -77,35 +76,25 @@ describe('parent:', () => {
     expect(child.parent).toBe(el);
   }));
 
-  it('connects to parent by a function argument', () => fnParentTree((el) => {
+  it('connects to parent by a function argument', fnParentTree((el) => {
     const child = el.children[0];
     expect(child.parent).toBe(el);
   }));
 
-  it('returns null for no parent', () => noParentTree((el) => {
+  it('returns null for no parent', noParentTree((el) => {
     expect(el.parent).toBe(null);
   }));
 
-  it('updates child computed property', done => directParentTree((el) => {
-    Promise.resolve().then(() => {
-      const spy = jasmine.createSpy('event callback');
-      const child = el.children[0];
+  it('updates child computed property', directParentTree(el => Promise.resolve().then(() => {
+    const child = el.children[0];
 
-      expect(el.customProperty).toBe('value');
-      expect(child.computed).toBe('value other value');
+    expect(el.customProperty).toBe('value');
+    expect(child.computed).toBe('value other value');
 
-      child.addEventListener('@invalidate', spy);
+    el.customProperty = 'new value';
 
-      el.customProperty = 'new value';
-
-      Promise.resolve().then(() => {
-        Promise.resolve().then(() => {
-          expect(spy).toHaveBeenCalledTimes(1);
-          expect(child.computed).toBe('new value other value');
-
-          done();
-        });
-      });
-    });
-  }));
+    return Promise.resolve().then(() => Promise.resolve().then(() => {
+      expect(child.computed).toBe('new value other value');
+    }));
+  })));
 });

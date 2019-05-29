@@ -1,13 +1,13 @@
-import { get, set, invalidate } from '../../src/cache';
+import {
+  get, set, invalidate, observe,
+} from '../../src/cache';
 
 describe('cache:', () => {
   let target;
   let getSpy;
-  let setSpy;
 
   beforeEach(() => {
     getSpy = jasmine.createSpy('getter');
-    setSpy = jasmine.createSpy('setter');
 
     target = {
       value: 1,
@@ -21,7 +21,7 @@ describe('cache:', () => {
         set(target, 'one', () => {
           this.value = value;
           return value;
-        }, value, setSpy);
+        }, value);
       },
       get two() {
         return get(target, 'two', () => this.one);
@@ -38,7 +38,6 @@ describe('cache:', () => {
   it('set value', () => {
     target.one = 'value';
     expect(target.one).toBe('value');
-    expect(setSpy).toHaveBeenCalledTimes(1);
   });
 
   it('does not call get when set not changes value', () => {
@@ -153,6 +152,105 @@ describe('cache:', () => {
       deps.source = 'new value';
       expect(withDeps.key).toBe('new value');
       expect(spy).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('observe', () => {
+    let obj;
+    let contextObj;
+    let spy;
+
+    const getContext = () => get(obj, 'obj', (t, v) => v);
+
+    beforeEach(() => {
+      obj = {};
+      contextObj = {};
+      spy = jasmine.createSpy('start spy');
+      set(obj, 'obj', (t, v) => v, 'value');
+    });
+
+    it('- should call callback', (done) => {
+      observe(contextObj, 'context', spy);
+      expect(get(contextObj, 'context', getContext)).toBe('value');
+      requestAnimationFrame(() => {
+        expect(spy).toHaveBeenCalledTimes(1);
+        done();
+      });
+    });
+
+    it('- should call callback when dependency value changes', (done) => {
+      observe(contextObj, 'context', spy);
+      expect(get(contextObj, 'context', getContext)).toBe('value');
+
+      requestAnimationFrame(() => {
+        set(obj, 'obj', (t, v) => v, 'new value');
+        requestAnimationFrame(() => {
+          expect(spy).toHaveBeenCalledTimes(2);
+          done();
+        });
+      });
+    });
+
+    it('- should call callback when deep dependency value changes', (done) => {
+      observe(contextObj, 'context', spy);
+      expect(get(contextObj, 'context', getContext)).toBe('value');
+
+      const deepObj = {};
+      set(deepObj, 'deep', (t, v) => v, 'value');
+
+      invalidate(obj, 'obj');
+      get(obj, 'obj', () => {
+        const result = get(deepObj, 'deep', (t, v) => v);
+        return result;
+      });
+
+      requestAnimationFrame(() => {
+        expect(spy).toHaveBeenCalledTimes(1);
+        spy = jasmine.createSpy();
+        observe(contextObj, 'context', spy);
+
+        requestAnimationFrame(() => {
+          set(deepObj, 'deep', (t, v) => v, 'new value');
+
+          requestAnimationFrame(() => {
+            expect(spy).toHaveBeenCalledTimes(2);
+            done();
+          });
+        });
+      });
+    });
+
+    it('- removes contexts from deps when context changes dependencies', (done) => {
+      observe(contextObj, 'context', spy);
+
+      expect(get(contextObj, 'context', getContext)).toBe('value');
+      set(contextObj, 'context', (t, v) => v, 'another value');
+      expect(get(contextObj, 'context', (t, v) => v)).toBe('another value');
+
+
+      requestAnimationFrame(() => {
+        set(obj, 'obj', (t, v) => v, 'better value');
+        requestAnimationFrame(() => {
+          expect(spy).toHaveBeenCalledTimes(1);
+          done();
+        });
+      });
+    });
+
+    it('- skips contexts from deps when context changes dependencies', (done) => {
+      expect(get(contextObj, 'context', getContext)).toBe('value');
+      set(contextObj, 'context', (t, v) => v, 'another value');
+      expect(get(contextObj, 'context', (t, v) => v)).toBe('another value');
+
+      observe(contextObj, 'context', spy);
+
+      requestAnimationFrame(() => {
+        set(obj, 'obj', (t, v) => v, 'better value');
+        requestAnimationFrame(() => {
+          expect(spy).toHaveBeenCalledTimes(1);
+          done();
+        });
+      });
     });
   });
 });

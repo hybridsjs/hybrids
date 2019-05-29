@@ -2,45 +2,34 @@ import property from './property';
 import render from './render';
 
 import * as cache from './cache';
-import { dispatch, pascalToDash, deferred } from './utils';
+import { pascalToDash, deferred } from './utils';
 
 /* istanbul ignore next */
 try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
 
-const dispatchSet = new Set();
-
-function dispatchInvalidate(host) {
-  if (!dispatchSet.size) {
-    deferred.then(() => {
-      dispatchSet.forEach(target => dispatch(target, '@invalidate', { bubbles: true }));
-      dispatchSet.clear();
-    });
-  }
-
-  dispatchSet.add(host);
-}
-
 const defaultMethod = (host, value) => value;
 
-function compile(Hybrid, hybrids) {
-  Hybrid.hybrids = hybrids;
+function compile(Hybrid, descriptors) {
+  Hybrid.hybrids = descriptors;
   Hybrid.connects = [];
+  Hybrid.observers = [];
 
-  Object.keys(hybrids).forEach((key) => {
-    const value = hybrids[key];
-    const type = typeof value;
+  Object.keys(descriptors).forEach((key) => {
+    const desc = descriptors[key];
+    const type = typeof desc;
 
     let config;
 
     if (type === 'function') {
-      config = key === 'render' ? render(value) : { get: value };
-    } else if (value === null || type !== 'object' || (Array.isArray(value))) {
-      config = property(value);
+      config = key === 'render' ? render(desc) : { get: desc };
+    } else if (type !== 'object' || desc === null || (Array.isArray(desc))) {
+      config = property(desc);
     } else {
       config = {
-        get: value.get || defaultMethod,
-        set: value.set || (!value.get && defaultMethod) || undefined,
-        connect: value.connect,
+        get: desc.get || defaultMethod,
+        set: desc.set || (!desc.get && defaultMethod) || undefined,
+        connect: desc.connect,
+        observe: desc.observe,
       };
     }
 
@@ -49,17 +38,29 @@ function compile(Hybrid, hybrids) {
         return cache.get(this, key, config.get);
       },
       set: config.set && function set(newValue) {
-        cache.set(this, key, config.set, newValue, () => dispatchInvalidate(this));
+        cache.set(this, key, config.set, newValue);
       },
       enumerable: true,
       configurable: process.env.NODE_ENV !== 'production',
     });
 
     if (config.connect) {
-      Hybrid.connects.push(host => config.connect(host, key, (clearCache = true) => {
-        if (clearCache) cache.invalidate(host, key);
-        dispatchInvalidate(host);
+      Hybrid.connects.push(host => config.connect(host, key, () => {
+        cache.invalidate(host, key);
       }));
+    }
+
+    if (config.observe) {
+      Hybrid.observers.push((host) => {
+        let lastValue;
+        cache.observe(host, key, () => {
+          const value = host[key];
+          if (value !== lastValue) {
+            config.observe(host, value, lastValue);
+          }
+          lastValue = value;
+        });
+      });
     }
   });
 }
@@ -93,7 +94,6 @@ if (process.env.NODE_ENV !== 'production') {
             });
 
             node.connectedCallback();
-            dispatchInvalidate(node);
           }
         });
         updateQueue.clear();
@@ -103,7 +103,7 @@ if (process.env.NODE_ENV !== 'production') {
   };
 }
 
-const connects = new WeakMap();
+const disconnects = new WeakMap();
 
 function defineElement(tagName, hybridsOrConstructor) {
   const type = typeof hybridsOrConstructor;
@@ -143,20 +143,32 @@ function defineElement(tagName, hybridsOrConstructor) {
   class Hybrid extends HTMLElement {
     static get name() { return tagName; }
 
-    connectedCallback() {
-      const list = this.constructor.connects.reduce((acc, fn) => {
-        const result = fn(this);
-        if (result) acc.add(result);
-        return acc;
-      }, new Set());
+    constructor() {
+      super();
+      const { observers } = this.constructor;
 
-      connects.set(this, list);
-      dispatchInvalidate(this);
+      for (let index = 0; index < observers.length; index += 1) {
+        observers[index](this);
+      }
+    }
+
+    connectedCallback() {
+      const { connects } = this.constructor;
+      const list = [];
+
+      for (let index = 0; index < connects.length; index += 1) {
+        const disconnect = connects[index](this);
+        if (disconnect) list.push(disconnect);
+      }
+
+      disconnects.set(this, list);
     }
 
     disconnectedCallback() {
-      const list = connects.get(this);
-      list.forEach(fn => fn());
+      const list = disconnects.get(this);
+      for (let index = 0; index < list.length; index += 1) {
+        list[index]();
+      }
     }
   }
 

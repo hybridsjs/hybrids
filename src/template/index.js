@@ -1,9 +1,10 @@
 import defineElements from '../define';
 
-import { compile, getPlaceholder } from './core';
+import { compileTemplate, getPlaceholder } from './core';
 import * as helpers from './helpers';
 
 const PLACEHOLDER = getPlaceholder();
+const SVG_PLACEHOLDER = getPlaceholder('svg');
 
 const templatesMap = new Map();
 const stylesMap = new WeakMap();
@@ -24,22 +25,22 @@ const methods = {
 };
 
 function create(parts, args, isSVG) {
-  const fn = (host, target = host) => {
-    const styles = stylesMap.get(fn);
+  const createTemplate = (host, target = host) => {
+    const styles = stylesMap.get(createTemplate);
     let id = parts.join(PLACEHOLDER);
     if (styles) id += styles.join(PLACEHOLDER);
-    if (isSVG) id += getPlaceholder('svg');
+    if (isSVG) id += SVG_PLACEHOLDER;
 
     let render = templatesMap.get(id);
     if (!render) {
-      render = compile(parts, isSVG, styles);
+      render = compileTemplate(parts, isSVG, styles);
       templatesMap.set(id, render);
     }
 
     render(host, target, args);
   };
 
-  return Object.assign(fn, methods);
+  return Object.assign(createTemplate, methods);
 }
 
 export function html(parts, ...args) {

@@ -9,6 +9,10 @@ To simplify using external custom elements with those created by the library, yo
 ```javascript
 import { define } from 'hybrids';
 
+const MyElement = {
+  ...
+};
+
 // Define one element with explicit tag name
 define('my-element', MyElement);
 ```

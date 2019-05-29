@@ -2,12 +2,13 @@ import { html } from '../../src/template';
 import { createInternalWalker } from '../../src/template/core';
 import define from '../../src/define';
 import { dispatch } from '../../src/utils';
+import { test, resolveTimeout } from '../helpers';
 
 describe('html:', () => {
   let fragment;
 
   beforeEach(() => {
-    fragment = document.createElement('div');
+    fragment = document.createElement('custom-element');
     document.body.appendChild(fragment);
   });
 
@@ -668,7 +669,70 @@ describe('html:', () => {
     });
   });
 
-  describe('shadyCSS polyfill', () => {
+  describe('ShadyDOM polyfill', () => {
+    it('uses internal TreeWalker', () => {
+      const el = document.createElement('div');
+      el.innerHTML = '<div><div>text</div><div>text<div>text</div></div></div>';
+
+      const walker = createInternalWalker(el);
+      let index = 0;
+      while (walker.nextNode()) {
+        expect(walker.currentNode).not.toBeNull();
+        index += 1;
+      }
+      expect(index).toBe(7);
+    });
+  });
+
+  describe('ShadyCSS custom property scope', () => {
+    const TestShadyChild = {
+      value: 0,
+      render: ({ value }) => html`
+        <span>${value}</span>
+        <style>
+          span {
+            color: var(--custom-color);
+          }
+        </style>
+      `,
+    };
+
+    const TestShadyParent = {
+      active: false,
+      render: ({ active }) => html`
+        <test-shady-child class="${{ active }}"></test-shady-child>
+        <style>
+          test-shady-child {
+            --custom-color: red;
+          }
+          test-shady-child.active {
+            --custom-color: blue;
+          }
+        </style>
+      `.define({ TestShadyChild }),
+    };
+
+    define('test-shady-parent', TestShadyParent);
+
+    const shadyTree = test(`
+      <test-shady-parent></test-shady-parent>
+    `);
+
+    it('should set custom property', shadyTree(el => resolveTimeout(() => {
+      const { color } = window.getComputedStyle(el.shadowRoot.children[0].shadowRoot.children[0]);
+      expect(color).toBe('rgb(255, 0, 0)');
+    })));
+
+    it('should update custom property', shadyTree(el => resolveTimeout(() => {
+      el.active = true;
+      return resolveTimeout(() => {
+        const { color } = window.getComputedStyle(el.shadowRoot.children[0].shadowRoot.children[0]);
+        expect(color).toBe('rgb(0, 0, 255)');
+      });
+    })));
+  });
+
+  describe('ShadyCSS encapsulation', () => {
     const render = text => html`
       <div>${text}</div>
       <style>
@@ -689,7 +753,7 @@ describe('html:', () => {
 
       render('test')(one, one.shadowRoot);
       // run second time to check if prepare template is not called twice
-      render('test')(one, one.shadowRoot);
+      // render('test')(one, one.shadowRoot);
 
       render('test')(two, two.shadowRoot);
 
@@ -707,6 +771,55 @@ describe('html:', () => {
       document.body.removeChild(one);
       document.body.removeChild(two);
       document.body.removeChild(globalElement);
+    });
+  });
+
+  describe('ShadyCSS styleElement hook', () => {
+    const shadyCSSApplied = window.ShadyCSS && !window.ShadyCSS.nativeShadow;
+    const render = html`
+      <div>content</div>
+      <style>
+        :host { color: red }
+      </style>
+    `;
+
+    beforeEach(() => {
+      if (!shadyCSSApplied) {
+        window.ShadyCSS = {
+          prepareTemplate: template => template,
+          styleElement: jasmine.createSpy(),
+          styleSubtree: jasmine.createSpy(),
+        };
+      } else {
+        spyOn(window.ShadyCSS, 'styleElement');
+        spyOn(window.ShadyCSS, 'styleSubtree');
+      }
+    });
+
+    afterEach(() => {
+      if (!shadyCSSApplied) {
+        delete window.ShadyCSS;
+      }
+    });
+
+    it('uses styleElement on first paint', () => {
+      fragment.attachShadow({ mode: 'open' });
+      render(fragment, fragment.shadowRoot);
+      expect(window.ShadyCSS.styleElement).toHaveBeenCalled();
+      expect(window.ShadyCSS.styleSubtree).not.toHaveBeenCalled();
+    });
+
+    it('uses styleSubtree on sequential paint', () => {
+      fragment.attachShadow({ mode: 'open' });
+      render(fragment, fragment.shadowRoot);
+      render(fragment, fragment.shadowRoot);
+      expect(window.ShadyCSS.styleSubtree).toHaveBeenCalled();
+    });
+
+    it('does not use ShadyCSS when shadowRoot is not used', () => {
+      render(fragment, fragment);
+      expect(window.ShadyCSS.styleElement).not.toHaveBeenCalled();
+      expect(window.ShadyCSS.styleSubtree).not.toHaveBeenCalled();
     });
   });
 
@@ -738,21 +851,6 @@ describe('html:', () => {
         document.body.removeChild(el);
         done();
       }, 100);
-    });
-  });
-
-  describe('ShadyDOM polyfill', () => {
-    it('uses internal TreeWalker', () => {
-      const el = document.createElement('div');
-      el.innerHTML = '<div><div>text</div><div>text<div>text</div></div></div>';
-
-      const walker = createInternalWalker(el);
-      let index = 0;
-      while (walker.nextNode()) {
-        expect(walker.currentNode).not.toBeNull();
-        index += 1;
-      }
-      expect(index).toBe(7);
     });
   });
 
