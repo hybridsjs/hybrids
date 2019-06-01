@@ -108,6 +108,7 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 
 * [From classes to plain objects and pure functions](https://dev.to/smalluban/from-classes-to-plain-objects-and-pure-functions-2gip)
 * [Say goodbye to lifecycle methods, and focus on productive code](https://dev.to/smalluban/how-to-say-goodbye-to-lifecycle-methods-and-focus-on-productive-code-175)
+* [Chasing the best performance of rendering the DOM by hybrids library](https://dev.to/smalluban/chasing-the-best-performance-of-rendering-the-dom-by-hybrids-library-436d)
 
 ### Videos
 
