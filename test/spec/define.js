@@ -146,6 +146,14 @@ describe('define:', () => {
         });
       });
     }));
+
+    it('does not call observe method if element is disconnected', tree((el) => {
+      el.five = 1;
+      el.parentElement.removeChild(el);
+      return resolveRaf(() => {
+        expect(observeSpy).toHaveBeenCalledTimes(0);
+      });
+    }));
   });
 
   describe('for primitive value', () => {
@@ -226,6 +234,12 @@ describe('define:', () => {
     const CustomElement = define('test-define-multiple', hybrids);
     define('test-define-multiple-two', {});
 
+    const editTree = test(`
+      <test-define-multiple>
+        <test-define-multiple-two></test-define-multiple-two>
+      </test-define-multiple>
+    `);
+
     beforeEach(() => {
       window.env = 'development';
     });
@@ -264,6 +278,29 @@ describe('define:', () => {
           });
         })(done);
       });
+
+      it('updates & calls observe only on connected elements when hybrids does not match', editTree((el) => {
+        const spy = jasmine.createSpy('connect');
+        const newHybrids = {
+          one: 'text',
+          two: {
+            get: () => 'test',
+            observe: spy,
+          },
+        };
+
+        define('test-define-multiple', newHybrids);
+        define('test-define-multiple-two', newHybrids);
+
+        el.innerHTML = '<test-define-multiple-two></test-define-multiple-two>';
+
+        return resolveRaf(() => {
+          expect(el.one).toBe('text');
+          expect(el.children[0].one).toBe('text');
+
+          expect(spy).toHaveBeenCalledTimes(2);
+        });
+      }));
 
       it('updates elements in shadowRoot', (done) => {
         test('<div></div>')((el) => {

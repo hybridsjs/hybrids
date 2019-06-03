@@ -136,5 +136,5 @@ export function invalidate(target, key, clearValue) {
 export function observe(target, key, fn) {
   const entry = getEntry(target, key);
   entry.observed = true;
-  emitter.subscribe(entry, fn);
+  return emitter.subscribe(entry, fn);
 }

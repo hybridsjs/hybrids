@@ -11,8 +11,7 @@ const defaultMethod = (host, value) => value;
 
 function compile(Hybrid, descriptors) {
   Hybrid.hybrids = descriptors;
-  Hybrid.connects = [];
-  Hybrid.observers = [];
+  Hybrid.callbacks = [];
 
   Object.keys(descriptors).forEach((key) => {
     const desc = descriptors[key];
@@ -45,20 +44,20 @@ function compile(Hybrid, descriptors) {
     });
 
     if (config.connect) {
-      Hybrid.connects.push(host => config.connect(host, key, () => {
+      Hybrid.callbacks.push(host => config.connect(host, key, () => {
         cache.invalidate(host, key);
       }));
     }
 
     if (config.observe) {
-      Hybrid.observers.push((host) => {
+      Hybrid.callbacks.push((host) => {
         let lastValue;
-        cache.observe(host, key, () => {
+        return cache.observe(host, key, () => {
           const value = host[key];
           if (value !== lastValue) {
             config.observe(host, value, lastValue);
+            lastValue = value;
           }
-          lastValue = value;
         });
       });
     }
@@ -143,22 +142,13 @@ function defineElement(tagName, hybridsOrConstructor) {
   class Hybrid extends HTMLElement {
     static get name() { return tagName; }
 
-    constructor() {
-      super();
-      const { observers } = this.constructor;
-
-      for (let index = 0; index < observers.length; index += 1) {
-        observers[index](this);
-      }
-    }
-
     connectedCallback() {
-      const { connects } = this.constructor;
+      const { callbacks } = this.constructor;
       const list = [];
 
-      for (let index = 0; index < connects.length; index += 1) {
-        const disconnect = connects[index](this);
-        if (disconnect) list.push(disconnect);
+      for (let index = 0; index < callbacks.length; index += 1) {
+        const cb = callbacks[index](this);
+        if (cb) list.push(cb);
       }
 
       disconnects.set(this, list);

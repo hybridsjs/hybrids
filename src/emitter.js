@@ -37,6 +37,9 @@ export function dispatch(target) {
 }
 
 export function subscribe(target, cb) {
-  getListeners(target).add(cb);
+  const listeners = getListeners(target);
+  listeners.add(cb);
   dispatch(target);
+
+  return () => listeners.delete(cb);
 }
