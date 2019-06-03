@@ -244,6 +244,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
 
     if (template !== data.template) {
       if (data.template) removeTemplate(target);
+      data.lastArgs = null;
 
       const fragment = document.importNode(applyShadyCSS(template, host.tagName).content, true);
 

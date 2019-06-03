@@ -55,6 +55,12 @@ describe('html:', () => {
     expect(() => (html`<missing-element></missing-element>`)(fragment)).not.toThrow();
   });
 
+  it('clears arguments cache when template changes', () => {
+    html`<div>${10}</div>`(fragment);
+    html`<span>${10}</span>`(fragment);
+    expect(fragment.children[0].innerHTML).toBe('10');
+  });
+
   describe('attribute expression with combined text value', () => {
     const render = (two, three) => html`<div name="test" class="class-one ${two} ${three}"></div>`;
 
