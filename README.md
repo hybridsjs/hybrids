@@ -75,10 +75,22 @@ For older browsers support you can use the built version (with `window.hybrids` 
 ```html
 <script src="https://unpkg.com/hybrids@[PUT_VERSION_HERE:x.x.x]/dist/hybrids.js"></script>
 <script>
-  const { html, define } = window.hybrids;
+  var define = window.hybrids.define;
+  var html = window.hybrids.html;
   ...
 </script>
 ```
+
+### Hot Module Replacement
+
+HMR works out of the box, but your bundler setup may require indication that your entry point supports it. For [`webpack`](https://webpack.js.org) and [`parcel`](https://parceljs.org/) add the following code to your entry point:
+
+```javascript
+// Enable HMR for development
+if (process.env.NODE_ENV !== 'production') module.hot.accept();
+```
+
+If your entry point imports files that do not support HMR, you can place the above snippet in a module where you define a custom element. (where `define` method is used).
 
 ## Overview
 
