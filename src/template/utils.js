@@ -1,11 +1,10 @@
 const map = new WeakMap();
 export const dataMap = {
   get(key, defaultValue) {
-    if (map.has(key)) {
-      return map.get(key);
-    }
+    const value = map.get(key);
+    if (value) return value;
 
-    if (defaultValue !== undefined) {
+    if (defaultValue) {
       map.set(key, defaultValue);
     }
 
@@ -28,19 +27,26 @@ export function getTemplateEnd(node) {
 }
 
 export function removeTemplate(target) {
-  const data = dataMap.get(target);
-  const startNode = data.startNode;
+  if (target.nodeType !== Node.TEXT_NODE) {
+    let child = target.childNodes[0];
+    while (child) {
+      target.removeChild(child);
+      child = target.childNodes[0];
+    }
+  } else {
+    const data = dataMap.get(target);
 
-  if (startNode) {
-    const endNode = getTemplateEnd(data.endNode);
+    if (data.startNode) {
+      const endNode = getTemplateEnd(data.endNode);
 
-    let node = startNode;
-    const lastNextSibling = endNode.nextSibling;
+      let node = data.startNode;
+      const lastNextSibling = endNode.nextSibling;
 
-    while (node) {
-      const nextSibling = node.nextSibling;
-      node.parentNode.removeChild(node);
-      node = nextSibling !== lastNextSibling && nextSibling;
+      while (node) {
+        const nextSibling = node.nextSibling;
+        node.parentNode.removeChild(node);
+        node = nextSibling !== lastNextSibling && nextSibling;
+      }
     }
   }
 }

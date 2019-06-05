@@ -69,7 +69,7 @@ describe('render:', () => {
   });
 
   describe('options object with shadowRoot option', () => {
-    it('for false appends template to light DOM', (done) => {
+    it('for false renders template in light DOM', (done) => {
       define('test-render-light-dom', {
         testValue: true,
         render: render(({ testValue }) => (testValue
@@ -86,16 +86,14 @@ describe('render:', () => {
           <div>other content</div>
         </test-render-light-dom>
       `)(el => resolveRaf(() => {
-        expect(el.children.length).toBe(2);
-        expect(el.children[0].innerHTML).toBe('other content');
-        expect(el.children[1].innerHTML).toBe('true');
+        expect(el.children.length).toBe(1);
+        expect(el.children[0].innerHTML).toBe('true');
 
         el.testValue = false;
 
         return resolveRaf(() => {
-          expect(el.children.length).toBe(2);
-          expect(el.children[0].innerHTML).toBe('other content');
-          expect(el.children[1].innerHTML).toBe('false');
+          expect(el.children.length).toBe(1);
+          expect(el.children[0].innerHTML).toBe('false');
         });
       }))(done);
     });

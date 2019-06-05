@@ -243,7 +243,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
     const data = dataMap.get(target, { type: 'function' });
 
     if (template !== data.template) {
-      if (data.template) removeTemplate(target);
+      if (data.template || target.nodeType === Node.ELEMENT_NODE) removeTemplate(target);
       data.lastArgs = null;
 
       const fragment = document.importNode(applyShadyCSS(template, host.tagName).content, true);
@@ -283,10 +283,10 @@ export function compileTemplate(rawParts, isSVG, styles) {
         renderIndex += 1;
       }
 
-      data.startNode = fragment.childNodes[0];
-      data.endNode = fragment.childNodes[fragment.childNodes.length - 1];
-
       if (target.nodeType === Node.TEXT_NODE) {
+        data.startNode = fragment.childNodes[0];
+        data.endNode = fragment.childNodes[fragment.childNodes.length - 1];
+
         let previousChild = target;
 
         let child = fragment.childNodes[0];

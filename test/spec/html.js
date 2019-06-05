@@ -1,6 +1,7 @@
 import { html } from '../../src/template';
 import { createInternalWalker } from '../../src/template/core';
 import define from '../../src/define';
+import renderFactory from '../../src/render';
 import { dispatch } from '../../src/utils';
 import { test, resolveTimeout } from '../helpers';
 
@@ -59,6 +60,21 @@ describe('html:', () => {
     html`<div>${10}</div>`(fragment);
     html`<span>${10}</span>`(fragment);
     expect(fragment.children[0].innerHTML).toBe('10');
+  });
+
+  it('replaces resolved nested custom element template', (done) => {
+    define('test-replace-trigger', {
+      render: renderFactory(() => html`content`, { shadowRoot: false }),
+    });
+
+    const render = flag => html`${flag && html`<test-replace-trigger></test-replace-trigger>`}<button></button>`;
+    render(true)(fragment);
+
+    resolveTimeout(() => {
+      render(false)(fragment);
+      expect(fragment.children.length).toBe(1);
+      done();
+    });
   });
 
   describe('attribute expression with combined text value', () => {
