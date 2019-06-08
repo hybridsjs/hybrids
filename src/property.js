@@ -4,7 +4,7 @@ const defaultTransform = v => v;
 
 const objectTransform = (value) => {
   if (typeof value !== 'object') {
-    throw TypeError(`Assigned value must be an object: ${typeof v}`);
+    throw TypeError(`Assigned value must be an object: ${typeof value}`);
   }
   return value && Object.freeze(value);
 };
