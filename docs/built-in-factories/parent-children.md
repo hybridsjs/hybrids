@@ -59,7 +59,7 @@ children(hybridsOrFn: Object | Function: (hybrids) => {...}: Boolean, [options: 
   * a property descriptor, which resolves to `array` of `Element` instances
 
 Children factory connects children elements (only from the light DOM). Without options, only direct children of the element are in the list. `deep` option allows traversing
-deeper children. `nested` option allows adding nested children of that element if the condition is met (`nested` option works only with turn on `deep` option).
+deeper children. `nested` option allows adding nested children of that element if the condition is met (`nested` option works only with `deep` option turned on).
 
 In the same way, as parent factory works, it invalidates a list when a property of one of the elements from the list invalidates:
 
