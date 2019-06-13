@@ -1,5 +1,6 @@
-<h1>
-  <img src="docs/assets/hybrids-logo.svg" width="70" align="center">
+<h1 align="center">
+  <img src="docs/assets/hybrids-logo.svg" width="200" align="center">
+  <br/>
   <big>hybrids</big>
 </h1>
 
@@ -7,17 +8,22 @@
 [![bundle size](https://img.shields.io/bundlephobia/minzip/hybrids.svg?label=minzip)](https://bundlephobia.com/result?p=hybrids)
 [![build status](https://img.shields.io/travis/hybridsjs/hybrids/master.svg?style=flat)](https://travis-ci.org/hybridsjs/hybrids)
 [![coverage status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=master)
+[![npm](https://img.shields.io/npm/dm/hybrids.svg)](https://www.npmjs.com/package/hybrids)
 [![gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg?colorB=893F77)](https://gitter.im/hybridsjs/hybrids)
 [![twitter](https://img.shields.io/badge/follow-on%20twitter-4AA1EC.svg)](https://twitter.com/hybridsjs)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+[![GitHub](https://img.shields.io/github/license/hybridsjs/hybrids.svg)](LICENSE)
 
-**Hybrids** is a UI library for creating [Web Components](https://www.webcomponents.org/), which favors plain objects and pure functions over  `class` and `this` syntax. It provides simple and functional API for creating custom elements.
+> 🏅One of the four nominated projects to the **"Breakthrough of the year"** category of [Open Source Award](https://osawards.com/javascript/) in 2019
 
-* **The simplest definition** — just plain objects and pure functions
+**Hybrids** is a UI library for creating [Web Components](https://www.webcomponents.org/) with a strong declarative and functional approach based on plain objects and pure functions.
+
+* **The simplest definition** — just plain objects and pure functions - no `class` and `this` syntax
+* **No global lifecycle** — independent properties with own simplified lifecycle methods
 * **Composition over inheritance** — easy re-use, merge or split property definitions
-* **No global lifecycle callbacks** — no did* or will* and only in the independent property definition
-* **Super fast recalculation** — built-in cache mechanism secures performance and data flow
+* **Super fast recalculation** — built-in smart cache and change detection mechanisms
 * **Templates without external tooling** — template engine based on tagged template literals
-* **Developer tools included** — Hot module replacement support for fast and pleasant development
+* **Developer tools included** — Hot module replacement support for a fast and pleasant development
 
 ## Getting Started
 
@@ -25,7 +31,7 @@ Install npm package:
 
 <pre>npm i <a href=https://www.npmjs.com/package/hybrids>hybrids</a></pre>
 
-Then, import required features and define a custom element:
+Then, import the required features and define a custom element:
 
 ```javascript
 import { html, define } from 'hybrids';
@@ -94,11 +100,11 @@ If your entry point imports files that do not support HMR, you can place the abo
 
 ## Overview
 
-There are some common patterns among JavaScript UI libraries like class syntax, complex lifecycle or stateful architecture. What can we say about them?
+There are some common patterns among JavaScript UI libraries like class syntax, a complex lifecycle or stateful architecture. What can we say about them?
 
-Classes can be confusing, especially about how to use `this`, binding or `super()` calls. They are also hard to compose. Complex lifecycle callbacks have to be studied to understand very well. A stateful approach can open doors for difficult to maintain, imperative code. Is there any way out from all of those challenges?
+Classes can be confusing, especially about how to use `this` or `super()` calls. They are also hard to compose. Multiple lifecycle callbacks have to be studied to understand very well. A stateful approach can open doors for difficult to maintain, imperative code. Is there any way out from all of those challenges?
 
-After all, class syntax in JavaScript is only sugar on top of the constructors and prototypes. Because of that, we can switch the component structure to a map of properties applied to the prototype of the custom element class constructor. Lifecycle callbacks can be minimized with smart change detection and cache mechanism. Moreover, they can be implemented independently in the property scope rather than globally in the component definition.
+After all, the class syntax in JavaScript is only sugar on top of the constructors and prototypes. Because of that, we can switch the component structure to a map of properties applied to the prototype of the custom element class constructor. Lifecycle callbacks can be minimized with smart change detection and cache mechanism. Moreover, they can be implemented independently in the property scope rather than globally in the component definition.
 
 With all of that, the code may become simple to understand, and the code is written in a declarative way. Not yet sold? You can read more in the [Core Concepts](docs/core-concepts/README.md) section of the project documentation.
 
@@ -115,17 +121,14 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 
 * [Do we really need classes in JavaScript after all?](https://dev.to/smalluban/do-we-really-need-classes-in-javascript-after-all-91n)
 * [Let's Build Web Components! Part 7: Hybrids](https://dev.to/bennypowers/lets-build-web-components-part-7-hybrids-187l)
-
-#### Core Concepts Series
-
-* [From classes to plain objects and pure functions](https://dev.to/smalluban/from-classes-to-plain-objects-and-pure-functions-2gip)
-* [Say goodbye to lifecycle methods, and focus on productive code](https://dev.to/smalluban/how-to-say-goodbye-to-lifecycle-methods-and-focus-on-productive-code-175)
-* [Chasing the best performance of rendering the DOM by hybrids library](https://dev.to/smalluban/chasing-the-best-performance-of-rendering-the-dom-by-hybrids-library-436d)
+* [From classes to plain objects and pure functions](https://dev.to/smalluban/from-classes-to-plain-objects-and-pure-functions-2gip) *(Core Concepts Series)*
+* [Say goodbye to lifecycle methods, and focus on productive code](https://dev.to/smalluban/how-to-say-goodbye-to-lifecycle-methods-and-focus-on-productive-code-175) *(Core Concepts Series)*
+* [Chasing the best performance of rendering the DOM by hybrids library](https://dev.to/smalluban/chasing-the-best-performance-of-rendering-the-dom-by-hybrids-library-436d) *(Core Concepts Series)*
 
 ### Videos
 
-* [Taste the Future with Functional Web Components](https://youtu.be/WZ1MEHuxHGg) (EN, ConFrontJS Conference)
-* [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) (PL, WarsawJS Meetup #46)
+* [Taste the Future with Functional Web Components](https://youtu.be/WZ1MEHuxHGg) *(EN, ConFrontJS Conference)*
+* [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) *(PL, WarsawJS Meetup #46)*
 
 ## Live Examples
 
@@ -141,7 +144,7 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 
 [![Build Status](https://saucelabs.com/browser-matrix/hybrids.svg)](https://saucelabs.com/u/hybrids)
 
-The library requires some of the ES2015 APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including a list of required polyfills and shims. The easiest way is to add bundle from [`@webcomponents/webcomponentsjs`](https://github.com/webcomponents/webcomponentsjs) package on top of your project:
+The library requires some of the ES2015 APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including a list of required polyfills and shims. The easiest way is to add a bundle from [`@webcomponents/webcomponentsjs`](https://github.com/webcomponents/webcomponentsjs) package on top of your project:
 
 ```javascript
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
