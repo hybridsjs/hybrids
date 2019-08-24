@@ -171,17 +171,16 @@ function defineElement(tagName, hybridsOrConstructor) {
     }
 
     static get observedAttributes() {
-      return Object.keys(hybridsOrConstructor).filter(x => x !== 'render');
-    }
-
-    getTransform() {
-
+      return Object.entries(hybridsOrConstructor).reduce((acc, [attr, methods]) => {
+        if (methods.reflect) acc.push(attr);
+        return acc;
+      }, []);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
       let type = typeof this[name];
-      if (type === 'undefined') {
+      if (type === 'undefined' || type === 'boolean') {
         if (oldValue === null && newValue === '') {
           type = 'boolean';
           newValue = true;
@@ -205,6 +204,7 @@ function defineElement(tagName, hybridsOrConstructor) {
           transform = Boolean;
           break;
         case 'function':
+          debugger;
           transform = value;
           value = transform();
           break;
