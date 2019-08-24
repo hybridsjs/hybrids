@@ -3,6 +3,7 @@ export { default as property } from './property';
 export { default as parent } from './parent';
 export { default as children } from './children';
 export { default as render } from './render';
+export { default as reflect } from './reflect';
 
 export { dispatch } from './utils';
 
