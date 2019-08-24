@@ -12,6 +12,10 @@ export function pascalToDash(str) {
   return camelToDash(str.replace(/((?!([A-Z]{2}|^))[A-Z])/g, '-$1'));
 }
 
+export function dashToCamel(str) {
+  return str.replace(/-([a-z])/g, c => c[1].toUpperCase());
+}
+
 export function dispatch(host, eventType, options = {}) {
   return host.dispatchEvent(new CustomEvent(eventType, { bubbles: false, ...options }));
 }

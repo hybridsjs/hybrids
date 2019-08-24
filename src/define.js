@@ -2,7 +2,7 @@ import property from './property';
 import render from './render';
 
 import * as cache from './cache';
-import { pascalToDash, deferred } from './utils';
+import { pascalToDash, deferred, dashToCamel } from './utils';
 
 /* istanbul ignore next */
 try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
@@ -172,27 +172,30 @@ function defineElement(tagName, hybridsOrConstructor) {
 
     static get observedAttributes() {
       return Object.entries(hybridsOrConstructor).reduce((acc, [attr, methods]) => {
-        if (methods.reflect) acc.push(attr);
+        if (methods.reflect) acc.push(pascalToDash(attr));
         return acc;
       }, []);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-      if (oldValue === newValue) return;
-      let type = typeof this[name];
-      if (type === 'undefined' || type === 'boolean') {
+      const propName = dashToCamel(name);
+      const descriptors = Hybrid.hybrids;
+      
+      const desc = descriptors[propName];
+      let type = desc.reflect;
+
+      if (type === 'object') {
         if (oldValue === null && newValue === '') {
           type = 'boolean';
           newValue = true;
         } else if (oldValue === '' && newValue === null) {
           type = 'boolean';
           newValue = false;
-        } else {
-          type = typeof oldValue;
         }
-      }
+      } 
+
       let transform = defaultTransform;
-    
+
       switch (type) {
         case 'string':
           transform = String;
@@ -204,25 +207,17 @@ function defineElement(tagName, hybridsOrConstructor) {
           transform = Boolean;
           break;
         case 'function':
-          debugger;
           transform = value;
           value = transform();
           break;
         case 'object':
-          debugger;
           if (newValue) Object.freeze(newValue);
           transform = objectTransform;
           break;
         default: break;
       }
-
-      // debugger;
     
-
-      this[name] = transform(newValue);
-    //   if (oldValue === newValue) return;
-    //   // TODO: If typeof this[name] !== typeof newValue then throw error.
-    //   this[name] = newValue;
+      this[propName] = transform(newValue);
     }
 
   }

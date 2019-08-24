@@ -1,5 +1,6 @@
 export default function reflect(value) {
-  const isObject = typeof value === 'object';
+  const type = typeof value;
+  const isObject = type === 'object';
   let attrName;
   const reflectedMethods = {
     connect: (host, key) => {
@@ -10,7 +11,7 @@ export default function reflect(value) {
     },
     observe: (host, val, oldValue) => {
       if (val !== oldValue) {
-        const type = typeof val;
+        // const type = typeof val;
         switch (type) {
           case 'string':
           case 'number':
@@ -37,7 +38,7 @@ export default function reflect(value) {
         value.observe(host, val, oldValue);
       }
     },
-    reflect: true,
+    reflect: type,
   }
  
   if (isObject) {
