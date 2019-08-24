@@ -104,6 +104,15 @@ if (process.env.NODE_ENV !== 'production') {
 
 const disconnects = new WeakMap();
 
+const defaultTransform = v => v;
+
+const objectTransform = (value) => {
+  if (typeof value !== 'object') {
+    throw TypeError(`Assigned value must be an object: ${typeof value}`);
+  }
+  return value && Object.freeze(value);
+};
+
 function defineElement(tagName, hybridsOrConstructor) {
   const type = typeof hybridsOrConstructor;
   if (type !== 'object' && type !== 'function') {
@@ -160,6 +169,62 @@ function defineElement(tagName, hybridsOrConstructor) {
         list[index]();
       }
     }
+
+    static get observedAttributes() {
+      return Object.keys(hybridsOrConstructor).filter(x => x !== 'render');
+    }
+
+    getTransform() {
+
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      if (oldValue === newValue) return;
+      let type = typeof this[name];
+      if (type === 'undefined') {
+        if (oldValue === null && newValue === '') {
+          type = 'boolean';
+          newValue = true;
+        } else if (oldValue === '' && newValue === null) {
+          type = 'boolean';
+          newValue = false;
+        } else {
+          type = typeof oldValue;
+        }
+      }
+      let transform = defaultTransform;
+    
+      switch (type) {
+        case 'string':
+          transform = String;
+          break;
+        case 'number':
+          transform = Number;
+          break;
+        case 'boolean':
+          transform = Boolean;
+          break;
+        case 'function':
+          transform = value;
+          value = transform();
+          break;
+        case 'object':
+          debugger;
+          if (newValue) Object.freeze(newValue);
+          transform = objectTransform;
+          break;
+        default: break;
+      }
+
+      // debugger;
+    
+
+      this[name] = transform(newValue);
+    //   if (oldValue === newValue) return;
+    //   // TODO: If typeof this[name] !== typeof newValue then throw error.
+    //   this[name] = newValue;
+    }
+
   }
 
   compile(Hybrid, hybridsOrConstructor);
