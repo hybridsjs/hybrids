@@ -38,3 +38,16 @@ export function stringifyElement(element) {
 
 export const IS_IE = 'ActiveXObject' in window;
 export const deferred = Promise.resolve();
+
+export function setAttribute(elem, attrName, attrType, value) {
+  switch (attrType) {
+    case 'boolean':
+      return value ? elem.setAttribute(attrName, '') : elem.removeAttribute(attrName);
+    case 'object':
+    case 'function':
+      debugger;
+      return null;
+    default: elem.setAttribute(attrName, value);
+  }
+  return;
+};

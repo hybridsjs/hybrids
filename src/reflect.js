@@ -1,10 +1,15 @@
+import { camelToDash } from './utils';
+
 export default function reflect(value) {
-  const type = typeof value;
+  let type = typeof value;
   const isObject = type === 'object';
   let attrName;
   const reflectedMethods = {
     connect: (host, key) => {
-      attrName = key;
+      attrName = camelToDash(key);
+      if (!host.hasAttribute(attrName)) {
+        host.setAttribute(attrName, value);
+      }
       if (isObject && value.connect) {
         value.connect(host, key);
       }
@@ -12,7 +17,7 @@ export default function reflect(value) {
     observe: (host, val, oldValue) => {
       const oldType = typeof oldValue;
       const newType = typeof val;
-      const type = newType !== 'undefined' ? newType : oldType;
+      type = newType !== 'undefined' ? newType : oldType;
 
       switch (type) {
         case 'string':
@@ -66,10 +71,9 @@ export default function reflect(value) {
     },
     reflect: type,
   }
- 
+
   if (isObject) {
     return Object.assign({}, value, reflectedMethods);
-  } else {
-    return reflectedMethods;
   }
+  return reflectedMethods;
 }

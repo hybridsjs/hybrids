@@ -178,28 +178,26 @@ function defineElement(tagName, hybridsOrConstructor) {
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
+      if (oldValue === newValue) return;
       const propName = dashToCamel(name);
       const descriptors = Hybrid.hybrids;
       
       const desc = descriptors[propName];
-      let type = desc.reflect;
+      let attrType = desc.reflect;
 
-      // debugger
-      // if (type === 'object') {
-        if (oldValue === null && newValue === '') {
-          type = 'boolean';
-          newValue = true;
-          oldValue = false;
-        } else if (oldValue === '' && newValue === null) {
-          type = 'boolean';
-          newValue = false;
-          oldValue = true;
-        }
-      // } 
+      if (oldValue === null && newValue === '') {
+        attrType = 'boolean';
+        newValue = true;
+        oldValue = false;
+      } else if (oldValue === '' && newValue === null) {
+        attrType = 'boolean';
+        newValue = false;
+        oldValue = true;
+      }
 
       let transform = defaultTransform;
 
-      switch (type) {
+      switch (attrType) {
         case 'string':
           transform = String;
           break;
@@ -222,14 +220,9 @@ function defineElement(tagName, hybridsOrConstructor) {
         default: break;
       }
     
-      console.log('aaa')
-      debugger;
-
       newValue = transform(newValue);
       oldValue = transform(oldValue);
       if (newValue !== oldValue) {
-        console.log('defne')
-        debugger
         this[propName] = newValue;
       }
       // this[propName] = transform(newValue);
