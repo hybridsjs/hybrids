@@ -184,15 +184,18 @@ function defineElement(tagName, hybridsOrConstructor) {
       const desc = descriptors[propName];
       let type = desc.reflect;
 
-      if (type === 'object') {
+      // debugger
+      // if (type === 'object') {
         if (oldValue === null && newValue === '') {
           type = 'boolean';
           newValue = true;
+          oldValue = false;
         } else if (oldValue === '' && newValue === null) {
           type = 'boolean';
           newValue = false;
+          oldValue = true;
         }
-      } 
+      // } 
 
       let transform = defaultTransform;
 
@@ -207,17 +210,29 @@ function defineElement(tagName, hybridsOrConstructor) {
           transform = Boolean;
           break;
         case 'function':
-          transform = value;
-          value = transform();
+          debugger
+          // transform = value;
+          // value = transform();
           break;
         case 'object':
-          if (newValue) Object.freeze(newValue);
-          transform = objectTransform;
+          debugger
+          // if (newValue) Object.freeze(newValue);
+          // transform = objectTransform;
           break;
         default: break;
       }
     
-      this[propName] = transform(newValue);
+      console.log('aaa')
+      debugger;
+
+      newValue = transform(newValue);
+      oldValue = transform(oldValue);
+      if (newValue !== oldValue) {
+        console.log('defne')
+        debugger
+        this[propName] = newValue;
+      }
+      // this[propName] = transform(newValue);
     }
 
   }
