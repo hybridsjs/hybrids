@@ -106,13 +106,6 @@ const disconnects = new WeakMap();
 
 const defaultTransform = v => v;
 
-const objectTransform = (value) => {
-  if (typeof value !== 'object') {
-    throw TypeError(`Assigned value must be an object: ${typeof value}`);
-  }
-  return value && Object.freeze(value);
-};
-
 function defineElement(tagName, hybridsOrConstructor) {
   const type = typeof hybridsOrConstructor;
   if (type !== 'object' && type !== 'function') {
@@ -181,7 +174,7 @@ function defineElement(tagName, hybridsOrConstructor) {
       if (oldValue === newValue) return;
       const propName = dashToCamel(name);
       const descriptors = Hybrid.hybrids;
-      
+
       const desc = descriptors[propName];
       let attrType = desc.reflect;
 
@@ -208,26 +201,24 @@ function defineElement(tagName, hybridsOrConstructor) {
           transform = Boolean;
           break;
         case 'function':
-          debugger
+          debugger;
           // transform = value;
           // value = transform();
           break;
         case 'object':
-          debugger
+          debugger;
           // if (newValue) Object.freeze(newValue);
           // transform = objectTransform;
           break;
         default: break;
       }
-    
+
       newValue = transform(newValue);
       oldValue = transform(oldValue);
       if (newValue !== oldValue) {
         this[propName] = newValue;
       }
-      // this[propName] = transform(newValue);
     }
-
   }
 
   compile(Hybrid, hybridsOrConstructor);

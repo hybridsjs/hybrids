@@ -49,5 +49,4 @@ export function setAttribute(elem, attrName, attrType, value) {
       return null;
     default: elem.setAttribute(attrName, value);
   }
-  return;
-};
+}

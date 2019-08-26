@@ -9,7 +9,7 @@ const objectTransform = (value) => {
   return value && Object.freeze(value);
 };
 
-export default function property(value, connect, observe) {
+export default function property(value, connect) {
   const type = typeof value;
   let transform = defaultTransform;
 
@@ -34,7 +34,6 @@ export default function property(value, connect, observe) {
     default: break;
   }
 
-  let attrName;
   return {
     get: (host, val = value) => val,
     set: (host, val, oldValue) => transform(val, oldValue),
