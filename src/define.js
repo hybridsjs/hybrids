@@ -2,7 +2,9 @@ import property from './property';
 import render from './render';
 
 import * as cache from './cache';
-import { pascalToDash, deferred, dashToCamel } from './utils';
+import {
+  pascalToDash, deferred, dashToCamel, coerceValue,
+} from './utils';
 
 /* istanbul ignore next */
 try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
@@ -104,8 +106,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 const disconnects = new WeakMap();
 
-const defaultTransform = v => v;
-
 function defineElement(tagName, hybridsOrConstructor) {
   const type = typeof hybridsOrConstructor;
   if (type !== 'object' && type !== 'function') {
@@ -172,51 +172,28 @@ function defineElement(tagName, hybridsOrConstructor) {
 
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
-      const propName = dashToCamel(name);
+      const prop = dashToCamel(name);
       const descriptors = Hybrid.hybrids;
+      const propType = descriptors[prop].reflect;
 
-      const desc = descriptors[propName];
-      let attrType = desc.reflect;
-
-      if (oldValue === null && newValue === '') {
-        attrType = 'boolean';
-        newValue = true;
-        oldValue = false;
-      } else if (oldValue === '' && newValue === null) {
-        attrType = 'boolean';
-        newValue = false;
-        oldValue = true;
-      }
-
-      let transform = defaultTransform;
-
-      switch (attrType) {
-        case 'string':
-          transform = String;
-          break;
-        case 'number':
-          transform = Number;
-          break;
-        case 'boolean':
-          transform = Boolean;
-          break;
-        case 'function':
-          debugger;
-          // transform = value;
-          // value = transform();
-          break;
-        case 'object':
-          debugger;
-          // if (newValue) Object.freeze(newValue);
-          // transform = objectTransform;
-          break;
-        default: break;
-      }
-
-      newValue = transform(newValue);
-      oldValue = transform(oldValue);
-      if (newValue !== oldValue) {
-        this[propName] = newValue;
+      if (newValue === null) { // Attribute has been completely removed.
+        switch (propType) {
+          case Number:
+            this[prop] = NaN;
+            break;
+          case Boolean:
+            this[prop] = false;
+            break;
+          case String:
+          case Function:
+          case Object:
+            this[prop] = undefined;
+            debugger;
+            break;
+          default: break;
+        }
+      } else {
+        this[prop] = coerceValue(newValue, propType);
       }
     }
   }

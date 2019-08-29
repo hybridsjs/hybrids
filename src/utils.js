@@ -39,14 +39,43 @@ export function stringifyElement(element) {
 export const IS_IE = 'ActiveXObject' in window;
 export const deferred = Promise.resolve();
 
-export function setAttribute(elem, attrName, attrType, value) {
-  switch (attrType) {
+export function setAttr(host, key, type, value) {
+  const attr = camelToDash(key);
+  switch (type) {
+    case 'string':
+    case 'number':
+    case String:
+    case Number:
+      host.setAttribute(attr, value);
+      break;
     case 'boolean':
-      return value ? elem.setAttribute(attrName, '') : elem.removeAttribute(attrName);
-    case 'object':
+    case Boolean:
+      if (value) {
+        host.setAttribute(attr, '');
+      } else {
+        host.removeAttribute(attr);
+      }
+      break;
     case 'function':
+    case 'object':
       debugger;
-      return null;
-    default: elem.setAttribute(attrName, value);
+      break;
+    default: break;
+  }
+}
+
+export function coerceValue(value, type) {
+  switch (type) {
+    case String:
+    case Number:
+      return type(value);
+    case Boolean:
+      if (value === 'false' || (!value && value !== '')) return false;
+      return true;
+    case Object:
+    case Function:
+      debugger;
+      return undefined;
+    default: return undefined;
   }
 }

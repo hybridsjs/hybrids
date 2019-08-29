@@ -1,30 +1,32 @@
-import { camelToDash } from './utils';
+import { camelToDash, coerceValue, setAttr } from './utils';
 
-export default function reflect(value) {
-  let type = typeof value;
-  const isObject = type === 'object';
+export default function reflect({ type, value, properties }) {
   let attrName;
-  const reflectedMethods = {
+  const reflectedProperties = {
     connect: (host, key) => {
       attrName = camelToDash(key);
-      if (!host.hasAttribute(attrName)) {
-        host.setAttribute(attrName, value);
+      const attrValue = host.getAttribute(attrName);
+      const coercedAttrValue = coerceValue(attrValue, type);
+      const currentValue = attrValue === null ? value : coercedAttrValue;
+      host[key] = currentValue;
+
+      if (coercedAttrValue !== currentValue) {
+        setAttr(host, key, type, currentValue);
       }
-      if (isObject && value.connect) {
-        value.connect(host, key);
+      if (properties.connect) {
+        properties.connect(host, key);
       }
     },
     observe: (host, val, oldValue) => {
-      const oldType = typeof oldValue;
-      const newType = typeof val;
-      type = newType !== 'undefined' ? newType : oldType;
-
       switch (type) {
         case 'string':
         case 'number':
+        case String:
+        case Number:
           host.setAttribute(attrName, val);
           break;
         case 'boolean':
+        case Boolean:
           if (val) {
             host.setAttribute(attrName, '');
           } else {
@@ -38,15 +40,13 @@ export default function reflect(value) {
         default: break;
       }
 
-      if (isObject && value.observe) {
-        value.observe(host, val, oldValue);
-      }
+      if (properties.observe) properties.observe(host, val, oldValue);
     },
     reflect: type,
   };
 
-  if (isObject) {
-    return Object.assign({}, value, reflectedMethods);
+  if (properties) {
+    return Object.assign({}, properties, reflectedProperties);
   }
-  return reflectedMethods;
+  return reflectedProperties;
 }
