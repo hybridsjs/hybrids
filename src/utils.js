@@ -42,13 +42,10 @@ export const deferred = Promise.resolve();
 export function setAttr(host, key, type, value) {
   const attr = camelToDash(key);
   switch (type) {
-    case 'string':
-    case 'number':
     case String:
     case Number:
       host.setAttribute(attr, value);
       break;
-    case 'boolean':
     case Boolean:
       if (value) {
         host.setAttribute(attr, '');
@@ -56,8 +53,13 @@ export function setAttr(host, key, type, value) {
         host.removeAttribute(attr);
       }
       break;
-    case 'function':
-    case 'object':
+    case Array:
+      host.setAttribute(attr, JSON.stringify(value));
+      break;
+    case Function:
+    case Object:
+    case Set:
+    case Map:
       debugger;
       break;
     default: break;
@@ -72,6 +74,21 @@ export function coerceValue(value, type) {
     case Boolean:
       if (value === 'false' || (!value && value !== '')) return false;
       return true;
+    case Array:
+      debugger
+      if (Array.isArray(value)) {
+        return value;
+      } else if (typeof value === 'string') {
+        if (/^\[/.test(value) && /\]$/.test(value)) {
+          return JSON.parse(value);
+        } else {
+          return value.split(',');
+        }
+      } else if (value) {
+        return type(value);
+      } else {
+        return [];
+      }
     case Object:
     case Function:
       debugger;

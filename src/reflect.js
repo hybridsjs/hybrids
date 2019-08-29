@@ -6,6 +6,7 @@ export default function reflect({ type, value, properties = {} }) {
     connect: (host, key) => {
       attrName = camelToDash(key);
       const attrValue = host.getAttribute(attrName);
+      debugger
       const coercedAttrValue = coerceValue(attrValue, type);
       const currentValue = attrValue === null ? value : coercedAttrValue;
       host[key] = currentValue;
@@ -30,9 +31,12 @@ export default function reflect({ type, value, properties = {} }) {
             host.removeAttribute(attrName);
           }
           break;
+        case Array:
+          debugger
+          host.setAttribute(attrName, JSON.stringify(val));
+          break;
         case Function:
         case Object:
-        case Array:
         case Set:
         case Map:
           debugger;
