@@ -1,6 +1,6 @@
 import { camelToDash, coerceValue, setAttr } from './utils';
 
-export default function reflect({ type, value, properties }) {
+export default function reflect({ type, value, properties = {} }) {
   let attrName;
   const reflectedProperties = {
     connect: (host, key) => {
