@@ -19,13 +19,10 @@ export default function reflect({ type, value, properties }) {
     },
     observe: (host, val, oldValue) => {
       switch (type) {
-        case 'string':
-        case 'number':
         case String:
         case Number:
           host.setAttribute(attrName, val);
           break;
-        case 'boolean':
         case Boolean:
           if (val) {
             host.setAttribute(attrName, '');
@@ -33,8 +30,11 @@ export default function reflect({ type, value, properties }) {
             host.removeAttribute(attrName);
           }
           break;
-        case 'function':
-        case 'object':
+        case Function:
+        case Object:
+        case Array:
+        case Set:
+        case Map:
           debugger;
           break;
         default: break;

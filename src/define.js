@@ -178,19 +178,16 @@ function defineElement(tagName, hybridsOrConstructor) {
 
       if (newValue === null) { // Attribute has been completely removed.
         switch (propType) {
-          case Number:
-            this[prop] = NaN;
-            break;
           case Boolean:
             this[prop] = false;
             break;
-          case String:
-          case Function:
-          case Object:
+          case Number:
+            this[prop] = NaN;
+            break;
+          default:
             this[prop] = undefined;
             debugger;
             break;
-          default: break;
         }
       } else {
         this[prop] = coerceValue(newValue, propType);
