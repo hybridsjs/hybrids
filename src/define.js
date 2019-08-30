@@ -186,7 +186,6 @@ function defineElement(tagName, hybridsOrConstructor) {
             break;
           default:
             this[prop] = undefined;
-            debugger;
             break;
         }
       } else {

@@ -39,33 +39,6 @@ export function stringifyElement(element) {
 export const IS_IE = 'ActiveXObject' in window;
 export const deferred = Promise.resolve();
 
-export function setAttr(host, key, type, value) {
-  const attr = camelToDash(key);
-  switch (type) {
-    case String:
-    case Number:
-      host.setAttribute(attr, value);
-      break;
-    case Boolean:
-      if (value) {
-        host.setAttribute(attr, '');
-      } else {
-        host.removeAttribute(attr);
-      }
-      break;
-    case Array:
-      host.setAttribute(attr, JSON.stringify(value));
-      break;
-    case Function:
-    case Object:
-    case Set:
-    case Map:
-      debugger;
-      break;
-    default: break;
-  }
-}
-
 export function coerceValue(value, type) {
   switch (type) {
     case String:
@@ -75,14 +48,13 @@ export function coerceValue(value, type) {
       if (value === 'false' || (!value && value !== '')) return false;
       return true;
     case Array:
-      debugger
       if (Array.isArray(value)) {
         return value;
       } else if (typeof value === 'string') {
-        if (/^\[/.test(value) && /\]$/.test(value)) {
+        if (/^\[.*\]$/.test(value)) {
           return JSON.parse(value);
         } else {
-          return value.split(',');
+          return JSON.parse(`[${value}]`);
         }
       } else if (value) {
         return type(value);
@@ -90,6 +62,7 @@ export function coerceValue(value, type) {
         return [];
       }
     case Object:
+      return JSON.parse(value);
     case Function:
       debugger;
       return undefined;
