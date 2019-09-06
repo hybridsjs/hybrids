@@ -3,7 +3,7 @@ import render from './render';
 
 import * as cache from './cache';
 import {
-  pascalToDash, deferred, dashToCamel, coerceValue,
+  pascalToDash, deferred, dashToCamel, coerceToType,
 } from './utils';
 
 /* istanbul ignore next */
@@ -189,7 +189,7 @@ function defineElement(tagName, hybridsOrConstructor) {
             break;
         }
       } else {
-        this[prop] = coerceValue(newValue, propType);
+        this[prop] = coerceToType(newValue, propType);
       }
     }
   }

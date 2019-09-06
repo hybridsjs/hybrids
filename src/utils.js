@@ -39,7 +39,22 @@ export function stringifyElement(element) {
 export const IS_IE = 'ActiveXObject' in window;
 export const deferred = Promise.resolve();
 
-export function coerceValue(value, type) {
+export function getType(value) {
+  switch (typeof value) {
+    case 'undefined': return undefined;
+    case 'number': return Number;
+    case 'boolean': return Boolean;
+    case 'object':
+      if (value === null) return null;
+      if (Array.isArray(value)) return Array;
+      return Object;
+    case 'function': return Function;
+    case 'string':
+    default: return String;
+  }
+}
+
+export function coerceToType(value, type) {
   switch (type) {
     case String:
     case Number:
@@ -48,23 +63,15 @@ export function coerceValue(value, type) {
       if (value === 'false' || (!value && value !== '')) return false;
       return true;
     case Array:
-      if (Array.isArray(value)) {
-        return value;
-      } else if (typeof value === 'string') {
-        if (/^\[.*\]$/.test(value)) {
-          return JSON.parse(value);
-        } else {
-          return JSON.parse(`[${value}]`);
-        }
-      } else if (value) {
-        return type(value);
-      } else {
-        return [];
+      if (Array.isArray(value)) return value;
+      if (typeof value === 'string') {
+        return /^\[.*\]$/.test(value) ? JSON.parse(value) : [];
       }
+      if (value) return type(value);
+      return [];
     case Object:
       return JSON.parse(value);
     case Function:
-      debugger;
       return undefined;
     default: return undefined;
   }
