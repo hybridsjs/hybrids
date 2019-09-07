@@ -181,9 +181,6 @@ function defineElement(tagName, hybridsOrConstructor) {
           case Boolean:
             this[prop] = false;
             break;
-          case Number:
-            this[prop] = NaN;
-            break;
           default:
             this[prop] = undefined;
             break;

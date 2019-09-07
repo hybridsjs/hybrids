@@ -1,5 +1,6 @@
 import { test, resolveRaf } from '../helpers';
 import define from '../../src/define';
+import reflect from '../../src/reflect';
 import { invalidate } from '../../src/cache';
 
 describe('define:', () => {
@@ -80,6 +81,11 @@ describe('define:', () => {
       five: {
         observe: (...args) => observeSpy(...args),
       },
+      numProp: reflect(6),
+      strProp: reflect('seven'),
+      boolProp: reflect(false),
+      arryProp: reflect([1]),
+      objProp: reflect({ a: 'apple' }),
     });
 
     const tree = test('<test-define-object></test-define-object>');
@@ -154,6 +160,70 @@ describe('define:', () => {
         expect(observeSpy).toHaveBeenCalledTimes(0);
       });
     }));
+
+    it('has observedAttributes', tree((el) => {
+      expect(el.constructor.observedAttributes).toEqual(['num-prop', 'str-prop', 'bool-prop', 'arry-prop', 'obj-prop']);
+    }));
+
+    describe('updates property when an observed attribute changes', () => {
+      it('updates a string property', tree((el) => {
+        el.setAttribute('str-prop', 'new string');
+        return resolveRaf(() => {
+          expect(el.strProp).toBe('new string');
+        });
+      }));
+      it('updates a string property to undefined when attribute is removed', tree((el) => {
+        resolveRaf(() => {
+          el.removeAttribute('str-prop');
+          resolveRaf(() => {
+            expect(el.strProp).toBe(undefined);
+          });
+        });
+      }));
+      it('updates a number property', tree((el) => {
+        el.setAttribute('num-prop', '45');
+        return resolveRaf(() => {
+          expect(el.numProp).toBe(45);
+        });
+      }));
+      it('updates an array property', tree((el) => {
+        el.setAttribute('arry-prop', '[1, 45]');
+        return resolveRaf(() => {
+          expect(el.arryProp).toEqual([1, 45]);
+        });
+      }));
+      it('updates an object property', tree((el) => {
+        el.setAttribute('obj-prop', '{"b": "butter"}');
+        return resolveRaf(() => {
+          expect(el.objProp).toEqual({ b: 'butter' });
+        });
+      }));
+      it('updates a boolean property to true', tree((el) => {
+        el.setAttribute('bool-prop', '');
+        return resolveRaf(() => {
+          expect(el.boolProp).toBe(true);
+        });
+      }));
+      it('updates a boolean property to false', tree((el) => {
+        el.setAttribute('bool-prop', 'false');
+        return resolveRaf(() => {
+          expect(el.boolProp).toBe(false);
+        });
+      }));
+      it('updates a boolean property to false when attribute is removed', tree((el) => {
+        el.removeAttribute('bool-prop');
+        return resolveRaf(() => {
+          expect(el.boolProp).toBe(false);
+        });
+      }));
+      it('updates a boolean property to false', tree((el) => {
+        el.setAttribute('bool-prop', 'false');
+        return resolveRaf(() => {
+          expect(el.boolProp).toBe(false);
+        });
+      }));
+
+    });
   });
 
   describe('for primitive value', () => {
