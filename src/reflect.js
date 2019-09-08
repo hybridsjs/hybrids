@@ -19,6 +19,8 @@ export default function reflect(value, properties = {}) {
       }
     },
     observe: (host, val, oldValue) => {
+      const attrValue = host.getAttribute(attrName);
+      if (val === attrValue) return;
       if (val !== oldValue) {
         switch (type) {
           case null:
@@ -33,14 +35,28 @@ export default function reflect(value, properties = {}) {
             break;
           case Array:
           case Object:
-            host.setAttribute(attrName, JSON.stringify(val));
+            if (val === undefined || val === null) {
+              host.removeAttribute(attrName);
+            } else {
+              host.setAttribute(attrName, JSON.stringify(val));
+            }
             break;
           case Function:
             break;
           case String:
+            if (val === '' || val === undefined || val === null) {
+              host.removeAttribute(attrName);
+            } else {
+              host.setAttribute(attrName, val);
+            }
+            break;
           case Number:
           default:
-            host.setAttribute(attrName, val);
+            if (val === undefined || val === null) {
+              host.removeAttribute(attrName);
+            } else {
+              host.setAttribute(attrName, val);
+            }
             break;
         }
       }
