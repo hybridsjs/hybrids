@@ -46,7 +46,7 @@ const MyLink = {
 
 The lifecycle of the component is reversed comparing to common solutions. What usually would be an effect of state computation is here a cause for that computation. Every single property (including `render`) is independent. If it requires other properties from the component, it calls them. Only then values of those properties are calculated. We can illustrate it with the following diagram:
 
-![Lifecycle with cache and change detection](../assets/lifecycle.svg)
+![Lifecycle with cache and change detection](https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/lifecycle.svg?sanitize=true)
 
 The render property (an update function, which manipulates DOM) requires current state taken from other properties - not the opposite. Setting the state within some lifecycle callback (even asynchronously fetched data) is not needed. Change detection mechanism allows triggering update function only when one of the component properties changes.
 
