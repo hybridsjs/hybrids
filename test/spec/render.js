@@ -23,11 +23,11 @@ describe('render:', () => {
     }).toThrow();
   });
 
-  it('renders content', tree(el => resolveRaf(() => {
+  it('renders content', tree((el) => resolveRaf(() => {
     expect(el.shadowRoot.children[0].textContent).toBe('0');
   })));
 
-  it('updates content', tree(el => resolveRaf(() => {
+  it('updates content', tree((el) => resolveRaf(() => {
     el.value = 1;
     return resolveRaf(() => {
       expect(el.shadowRoot.children[0].textContent).toBe('1');
@@ -63,7 +63,7 @@ describe('render:', () => {
       </test-render-parent-slot>
     `);
 
-    slotTree(el => resolveRaf(() => {
+    slotTree((el) => resolveRaf(() => {
       expect(el.children[0].shadowRoot.children[0].textContent).toBe('0');
     }))(done);
   });
@@ -85,7 +85,7 @@ describe('render:', () => {
         <test-render-light-dom>
           <div>other content</div>
         </test-render-light-dom>
-      `)(el => resolveRaf(() => {
+      `)((el) => resolveRaf(() => {
         expect(el.children.length).toBe(1);
         expect(el.children[0].innerHTML).toBe('true');
 

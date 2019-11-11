@@ -37,7 +37,7 @@ export default function resolveArray(host, target, value) {
 
   if (lastEntries) {
     const ids = new Set();
-    entries.forEach(entry => ids.add(entry.id));
+    entries.forEach((entry) => ids.add(entry.id));
 
     lastEntries = lastEntries.filter((entry) => {
       if (!ids.has(entry.id)) {

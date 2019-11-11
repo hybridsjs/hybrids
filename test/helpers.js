@@ -2,7 +2,7 @@ export function test(html) {
   const template = document.createElement('template');
   template.innerHTML = html;
 
-  return spec => (done) => {
+  return (spec) => (done) => {
     const wrapper = document.createElement('div');
     document.body.appendChild(wrapper);
     wrapper.appendChild(template.content.cloneNode(true));

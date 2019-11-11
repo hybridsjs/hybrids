@@ -12,12 +12,12 @@ describe('parent:', () => {
   define('test-parent-child', {
     parent: parent(parentHybrids),
     computed: {
-      get: host => `${host.parent.customProperty} other value`,
+      get: (host) => `${host.parent.customProperty} other value`,
     },
   });
 
   define('test-parent-child-fn', {
-    parent: parent(hybrids => hybrids === parentHybrids),
+    parent: parent((hybrids) => hybrids === parentHybrids),
   });
 
   const directParentTree = test(`
@@ -85,7 +85,7 @@ describe('parent:', () => {
     expect(el.parent).toBe(null);
   }));
 
-  it('updates child computed property', directParentTree(el => Promise.resolve().then(() => {
+  it('updates child computed property', directParentTree((el) => Promise.resolve().then(() => {
     const child = el.children[0];
 
     expect(el.customProperty).toBe('value');

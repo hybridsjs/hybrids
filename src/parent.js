@@ -16,9 +16,9 @@ function walk(node, fn) {
 }
 
 export default function parent(hybridsOrFn) {
-  const fn = typeof hybridsOrFn === 'function' ? hybridsOrFn : hybrids => hybrids === hybridsOrFn;
+  const fn = typeof hybridsOrFn === 'function' ? hybridsOrFn : (hybrids) => hybrids === hybridsOrFn;
   return {
-    get: host => walk(host, fn),
+    get: (host) => walk(host, fn),
     connect(host, key, invalidate) {
       const target = host[key];
       if (target) {

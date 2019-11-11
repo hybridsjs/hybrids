@@ -9,7 +9,7 @@ describe('property:', () => {
     stringProp: property('value'),
     numberProp: property(123),
     boolProp: property(false),
-    funcProp: property(value => ({
+    funcProp: property((value) => ({
       value,
     })),
     objProp: property(objProp),

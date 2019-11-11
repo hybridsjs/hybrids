@@ -72,7 +72,7 @@ describe('children:', () => {
       });
     }));
 
-    it('updates parent computed property', tree(el => resolveTimeout(() => {
+    it('updates parent computed property', tree((el) => resolveTimeout(() => {
       expect(el.customName).toBe('one');
       el.children[0].customName = 'four';
 
@@ -84,7 +84,7 @@ describe('children:', () => {
 
   describe('function condition', () => {
     define('test-children-fn', {
-      direct: children(hybrids => hybrids === child),
+      direct: children((hybrids) => hybrids === child),
     });
 
     const tree = test(`
@@ -135,7 +135,7 @@ describe('children:', () => {
       });
     }));
 
-    it('does not update if other children element is invalidated', tree(el => resolveRaf(() => {
+    it('does not update if other children element is invalidated', tree((el) => resolveRaf(() => {
       el.children[0].children[0].customName = 'test';
       return resolveRaf(() => {
         expect(el.deep).toEqual([
@@ -206,7 +206,7 @@ describe('children:', () => {
       render: ({ items }) => html`
         <test-dynamic-parent>
           <test-dynamic-child name="one"></test-dynamic-child>
-          ${items.map(name => html`
+          ${items.map((name) => html`
             <test-dynamic-child name="${name}"></test-dynamic-child>
           `.key(name))}
         </test-dynamic-parent>
@@ -217,7 +217,7 @@ describe('children:', () => {
       <test-dynamic-wrapper></test-dynamic-wrapper>
     `);
 
-    it('adds dynamic item', tree(el => resolveTimeout(() => {
+    it('adds dynamic item', tree((el) => resolveTimeout(() => {
       el.items = ['two'];
       return resolveTimeout(() => {
         expect(el.shadowRoot.children[0].shadowRoot.children[0].children.length).toBe(2);

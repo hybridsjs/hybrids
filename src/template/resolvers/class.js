@@ -1,8 +1,8 @@
 function normalizeValue(value, set = new Set()) {
   if (Array.isArray(value)) {
-    value.forEach(className => set.add(className));
+    value.forEach((className) => set.add(className));
   } else if (value !== null && typeof value === 'object') {
-    Object.keys(value).forEach(key => value[key] && set.add(key));
+    Object.keys(value).forEach((key) => value[key] && set.add(key));
   } else {
     set.add(value);
   }
