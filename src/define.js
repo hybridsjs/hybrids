@@ -44,7 +44,7 @@ function compile(Hybrid, descriptors) {
     });
 
     if (config.connect) {
-      Hybrid.callbacks.push(host => config.connect(host, key, () => {
+      Hybrid.callbacks.push((host) => config.connect(host, key, () => {
         cache.invalidate(host, key);
       }));
     }
@@ -71,11 +71,11 @@ if (process.env.NODE_ENV !== 'production') {
     fn(node);
 
     Array.from(node.children)
-      .forEach(el => walkInShadow(el, fn));
+      .forEach((el) => walkInShadow(el, fn));
 
     if (node.shadowRoot) {
       Array.from(node.shadowRoot.children)
-        .forEach(el => walkInShadow(el, fn));
+        .forEach((el) => walkInShadow(el, fn));
     }
   };
 

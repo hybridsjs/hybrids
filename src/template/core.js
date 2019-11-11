@@ -74,7 +74,7 @@ function createSignature(parts, styles) {
   if (IS_IE) {
     return signature.replace(
       /style\s*=\s*(["][^"]+["]|['][^']+[']|[^\s"'<>/]+)/g,
-      match => `${ATTR_PREFIX}${match}`,
+      (match) => `${ATTR_PREFIX}${match}`,
     );
   }
 
@@ -150,7 +150,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
   if (isSVG) {
     const svgRoot = template.content.firstChild;
     template.content.removeChild(svgRoot);
-    Array.from(svgRoot.childNodes).forEach(node => template.content.appendChild(node));
+    Array.from(svgRoot.childNodes).forEach((node) => template.content.appendChild(node));
   }
 
   replaceComments(template.content);

@@ -1,6 +1,6 @@
 import { camelToDash } from './utils';
 
-const defaultTransform = v => v;
+const defaultTransform = (v) => v;
 
 const objectTransform = (value) => {
   if (typeof value !== 'object') {

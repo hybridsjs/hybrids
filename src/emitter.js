@@ -10,7 +10,7 @@ function getListeners(target) {
 }
 
 const queue = new Set();
-const run = fn => fn();
+const run = (fn) => fn();
 
 function execute() {
   try {

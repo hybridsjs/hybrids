@@ -17,8 +17,8 @@ describe('html:', () => {
     document.body.removeChild(fragment);
   });
 
-  const getArrayValues = f => Array.from(f.children)
-    .map(child => child.textContent);
+  const getArrayValues = (f) => Array.from(f.children)
+    .map((child) => child.textContent);
 
   it('renders static content', () => {
     const render = html`<div>static content<!-- some comment --></div>`;
@@ -28,7 +28,7 @@ describe('html:', () => {
 
   it('creates template unique id', () => {
     const renderOne = () => html`<div>value:</div>`;
-    const renderTwo = value => html`<div>value:${value}</div>`;
+    const renderTwo = (value) => html`<div>value:${value}</div>`;
 
     renderOne()({}, fragment);
     renderTwo(0)({}, fragment);
@@ -37,7 +37,7 @@ describe('html:', () => {
   });
 
   it('reuses the same elements when re-render', () => {
-    const render = value => html`<!-- some comment --><div>${value}</div>`;
+    const render = (value) => html`<!-- some comment --><div>${value}</div>`;
     render(0)(fragment);
     const div = fragment.children[0];
     render(1)(fragment);
@@ -67,7 +67,7 @@ describe('html:', () => {
       render: renderFactory(() => html`content`, { shadowRoot: false }),
     });
 
-    const render = flag => html`${flag && html`<test-replace-trigger></test-replace-trigger>`}<button></button>`;
+    const render = (flag) => html`${flag && html`<test-replace-trigger></test-replace-trigger>`}<button></button>`;
     render(true)(fragment);
 
     resolveTimeout(() => {
@@ -98,7 +98,7 @@ describe('html:', () => {
   });
 
   describe('attribute expression with non existing property', () => {
-    const render = value => html`<div text-property="${value}"></div>`;
+    const render = (value) => html`<div text-property="${value}"></div>`;
 
     beforeEach(() => render('value')(fragment));
 
@@ -156,8 +156,8 @@ describe('html:', () => {
   });
 
   describe('class expression attribute', () => {
-    const render = classList => html`<div class=${classList}></div>`;
-    const hasClass = className => fragment.children[0].classList.contains(className);
+    const render = (classList) => html`<div class=${classList}></div>`;
+    const hasClass = (className) => fragment.children[0].classList.contains(className);
 
     it('sets string value', () => {
       render('class-one')(fragment);
@@ -194,8 +194,8 @@ describe('html:', () => {
   });
 
   describe('style expression attribute', () => {
-    const renderObject = styleList => html`<div style="${styleList}"></div>`;
-    const renderAttr = text => html`
+    const renderObject = (styleList) => html`<div style="${styleList}"></div>`;
+    const renderAttr = (text) => html`
       <div style = "color: red; ${text}" asd="<>/">
         <div style="color: red; ${text}"></div>
       </div>
@@ -239,8 +239,8 @@ describe('html:', () => {
   });
 
   describe('event attribute expression', () => {
-    const render = value => html`<button onclick=${value}></button>`;
-    const renderWithQuotes = value => html`<button onclick="${value}"></button>`;
+    const render = (value) => html`<button onclick=${value}></button>`;
+    const renderWithQuotes = (value) => html`<button onclick="${value}"></button>`;
 
     const click = () => fragment.children[0].click();
     let spy;
@@ -337,7 +337,7 @@ describe('html:', () => {
   });
 
   describe('template content expression', () => {
-    const render = flag => html`
+    const render = (flag) => html`
       <div>value: ${flag && html`<span>${'one'}</span>`}</div>
     `;
 
@@ -354,7 +354,7 @@ describe('html:', () => {
   });
 
   describe('flat array content expression with primitive values', () => {
-    const render = items => html`${items}`;
+    const render = (items) => html`${items}`;
 
     beforeEach(() => { render([1, 2, 3])(fragment); });
 
@@ -379,7 +379,7 @@ describe('html:', () => {
   });
 
   describe('flat array content expression', () => {
-    const render = items => html`  ${items && items.map(v => html`  <span>${v}</span>  `.key(v))}  `;
+    const render = (items) => html`  ${items && items.map((v) => html`  <span>${v}</span>  `.key(v))}  `;
 
     beforeEach(() => {
       render([1, 2, 3])(fragment);
@@ -445,9 +445,9 @@ describe('html:', () => {
   });
 
   describe('nested array content expression', () => {
-    const renderItem = item => html`<span>${item}</span>`.key(item);
-    const renderArray = array => html`${array.map(renderItem)}`.key(array.join(''));
-    const render = items => html`${items && items.map(renderArray)} static value`;
+    const renderItem = (item) => html`<span>${item}</span>`.key(item);
+    const renderArray = (array) => html`${array.map(renderItem)}`.key(array.join(''));
+    const render = (items) => html`${items && items.map(renderArray)} static value`;
 
     beforeEach(() => {
       render([[1, 2, 3], [4, 5, 6], [7]])(fragment);
@@ -490,7 +490,7 @@ describe('html:', () => {
   });
 
   describe('multiple nested array content expression', () => {
-    const render = array => html`${array.map((item) => {
+    const render = (array) => html`${array.map((item) => {
       if (Array.isArray(item)) {
         return render(item);
       }
@@ -520,12 +520,12 @@ describe('html:', () => {
         { id: 1, children: [{ id: 3 }] },
         { id: 2 },
       ];
-      const renderData = item => html`
+      const renderData = (item) => html`
         <span>${item.id}</span>
         ${item.children && item.children.map(renderData)}
       `.key(item.id);
 
-      const renderWrapper = list => html`
+      const renderWrapper = (list) => html`
         ${list.map(renderData)}
       `;
 
@@ -537,9 +537,9 @@ describe('html:', () => {
 
   describe('table', () => {
     it('should render table with rows', () => {
-      const renderRow = v => html`<tr><td>${v}</td></tr>`.key(v);
+      const renderRow = (v) => html`<tr><td>${v}</td></tr>`.key(v);
       const renderTable = html`
-        <table><tbody>${[1, 2].map(v => renderRow(v))} ${[3, 4].map(v => renderRow(v))}</tbody></table>`;
+        <table><tbody>${[1, 2].map((v) => renderRow(v))} ${[3, 4].map((v) => renderRow(v))}</tbody></table>`;
 
       renderTable({}, fragment);
       expect(fragment.children[0].outerHTML)
@@ -635,7 +635,7 @@ describe('html:', () => {
 
     it('shows placeholder after delay', (done) => {
       render(
-        new Promise(resolve => setTimeout(resolve, 500)),
+        new Promise((resolve) => setTimeout(resolve, 500)),
         'value',
         html`<div>loading...</div>`,
       )(fragment);
@@ -740,12 +740,12 @@ describe('html:', () => {
       <test-shady-parent></test-shady-parent>
     `);
 
-    it('should set custom property', shadyTree(el => resolveTimeout(() => {
+    it('should set custom property', shadyTree((el) => resolveTimeout(() => {
       const { color } = window.getComputedStyle(el.shadowRoot.children[0].shadowRoot.children[0]);
       expect(color).toBe('rgb(255, 0, 0)');
     })));
 
-    it('should update custom property', shadyTree(el => resolveTimeout(() => {
+    it('should update custom property', shadyTree((el) => resolveTimeout(() => {
       el.active = true;
       return resolveTimeout(() => {
         const { color } = window.getComputedStyle(el.shadowRoot.children[0].shadowRoot.children[0]);
@@ -755,7 +755,7 @@ describe('html:', () => {
   });
 
   describe('ShadyCSS encapsulation', () => {
-    const render = text => html`
+    const render = (text) => html`
       <div>${text}</div>
       <style>
         div {
@@ -808,7 +808,7 @@ describe('html:', () => {
     beforeEach(() => {
       if (!shadyCSSApplied) {
         window.ShadyCSS = {
-          prepareTemplate: template => template,
+          prepareTemplate: (template) => template,
           styleElement: jasmine.createSpy(),
           styleSubtree: jasmine.createSpy(),
         };
@@ -857,7 +857,7 @@ describe('html:', () => {
       }
     }
 
-    const render = value => html`<test-external-element>${value}</test-external-element>`
+    const render = (value) => html`<test-external-element>${value}</test-external-element>`
       .define({ TestExternalElement });
 
     it('renders external element with slotted value', (done) => {
