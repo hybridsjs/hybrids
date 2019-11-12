@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.3](https://github.com/hybridsjs/hybrids/compare/v4.0.2...v4.0.3) (2019-11-12)
+
+
+### Bug Fixes
+
+* **cache:** avoid memory leak in contexts for complex elements structure ([8dc72df](https://github.com/hybridsjs/hybrids/commit/8dc72df9cf8cf036385c2ea285a8df0c443ae5f9))
+* **property:** fixing error message ([#54](https://github.com/hybridsjs/hybrids/issues/54)) ([92f7939](https://github.com/hybridsjs/hybrids/commit/92f7939204f36c911953c7140486d4c0a92fbf2c))
+
 ### [4.0.2](https://github.com/hybridsjs/hybrids/compare/v4.0.1...v4.0.2) (2019-06-05)
 
 
