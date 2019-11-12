@@ -4,250 +4,177 @@ import {
 
 describe('cache:', () => {
   let target;
-  let getSpy;
+  let spy;
 
   beforeEach(() => {
-    getSpy = jasmine.createSpy('getter');
-
-    target = {
-      value: 1,
-      get one() {
-        return get(target, 'one', (host, lastValue) => {
-          getSpy(lastValue);
-          return this.value;
-        });
-      },
-      set one(value) {
-        set(target, 'one', () => {
-          this.value = value;
-          return value;
-        }, value);
-      },
-      get two() {
-        return get(target, 'two', () => this.one);
-      },
-    };
+    target = {};
+    spy = jasmine.createSpy();
   });
 
-  it('calls getter once', () => {
-    expect(target.one).toBe(1);
-    expect(target.one).toBe(1);
-    expect(getSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('set value', () => {
-    target.one = 'value';
-    expect(target.one).toBe('value');
-  });
-
-  it('does not call get when set not changes value', () => {
-    expect(target.one).toBe(1);
-    target.one = 1;
-
-    expect(target.one).toBe(1);
-
-    expect(getSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('throws when set value while get another', () => {
-    const getterWithSetter = () => {
-      set(target, 'other-key', () => 'test-value');
-      return 'value';
-    };
-
-    expect(() => {
-      get(target, 'key', getterWithSetter);
-    }).toThrow();
-  });
-
-  it('throws when get the same key in getter', () => {
-    expect(() => {
-      get(target, 'key', () => {
-        get(target, 'key', () => 'value');
-      });
-    }).toThrow();
-  });
-
-  describe('invalidate', () => {
-    it('clears checksum', () => {
-      expect(target.one).toBe(1);
-      invalidate(target, 'one');
-
-      expect(target.one).toBe(1);
-      expect(target.one).toBe(1);
-
-      expect(getSpy).toHaveBeenCalledTimes(2);
+  describe('get()', () => {
+    it('throws for circular call', () => {
+      expect(
+        () => get(target, 'key',
+          () => get(target, 'key', () => {})),
+      ).toThrow();
     });
 
-    it('clears value', () => {
-      expect(target.one).toBe(1);
-      invalidate(target, 'one', true);
-
-      expect(target.one).toBe(1);
-      expect(target.one).toBe(1);
-
-      expect(getSpy).toHaveBeenCalledTimes(2);
-      expect(getSpy.calls.mostRecent().args[0]).toBe(undefined);
+    it('throws for nested circular call', () => {
+      expect(
+        () => get(target, 'key',
+          () => get(target, 'otherKey',
+            () => get(target, 'otherKey', () => {}))),
+      ).toThrow();
     });
 
-    it('updates related value', () => {
-      expect(target.two).toBe(1);
-
-      invalidate(target, 'one');
-      expect(target.two).toBe(1);
-      expect(getSpy).toHaveBeenCalledTimes(2);
+    it('re-throws getter error with cleanup', () => {
+      expect(
+        () => get(target, 'key',
+          () => get(target, 'otherKey',
+            () => { throw Error(); })),
+      ).toThrow();
+      expect(get(target, 'key', () => 'value')).toBe('value');
     });
 
-    it('throws when called inside getter', () => {
-      expect(() => {
-        get(target, 'key', () => invalidate(target, 'key'));
-      }).toThrow();
+    it('returns value from getter', () => {
+      expect(get(target, 'key', () => 'value')).toBe('value');
+    });
+
+    it('runs getter only once if it has no dependencies', () => {
+      get(target, 'key', () => 'value');
+      get(target, 'key', spy);
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('runs getter only once if dependencies do not change', () => {
+      get(target, 'key', () => get(target, 'otherKey', () => 'value'));
+      get(target, 'key', spy);
+
+      expect(spy).not.toHaveBeenCalled();
     });
   });
 
-  describe('with deps', () => {
-    let deps;
-    let withDeps;
-    let spy;
-
-    beforeEach(() => {
-      deps = {
-        get source() { return get(deps, 'source', (host, v) => v); },
-        set source(value) {
-          set(deps, 'source', () => value, value, () => {});
-        },
-        get other() {
-          return get(deps, 'other', () => deps.source);
-        },
-      };
-      withDeps = {
-        get key() {
-          return get(withDeps, 'key', () => {
-            spy();
-            return deps.other;
-          });
-        },
-      };
-
-      spy = jasmine.createSpy();
-
-      deps.source = 'value';
+  describe('set()', () => {
+    it('throws called inside of the get()', () => {
+      expect(() => get(target, 'key', () => set(target, 'key', () => {}))).toThrow();
     });
 
-    it('uses cache value', () => {
-      expect(withDeps.key).toBe('value');
-      expect(withDeps.key).toBe('value');
+    it('does not throws called inside of the get() when forced', () => {
+      expect(() => get(target, 'key', () => set(target, 'key', () => {}, '', true))).not.toThrow();
+    });
+
+    it('invalidates state for next get call', () => {
+      get(target, 'key', () => 'value');
+      get(target, 'key', spy);
+
+      expect(spy).toHaveBeenCalledTimes(0);
+
+      set(target, 'key', () => 'new value');
+      get(target, 'key', spy);
+
       expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(target, 'new value');
     });
 
-    it('uses cache when invalidate without change', () => {
-      expect(withDeps.key).toBe('value');
-      invalidate(deps, 'key');
-      expect(withDeps.key).toBe('value');
+    it('invalidates dependant properties', () => {
+      get(target, 'key', () => get(target, 'otherKey', () => 'value'));
+      set(target, 'otherKey', () => 'new value');
+
+      get(target, 'key', spy);
+
       expect(spy).toHaveBeenCalledTimes(1);
-    });
-
-    it('recalculates value when deps changes', () => {
-      expect(withDeps.key).toBe('value');
-      deps.source = 'new value';
-      expect(withDeps.key).toBe('new value');
-      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenCalledWith(target, 'value');
     });
   });
 
-  describe('observe', () => {
-    let obj;
-    let contextObj;
-    let spy;
-
-    const getContext = () => get(obj, 'obj', (t, v) => v);
-
-    beforeEach(() => {
-      obj = {};
-      contextObj = {};
-      spy = jasmine.createSpy('start spy');
-      set(obj, 'obj', (t, v) => v, 'value');
+  describe('invalidate()', () => {
+    it('throws if called inside of the get()', () => {
+      expect(() => get(target, 'key', () => invalidate(target, 'key'))).toThrow();
     });
 
-    it('- should call callback', (done) => {
-      observe(contextObj, 'context', spy);
-      expect(get(contextObj, 'context', getContext)).toBe('value');
+    it('clears cached value', () => {
+      get(target, 'key', () => 'value');
+      invalidate(target, 'key', true);
+
+      get(target, 'key', spy);
+      expect(spy).toHaveBeenCalledWith(target, undefined);
+    });
+
+    it('clears dependencies', () => {
+      get(target, 'key', () => get(target, 'otherKey', () => 'value'));
+      invalidate(target, 'key');
+      get(target, 'key', () => 'value');
+
+      set(target, 'otherKey', () => 'new value');
+      get(target, 'key', spy);
+
+      expect(spy).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('observe()', () => {
+    const _ = (t, v) => v;
+
+    it('runs callback when value changes', (done) => {
+      observe(target, 'key', _, spy);
+      set(target, 'key', _, 'value');
+
       requestAnimationFrame(() => {
         expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledWith(target, 'value', undefined);
         done();
       });
     });
 
-    it('- should call callback when dependency value changes', (done) => {
-      observe(contextObj, 'context', spy);
-      expect(get(contextObj, 'context', getContext)).toBe('value');
+    it('does not run callback for the first time when value is undefined', (done) => {
+      observe(target, 'key', _, spy);
 
       requestAnimationFrame(() => {
-        set(obj, 'obj', (t, v) => v, 'new value');
+        expect(spy).toHaveBeenCalledTimes(0);
+        done();
+      });
+    });
+
+    it('runs callback when dependency changes', (done) => {
+      const getter = () => get(target, 'otherKey', () => get(target, 'deepKey', _));
+      observe(target, 'key', getter, spy);
+
+      requestAnimationFrame(() => {
+        expect(spy).toHaveBeenCalledTimes(0);
+        set(target, 'deepKey', _, 'value');
+
         requestAnimationFrame(() => {
-          expect(spy).toHaveBeenCalledTimes(2);
+          expect(spy).toHaveBeenCalledTimes(1);
+          expect(spy).toHaveBeenCalledWith(target, 'value', undefined);
           done();
         });
       });
     });
 
-    it('- should call callback when deep dependency value changes', (done) => {
-      observe(contextObj, 'context', spy);
-      expect(get(contextObj, 'context', getContext)).toBe('value');
-
-      const deepObj = {};
-      set(deepObj, 'deep', (t, v) => v, 'value');
-
-      invalidate(obj, 'obj');
-      get(obj, 'obj', () => {
-        const result = get(deepObj, 'deep', (t, v) => v);
-        return result;
-      });
+    it('clean emitter when unobserve', (done) => {
+      const unobserve = observe(target, 'key', _, spy);
 
       requestAnimationFrame(() => {
-        expect(spy).toHaveBeenCalledTimes(1);
-        spy = jasmine.createSpy();
-        observe(contextObj, 'context', spy);
-
+        unobserve();
+        set(target, 'key', _, 'value');
         requestAnimationFrame(() => {
-          set(deepObj, 'deep', (t, v) => v, 'new value');
-
-          requestAnimationFrame(() => {
-            expect(spy).toHaveBeenCalledTimes(2);
-            done();
-          });
-        });
-      });
-    });
-
-    it('- removes contexts from deps when context changes dependencies', (done) => {
-      observe(contextObj, 'context', spy);
-
-      expect(get(contextObj, 'context', getContext)).toBe('value');
-      set(contextObj, 'context', (t, v) => v, 'another value');
-      expect(get(contextObj, 'context', (t, v) => v)).toBe('another value');
-
-
-      requestAnimationFrame(() => {
-        set(obj, 'obj', (t, v) => v, 'better value');
-        requestAnimationFrame(() => {
-          expect(spy).toHaveBeenCalledTimes(1);
+          expect(spy).toHaveBeenCalledTimes(0);
           done();
         });
       });
     });
 
-    it('- skips contexts from deps when context changes dependencies', (done) => {
-      expect(get(contextObj, 'context', getContext)).toBe('value');
-      set(contextObj, 'context', (t, v) => v, 'another value');
-      expect(get(contextObj, 'context', (t, v) => v)).toBe('another value');
-
-      observe(contextObj, 'context', spy);
+    it('clean dependencies contexts when unobserve', (done) => {
+      const getter = () => get(target, 'otherKey', () => get(target, 'deepKey', _));
+      const unobserve = observe(target, 'key', getter, spy);
 
       requestAnimationFrame(() => {
-        set(obj, 'obj', (t, v) => v, 'better value');
+        unobserve();
+        set(target, 'deepKey', _, 'value');
+
         requestAnimationFrame(() => {
-          expect(spy).toHaveBeenCalledTimes(1);
+          expect(spy).toHaveBeenCalledTimes(0);
           done();
         });
       });

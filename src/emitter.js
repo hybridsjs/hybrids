@@ -1,22 +1,11 @@
-const targets = new WeakMap();
-
-function getListeners(target) {
-  let listeners = targets.get(target);
-  if (!listeners) {
-    listeners = new Set();
-    targets.set(target, listeners);
-  }
-  return listeners;
-}
-
+const callbacks = new WeakMap();
 const queue = new Set();
-const run = (fn) => fn();
 
 function execute() {
   try {
     queue.forEach((target) => {
       try {
-        getListeners(target).forEach(run);
+        callbacks.get(target)();
         queue.delete(target);
       } catch (e) {
         queue.delete(target);
@@ -37,9 +26,11 @@ export function dispatch(target) {
 }
 
 export function subscribe(target, cb) {
-  const listeners = getListeners(target);
-  listeners.add(cb);
+  callbacks.set(target, cb);
   dispatch(target);
 
-  return () => listeners.delete(cb);
+  return function unsubscribe() {
+    queue.delete(target);
+    callbacks.delete(target);
+  };
 }
