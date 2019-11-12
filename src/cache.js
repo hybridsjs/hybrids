@@ -18,7 +18,7 @@ export function getEntry(target, key) {
       value: undefined,
       contexts: undefined,
       deps: undefined,
-      state: 1,
+      state: 0,
       checksum: 0,
       observed: false,
     };
@@ -32,8 +32,6 @@ function calculateChecksum(entry) {
   let checksum = entry.state;
   if (entry.deps) {
     entry.deps.forEach((depEntry) => {
-      // eslint-disable-next-line no-unused-expressions
-      depEntry.target[depEntry.key];
       checksum += depEntry.state;
     });
   }
@@ -46,30 +44,29 @@ function dispatchDeep(entry) {
   if (entry.contexts) entry.contexts.forEach(dispatchDeep);
 }
 
-let context = null;
+const contextStack = new Set();
 export function get(target, key, getter) {
   const entry = getEntry(target, key);
 
-  if (context === entry) {
-    context = null;
-    throw Error(`Circular '${key}' get invocation in '${stringifyElement(target)}'`);
+  if (contextStack.size && contextStack.has(entry)) {
+    contextStack.clear();
+    throw Error(`Circular get invocation of the '${key}' property in '${stringifyElement(target)}'`);
   }
 
-  if (context) {
+  contextStack.forEach((context) => {
     context.deps = context.deps || new Set();
     context.deps.add(entry);
-  }
 
-  if (context && (context.observed || (context.contexts && context.contexts.size))) {
-    entry.contexts = entry.contexts || new Set();
-    entry.contexts.add(context);
-  }
+    if (context.observed) {
+      entry.contexts = entry.contexts || new Set();
+      entry.contexts.add(context);
+    }
+  });
 
-  const parentContext = context;
-  context = entry;
+  contextStack.add(entry);
 
   if (entry.checksum && entry.checksum === calculateChecksum(entry)) {
-    context = parentContext;
+    contextStack.delete(entry);
     return entry.value;
   }
 
@@ -91,18 +88,18 @@ export function get(target, key, getter) {
     }
 
     entry.checksum = calculateChecksum(entry);
-    context = parentContext;
+    contextStack.delete(entry);
   } catch (e) {
-    context = null;
+    contextStack.clear();
     throw e;
   }
 
   return entry.value;
 }
 
-export function set(target, key, setter, value) {
-  if (context) {
-    context = null;
+export function set(target, key, setter, value, force) {
+  if (contextStack.size && !force) {
+    contextStack.clear();
     throw Error(`Try to set '${key}' of '${stringifyElement(target)}' in get call`);
   }
 
@@ -110,6 +107,7 @@ export function set(target, key, setter, value) {
   const newValue = setter(target, value, entry.value);
 
   if (newValue !== entry.value) {
+    entry.checksum = 0;
     entry.state += 1;
     entry.value = newValue;
 
@@ -118,14 +116,16 @@ export function set(target, key, setter, value) {
 }
 
 export function invalidate(target, key, clearValue) {
-  if (context) {
-    context = null;
+  if (contextStack.size) {
+    contextStack.clear();
     throw Error(`Try to invalidate '${key}' in '${stringifyElement(target)}' get call`);
   }
 
   const entry = getEntry(target, key);
 
   entry.checksum = 0;
+  entry.state += 1;
+
   dispatchDeep(entry);
 
   if (clearValue) {
@@ -133,8 +133,26 @@ export function invalidate(target, key, clearValue) {
   }
 }
 
-export function observe(target, key, fn) {
+export function observe(target, key, getter, fn) {
   const entry = getEntry(target, key);
   entry.observed = true;
-  return emitter.subscribe(entry, fn);
+
+  let lastValue;
+  const unsubscribe = emitter.subscribe(entry, () => {
+    const value = get(target, key, getter);
+    if (value !== lastValue) {
+      fn(target, value, lastValue);
+      lastValue = value;
+    }
+  });
+
+  return function unobserve() {
+    unsubscribe();
+    entry.observed = false;
+    if (entry.deps && entry.deps.size) {
+      entry.deps.forEach((depEntry) => {
+        depEntry.contexts.delete(entry);
+      });
+    }
+  };
 }

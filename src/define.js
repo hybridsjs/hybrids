@@ -43,23 +43,16 @@ function compile(Hybrid, descriptors) {
       configurable: process.env.NODE_ENV !== 'production',
     });
 
-    if (config.connect) {
-      Hybrid.callbacks.push((host) => config.connect(host, key, () => {
-        cache.invalidate(host, key);
-      }));
+    if (config.observe) {
+      Hybrid.callbacks.push(
+        (host) => cache.observe(host, key, config.get, config.observe),
+      );
     }
 
-    if (config.observe) {
-      Hybrid.callbacks.push((host) => {
-        let lastValue;
-        return cache.observe(host, key, () => {
-          const value = host[key];
-          if (value !== lastValue) {
-            config.observe(host, value, lastValue);
-            lastValue = value;
-          }
-        });
-      });
+    if (config.connect) {
+      Hybrid.callbacks.push(
+        (host) => config.connect(host, key, () => { cache.invalidate(host, key); }),
+      );
     }
   });
 }
