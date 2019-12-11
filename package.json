@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "module": "esm/index.js",
   "jsnext:main": "esm/index.js",
+  "types": "types/index.d.ts",
   "author": "Dominik Lubański <dominik.lubanski@gmail.com>",
   "repository": "https://github.com/hybridsjs/hybrids",
   "homepage": "https://hybrids.js.org",

@@ -1,6 +1,6 @@
-export default function render(get, customOptions = {}) {
-  if (typeof get !== 'function') {
-    throw TypeError(`The first argument must be a function: ${typeof get}`);
+export default function render(fn, customOptions = {}) {
+  if (typeof fn !== 'function') {
+    throw TypeError(`The first argument must be a function: ${typeof fn}`);
   }
 
   const options = { shadowRoot: true, ...customOptions };
@@ -12,9 +12,9 @@ export default function render(get, customOptions = {}) {
 
   return {
     get(host) {
-      const fn = get(host);
+      const update = fn(host);
       return function flush() {
-        fn(host, options.shadowRoot ? host.shadowRoot : host);
+        update(host, options.shadowRoot ? host.shadowRoot : host);
       };
     },
     connect(host) {
@@ -22,8 +22,8 @@ export default function render(get, customOptions = {}) {
         host.attachShadow(shadowRootInit);
       }
     },
-    observe(host, fn) {
-      fn();
+    observe(host, flush) {
+      flush();
     },
   };
 }
