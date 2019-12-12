@@ -1,6 +1,7 @@
 /coverage
 /node_modules
 /test
+/.codesandbox
 *.log
 karma.conf.js
 webpack.config.js
