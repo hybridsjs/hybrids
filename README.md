@@ -121,9 +121,13 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 
 * [Do we really need classes in JavaScript after all?](https://dev.to/smalluban/do-we-really-need-classes-in-javascript-after-all-91n)
 * [Let's Build Web Components! Part 7: Hybrids](https://dev.to/bennypowers/lets-build-web-components-part-7-hybrids-187l)
-* [From classes to plain objects and pure functions](https://dev.to/smalluban/from-classes-to-plain-objects-and-pure-functions-2gip) *(Core Concepts Series)*
-* [Say goodbye to lifecycle methods, and focus on productive code](https://dev.to/smalluban/how-to-say-goodbye-to-lifecycle-methods-and-focus-on-productive-code-175) *(Core Concepts Series)*
-* [Chasing the best performance of rendering the DOM by hybrids library](https://dev.to/smalluban/chasing-the-best-performance-of-rendering-the-dom-by-hybrids-library-436d) *(Core Concepts Series)*
+
+#### Core Concepts Series
+
+* [From classes to plain objects and pure functions](https://dev.to/smalluban/from-classes-to-plain-objects-and-pure-functions-2gip)
+* [Say goodbye to lifecycle methods, and focus on productive code](https://dev.to/smalluban/how-to-say-goodbye-to-lifecycle-methods-and-focus-on-productive-code-175)
+* [Chasing the best performance of rendering the DOM by hybrids library](https://dev.to/smalluban/chasing-the-best-performance-of-rendering-the-dom-by-hybrids-library-436d)
+* [Three unique features of the hybrids template engine that you must know](https://dev.to/smalluban/three-unique-features-of-the-hybrids-template-engine-that-you-must-know-5ada)
 
 ### Videos
 
@@ -153,9 +157,9 @@ import { define, ... } from 'hybrids';
 ...
 ```
 
-The polyfill package provides two modes in which you can use it (`webcomponents-bundle.js` and `webcomponents-loader.js`). Read more in the [How to use](https://github.com/webcomponents/webcomponentsjs#how-to-use) section of the documentation.
+The polyfill package provides two modes in which you can use it (`webcomponents-bundle.js` and `webcomponents-loader.js`). Read more in the [How to use](https://github.com/webcomponents/polyfills/tree/master/packages/webcomponentsjs#how-to-use) section of the documentation.
 
-Web components shims have some limitations. Especially, [`webcomponents/shadycss`](https://github.com/webcomponents/polyfills/tree/master/packages/shadycss) approximates CSS scoping and CSS custom properties inheritance. Read more on the [known issues](https://github.com/webcomponents/polyfills/tree/master/packages/webcomponentsjs#known-issues) and [custom properties shim limitations](https://www.polymer-project.org/3.0/docs/devguide/custom-css-properties#custom-properties-shim-limitations) pages.
+Web components shims have some limitations. Especially, [`webcomponents/shadycss`](https://github.com/webcomponents/polyfills/tree/master/packages/shadycss#shadycss) approximates CSS scoping and CSS custom properties inheritance. Read more on the [known issues](https://github.com/webcomponents/polyfills/tree/master/packages/webcomponentsjs#known-issues) and [custom properties shim limitations](https://www.polymer-project.org/3.0/docs/devguide/custom-css-properties#custom-properties-shim-limitations) pages.
 
 ## License
 
