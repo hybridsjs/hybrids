@@ -694,7 +694,7 @@ describe('html:', () => {
   describe('ShadyDOM polyfill', () => {
     it('uses internal TreeWalker', () => {
       const el = document.createElement('div');
-      el.innerHTML = '<div><div>text</div><div>text<div>text</div></div></div>';
+      el.innerHTML = '<div><div>text</div><div>text<div>text</div></div>text</div>';
 
       const walker = createInternalWalker(el);
       let index = 0;
@@ -702,7 +702,7 @@ describe('html:', () => {
         expect(walker.currentNode).not.toBeNull();
         index += 1;
       }
-      expect(index).toBe(7);
+      expect(index).toBe(8);
     });
   });
 
