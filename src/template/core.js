@@ -110,7 +110,13 @@ export function createInternalWalker(context) {
       } else if (node.nextSibling) {
         node = node.nextSibling;
       } else {
-        node = node.parentNode.nextSibling;
+        let parentNode = node.parentNode;
+        node = parentNode.nextSibling;
+
+        while (!node && parentNode !== context) {
+          parentNode = parentNode.parentNode;
+          node = parentNode.nextSibling;
+        }
       }
 
       return !!node;
