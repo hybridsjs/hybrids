@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.0](https://github.com/hybridsjs/hybrids/compare/v4.0.4...v4.1.0) (2020-01-14)
+
+
+### Features
+
+* TypeScript definitions ([e70f7d1](https://github.com/hybridsjs/hybrids/commit/e70f7d1dd4eb87c1b712d3fb96430dce700588d2))
+
 ### [4.0.4](https://github.com/hybridsjs/hybrids/compare/v4.0.3...v4.0.4) (2020-01-08)
 
 
