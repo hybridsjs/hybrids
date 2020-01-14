@@ -1,8 +1,13 @@
 # TypeScript
 
-The library supports [TypeScript](https://www.typescriptlang.org/) out of the box by the types from `types/index.d.ts` file. The web component definition should contain an interface extending `HTMLElement` and a map of descriptors using `Hybrids<E>` type (where generic type `E` is the defined interface).
+The library supports [TypeScript](https://www.typescriptlang.org/) by the definitions in `types/index.d.ts` file. The project is prepared to work without additional configuration. You can import types from the package besides other functions.
 
-A counter component from the Getting Started section can be written in TS with the following code:
+The web component definition should combine two parts:
+
+1. An `interface`, which extends `HTMLElement`
+2. A map of descriptors of the `Hybrids<E>` type (where generic type `E` is the defined interface)
+
+A counter component example can be written in TS with the following code:
 
 ```typescript
 // simple-counter.ts
@@ -29,9 +34,9 @@ export const SimpleCounter: Hybrids<SimpleCounter> = {
 define('simple-counter', SimpleCounter);
 ```
 
-The `Hybrids<E>` type has built-in support for the [descriptors structure](../core-concepts/descriptors.md) and all of [translation](../core-concepts/translation.md) rules. It also prevents from defining properties not declared in the element interface.
+The `Hybrids<E>` type has built-in support for the [descriptors structure](../core-concepts/descriptors.md) and all of the [translation](../core-concepts/translation.md) rules. It also prevents defining properties not declared in the interface. All hybrids public APIs support generic type `<E>` for providing the additional information from the defined interface, for example, `html<E>` or `define<E>(...)`. 
 
-All public APIs support generic type `<E>` for providing additional information from the defined interface. For example, the factories run before TS can check the structure (the result of the function is passed to the component definition, not a function reference), so you have to pass your component interface to the function explicitly:
+The code inside of the descriptors usually requires an interface explicitly. For example, factories run before TS can check the structure (the result of the function is passed to the component definition, not a function reference), so you have to pass your component interface to the function:
 
 ```typescript
 import { property, Hybrids } from 'hybrids';
@@ -42,10 +47,10 @@ interface MyElement extends HTMLElement {
 
 const MyElement: Hybrids<MyElement> = {
  value: property<MyElement>(false, (host) => {
-   // TS knows that the `host` is MyElement, which has `value` property
+   // With the generic type TS knows that the `host` is MyElement, which has `value` property
    console.log(host.value);
  }),
 };
 ```
 
-Provided types are part of the public API, so any changes will follow semantic versioning of the library. For more depth understanding, read the `types/index.d.ts` source file.
+Provided types are part of the public API so that any change will follow semantic versioning of the library. For more depth understanding, read the `types/index.d.ts` source file.

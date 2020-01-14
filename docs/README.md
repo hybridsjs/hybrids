@@ -32,6 +32,6 @@
 ## Misc
 
 - [Utils](misc/utils.md)
-- [Typescript](misc/typescript.md)
+- [TypeScript](misc/typescript.md)
 - [API Reference](misc/api-reference.md)
 - [Change Log](../CHANGELOG.md)
