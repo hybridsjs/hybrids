@@ -24,7 +24,7 @@ export function increaseCount(host: SimpleCounter) {
 
 export const SimpleCounter: Hybrids<SimpleCounter> = {
   count: 0,
-  render: ({ count }) => html<SimpleCounter>`
+  render: ({ count }) => html`
     <button onclick="${increaseCount}">
       Count: ${count}
     </button>
@@ -34,23 +34,11 @@ export const SimpleCounter: Hybrids<SimpleCounter> = {
 define('simple-counter', SimpleCounter);
 ```
 
-The `Hybrids<E>` type has built-in support for the [descriptors structure](../core-concepts/descriptors.md) and all of the [translation](../core-concepts/translation.md) rules. It also prevents defining properties not declared in the interface. All hybrids public APIs support generic type `<E>` for providing the additional information from the defined interface, for example, `html<E>` or `define<E>(...)`. 
+The `Hybrids<E>` type has built-in support for the [descriptors structure](../core-concepts/descriptors.md) and all of the [translation](../core-concepts/translation.md) rules. It also prevents defining properties not declared in the interface. All hybrids public APIs support generic type `<E>` for providing the additional information from the defined interface, for example, `html<E>` or `define<E>(...)`. However, in most of the cases, it is not necessary to pass the generic type explicitly - TS calculates it from the `Hybrids<E>` main type.
 
-The code inside of the descriptors usually requires an interface explicitly. For example, factories run before TS can check the structure (the result of the function is passed to the component definition, not a function reference), so you have to pass your component interface to the function:
+The following types are the public API, and any change to those will follow semantic versioning of the library:
 
-```typescript
-import { property, Hybrids } from 'hybrids';
+* `Hybrids<E>` type including `Descriptor<E>` and `Property<E>` interfaces
+* All declarations of the main exports of the library
 
-interface MyElement extends HTMLElement {
- value: boolean;
-}
-
-const MyElement: Hybrids<MyElement> = {
- value: property<MyElement>(false, (host) => {
-   // With the generic type TS knows that the `host` is MyElement, which has `value` property
-   console.log(host.value);
- }),
-};
-```
-
-Provided types are part of the public API so that any change will follow semantic versioning of the library. For more depth understanding, read the `types/index.d.ts` source file.
+For a deeper understanding, read the `types/index.d.ts` source file.

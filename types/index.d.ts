@@ -20,7 +20,7 @@ declare namespace hybrids {
     | Descriptor<E>;
 
   interface UpdateFunction<E extends HTMLElement> {
-    (host: E, target?: HTMLElement): void;
+    (host: E, target: ShadowRoot | Text | E): void;
   }
 
   interface RenderFunction<E extends HTMLElement> {
@@ -52,9 +52,12 @@ declare namespace hybrids {
   /* Factories */
 
   function property<E extends HTMLElement>(value: any, connect?: Descriptor<E>['connect']): Descriptor<E>;
-  function parent<E extends HTMLElement>(hybridsOrFn: Hybrids<E> | ((hybrids: Hybrids<E>) => boolean)): Descriptor<E>;
-  function children<E extends HTMLElement>(hybridsOrFn: (Hybrids<E> | ((hybrids: Hybrids<E>) => boolean)), options? : { deep?: boolean, nested?: boolean }): Descriptor<E>;
+  function parent<E extends HTMLElement, T extends HTMLElement>(hybridsOrFn: Hybrids<T> | ((hybrids: Hybrids<E>) => boolean)): Descriptor<E>;
+  function children<E extends HTMLElement, T extends HTMLElement>(hybridsOrFn: (Hybrids<T> | ((hybrids: Hybrids<E>) => boolean)), options? : { deep?: boolean, nested?: boolean }): Descriptor<E>;
   function render<E extends HTMLElement>(fn: RenderFunction<E>, customOptions?: { shadowRoot?: boolean | object }): Descriptor<E>;
+
+  /* Utils */
+  function dispatch(host: HTMLElement, eventType: string, options?: CustomEventInit): boolean;
 
   /* Template Engine */
 
@@ -68,27 +71,17 @@ declare namespace hybrids {
     (host: E, event?: Event) : any;
   }
 
-  type TemplateValue<E extends HTMLElement> =
-    | string
-    | number
-    | boolean
-    | null
-    | undefined
-    | UpdateFunction<E>;
-
-  type TemplateExpression<E extends HTMLElement> = TemplateValue<E> | TemplateValue<E>[] | EventHandler<E>;
-
   namespace html {
     function set<E extends HTMLElement>(propertyName: keyof E, value?: any): EventHandler<E>;
     function resolve<E extends HTMLElement>(promise: Promise<UpdateFunction<E>>, placeholder?: UpdateFunction<E>, delay?: number): UpdateFunction<E>;
   }
 
-  function html<E extends HTMLElement>(parts: TemplateStringsArray, ...args: TemplateExpression<E>[]): UpdateFunctionWithMethods<E>;
+  function html<E extends HTMLElement>(parts: TemplateStringsArray, ...args: unknown[]): UpdateFunctionWithMethods<E>;
 
   namespace svg {
     function set<E extends HTMLElement>(propertyName: keyof E, value?: any): EventHandler<E>;
     function resolve<E extends HTMLElement>(promise: Promise<UpdateFunction<E>>, placeholder?: UpdateFunction<E>, delay?: number) : UpdateFunction<E>;
   }
 
-  function svg<E extends HTMLElement>(parts: TemplateStringsArray, ...args: TemplateExpression<E>[]): UpdateFunctionWithMethods<E>;
+  function svg<E extends HTMLElement>(parts: TemplateStringsArray, ...args: unknown[]): UpdateFunctionWithMethods<E>;
 }
