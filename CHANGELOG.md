@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.1](https://github.com/hybridsjs/hybrids/compare/v4.1.0...v4.1.1) (2020-01-17)
+
+
+### Bug Fixes
+
+* **render:** allow update before schedule; render call should return target ([#87](https://github.com/hybridsjs/hybrids/issues/87)) ([905b7af](https://github.com/hybridsjs/hybrids/commit/905b7afaeb797b6b24e59dafd442f686a8304bd7))
+* **types:** missing dispatch, minor template fixes, docs update ([de328c1](https://github.com/hybridsjs/hybrids/commit/de328c1356207372a13227e503134dbd3c41b4a4))
+
 ## [4.1.0](https://github.com/hybridsjs/hybrids/compare/v4.0.4...v4.1.0) (2020-01-14)
 
 
