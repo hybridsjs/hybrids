@@ -35,7 +35,9 @@ describe('render:', () => {
   })));
 
   it('renders content on direct call', tree((el) => {
-    el.render();
+    const target = el.render();
+
+    expect(target).toBe(el.shadowRoot);
     expect(el.shadowRoot.children[0].textContent).toBe('0');
   }));
 
@@ -114,9 +116,9 @@ describe('render:', () => {
 
       test(`
         <test-render-custom-shadow></test-render-custom-shadow>
-      `)(() => {
+      `)(() => resolveRaf(() => {
         expect(spy).toHaveBeenCalledWith({ mode: 'open', delegatesFocus: true });
-      })(done);
+      }))(done);
     });
   });
 });

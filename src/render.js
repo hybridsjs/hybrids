@@ -13,14 +13,17 @@ export default function render(fn, customOptions = {}) {
   return {
     get(host) {
       const update = fn(host);
-      return function flush() {
-        update(host, options.shadowRoot ? host.shadowRoot : host);
-      };
-    },
-    connect(host) {
-      if (options.shadowRoot && !host.shadowRoot) {
-        host.attachShadow(shadowRootInit);
+      let target = host;
+
+      if (options.shadowRoot) {
+        if (!host.shadowRoot) host.attachShadow(shadowRootInit);
+        target = host.shadowRoot;
       }
+
+      return function flush() {
+        update(host, target);
+        return target;
+      };
     },
     observe(host, flush) {
       flush();
