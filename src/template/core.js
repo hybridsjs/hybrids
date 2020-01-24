@@ -250,7 +250,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
 
     if (template !== data.template) {
       if (data.template || target.nodeType === Node.ELEMENT_NODE) removeTemplate(target);
-      data.lastArgs = null;
+      data.prevArgs = null;
 
       const fragment = document.importNode(applyShadyCSS(template, host.tagName).content, true);
 
@@ -306,17 +306,20 @@ export function compileTemplate(rawParts, isSVG, styles) {
       }
     }
 
+    const prevArgs = data.prevArgs;
+    data.prevArgs = args;
+
     for (let index = 0; index < data.markers.length; index += 1) {
       const [node, marker] = data.markers[index];
-      if (!data.lastArgs || data.lastArgs[index] !== args[index]) {
-        marker(host, node, args[index], data.lastArgs ? data.lastArgs[index] : undefined);
+      if (!prevArgs || prevArgs[index] !== args[index]) {
+        marker(host, node, args[index], prevArgs ? prevArgs[index] : undefined);
       }
     }
 
     if (target.nodeType !== Node.TEXT_NODE) {
       shadyCSS((shady) => {
         if (host.shadowRoot) {
-          if (data.lastArgs) {
+          if (prevArgs) {
             shady.styleSubtree(host);
           } else {
             shady.styleElement(host);
@@ -324,7 +327,5 @@ export function compileTemplate(rawParts, isSVG, styles) {
         }
       });
     }
-
-    data.lastArgs = args;
   };
 }

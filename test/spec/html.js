@@ -239,7 +239,7 @@ describe('html:', () => {
   });
 
   describe('event attribute expression', () => {
-    const render = (value) => html`<button onclick=${value}></button>`;
+    const render = (value) => html`<button onclick=${value}></button><button onclick=${value}></button>`;
     const renderWithQuotes = (value) => html`<button onclick="${value}"></button>`;
 
     const click = () => fragment.children[0].click();
@@ -249,10 +249,13 @@ describe('html:', () => {
       spy = jasmine.createSpy('event callback');
     });
 
-    it('throws for other type than function', () => {
+    it('throws for other type than function and attaches event after', () => {
       expect(() => {
         render({})(fragment);
       }).toThrow();
+      render(spy)(fragment);
+      click();
+      expect(spy).toHaveBeenCalledTimes(1);
     });
 
     it('attaches event listener', () => {
