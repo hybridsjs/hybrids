@@ -49,7 +49,6 @@ export function get(target, key, getter) {
   const entry = getEntry(target, key);
 
   if (contextStack.size && contextStack.has(entry)) {
-    contextStack.clear();
     throw Error(`Circular get invocation of the '${key}' property in '${stringifyElement(target)}'`);
   }
 
@@ -63,21 +62,20 @@ export function get(target, key, getter) {
     }
   });
 
-  contextStack.add(entry);
-
   if (entry.checksum && entry.checksum === calculateChecksum(entry)) {
-    contextStack.delete(entry);
     return entry.value;
   }
 
-  if (entry.deps && entry.deps.size) {
-    entry.deps.forEach((depEntry) => {
-      if (depEntry.contexts) depEntry.contexts.delete(entry);
-    });
-    entry.deps = undefined;
-  }
-
   try {
+    contextStack.add(entry);
+
+    if (entry.observed && entry.deps && entry.deps.size) {
+      entry.deps.forEach((depEntry) => {
+        depEntry.contexts.delete(entry);
+      });
+    }
+
+    entry.deps = undefined;
     const nextValue = getter(target, entry.value);
 
     if (nextValue !== entry.value) {
@@ -90,7 +88,14 @@ export function get(target, key, getter) {
     entry.checksum = calculateChecksum(entry);
     contextStack.delete(entry);
   } catch (e) {
-    contextStack.clear();
+    entry.checksum = 0;
+
+    contextStack.delete(entry);
+    contextStack.forEach((context) => {
+      context.deps.delete(entry);
+      if (context.observed) entry.contexts.delete(context);
+    });
+
     throw e;
   }
 
@@ -99,7 +104,6 @@ export function get(target, key, getter) {
 
 export function set(target, key, setter, value, force) {
   if (contextStack.size && !force) {
-    contextStack.clear();
     throw Error(`Try to set '${key}' of '${stringifyElement(target)}' in get call`);
   }
 
@@ -117,7 +121,6 @@ export function set(target, key, setter, value, force) {
 
 export function invalidate(target, key, clearValue) {
   if (contextStack.size) {
-    contextStack.clear();
     throw Error(`Try to invalidate '${key}' in '${stringifyElement(target)}' get call`);
   }
 
