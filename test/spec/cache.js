@@ -152,7 +152,7 @@ describe('cache:', () => {
       });
     });
 
-    it('clean emitter when unobserve', (done) => {
+    it('cleans emitter when unobserve', (done) => {
       const unobserve = observe(target, 'key', _, spy);
 
       requestAnimationFrame(() => {
@@ -165,7 +165,7 @@ describe('cache:', () => {
       });
     });
 
-    it('clean dependencies contexts when unobserve', (done) => {
+    it('cleans dependencies contexts when unobserve', (done) => {
       const getter = () => get(target, 'otherKey', () => get(target, 'deepKey', _));
       const unobserve = observe(target, 'key', getter, spy);
 
@@ -177,6 +177,18 @@ describe('cache:', () => {
           expect(spy).toHaveBeenCalledTimes(0);
           done();
         });
+      });
+    });
+
+    it('cleans contexts when getter throws', (done) => {
+      const getKey = () => get(target, 'key', () => get(target, 'otherKey', () => { throw Error(); }));
+      const unobserve = observe(target, 'key', () => {}, spy);
+
+      expect(() => getKey()).toThrow();
+
+      requestAnimationFrame(() => {
+        expect(() => unobserve()).not.toThrow();
+        done();
       });
     });
   });

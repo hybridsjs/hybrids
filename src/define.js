@@ -82,7 +82,7 @@ if (process.env.NODE_ENV !== 'production') {
             node.disconnectedCallback();
 
             Object.keys(node.constructor.hybrids).forEach((key) => {
-              cache.invalidate(node, key, node[key] === hybrids[key]);
+              cache.invalidate(node, key, node.constructor.hybrids[key] !== hybrids[key]);
             });
 
             node.connectedCallback();
