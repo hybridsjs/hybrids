@@ -6,7 +6,7 @@ declare namespace hybrids {
   interface Descriptor<E extends HTMLElement> {
     get?(host: E, lastValue: any): any;
     set?(host: E, value: any, lastValue: any): any;
-    connect?(host: E, key: string, invalidate: Function): Function;
+    connect?(host: E, key: string, invalidate: Function): Function | void;
     observe?(host: E, value: any, lastValue: any): void;
   }
 
@@ -57,7 +57,7 @@ declare namespace hybrids {
   function render<E extends HTMLElement>(fn: RenderFunction<E>, customOptions?: { shadowRoot?: boolean | object }): Descriptor<E>;
 
   /* Utils */
-  function dispatch(host: HTMLElement, eventType: string, options?: CustomEventInit): boolean;
+  function dispatch(host: EventTarget, eventType: string, options?: CustomEventInit): boolean;
 
   /* Template Engine */
 
