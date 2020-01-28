@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.2](https://github.com/hybridsjs/hybrids/compare/v4.1.1...v4.1.2) (2020-01-28)
+
+
+### Bug Fixes
+
+* **cache:** optmize context clean up for observed property ([39baaa8](https://github.com/hybridsjs/hybrids/commit/39baaa8fb66ca769e0d50e2928595e59eacf8050))
+* **html:** fix replacing event listener callback ([c64f4fd](https://github.com/hybridsjs/hybrids/commit/c64f4fddc3b2384e758f0c6dbc15928e7e2c3462))
+* **types:** dispatch first argument ([fb76ece](https://github.com/hybridsjs/hybrids/commit/fb76ece2d87828a8df96383f43c6819b4927e38e))
+
 ### [4.1.1](https://github.com/hybridsjs/hybrids/compare/v4.1.0...v4.1.1) (2020-01-17)
 
 
