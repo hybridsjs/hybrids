@@ -34,6 +34,12 @@ describe('property:', () => {
       expect(el.stringProp).toBe('default value');
     }));
 
+    it('uses host empty attribute', test(`
+      <test-property string-prop=""></test-property>
+    `)((el) => {
+      expect(el.stringProp).toBe('');
+    }));
+
     it('uses host attribute value only once', tree((el) => {
       const parent = el.parentElement;
 
@@ -72,6 +78,12 @@ describe('property:', () => {
       expect(el.numberProp).toBe(321);
     }));
 
+    it('transforms empty attribute to zero', test(`
+      <test-property number-prop=""></test-property>
+    `)((el) => {
+      expect(el.numberProp).toBe(0);
+    }));
+
     it('transforms property to number', empty((el) => {
       el.numberProp = '321';
       expect(el.numberProp).toBe(321);
@@ -83,19 +95,19 @@ describe('property:', () => {
       <test-property bool-prop></test-property>
     `);
 
-    it('transforms unset attribute to boolean', (done) => {
+    it('transforms not present attribute to boolean', (done) => {
       empty((el) => {
         expect(el.boolProp).toBe(false);
       })(done);
     });
 
-    it('transforms set attribute to boolean', (done) => {
+    it('transforms attribute to boolean', (done) => {
       tree((el) => {
         expect(el.boolProp).toBe(true);
       })(done);
     });
 
-    it('transforms property to number', empty((el) => {
+    it('transforms property to boolean', empty((el) => {
       el.boolProp = 'value';
       expect(el.boolProp).toBe(true);
 

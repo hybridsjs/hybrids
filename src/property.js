@@ -44,7 +44,7 @@ export default function property(value, connect) {
 
           if (host.hasAttribute(attrName)) {
             const attrValue = host.getAttribute(attrName);
-            host[key] = attrValue !== '' ? attrValue : true;
+            host[key] = attrValue === '' && transform === Boolean ? true : attrValue;
           }
         }
 
