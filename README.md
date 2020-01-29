@@ -1,14 +1,15 @@
 <h1 align="center">
-  <img src="docs/assets/hybrids-logo.svg" width="200" align="center">
+  <img src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-logo.svg?sanitize=true" width="200" align="center">
   <br/>
   <big>hybrids</big>
 </h1>
 
 [![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/hybrids.svg?label=minzip)](https://bundlephobia.com/result?p=hybrids)
+[![types](https://img.shields.io/npm/types/webcomponents-in-react.svg?style=flat)](https://github.com/hybridsjs/hybrids/blob/master/types/index.d.ts)
 [![build status](https://img.shields.io/travis/hybridsjs/hybrids/master.svg?style=flat)](https://travis-ci.org/hybridsjs/hybrids)
 [![coverage status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=master)
-[![npm](https://img.shields.io/npm/dm/hybrids.svg)](https://www.npmjs.com/package/hybrids)
+[![npm](https://img.shields.io/npm/dt/hybrids.svg)](https://www.npmjs.com/package/hybrids)
 [![gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg?colorB=893F77)](https://gitter.im/hybridsjs/hybrids)
 [![twitter](https://img.shields.io/badge/follow-on%20twitter-4AA1EC.svg)](https://twitter.com/hybridsjs)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
