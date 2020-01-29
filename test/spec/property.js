@@ -109,7 +109,7 @@ describe('property:', () => {
       });
 
       const boolTree = test(`
-        <test-true-boolean boolProp="false"></test-true-boolean>
+        <test-true-boolean bool-prop="false"></test-true-boolean>
       `);
 
       boolTree((el) => {

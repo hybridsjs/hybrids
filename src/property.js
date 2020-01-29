@@ -10,7 +10,7 @@ const objectTransform = (value) => {
 };
 
 const booleanTransform = (value) => {
-  value = value.toLowerCase();
+  value = typeof value === 'string' ? value.toLowerCase() : value;
   if (value === 'true' || value === 'false') {
     return JSON.parse(value);
   }
