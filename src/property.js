@@ -9,6 +9,14 @@ const objectTransform = (value) => {
   return value && Object.freeze(value);
 };
 
+const booleanTransform = (value) => {
+  value = value.toLowerCase();
+  if (value === 'true' || value === 'false') {
+    return JSON.parse(value);
+  }
+  return Boolean(value);
+};
+
 export default function property(value, connect) {
   const type = typeof value;
   let transform = defaultTransform;
@@ -21,7 +29,7 @@ export default function property(value, connect) {
       transform = Number;
       break;
     case 'boolean':
-      transform = Boolean;
+      transform = booleanTransform;
       break;
     case 'function':
       transform = value;

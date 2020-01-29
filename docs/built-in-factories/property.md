@@ -41,10 +41,12 @@ The type of `defaultValue` is used to detect the transform function. For example
 
 * `string` -> `String(value)`
 * `number` -> `Number(value)`
-* `boolean` -> `Boolean(value)`
+* `boolean` -> `JSON.parse('true' | 'false') || Boolean(value)`
 * `function` -> `defaultValue(value)`
 * `object` -> `Object.freeze(value)`
 * `undefined` -> `value`
+
+Boolean values are parsed with JSON.parse if their lowercase values are either 'true' or 'false'. Otherwise, the `Boolean` constructor is used.
 
 Object values are frozen to prevent mutation of their properties, which does not invalidate cached value. Moreover, `defaultValue` is shared between custom element instances, so any of them should not change it.
 

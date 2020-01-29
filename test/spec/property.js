@@ -102,6 +102,20 @@ describe('property:', () => {
       el.boolProp = '';
       expect(el.boolProp).toBe(false);
     }));
+
+    it('transforms the boolean prop to the correct attribute value', (done) => {
+      define('test-true-boolean', {
+        boolProp: property(true),
+      });
+
+      const boolTree = test(`
+        <test-true-boolean boolProp="false"></test-true-boolean>
+      `);
+
+      boolTree((el) => {
+        expect(el.boolProp).toBe(false);
+      })(done);
+    });
   });
 
   describe('function type', () => {
