@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.3](https://github.com/hybridsjs/hybrids/compare/v4.1.2...v4.1.3) (2020-01-31)
+
+
+### Bug Fixes
+
+* **property:** correct attribute value for other than booleans ([49a9eb1](https://github.com/hybridsjs/hybrids/commit/49a9eb1947af98cd9213c96b06118149aac92391))
+
 ### [4.1.2](https://github.com/hybridsjs/hybrids/compare/v4.1.1...v4.1.2) (2020-01-28)
 
 
