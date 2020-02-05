@@ -1,7 +1,6 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-logo.svg?sanitize=true" width="200" align="center">
+  <img alt="hybrids - the web components" src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-full-logo.svg?sanitize=true" width="500" align="center">
   <br/>
-  <big>hybrids</big>
 </h1>
 
 [![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
@@ -17,7 +16,7 @@
 
 > 🏅One of the four nominated projects to the **"Breakthrough of the year"** category of [Open Source Award](https://osawards.com/javascript/) in 2019
 
-**Hybrids** is a UI library for creating [Web Components](https://www.webcomponents.org/) with a strong declarative and functional approach based on plain objects and pure functions.
+**Hybrids** is a UI library for creating [web components](https://www.webcomponents.org/) with strong declarative and functional approach based on plain objects and pure functions.
 
 * **The simplest definition** — just plain objects and pure functions - no `class` and `this` syntax
 * **No global lifecycle** — independent properties with own simplified lifecycle methods
