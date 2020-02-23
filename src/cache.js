@@ -16,7 +16,7 @@ export function getEntry(target, key) {
       target,
       key,
       value: undefined,
-      contexts: undefined,
+      contexts: new Set(),
       deps: undefined,
       state: 0,
       checksum: 0,
@@ -41,7 +41,7 @@ function calculateChecksum(entry) {
 
 function dispatchDeep(entry) {
   if (entry.observed) emitter.dispatch(entry);
-  if (entry.contexts) entry.contexts.forEach(dispatchDeep);
+  entry.contexts.forEach(dispatchDeep);
 }
 
 const contextStack = new Set();
