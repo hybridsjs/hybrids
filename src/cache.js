@@ -71,7 +71,7 @@ export function get(target, key, getter) {
 
     if (entry.observed && entry.deps && entry.deps.size) {
       entry.deps.forEach((depEntry) => {
-        depEntry.contexts.delete(entry);
+        if (depEntry.contexts) depEntry.contexts.delete(entry);
       });
     }
 
@@ -154,7 +154,7 @@ export function observe(target, key, getter, fn) {
     entry.observed = false;
     if (entry.deps && entry.deps.size) {
       entry.deps.forEach((depEntry) => {
-        depEntry.contexts.delete(entry);
+        if (depEntry.contexts) depEntry.contexts.delete(entry);
       });
     }
   };
