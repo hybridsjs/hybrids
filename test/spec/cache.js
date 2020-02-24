@@ -116,6 +116,26 @@ describe('cache:', () => {
   describe('observe()', () => {
     const _ = (t, v) => v;
 
+    it('does not throw for manual call before observe is setup', () => {
+      expect(() => {
+        const getter = () => get(target, 'dep', () => 'value');
+        get(target, 'key', getter);
+        set(target, 'dep', () => 'new value');
+        observe(target, 'key', getter, spy);
+        get(target, 'key', getter);
+      }).not.toThrow();
+    });
+
+    it('does not throw for unobserve called synchronously after observe', () => {
+      expect(() => {
+        const getter = () => get(target, 'dep', () => 'value');
+        get(target, 'key', getter);
+        set(target, 'dep', () => 'new value');
+        const unobserve = observe(target, 'key', getter, spy);
+        unobserve();
+      }).not.toThrow();
+    });
+
     it('runs callback when value changes', (done) => {
       observe(target, 'key', _, spy);
       set(target, 'key', _, 'value');

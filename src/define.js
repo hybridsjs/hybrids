@@ -44,7 +44,7 @@ function compile(Hybrid, descriptors) {
     });
 
     if (config.observe) {
-      Hybrid.callbacks.push(
+      Hybrid.callbacks.unshift(
         (host) => cache.observe(host, key, config.get, config.observe),
       );
     }
