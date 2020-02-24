@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* **cache:** add guard for accessing entry contexts property ([4b8a916](https://github.com/hybridsjs/hybrids/commit/4b8a9161bc9c6f2c20a025573ea67a7c7f5603eb))
+* **cache:** add guard for accessing entry contexts property ([#96](https://github.com/hybridsjs/hybrids/issues/96)) ([4b8a916](https://github.com/hybridsjs/hybrids/commit/4b8a9161bc9c6f2c20a025573ea67a7c7f5603eb))
 
 ### [4.1.3](https://github.com/hybridsjs/hybrids/compare/v4.1.2...v4.1.3) (2020-01-31)
 
