@@ -82,7 +82,7 @@ function createSignature(parts, styles) {
 }
 
 function getPropertyName(string) {
-  return string.replace(/\s*=\s*['"]*$/g, '').split(' ').pop();
+  return string.replace(/\s*=\s*['"]*$/g, '').split(/\s+/).pop();
 }
 
 function replaceComments(fragment) {

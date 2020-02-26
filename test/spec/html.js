@@ -239,7 +239,7 @@ describe('html:', () => {
   });
 
   describe('event attribute expression', () => {
-    const render = (value) => html`<button onclick=${value}></button><button onclick=${value}></button>`;
+    const render = (value) => html`<button\n\t\tonclick=${value}></button><button\nonclick=${value}></button>`;
     const renderWithQuotes = (value) => html`<button onclick="${value}"></button>`;
 
     const click = () => fragment.children[0].click();
