@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.5](https://github.com/hybridsjs/hybrids/compare/v4.1.3...v4.1.5) (2020-02-26)
+
+
+### Bug Fixes
+
+* **cache:** add guard for accessing entry contexts property ([#96](https://github.com/hybridsjs/hybrids/issues/96)) ([e6444b0](https://github.com/hybridsjs/hybrids/commit/e6444b04b66ce2c1e979e101f63ad29a31146f89))
+* **cache:** ensure contexts are set in the observe setup ([df9a823](https://github.com/hybridsjs/hybrids/commit/df9a823cf63c7acc5ce22d485b0e6db85c99502d))
+* **html:** broken property names in template with all whitespace characters ([#97](https://github.com/hybridsjs/hybrids/issues/97)) ([14c415f](https://github.com/hybridsjs/hybrids/commit/14c415fc882dd329b3be6c6670e4b60d8d601576))
+
 ### [4.1.4](https://github.com/hybridsjs/hybrids/compare/v4.1.3...v4.1.4) (2020-02-24)
 
 
