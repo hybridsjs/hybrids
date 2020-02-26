@@ -149,6 +149,13 @@ export function observe(target, key, getter, fn) {
     }
   });
 
+  if (entry.deps) {
+    entry.deps.forEach((depEntry) => {
+      depEntry.contexts = depEntry.contexts || new Set();
+      depEntry.contexts.add(entry);
+    });
+  }
+
   return function unobserve() {
     unsubscribe();
     entry.observed = false;

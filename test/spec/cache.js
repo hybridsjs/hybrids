@@ -136,6 +136,22 @@ describe('cache:', () => {
       }).not.toThrow();
     });
 
+    it('calls observe callback after initial get before setup', (done) => {
+      set(target, 'dep', () => 'value');
+      const getter = () => get(target, 'dep', _);
+      get(target, 'key', getter);
+
+      observe(target, 'key', getter, spy);
+
+      requestAnimationFrame(() => {
+        set(target, 'dep', () => 'new value');
+        requestAnimationFrame(() => {
+          expect(spy).toHaveBeenCalledTimes(2);
+          done();
+        });
+      });
+    });
+
     it('runs callback when value changes', (done) => {
       observe(target, 'key', _, spy);
       set(target, 'key', _, 'value');
