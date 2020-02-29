@@ -1,10 +1,13 @@
-import { camelToDash, stringifyElement } from '../../utils';
+import { camelToDash, stringifyElement } from "../../utils.js";
 
 const styleMap = new WeakMap();
 
 export default function resolveStyle(host, target, value) {
-  if (value === null || typeof value !== 'object') {
-    throw TypeError(`Style value must be an object in ${stringifyElement(target)}:`, value);
+  if (value === null || typeof value !== "object") {
+    throw TypeError(
+      `Style value must be an object in ${stringifyElement(target)}:`,
+      value,
+    );
   }
 
   const previousMap = styleMap.get(target) || new Map();
@@ -25,7 +28,9 @@ export default function resolveStyle(host, target, value) {
     return map;
   }, new Map());
 
-  previousMap.forEach((styleValue, key) => { target.style[key] = ''; });
+  previousMap.forEach((styleValue, key) => {
+    target.style[key] = "";
+  });
 
   styleMap.set(target, nextMap);
 }

@@ -2,18 +2,20 @@ const camelToDashMap = new Map();
 export function camelToDash(str) {
   let result = camelToDashMap.get(str);
   if (result === undefined) {
-    result = str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+    result = str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
     camelToDashMap.set(str, result);
   }
   return result;
 }
 
 export function pascalToDash(str) {
-  return camelToDash(str.replace(/((?!([A-Z]{2}|^))[A-Z])/g, '-$1'));
+  return camelToDash(str.replace(/((?!([A-Z]{2}|^))[A-Z])/g, "-$1"));
 }
 
 export function dispatch(host, eventType, options = {}) {
-  return host.dispatchEvent(new CustomEvent(eventType, { bubbles: false, ...options }));
+  return host.dispatchEvent(
+    new CustomEvent(eventType, { bubbles: false, ...options }),
+  );
 }
 
 export function shadyCSS(fn, fallback) {
@@ -32,5 +34,5 @@ export function stringifyElement(element) {
   return `<${tagName}>`;
 }
 
-export const IS_IE = 'ActiveXObject' in window;
+export const IS_IE = "ActiveXObject" in window;
 export const deferred = Promise.resolve();

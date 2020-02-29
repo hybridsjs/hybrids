@@ -1,6 +1,6 @@
-import { dispatch, subscribe } from '../../src/emitter';
+import { dispatch, subscribe } from "../../src/emitter.js";
 
-describe('emitter:', () => {
+describe("emitter:", () => {
   let spy;
   let target;
 
@@ -9,7 +9,7 @@ describe('emitter:', () => {
     target = {};
   });
 
-  it('subscribe saves fn and dispatch target in next animation frame', (done) => {
+  it("subscribe saves fn and dispatch target in next animation frame", done => {
     subscribe(target, spy);
     requestAnimationFrame(() => {
       expect(spy).toHaveBeenCalledTimes(1);
@@ -17,7 +17,7 @@ describe('emitter:', () => {
     });
   });
 
-  describe('dispatch', () => {
+  describe("dispatch", () => {
     let origRAF;
     let catchSpy;
 
@@ -42,7 +42,7 @@ describe('emitter:', () => {
       window.requestAnimationFrame = origRAF;
     });
 
-    it('calls fn for target', (done) => {
+    it("calls fn for target", done => {
       subscribe(target, spy);
       requestAnimationFrame(() => {
         dispatch(target);
@@ -53,8 +53,10 @@ describe('emitter:', () => {
       });
     });
 
-    it('catches error', (done) => {
-      subscribe(target, () => { throw new Error('asd'); });
+    it("catches error", done => {
+      subscribe(target, () => {
+        throw new Error("asd");
+      });
 
       requestAnimationFrame(() => {
         expect(catchSpy).toHaveBeenCalledTimes(1);
@@ -62,10 +64,12 @@ describe('emitter:', () => {
       });
     });
 
-    it('catches error and calls next target', (done) => {
+    it("catches error and calls next target", done => {
       const target2 = {};
 
-      subscribe(target, () => { throw new Error('asd'); });
+      subscribe(target, () => {
+        throw new Error("asd");
+      });
       subscribe(target2, spy);
 
       requestAnimationFrame(() => {

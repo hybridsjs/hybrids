@@ -1,5 +1,5 @@
 {
-  "extends": "airbnb-base",
+  "extends": ["airbnb-base", "plugin:prettier/recommended"],
   "env": {
     "browser": true,
     "jasmine": true
@@ -19,6 +19,7 @@
           "test/**/*.js"
         ]
       }
-    ]
+    ],
+    "import/extensions": [2, "always"]
   }
 }

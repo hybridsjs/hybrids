@@ -1,30 +1,30 @@
-import { dataMap, removeTemplate } from '../utils';
+import { dataMap, removeTemplate } from "../utils.js";
 // eslint-disable-next-line import/no-cycle
-import resolveArray, { arrayMap } from './array';
+import resolveArray, { arrayMap } from "./array.js";
 
 export default function resolveValue(host, target, value) {
-  const type = Array.isArray(value) ? 'array' : typeof value;
+  const type = Array.isArray(value) ? "array" : typeof value;
   let data = dataMap.get(target, {});
 
   if (data.type !== type) {
     removeTemplate(target);
-    if (type === 'array') arrayMap.delete(target);
+    if (type === "array") arrayMap.delete(target);
 
     data = dataMap.set(target, { type });
 
-    if (target.textContent !== '') {
-      target.textContent = '';
+    if (target.textContent !== "") {
+      target.textContent = "";
     }
   }
 
   switch (type) {
-    case 'function':
+    case "function":
       value(host, target);
       break;
-    case 'array':
+    case "array":
       resolveArray(host, target, value);
       break;
     default:
-      target.textContent = type === 'number' || value ? value : '';
+      target.textContent = type === "number" || value ? value : "";
   }
 }

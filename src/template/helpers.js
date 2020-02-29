@@ -1,15 +1,20 @@
 const setCache = new Map();
 export function set(propertyName, value) {
-  if (!propertyName) throw Error(`Target property name missing: ${propertyName}`);
+  if (!propertyName)
+    throw Error(`Target property name missing: ${propertyName}`);
 
   if (arguments.length === 2) {
-    return (host) => { host[propertyName] = value; };
+    return host => {
+      host[propertyName] = value;
+    };
   }
 
   let fn = setCache.get(propertyName);
 
   if (!fn) {
-    fn = (host, { target }) => { host[propertyName] = target.value; };
+    fn = (host, { target }) => {
+      host[propertyName] = target.value;
+    };
     setCache.set(propertyName, fn);
   }
 
@@ -33,7 +38,7 @@ export function resolve(promise, placeholder, delay = 200) {
 
     promiseMap.set(target, promise);
 
-    promise.then((template) => {
+    promise.then(template => {
       if (timeout) clearTimeout(timeout);
 
       if (promiseMap.get(target) === promise) {

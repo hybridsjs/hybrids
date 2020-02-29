@@ -1,9 +1,9 @@
 export function test(html) {
-  const template = document.createElement('template');
+  const template = document.createElement("template");
   template.innerHTML = html;
 
-  return (spec) => (done) => {
-    const wrapper = document.createElement('div');
+  return spec => done => {
+    const wrapper = document.createElement("div");
     document.body.appendChild(wrapper);
     wrapper.appendChild(template.content.cloneNode(true));
     const result = spec(wrapper.children[0]);
@@ -25,7 +25,7 @@ export function test(html) {
 }
 
 export function resolveRaf(fn) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         Promise.resolve()
@@ -37,7 +37,7 @@ export function resolveRaf(fn) {
 }
 
 export function resolveTimeout(fn) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(() => {
       Promise.resolve()
         .then(fn)

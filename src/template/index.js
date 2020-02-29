@@ -1,10 +1,10 @@
-import defineElements from '../define';
+import defineElements from "../define.js";
 
-import { compileTemplate, getPlaceholder } from './core';
-import * as helpers from './helpers';
+import { compileTemplate, getPlaceholder } from "./core.js";
+import * as helpers from "./helpers.js";
 
 const PLACEHOLDER = getPlaceholder();
-const SVG_PLACEHOLDER = getPlaceholder('svg');
+const SVG_PLACEHOLDER = getPlaceholder("svg");
 
 const templatesMap = new Map();
 const stylesMap = new WeakMap();
