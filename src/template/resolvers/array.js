@@ -1,9 +1,7 @@
-import {
-  dataMap, removeTemplate, getTemplateEnd,
-} from '../utils';
+import { dataMap, removeTemplate, getTemplateEnd } from "../utils.js";
 
 // eslint-disable-next-line import/no-cycle
-import resolveValue from './value';
+import resolveValue from "./value.js";
 
 export const arrayMap = new WeakMap();
 
@@ -27,7 +25,7 @@ function movePlaceholder(target, previousSibling) {
 export default function resolveArray(host, target, value) {
   let lastEntries = arrayMap.get(target);
   const entries = value.map((item, index) => ({
-    id: Object.prototype.hasOwnProperty.call(item, 'id') ? item.id : index,
+    id: Object.prototype.hasOwnProperty.call(item, "id") ? item.id : index,
     value: item,
     placeholder: null,
     available: true,
@@ -37,9 +35,9 @@ export default function resolveArray(host, target, value) {
 
   if (lastEntries) {
     const ids = new Set();
-    entries.forEach((entry) => ids.add(entry.id));
+    entries.forEach(entry => ids.add(entry.id));
 
-    lastEntries = lastEntries.filter((entry) => {
+    lastEntries = lastEntries.filter(entry => {
       if (!ids.has(entry.id)) {
         removeTemplate(entry.placeholder);
         entry.placeholder.parentNode.removeChild(entry.placeholder);
@@ -78,12 +76,17 @@ export default function resolveArray(host, target, value) {
         resolveValue(host, placeholder, entry.value);
       }
     } else {
-      placeholder = document.createTextNode('');
-      previousSibling.parentNode.insertBefore(placeholder, previousSibling.nextSibling);
+      placeholder = document.createTextNode("");
+      previousSibling.parentNode.insertBefore(
+        placeholder,
+        previousSibling.nextSibling,
+      );
       resolveValue(host, placeholder, entry.value);
     }
 
-    previousSibling = getTemplateEnd(dataMap.get(placeholder).endNode || placeholder);
+    previousSibling = getTemplateEnd(
+      dataMap.get(placeholder).endNode || placeholder,
+    );
 
     if (index === 0) data.startNode = placeholder;
     if (index === lastIndex) data.endNode = previousSibling;
@@ -92,7 +95,7 @@ export default function resolveArray(host, target, value) {
   }
 
   if (lastEntries) {
-    lastEntries.forEach((entry) => {
+    lastEntries.forEach(entry => {
       if (entry.available) {
         removeTemplate(entry.placeholder);
         entry.placeholder.parentNode.removeChild(entry.placeholder);

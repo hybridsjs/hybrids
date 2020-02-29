@@ -1,8 +1,8 @@
-import { stringifyElement, shadyCSS, IS_IE } from '../utils';
-import { dataMap, removeTemplate } from './utils';
+import { stringifyElement, shadyCSS, IS_IE } from "../utils.js";
+import { dataMap, removeTemplate } from "./utils.js";
 
-import resolveValue from './resolvers/value';
-import resolveProperty from './resolvers/property';
+import resolveValue from "./resolvers/value.js";
+import resolveProperty from "./resolvers/property.js";
 
 /* istanbul ignore next */
 try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
@@ -11,12 +11,12 @@ const TIMESTAMP = Date.now();
 
 export const getPlaceholder = (id = 0) => `{{h-${TIMESTAMP}-${id}}}`;
 
-const PLACEHOLDER_REGEXP_TEXT = getPlaceholder('(\\d+)');
+const PLACEHOLDER_REGEXP_TEXT = getPlaceholder("(\\d+)");
 const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
-const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, 'g');
+const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, "g");
 
 const ATTR_PREFIX = `--${TIMESTAMP}--`;
-const ATTR_REGEXP = new RegExp(ATTR_PREFIX, 'g');
+const ATTR_REGEXP = new RegExp(ATTR_PREFIX, "g");
 
 const preparedTemplates = new WeakMap();
 
@@ -24,7 +24,7 @@ const preparedTemplates = new WeakMap();
 function applyShadyCSS(template, tagName) {
   if (!tagName) return template;
 
-  return shadyCSS((shady) => {
+  return shadyCSS(shady => {
     let map = preparedTemplates.get(template);
     if (!map) {
       map = new Map();
@@ -34,17 +34,20 @@ function applyShadyCSS(template, tagName) {
     let clone = map.get(tagName);
 
     if (!clone) {
-      clone = document.createElement('template');
+      clone = document.createElement("template");
       clone.content.appendChild(template.content.cloneNode(true));
 
       map.set(tagName, clone);
 
-      const styles = clone.content.querySelectorAll('style');
+      const styles = clone.content.querySelectorAll("style");
 
-      Array.from(styles).forEach((style) => {
+      Array.from(styles).forEach(style => {
         const count = style.childNodes.length + 1;
         for (let i = 0; i < count; i += 1) {
-          style.parentNode.insertBefore(document.createTextNode(getPlaceholder()), style);
+          style.parentNode.insertBefore(
+            document.createTextNode(getPlaceholder()),
+            style,
+          );
         }
       });
 
@@ -60,21 +63,26 @@ function createSignature(parts, styles) {
       return part;
     }
 
-    if (parts.slice(index).join('').match(/^\s*<\/\s*(table|tr|thead|tbody|tfoot|colgroup)>/)) {
+    if (
+      parts
+        .slice(index)
+        .join("")
+        .match(/^\s*<\/\s*(table|tr|thead|tbody|tfoot|colgroup)>/)
+    ) {
       return `${acc}<!--${getPlaceholder(index - 1)}-->${part}`;
     }
     return acc + getPlaceholder(index - 1) + part;
-  }, '');
+  }, "");
 
   if (styles) {
-    signature += `<style>\n${styles.join('\n/*------*/\n')}\n</style>`;
+    signature += `<style>\n${styles.join("\n/*------*/\n")}\n</style>`;
   }
 
   /* istanbul ignore if */
   if (IS_IE) {
     return signature.replace(
       /style\s*=\s*(["][^"]+["]|['][^']+[']|[^\s"'<>/]+)/g,
-      (match) => `${ATTR_PREFIX}${match}`,
+      match => `${ATTR_PREFIX}${match}`,
     );
   }
 
@@ -82,16 +90,27 @@ function createSignature(parts, styles) {
 }
 
 function getPropertyName(string) {
-  return string.replace(/\s*=\s*['"]*$/g, '').split(/\s+/).pop();
+  return string
+    .replace(/\s*=\s*['"]*$/g, "")
+    .split(/\s+/)
+    .pop();
 }
 
 function replaceComments(fragment) {
-  const iterator = document.createNodeIterator(fragment, NodeFilter.SHOW_COMMENT, null, false);
+  const iterator = document.createNodeIterator(
+    fragment,
+    NodeFilter.SHOW_COMMENT,
+    null,
+    false,
+  );
   let node;
   // eslint-disable-next-line no-cond-assign
-  while (node = iterator.nextNode()) {
+  while ((node = iterator.nextNode())) {
     if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
-      node.parentNode.insertBefore(document.createTextNode(node.textContent), node);
+      node.parentNode.insertBefore(
+        document.createTextNode(node.textContent),
+        node,
+      );
       node.parentNode.removeChild(node);
     }
   }
@@ -101,7 +120,9 @@ export function createInternalWalker(context) {
   let node;
 
   return {
-    get currentNode() { return node; },
+    get currentNode() {
+      return node;
+    },
     nextNode() {
       if (node === undefined) {
         node = context.childNodes[0];
@@ -135,11 +156,14 @@ function createExternalWalker(context) {
 }
 
 /* istanbul ignore next */
-const createWalker = typeof window.ShadyDOM === 'object' && window.ShadyDOM.inUse ? createInternalWalker : createExternalWalker;
+const createWalker =
+  typeof window.ShadyDOM === "object" && window.ShadyDOM.inUse
+    ? createInternalWalker
+    : createExternalWalker;
 
-const container = document.createElement('div');
+const container = document.createElement("div");
 export function compileTemplate(rawParts, isSVG, styles) {
-  const template = document.createElement('template');
+  const template = document.createElement("template");
   const parts = [];
 
   let signature = createSignature(rawParts, styles);
@@ -156,7 +180,9 @@ export function compileTemplate(rawParts, isSVG, styles) {
   if (isSVG) {
     const svgRoot = template.content.firstChild;
     template.content.removeChild(svgRoot);
-    Array.from(svgRoot.childNodes).forEach((node) => template.content.appendChild(node));
+    Array.from(svgRoot.childNodes).forEach(node =>
+      template.content.appendChild(node),
+    );
   }
 
   replaceComments(template.content);
@@ -175,19 +201,24 @@ export function compileTemplate(rawParts, isSVG, styles) {
         if (results) {
           let currentNode = node;
           results
-            .reduce((acc, placeholder) => {
-              const [before, next] = acc.pop().split(placeholder);
-              if (before) acc.push(before);
-              acc.push(placeholder);
-              if (next) acc.push(next);
-              return acc;
-            }, [text])
+            .reduce(
+              (acc, placeholder) => {
+                const [before, next] = acc.pop().split(placeholder);
+                if (before) acc.push(before);
+                acc.push(placeholder);
+                if (next) acc.push(next);
+                return acc;
+              },
+              [text],
+            )
             .forEach((part, index) => {
               if (index === 0) {
                 currentNode.textContent = part;
               } else {
-                currentNode = currentNode.parentNode
-                  .insertBefore(document.createTextNode(part), currentNode.nextSibling);
+                currentNode = currentNode.parentNode.insertBefore(
+                  document.createTextNode(part),
+                  currentNode.nextSibling,
+                );
               }
             });
         }
@@ -196,20 +227,23 @@ export function compileTemplate(rawParts, isSVG, styles) {
       const equal = node.textContent.match(PLACEHOLDER_REGEXP_EQUAL);
       if (equal) {
         /* istanbul ignore else */
-        if (!IS_IE) node.textContent = '';
+        if (!IS_IE) node.textContent = "";
         parts[equal[1]] = [compileIndex, resolveValue];
       }
     } else {
       /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
       if (node.nodeType === Node.ELEMENT_NODE) {
-        Array.from(node.attributes).forEach((attr) => {
+        Array.from(node.attributes).forEach(attr => {
           const value = attr.value.trim();
           /* istanbul ignore next */
-          const name = IS_IE ? attr.name.replace(ATTR_PREFIX, '') : attr.name;
+          const name = IS_IE ? attr.name.replace(ATTR_PREFIX, "") : attr.name;
           const equal = value.match(PLACEHOLDER_REGEXP_EQUAL);
           if (equal) {
             const propertyName = getPropertyName(rawParts[equal[1]]);
-            parts[equal[1]] = [compileIndex, resolveProperty(name, propertyName, isSVG)];
+            parts[equal[1]] = [
+              compileIndex,
+              resolveProperty(name, propertyName, isSVG),
+            ];
             node.removeAttribute(attr.name);
           } else {
             const results = value.match(PLACEHOLDER_REGEXP_ALL);
@@ -218,23 +252,29 @@ export function compileTemplate(rawParts, isSVG, styles) {
 
               results.forEach((placeholder, index) => {
                 const [, id] = placeholder.match(PLACEHOLDER_REGEXP_EQUAL);
-                parts[id] = [compileIndex, (host, target, attrValue) => {
-                  const data = dataMap.get(target, {});
-                  data[partialName] = (data[partialName] || value).replace(placeholder, attrValue == null ? '' : attrValue);
+                parts[id] = [
+                  compileIndex,
+                  (host, target, attrValue) => {
+                    const data = dataMap.get(target, {});
+                    data[partialName] = (data[partialName] || value).replace(
+                      placeholder,
+                      attrValue == null ? "" : attrValue,
+                    );
 
-                  if ((results.length === 1) || (index + 1 === results.length)) {
-                    target.setAttribute(name, data[partialName]);
-                    data[partialName] = undefined;
-                  }
-                }];
+                    if (results.length === 1 || index + 1 === results.length) {
+                      target.setAttribute(name, data[partialName]);
+                      data[partialName] = undefined;
+                    }
+                  },
+                ];
               });
 
-              attr.value = '';
+              attr.value = "";
 
               /* istanbul ignore next */
               if (IS_IE && name !== attr.name) {
                 node.removeAttribute(attr.name);
-                node.setAttribute(name, '');
+                node.setAttribute(name, "");
               }
             }
           }
@@ -246,13 +286,17 @@ export function compileTemplate(rawParts, isSVG, styles) {
   }
 
   return function updateTemplateInstance(host, target, args) {
-    const data = dataMap.get(target, { type: 'function' });
+    const data = dataMap.get(target, { type: "function" });
 
     if (template !== data.template) {
-      if (data.template || target.nodeType === Node.ELEMENT_NODE) removeTemplate(target);
+      if (data.template || target.nodeType === Node.ELEMENT_NODE)
+        removeTemplate(target);
       data.prevArgs = null;
 
-      const fragment = document.importNode(applyShadyCSS(template, host.tagName).content, true);
+      const fragment = document.importNode(
+        applyShadyCSS(template, host.tagName).content,
+        true,
+      );
 
       const renderWalker = createWalker(fragment);
       const clonedParts = parts.slice(0);
@@ -271,13 +315,23 @@ export function compileTemplate(rawParts, isSVG, styles) {
         if (node.nodeType === Node.TEXT_NODE) {
           /* istanbul ignore next */
           if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
-            node.textContent = '';
+            node.textContent = "";
           } else if (IS_IE) {
-            node.textContent = node.textContent.replace(ATTR_REGEXP, '');
+            node.textContent = node.textContent.replace(ATTR_REGEXP, "");
           }
-        } else if (process.env.NODE_ENV !== 'production' && node.nodeType === Node.ELEMENT_NODE) {
-          if (node.tagName.indexOf('-') > -1 && !customElements.get(node.tagName.toLowerCase())) {
-            throw Error(`Missing '${stringifyElement(node)}' element definition in '${stringifyElement(host)}'`);
+        } else if (
+          process.env.NODE_ENV !== "production" &&
+          node.nodeType === Node.ELEMENT_NODE
+        ) {
+          if (
+            node.tagName.indexOf("-") > -1 &&
+            !customElements.get(node.tagName.toLowerCase())
+          ) {
+            throw Error(
+              `Missing '${stringifyElement(
+                node,
+              )}' element definition in '${stringifyElement(host)}'`,
+            );
           }
         }
 
@@ -317,7 +371,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
     }
 
     if (target.nodeType !== Node.TEXT_NODE) {
-      shadyCSS((shady) => {
+      shadyCSS(shady => {
         if (host.shadowRoot) {
           if (prevArgs) {
             shady.styleSubtree(host);

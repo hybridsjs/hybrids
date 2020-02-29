@@ -1,5 +1,5 @@
-import { stringifyElement } from './utils';
-import * as emitter from './emitter';
+import { stringifyElement } from "./utils.js";
+import * as emitter from "./emitter.js";
 
 const entries = new WeakMap();
 export function getEntry(target, key) {
@@ -31,7 +31,7 @@ export function getEntry(target, key) {
 function calculateChecksum(entry) {
   let checksum = entry.state;
   if (entry.deps) {
-    entry.deps.forEach((depEntry) => {
+    entry.deps.forEach(depEntry => {
       checksum += depEntry.state;
     });
   }
@@ -49,10 +49,14 @@ export function get(target, key, getter) {
   const entry = getEntry(target, key);
 
   if (contextStack.size && contextStack.has(entry)) {
-    throw Error(`Circular get invocation of the '${key}' property in '${stringifyElement(target)}'`);
+    throw Error(
+      `Circular get invocation of the '${key}' property in '${stringifyElement(
+        target,
+      )}'`,
+    );
   }
 
-  contextStack.forEach((context) => {
+  contextStack.forEach(context => {
     context.deps = context.deps || new Set();
     context.deps.add(entry);
 
@@ -70,7 +74,7 @@ export function get(target, key, getter) {
     contextStack.add(entry);
 
     if (entry.observed && entry.deps && entry.deps.size) {
-      entry.deps.forEach((depEntry) => {
+      entry.deps.forEach(depEntry => {
         if (depEntry.contexts) depEntry.contexts.delete(entry);
       });
     }
@@ -91,7 +95,7 @@ export function get(target, key, getter) {
     entry.checksum = 0;
 
     contextStack.delete(entry);
-    contextStack.forEach((context) => {
+    contextStack.forEach(context => {
       context.deps.delete(entry);
       if (context.observed) entry.contexts.delete(context);
     });
@@ -104,7 +108,9 @@ export function get(target, key, getter) {
 
 export function set(target, key, setter, value, force) {
   if (contextStack.size && !force) {
-    throw Error(`Try to set '${key}' of '${stringifyElement(target)}' in get call`);
+    throw Error(
+      `Try to set '${key}' of '${stringifyElement(target)}' in get call`,
+    );
   }
 
   const entry = getEntry(target, key);
@@ -121,7 +127,9 @@ export function set(target, key, setter, value, force) {
 
 export function invalidate(target, key, clearValue) {
   if (contextStack.size) {
-    throw Error(`Try to invalidate '${key}' in '${stringifyElement(target)}' get call`);
+    throw Error(
+      `Try to invalidate '${key}' in '${stringifyElement(target)}' get call`,
+    );
   }
 
   const entry = getEntry(target, key);
@@ -150,7 +158,7 @@ export function observe(target, key, getter, fn) {
   });
 
   if (entry.deps) {
-    entry.deps.forEach((depEntry) => {
+    entry.deps.forEach(depEntry => {
       depEntry.contexts = depEntry.contexts || new Set();
       depEntry.contexts.add(entry);
     });
@@ -160,7 +168,7 @@ export function observe(target, key, getter, fn) {
     unsubscribe();
     entry.observed = false;
     if (entry.deps && entry.deps.size) {
-      entry.deps.forEach((depEntry) => {
+      entry.deps.forEach(depEntry => {
         if (depEntry.contexts) depEntry.contexts.delete(entry);
       });
     }

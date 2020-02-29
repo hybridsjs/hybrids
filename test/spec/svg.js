@@ -1,25 +1,25 @@
-import { svg } from '../../src/template';
+import { svg } from "../../src/template/index.js";
 
-describe('svg:', () => {
+describe("svg:", () => {
   let fragment;
 
   beforeEach(() => {
-    fragment = document.createElement('div');
+    fragment = document.createElement("div");
   });
 
   const render = (value = 0) => svg`
     <circle r="${value}" cx="0" cy="0" fill="#000"></circle>
   `;
 
-  it('should use SVG namespace elements', () => {
+  it("should use SVG namespace elements", () => {
     render()(fragment);
     expect(fragment.children[0] instanceof SVGElement).toBe(true);
   });
 
-  it('should update attribute', () => {
+  it("should update attribute", () => {
     render()(fragment);
     render(10)(fragment);
 
-    expect(fragment.children[0].getAttribute('r')).toBe('10');
+    expect(fragment.children[0].getAttribute("r")).toBe("10");
   });
 });

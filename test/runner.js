@@ -1,5 +1,5 @@
 // Set dynamic env variable
-window.env = 'development';
+window.env = "development";
 
-const req = require.context('./spec/', true, /\.js$/);
-req.keys().forEach((key) => req(key));
+const req = require.context("./spec/", true, /\.js$/);
+req.keys().forEach(key => req(key));

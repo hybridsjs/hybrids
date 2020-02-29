@@ -1,8 +1,8 @@
-import property from './property';
-import render from './render';
+import property from "./property.js";
+import render from "./render.js";
 
-import * as cache from './cache';
-import { pascalToDash, deferred } from './utils';
+import * as cache from "./cache.js";
+import { pascalToDash, deferred } from "./utils.js";
 
 /* istanbul ignore next */
 try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
@@ -13,15 +13,15 @@ function compile(Hybrid, descriptors) {
   Hybrid.hybrids = descriptors;
   Hybrid.callbacks = [];
 
-  Object.keys(descriptors).forEach((key) => {
+  Object.keys(descriptors).forEach(key => {
     const desc = descriptors[key];
     const type = typeof desc;
 
     let config;
 
-    if (type === 'function') {
-      config = key === 'render' ? render(desc) : { get: desc };
-    } else if (type !== 'object' || desc === null || (Array.isArray(desc))) {
+    if (type === "function") {
+      config = key === "render" ? render(desc) : { get: desc };
+    } else if (type !== "object" || desc === null || Array.isArray(desc)) {
       config = property(desc);
     } else {
       config = {
@@ -36,22 +36,26 @@ function compile(Hybrid, descriptors) {
       get: function get() {
         return cache.get(this, key, config.get);
       },
-      set: config.set && function set(newValue) {
-        cache.set(this, key, config.set, newValue);
-      },
+      set:
+        config.set &&
+        function set(newValue) {
+          cache.set(this, key, config.set, newValue);
+        },
       enumerable: true,
-      configurable: process.env.NODE_ENV !== 'production',
+      configurable: process.env.NODE_ENV !== "production",
     });
 
     if (config.observe) {
-      Hybrid.callbacks.unshift(
-        (host) => cache.observe(host, key, config.get, config.observe),
+      Hybrid.callbacks.unshift(host =>
+        cache.observe(host, key, config.get, config.observe),
       );
     }
 
     if (config.connect) {
-      Hybrid.callbacks.push(
-        (host) => config.connect(host, key, () => { cache.invalidate(host, key); }),
+      Hybrid.callbacks.push(host =>
+        config.connect(host, key, () => {
+          cache.invalidate(host, key);
+        }),
       );
     }
   });
@@ -59,16 +63,14 @@ function compile(Hybrid, descriptors) {
 
 let update;
 /* istanbul ignore else */
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   const walkInShadow = (node, fn) => {
     fn(node);
 
-    Array.from(node.children)
-      .forEach((el) => walkInShadow(el, fn));
+    Array.from(node.children).forEach(el => walkInShadow(el, fn));
 
     if (node.shadowRoot) {
-      Array.from(node.shadowRoot.children)
-        .forEach((el) => walkInShadow(el, fn));
+      Array.from(node.shadowRoot.children).forEach(el => walkInShadow(el, fn));
     }
   };
 
@@ -76,13 +78,17 @@ if (process.env.NODE_ENV !== 'production') {
   update = (Hybrid, lastHybrids) => {
     if (!updateQueue.size) {
       deferred.then(() => {
-        walkInShadow(document.body, (node) => {
+        walkInShadow(document.body, node => {
           if (updateQueue.has(node.constructor)) {
             const hybrids = updateQueue.get(node.constructor);
             node.disconnectedCallback();
 
-            Object.keys(node.constructor.hybrids).forEach((key) => {
-              cache.invalidate(node, key, node.constructor.hybrids[key] !== hybrids[key]);
+            Object.keys(node.constructor.hybrids).forEach(key => {
+              cache.invalidate(
+                node,
+                key,
+                node.constructor.hybrids[key] !== hybrids[key],
+              );
             });
 
             node.connectedCallback();
@@ -99,13 +105,13 @@ const disconnects = new WeakMap();
 
 function defineElement(tagName, hybridsOrConstructor) {
   const type = typeof hybridsOrConstructor;
-  if (type !== 'object' && type !== 'function') {
+  if (type !== "object" && type !== "function") {
     throw TypeError(`Second argument must be an object or a function: ${type}`);
   }
 
   const CustomElement = window.customElements.get(tagName);
 
-  if (type === 'function') {
+  if (type === "function") {
     if (CustomElement !== hybridsOrConstructor) {
       return window.customElements.define(tagName, hybridsOrConstructor);
     }
@@ -116,8 +122,8 @@ function defineElement(tagName, hybridsOrConstructor) {
     if (CustomElement.hybrids === hybridsOrConstructor) {
       return CustomElement;
     }
-    if (process.env.NODE_ENV !== 'production' && CustomElement.hybrids) {
-      Object.keys(CustomElement.hybrids).forEach((key) => {
+    if (process.env.NODE_ENV !== "production" && CustomElement.hybrids) {
+      Object.keys(CustomElement.hybrids).forEach(key => {
         delete CustomElement.prototype[key];
       });
 
@@ -133,7 +139,9 @@ function defineElement(tagName, hybridsOrConstructor) {
   }
 
   class Hybrid extends HTMLElement {
-    static get name() { return tagName; }
+    static get name() {
+      return tagName;
+    }
 
     connectedCallback() {
       const { callbacks } = this.constructor;
@@ -171,7 +179,7 @@ function defineMap(elements) {
 }
 
 export default function define(...args) {
-  if (typeof args[0] === 'object') {
+  if (typeof args[0] === "object") {
     return defineMap(args[0]);
   }
 

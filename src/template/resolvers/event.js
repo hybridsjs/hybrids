@@ -14,7 +14,7 @@ export default function resolveEventListener(eventType) {
     }
 
     if (value) {
-      if (typeof value !== 'function') {
+      if (typeof value !== "function") {
         throw Error(`Event listener must be a function: ${typeof value}`);
       }
 
