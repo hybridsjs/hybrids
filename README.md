@@ -147,7 +147,7 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 
 ## Browser Support
 
-[![Build Status](https://saucelabs.com/browser-matrix/hybrids.svg)](https://saucelabs.com/u/hybrids)
+[![Build Status](https://app.saucelabs.com/browser-matrix/hybrids.svg)](https://app.saucelabs.com/open_sauce/user/hybrids/builds)
 
 The library requires some of the ES2015 APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including a list of required polyfills and shims. The easiest way is to add a bundle from [`@webcomponents/webcomponentsjs`](https://github.com/webcomponents/webcomponentsjs) package on top of your project:
 
