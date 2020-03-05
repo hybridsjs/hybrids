@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.6](https://github.com/hybridsjs/hybrids/compare/v4.1.5...v4.1.6) (2020-03-05)
+
+
+### Bug Fixes
+
+* **node:** do not transpile es2015+ code for the node environment ([#100](https://github.com/hybridsjs/hybrids/issues/100)) ([047b6df](https://github.com/hybridsjs/hybrids/commit/047b6dfad3a6fcf09395a7a375cc070a101acc43))
+
 ### [4.1.5](https://github.com/hybridsjs/hybrids/compare/v4.1.3...v4.1.5) (2020-02-26)
 
 
