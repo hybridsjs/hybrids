@@ -44,6 +44,17 @@ function dispatchDeep(entry) {
   if (entry.contexts) entry.contexts.forEach(dispatchDeep);
 }
 
+function restoreObservedDeps(entry, deps) {
+  if (deps) {
+    deps.forEach(depEntry => {
+      entry.deps.add(depEntry);
+      if (!depEntry.contexts) depEntry.contexts = new Set();
+      depEntry.contexts.add(entry);
+      restoreObservedDeps(entry, depEntry.deps);
+    });
+  }
+}
+
 const contextStack = new Set();
 export function get(target, key, getter) {
   const entry = getEntry(target, key);
@@ -57,11 +68,11 @@ export function get(target, key, getter) {
   }
 
   contextStack.forEach(context => {
-    context.deps = context.deps || new Set();
+    if (!context.deps) context.deps = new Set();
     context.deps.add(entry);
 
     if (context.observed) {
-      entry.contexts = entry.contexts || new Set();
+      if (!entry.contexts) entry.contexts = new Set();
       entry.contexts.add(context);
     }
   });
@@ -81,6 +92,12 @@ export function get(target, key, getter) {
 
     entry.deps = undefined;
     const nextValue = getter(target, entry.value);
+
+    if (entry.observed && entry.deps) {
+      entry.deps.forEach(depEntry => {
+        restoreObservedDeps(entry, depEntry.deps);
+      });
+    }
 
     if (nextValue !== entry.value) {
       entry.state += 1;
@@ -159,7 +176,7 @@ export function observe(target, key, getter, fn) {
 
   if (entry.deps) {
     entry.deps.forEach(depEntry => {
-      depEntry.contexts = depEntry.contexts || new Set();
+      if (!depEntry.contexts) depEntry.contexts = new Set();
       depEntry.contexts.add(entry);
     });
   }

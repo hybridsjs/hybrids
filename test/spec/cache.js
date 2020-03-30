@@ -194,6 +194,39 @@ describe("cache:", () => {
       });
     });
 
+    it("runs callback when deep value changes", done => {
+      const getDeepDeep = () => get(target, "deepDeep", _);
+      const getDeepDep = () => get(target, "deep", getDeepDeep);
+      const getDep = () => get(target, "dep", getDeepDep);
+      const getOther = () => get(target, "other", _);
+
+      set(target, "deepDeep", _, "one");
+
+      observe(
+        target,
+        "key",
+        () => {
+          getOther();
+          getDep();
+          return {};
+        },
+        spy,
+      );
+
+      requestAnimationFrame(() => {
+        expect(spy).toHaveBeenCalledTimes(1);
+        set(target, "other", _, "two");
+        requestAnimationFrame(() => {
+          expect(spy).toHaveBeenCalledTimes(2);
+          set(target, "deepDeep", _, "three");
+          requestAnimationFrame(() => {
+            expect(spy).toHaveBeenCalledTimes(3);
+            done();
+          });
+        });
+      });
+    });
+
     it("cleans emitter when unobserve", done => {
       const unobserve = observe(target, "key", _, spy);
 
