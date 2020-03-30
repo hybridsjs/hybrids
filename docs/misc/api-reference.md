@@ -76,6 +76,97 @@ render(fn: Function, options: Object = { shadowRoot: true }): Object
 * **returns**:
   * hybrid property descriptor, which resolves to a function
 
+## store
+
+### direct
+
+```typescript
+store.get(Model: object, id?: string | object) : object;
+```
+
+* **arguments**:
+  * `Model: object` - a model definition
+  * `id: string | object` - a string or an object representing identifier of the model instance
+* **returns**:
+  * Model instance or model instance placeholder
+
+```typescript
+store.set(Model: object, values: object) : Promise;
+```
+
+* **arguments**:
+  * `Model: object` - a model definition
+  * `values: object` - an object with partial values of the model instance
+* **returns**:
+  * A promise, which resolves with the model instance
+  
+```typescript
+store.set(modelInstance: object, values: object | null): Promise;
+```
+
+* **arguments**:
+  * `modelInstance: object` - a model instance
+  * `values: object | null` - an object with partial values of the model instance or `null` for deleting the model
+* **returns**:
+  * A promise, which resolves to the model instance or placeholder (for model deletion)
+
+### factory
+
+```typescript
+store(Model: object, options?: id | { id?: string | (host) => any, draft?: boolean }): object
+```
+
+* **arguments**:
+  * `Model: object` - a model definition
+  * `options` - an object with the following properties or the shorter syntax with the below `id` field value
+    * `id` - a `host` property name, or a function returning the identifier using the `host`
+    * `draft` - a boolean switch for the draft mode, where the property returns a copy of the model instance for the form manipulation
+* **returns**:
+  * hybrid property descriptor, which resolves to a store model instance
+
+### guards
+
+```typescript
+store.ready(model: object): boolean
+```
+
+* **arguments**:
+  * `model: object` - a model instance
+* **returns**:
+  * `true` for a valid model instance, `false` otherwise
+
+```typescript
+store.pending(model: object): boolean | Promise
+```
+
+* **arguments**:
+  * `model: object` - a model instance
+* **returns**:
+  * In pending state a promise instance resolving with the next model value, `false` otherwise
+
+```typescript
+store.error(model: object, propertyName?: string): boolean | Error | any
+```
+
+* **arguments**:
+  * `model` - a model instance
+  * `propertyName` - a property name of the failed validation defined with `store.value()` method
+* **returns**:
+  * An error instance or whatever has been thrown or `false`. When `propertyName` is set, it returns `err.errors[propertyName]` or `false`
+
+### value
+
+```typescript
+store.value(defaultValue: string | number, validate?: fn | RegExp, errorMessage?: string): String | Number
+```
+
+* **arguments**:
+  * `defaultValue` - `string` or `number` value
+  * `validate` - a validation function - `validate(val, key, model)`, which should return `false`, error message or throws when validation fails, or a RegExp instance. If omitted, the default validation is used, which fails for empty string and `0`.
+  * `errorMessage` - optional error message used when validation fails
+* **returns**:
+  * a `String` or `Number` instance
+
 ## html
 
 ```typescript

@@ -35,3 +35,5 @@ export function stringifyElement(target) {
 
 export const IS_IE = "ActiveXObject" in window;
 export const deferred = Promise.resolve();
+
+export const storePointer = new WeakMap();

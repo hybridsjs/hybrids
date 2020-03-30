@@ -60,7 +60,9 @@ Read [MDN documentation](https://developer.mozilla.org/docs/Web/API/EventTarget/
 
 ## Form Elements
 
-Your template may contain built-in form elements or custom elements with value, which should be bound to one of the properties of the host. You can create callback manually for each case like this:
+The template may contain built-in form elements or custom elements with a value, which should be bound to one of the properties of the host.
+
+You can create callback manually for updating the host property value:
 
 ```javascript
 function updateName(host, event) {
@@ -76,34 +78,38 @@ const MyElement = {
 };
 ```
 
-Using the above pattern may become verbose quickly if your template contains many values to bind. Because it is a common task, the template engine provides `html.set` method, which generates callback function for updating host property with `event.target.value` or a custom value.
+Using the above pattern may become verbose if your template contains many values to bind. The engine provides `html.set()` helper method, which generates callback function for setting host property from value of the element, or set store model property value.
+
+### Property Name
 
 ```typescript
-html.set(propertyName: string, [value: any]): Function
+html.set(propertyName: string, value?: any): Function
 ```
 
 * **arguments**:
   * `propertyName` - a target host property name
-  * `value` - a custom value, which will be set instead of `event.target.value` (default behavior)
+  * `value` - a custom value, which will be set instead of `event.target.value`
 * **returns**:
-  * callback function compatible with template engine event listener feature
+  * a callback function compatible with template engine event listener
+
+The `html.set()` supports unique behavior of the form elements. For `<input type="radio">` and `<input type="checkbox">` the value is related to its `checked` value. For `<input type="file">`  the `event.target.files` is used instead of the `event.target.value`.
 
 ```javascript
 const MyElement = {
-  name: '',
+  option: false,
   date: null,
-  render: ({ name, date }) => html`
-    <input type="text" defaultValue="${name}" oninput="${html.set('name')}" />
+  render: ({ option, date }) => html`
+    <input type="checkbox" checked="${option}" onchange="${html.set('option')}" />
+
+    <!-- updates "host.date" with "value" property from the element -->
     <my-date-picker value="${date}" onchange="${html.set('date')}"></my-date-picker>
   `,
 };
 ```
 
-In the above example, you can notice, that `html.set` also works with any custom element, that provides `value` property.
+#### Custom Value
 
-### Custom Value
-
-You can overwrite the default behavior and pass a custom value to the second parameter of the `html.set` method. It is useful for callbacks inside of the [iteration](./iteration.md):
+You can overwrite the default behavior and pass a custom value as a second parameter (`event.target.value` is not used):
 
 ```javascript
 const MyElement = {
@@ -122,4 +128,41 @@ const MyElement = {
 }
 ```
 
-In the above example, when a user clicks on the item button, `selected` property is set to the current item.
+In the above example, when a user clicks on the item button, the `selected` property is set to `item` from the loop.
+
+### Store Model
+
+```typescript
+html.set(model: object, propertyPath: string | null): Function
+```
+
+* **arguments**:
+  * `model` - a [store](../store/introduction.md) model instance
+  * `propertyPath`
+    * a `string` path to the property of the model, usually a single name, like `"firstName"`; for nested property use dot notation, for example `"address.street"`
+    * `use null` for model deletion, like `html.set(user, null)`
+* **returns**:
+  * a callback function compatible with template engine event listener
+
+```javascript
+import { store } from "hybrids";
+import User from "./models.js";
+
+const MyElement = {
+  user: store(User, { id: "userId", draft: true }),
+  render: ({ user }) => html`
+    <input
+      value="${user.firstName}"
+      oninput="${html.set(user, "firstName")}"
+    />
+    <input
+      value="${user.address.street}"
+      oninput="${html.set(user, "address.street")}"
+    />
+
+    ...
+
+    <button onclick="${html.set(user, null)}">Delete user</button>
+  `,
+};
+```

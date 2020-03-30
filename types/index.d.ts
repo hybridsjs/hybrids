@@ -56,7 +56,69 @@ declare namespace hybrids {
   function children<E extends HTMLElement, T extends HTMLElement>(hybridsOrFn: (Hybrids<T> | ((hybrids: Hybrids<E>) => boolean)), options? : { deep?: boolean, nested?: boolean }): Descriptor<E>;
   function render<E extends HTMLElement>(fn: RenderFunction<E>, customOptions?: { shadowRoot?: boolean | object }): Descriptor<E>;
 
+  /* Store */
+
+  type Model<M> = {
+    [property in keyof Omit<M, "id">]: M[property] | ((model: M) => any);
+  } & {
+    id?: true;
+    __store__connect__?: Storage<M>;
+  };
+  
+  type ModelIdentifier = 
+    | string 
+    | undefined 
+    | { 
+      [property: string]: 
+       | string 
+       | boolean 
+       | number 
+       | null;
+    };
+  
+  type ModelValues<M> = {
+    [property in keyof M]?: M[property];
+  }
+
+  type StorageResult<M> = M | null;
+
+  type Storage<M> = {
+    cache?: boolean | number;
+    get: (id?: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>;
+    set?: (id: ModelIdentifier, values: ModelValues<M> | null, keys: [keyof M]) => StorageResult<M> | Promise<StorageResult<M>>;
+    list?: (id: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>;
+  }
+
+  type StoreOptions<E> = 
+    | keyof E
+    | ((host: E) => string)
+    | { id?: keyof E, draft: boolean };
+
+  function store<E extends HTMLElement, M>(Model: Model<M>, options?: StoreOptions<E>): Descriptor<E>;
+
+  namespace store {
+    const connect = "__store__connect__";
+
+    function get<M>(Model: Model<M>, id: ModelIdentifier): M;
+    function set<M>(model: Model<M> | M, values: ModelValues<M> | null): Promise<M>;
+    function clear<M>(model: Model<M> | M, clearValue?: boolean): void;
+
+    function pending<M>(model: M): false | Promise<M>;
+    function error<M>(model: M): false | Error | any;
+    function ready<M>(model: M): boolean;
+
+    function submit<M>(draft: M): Promise<M>;
+
+    interface ValidateFunction<M> {
+      (value: string | number, key: string, model: M): string | boolean | void;
+    }
+
+    function value<M>(defaultValue: string, validate?: ValidateFunction<M> | RegExp, errorMessage?: string): string;
+    function value<M>(defaultValue: number, validate?: ValidateFunction<M> | RegExp, errorMessage?: string): number;
+  }
+
   /* Utils */
+
   function dispatch(host: EventTarget, eventType: string, options?: CustomEventInit): boolean;
 
   /* Template Engine */
@@ -71,17 +133,21 @@ declare namespace hybrids {
     (host: E, event?: Event) : any;
   }
 
+  function html<E extends HTMLElement>(parts: TemplateStringsArray, ...args: unknown[]): UpdateFunctionWithMethods<E>;
+
   namespace html {
-    function set<E extends HTMLElement>(propertyName: keyof E, value?: any): EventHandler<E>;
+    function set<E extends HTMLElement>(property: keyof E, valueOrPath?: any): EventHandler<E>;
+    function set<E extends HTMLElement, M>(property: Model<M>, valueOrPath: string | null): EventHandler<E>;
+
     function resolve<E extends HTMLElement>(promise: Promise<UpdateFunction<E>>, placeholder?: UpdateFunction<E>, delay?: number): UpdateFunction<E>;
   }
 
-  function html<E extends HTMLElement>(parts: TemplateStringsArray, ...args: unknown[]): UpdateFunctionWithMethods<E>;
+  function svg<E extends HTMLElement>(parts: TemplateStringsArray, ...args: unknown[]): UpdateFunctionWithMethods<E>;
 
   namespace svg {
-    function set<E extends HTMLElement>(propertyName: keyof E, value?: any): EventHandler<E>;
+    function set<E extends HTMLElement>(property: keyof E, valueOrPath?: any): EventHandler<E>;
+    function set<E extends HTMLElement, M>(property: Model<M>, valueOrPath: string | null): EventHandler<E>;
+
     function resolve<E extends HTMLElement>(promise: Promise<UpdateFunction<E>>, placeholder?: UpdateFunction<E>, delay?: number) : UpdateFunction<E>;
   }
-
-  function svg<E extends HTMLElement>(parts: TemplateStringsArray, ...args: unknown[]): UpdateFunctionWithMethods<E>;
 }
