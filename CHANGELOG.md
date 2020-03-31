@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.7](https://github.com/hybridsjs/hybrids/compare/v4.1.6...v4.1.7) (2020-03-31)
+
+
+### Bug Fixes
+
+* **cache:** restore deep deps for observed keys ([ee85006](https://github.com/hybridsjs/hybrids/commit/ee85006725dab9c092ed262506bb739094553c77))
+
 ### [4.1.6](https://github.com/hybridsjs/hybrids/compare/v4.1.5...v4.1.6) (2020-03-05)
 
 
