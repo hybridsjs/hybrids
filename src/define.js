@@ -121,21 +121,9 @@ function defineElement(tagName, hybridsOrConstructor) {
   if (CustomElement) {
     if (CustomElement.hybrids === hybridsOrConstructor) {
       return CustomElement;
+    } else {
+      throw Error(`Element '${tagName}' already defined`);
     }
-    if (process.env.NODE_ENV !== "production" && CustomElement.hybrids) {
-      Object.keys(CustomElement.hybrids).forEach(key => {
-        delete CustomElement.prototype[key];
-      });
-
-      const lastHybrids = CustomElement.hybrids;
-
-      compile(CustomElement, hybridsOrConstructor);
-      update(CustomElement, lastHybrids);
-
-      return CustomElement;
-    }
-
-    throw Error(`Element '${tagName}' already defined`);
   }
 
   class Hybrid extends HTMLElement {
