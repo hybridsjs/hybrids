@@ -1,5 +1,4 @@
 import { dataMap, removeTemplate } from "../utils.js";
-// eslint-disable-next-line import/no-cycle
 import resolveArray, { arrayMap } from "./array.js";
 
 export default function resolveValue(host, target, value) {
@@ -22,7 +21,7 @@ export default function resolveValue(host, target, value) {
       value(host, target);
       break;
     case "array":
-      resolveArray(host, target, value);
+      resolveArray(host, target, value, resolveValue);
       break;
     default:
       target.textContent = type === "number" || value ? value : "";

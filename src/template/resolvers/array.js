@@ -1,8 +1,5 @@
 import { dataMap, removeTemplate, getTemplateEnd } from "../utils.js";
 
-// eslint-disable-next-line import/no-cycle
-import resolveValue from "./value.js";
-
 export const arrayMap = new WeakMap();
 
 function movePlaceholder(target, previousSibling) {
@@ -22,7 +19,7 @@ function movePlaceholder(target, previousSibling) {
   }
 }
 
-export default function resolveArray(host, target, value) {
+export default function resolveArray(host, target, value, resolveValue) {
   let lastEntries = arrayMap.get(target);
   const entries = value.map((item, index) => ({
     id: Object.prototype.hasOwnProperty.call(item, "id") ? item.id : index,
