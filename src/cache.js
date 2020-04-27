@@ -1,4 +1,3 @@
-import { stringifyElement } from "./utils.js";
 import * as emitter from "./emitter.js";
 
 const entries = new WeakMap();
@@ -44,13 +43,18 @@ function dispatchDeep(entry) {
   if (entry.contexts) entry.contexts.forEach(dispatchDeep);
 }
 
-function restoreObservedDeps(entry, deps) {
+function restoreDeepDeps(entry, deps) {
   if (deps) {
     deps.forEach(depEntry => {
       entry.deps.add(depEntry);
-      if (!depEntry.contexts) depEntry.contexts = new Set();
-      depEntry.contexts.add(entry);
-      restoreObservedDeps(entry, depEntry.deps);
+
+      if (entry.observed) {
+        /* istanbul ignore if */
+        if (!depEntry.contexts) depEntry.contexts = new Set();
+        depEntry.contexts.add(entry);
+      }
+
+      restoreDeepDeps(entry, depEntry.deps);
     });
   }
 }
@@ -60,11 +64,7 @@ export function get(target, key, getter) {
   const entry = getEntry(target, key);
 
   if (contextStack.size && contextStack.has(entry)) {
-    throw Error(
-      `Circular get invocation of the '${key}' property in '${stringifyElement(
-        target,
-      )}'`,
-    );
+    throw Error(`Circular get invocation is forbidden: '${key}'`);
   }
 
   contextStack.forEach(context => {
@@ -86,6 +86,7 @@ export function get(target, key, getter) {
 
     if (entry.observed && entry.deps && entry.deps.size) {
       entry.deps.forEach(depEntry => {
+        /* istanbul ignore else */
         if (depEntry.contexts) depEntry.contexts.delete(entry);
       });
     }
@@ -93,9 +94,9 @@ export function get(target, key, getter) {
     entry.deps = undefined;
     const nextValue = getter(target, entry.value);
 
-    if (entry.observed && entry.deps) {
+    if (entry.deps) {
       entry.deps.forEach(depEntry => {
-        restoreObservedDeps(entry, depEntry.deps);
+        restoreDeepDeps(entry, depEntry.deps);
       });
     }
 
@@ -126,7 +127,7 @@ export function get(target, key, getter) {
 export function set(target, key, setter, value, force) {
   if (contextStack.size && !force) {
     throw Error(
-      `Try to set '${key}' of '${stringifyElement(target)}' in get call`,
+      `Setting property in chain of get calls is forbidden: '${key}'`,
     );
   }
 
@@ -145,7 +146,7 @@ export function set(target, key, setter, value, force) {
 export function invalidate(target, key, clearValue) {
   if (contextStack.size) {
     throw Error(
-      `Try to invalidate '${key}' in '${stringifyElement(target)}' get call`,
+      `Invalidating property in chain of get calls is forbidden: '${key}'`,
     );
   }
 
@@ -176,6 +177,7 @@ export function observe(target, key, getter, fn) {
 
   if (entry.deps) {
     entry.deps.forEach(depEntry => {
+      /* istanbul ignore else */
       if (!depEntry.contexts) depEntry.contexts = new Set();
       depEntry.contexts.add(entry);
     });
@@ -186,6 +188,7 @@ export function observe(target, key, getter, fn) {
     entry.observed = false;
     if (entry.deps && entry.deps.size) {
       entry.deps.forEach(depEntry => {
+        /* istanbul ignore else */
         if (depEntry.contexts) depEntry.contexts.delete(entry);
       });
     }
