@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.8](https://github.com/hybridsjs/hybrids/compare/v4.1.7...v4.1.8) (2020-05-01)
+
+
+### Bug Fixes
+
+* **cache:** deps should be always restored ([7f62207](https://github.com/hybridsjs/hybrids/commit/7f62207d67dc40bfc8c577613863faa4340b74aa))
+* **html:** remove circular dependencies ([adda038](https://github.com/hybridsjs/hybrids/commit/adda0383e8c8f5f5c1979cb56e5d4ec7be5b847a))
+
 ### [4.1.7](https://github.com/hybridsjs/hybrids/compare/v4.1.6...v4.1.7) (2020-03-31)
 
 
