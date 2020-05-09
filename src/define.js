@@ -9,11 +9,19 @@ try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'produc
 
 const defaultMethod = (host, value) => value;
 
+const callbacksMap = new WeakMap();
+const propsMap = new WeakMap();
+
 function compile(Hybrid, descriptors) {
   Hybrid.hybrids = descriptors;
-  Hybrid.callbacks = [];
 
-  Object.keys(descriptors).forEach(key => {
+  const callbacks = [];
+  const props = Object.keys(descriptors);
+
+  callbacksMap.set(Hybrid, callbacks);
+  propsMap.set(Hybrid, props);
+
+  props.forEach(key => {
     const desc = descriptors[key];
     const type = typeof desc;
 
@@ -46,13 +54,13 @@ function compile(Hybrid, descriptors) {
     });
 
     if (config.observe) {
-      Hybrid.callbacks.unshift(host =>
+      callbacks.unshift(host =>
         cache.observe(host, key, config.get, config.observe),
       );
     }
 
     if (config.connect) {
-      Hybrid.callbacks.push(host =>
+      callbacks.push(host =>
         config.connect(host, key, () => {
           cache.invalidate(host, key);
         }),
@@ -143,8 +151,23 @@ function defineElement(tagName, hybridsOrConstructor) {
       return tagName;
     }
 
+    constructor() {
+      super();
+
+      const props = propsMap.get(Hybrid);
+
+      for (let index = 0; index < props.length; index += 1) {
+        const key = props[index];
+        if (Object.prototype.hasOwnProperty.call(this, key)) {
+          const value = this[key];
+          delete this[key];
+          this[key] = value;
+        }
+      }
+    }
+
     connectedCallback() {
-      const { callbacks } = this.constructor;
+      const callbacks = callbacksMap.get(Hybrid);
       const list = [];
 
       for (let index = 0; index < callbacks.length; index += 1) {

@@ -73,6 +73,17 @@ describe("property:", () => {
         el.stringProp = "new value";
         expect(el.stringProp).toBe("new value");
       }));
+
+    it(
+      "uses property from the host, before it is upgraded",
+      test(`<test-property-upgrade></test-property-upgrade>`)(el => {
+        el.value = "test";
+        define("test-property-upgrade", { value: property("") });
+        expect(el.value).toBe("test");
+        el.value = 5;
+        expect(el.value).toBe("5");
+      }),
+    );
   });
 
   describe("string type", () => {
