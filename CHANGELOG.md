@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.9](https://github.com/hybridsjs/hybrids/compare/v4.1.8...v4.1.9) (2020-05-09)
+
+
+### Bug Fixes
+
+* **define:** rewire own props values after upgrade ([#115](https://github.com/hybridsjs/hybrids/issues/115)) ([e849849](https://github.com/hybridsjs/hybrids/commit/e84984939bd5b58f017f619f8cc544b150ffc3f9))
+
 ### [4.1.8](https://github.com/hybridsjs/hybrids/compare/v4.1.7...v4.1.8) (2020-05-01)
 
 
