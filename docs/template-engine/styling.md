@@ -1,6 +1,6 @@
 # Styling
 
-To style your custom element, you can create `<style>` element directly in the template, use a nested template with styles, or pass text content of CSS file.
+To style your custom element, you can create `<style>` elements directly in the template, use a nested template with styles, or pass text content of CSS file.
 
 ## Style Element
 
@@ -17,13 +17,13 @@ const MyElement = {
 };
 ```
 
-Styles are scoped by default and apply only to the elements in the `shadowRoot`.
+Styles are scoped and apply only to the elements in the `shadowRoot` for default render property configuration.
 
 ### Limitations
 
 In the browser, which doesn't support Shadow DOM, ShadyCSS is used to create scoped CSS. The shim moves out `<style>` element from the template, scopes selectors and puts styles into the head of the document. It is done once, and before expressions are calculated, so expressions inside the style element cannot be processed correctly.
 
-Expressions inside of the `<style>` element are only supported in native implementation of the Shadow DOM. Although, creating dynamic styles can be inefficient (styles are not shared between elements instances).
+Expressions inside of the `<style>` element are only supported in native implementation of the Shadow DOM. Although, creating dynamic styles can be inefficient (styles are not shared between elements instances) and opens possibility for a XSS attack (for insecure inputs).
 
 #### Breaks template: (using ShadyCSS) <!-- omit in toc -->
 
@@ -50,7 +50,7 @@ html`
 
 ## Nested Template
 
-Create [nested template](nested-templates.md) with `<style>` element for sharing styles between custom elements:
+Create a [nested template](nested-templates.md) with `<style>` element for sharing styles between custom elements (the style elements still are created for each instance of the custom element):
 
 ```javascript
 const commonStyles = html`
@@ -73,79 +73,42 @@ const MyElement = {
 
 ## CSS Stylesheet
 
-For external CSS content, use `style` helper method from the result of the `html` or `svg`:
+For external CSS content, use `style` helper method from the result of the `html` or `svg` function:
 
-  ```typescript
-  html`...`.style(styles: string, [styles: string]...): Function
-  ```
+```typescript
+html`...`.style(...styles: Array<string | CSSStyleSheet>): Function
+```
 
-  * **arguments**:
-    * `styles` - text content of CSS stylesheet
-  * **returns**:
-    * update function compatible with content expression 
+* **arguments**:
+  * `styles` - a list of text contents of CSS stylesheets, or instances of `CSSStyleSheet` (only for constructable stylesheets)
+* **returns**:
+  * an update function compatible with content expression
 
-Style helper works the best with bundlers, which support importing text content of the CSS files (for [webpack](https://github.com/webpack/webpack), use [raw-loader](https://github.com/webpack-contrib/raw-loader).
+Style helper works the best with bundlers, which support importing text content of the CSS files (for [webpack](https://github.com/webpack/webpack), use [raw-loader](https://github.com/webpack-contrib/raw-loader). Do not use `css-loader` or `style-loader` like you may be used to, as either will interfere with the ability to parse the stylesheet). Still, you can create a string input in-place, and pass it to the style helper.
 
 ```javascript
-// `styles` should contain text content of CSS file
+// `styles` should contain text content of the CSS
+import globals from '../globals.css';
 import styles from './MyElement.css';
+
+const inlineStyles = `
+  div { color: red }
+`;
 
 const MyElement = {
   render: () => html`
     <div>...</div>
-  `.style(styles),
+  `.style(globals, styles, inlineStyles),
 };
 ```
 
-### webpack Config
+The style helper supports passing `CSSStyleSheet` instance, but it will work only for the described below mode. Do not use it if you target multiple environments, where it might not be yet supported.
 
-```js
-module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.css$/i,
-        use: ['raw-loader']
-      }
-    ]
-  }
-}
-```
+### Constructable Stylesheets
 
-## Preprocessors (PostCSS, Sass, etc.)
+If the browser supports [Constructable Stylesheets](https://wicg.github.io/construct-stylesheets/) and the following conditions are met, the style helper creates and adopts a list of `CSSStyleSheet` instances insted of creating `<style>` tag:
 
-If using external stylesheets (above), you can add a preprocessor such as [PostCSS](https://github.com/postcss/postcss) using a webpack config. You can alternately use `"sass-loader"` for Sass.
+* The CSS content must not include `@import` statement (it was recently [deprecated](https://github.com/WICG/construct-stylesheets/issues/119#issuecomment-588352418) for Constructable Stylesheets)
+* The `html``.style()` helper must be called for the root template of the custom element (it fallbacks to `<style>` element for nested templates)
 
-It’s important **not** to use `css-loader` or `style-loader` like you may be used to, as either will interfere with Hybrid’s ability to parse the stylesheet.
-
-### Installation
-
-```bash
-npm install --save-dev raw-loader postcss postcss-loader postcss-preset-env
-```
-
-### webpack Config
-
-```js
-const postcssPresetEnv = require("postcss-preset-env"); // optional; for example (below)
-
-module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.css$/i,
-        use: [
-          'raw-loader',
-          {
-            loader: 'postcss-loader',
-            // This is optional; just showing an example of a plugin w/ options
-            options: {
-              plugins: () => [postcssPresetEnv({ 'nesting-rules': true })]
-            }
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+For the string input the template engine creates an instance of `CSSStyleSheet` only once, and share it among the all instances of the custom element (you can also pass the `CSSStyleSheet` instance, but then you must take care of the browser support by yourself).

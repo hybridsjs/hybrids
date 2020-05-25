@@ -98,13 +98,13 @@ html`...`.define(map: Object): Function
   * update function compatible with content expression 
 
 ```typescript
-html`...`.style(styles: string, [styles: string]...): Function
+html`...`.style(...styles: Array<string | CSSStyleSheet>): Function
 ```
 
 * **arguments**:
-  * `styles` - text content of CSS stylesheet
+  * `styles` - a list of text contents of CSS stylesheets, or instances of `CSSStyleSheet` (only for constructable stylesheets)
 * **returns**:
-  * update function compatible with content expression 
+  * an update function compatible with content expression
 
 ```typescript
 html.resolve(promise: Promise, placeholder: Function, delay = 200): Function

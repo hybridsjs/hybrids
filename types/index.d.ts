@@ -64,7 +64,7 @@ declare namespace hybrids {
   interface UpdateFunctionWithMethods<E extends HTMLElement> extends UpdateFunction<E> {
     define: (elements: MapOfHybridsOrConstructors) => this;
     key: (id: any) => this;
-    style: (...styles: string[]) => this;
+    style: (...styles: Array<string | CSSStyleSheet>) => this;
   }
 
   interface EventHandler<E extends HTMLElement> {

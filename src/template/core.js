@@ -162,6 +162,8 @@ const createWalker =
     : createExternalWalker;
 
 const container = document.createElement("div");
+const styleSheetsMap = new Map();
+
 export function compileTemplate(rawParts, isSVG, styles) {
   const template = document.createElement("template");
   const parts = [];
@@ -285,12 +287,14 @@ export function compileTemplate(rawParts, isSVG, styles) {
     compileIndex += 1;
   }
 
-  return function updateTemplateInstance(host, target, args) {
+  return function updateTemplateInstance(host, target, args, styleSheets) {
     const data = dataMap.get(target, { type: "function" });
 
     if (template !== data.template) {
-      if (data.template || target.nodeType === Node.ELEMENT_NODE)
+      if (data.template || target.nodeType === Node.ELEMENT_NODE) {
         removeTemplate(target);
+      }
+
       data.prevArgs = null;
 
       const fragment = document.importNode(
@@ -358,6 +362,37 @@ export function compileTemplate(rawParts, isSVG, styles) {
       } else {
         target.appendChild(fragment);
       }
+    }
+
+    const adoptedStyleSheets = target.adoptedStyleSheets;
+    if (styleSheets) {
+      let isEqual = false;
+
+      styleSheets = styleSheets.map(style => {
+        if (style instanceof CSSStyleSheet) return style;
+
+        let styleSheet = styleSheetsMap.get(style);
+        if (!styleSheet) {
+          styleSheet = new CSSStyleSheet();
+          styleSheet.replaceSync(style);
+          styleSheetsMap.set(style, styleSheet);
+        }
+        return styleSheet;
+      });
+
+      if (styleSheets.length === adoptedStyleSheets.length) {
+        isEqual = true;
+        for (let i = 0; i < styleSheets.length; i += 1) {
+          if (styleSheets[i] !== adoptedStyleSheets[i]) {
+            isEqual = false;
+            break;
+          }
+        }
+      }
+
+      if (!isEqual) target.adoptedStyleSheets = styleSheets;
+    } else if (adoptedStyleSheets && adoptedStyleSheets.length) {
+      target.adoptedStyleSheets = [];
     }
 
     const prevArgs = data.prevArgs;

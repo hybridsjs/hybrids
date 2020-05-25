@@ -903,16 +903,85 @@ describe("html:", () => {
       expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
     });
 
-    it("creates unique template id for styled version", () => {
+    it("adds styles to the shadowRoot by adoptedStyleSheets or style tags", () => {
       const container = fragment.attachShadow({ mode: "open" });
       render.style("div { color: red }")({}, container);
-      expect(container.children.length).toBe(2);
+
+      if (!document.adoptedStyleSheets) {
+        expect(container.children.length).toBe(2);
+      }
+
+      expect(getComputedStyle(container.children[0]).color).toBe(
+        "rgb(255, 0, 0)",
+      );
 
       html`
         <div>content</div>
       `({}, container);
+
+      expect(getComputedStyle(container.children[0]).color).toBe(
+        "rgb(0, 0, 0)",
+      );
+
       expect(container.children.length).toBe(1);
     });
+
+    it("adds async styles by style tags to the shadowRoot", done => {
+      const container = fragment.attachShadow({ mode: "open" });
+      render.style("@import 'style.css'; div { color: red }")({}, container);
+
+      resolveTimeout(() => {
+        expect(container.children.length).toBe(2);
+        expect(getComputedStyle(container.children[0]).color).toBe(
+          "rgb(255, 0, 0)",
+        );
+
+        html`
+          <div>content</div>
+        `({}, container);
+
+        expect(getComputedStyle(container.children[0]).color).toBe(
+          "rgb(0, 0, 0)",
+        );
+
+        expect(container.children.length).toBe(1);
+      }).then(done);
+    });
+
+    if (document.adoptedStyleSheets) {
+      it("does not replace adoptedStyleSheets array when styles are equal", () => {
+        const container = fragment.attachShadow({ mode: "open" });
+        render.style("div { color: red }")({}, container);
+        const adoptedStyleSheets = container.adoptedStyleSheets;
+
+        render.style("div { color: red }")({}, container);
+
+        expect(container.adoptedStyleSheets[0]).toBe(adoptedStyleSheets[0]);
+      });
+
+      it("replaces adoptedStyleSheets array when styles are not equal", () => {
+        const container = fragment.attachShadow({ mode: "open" });
+        render.style("div { color: red }")({}, container);
+        const adoptedStyleSheets = container.adoptedStyleSheets;
+
+        render.style("div { color: blue }")({}, container);
+
+        expect(container.adoptedStyleSheets[0]).not.toBe(adoptedStyleSheets[0]);
+      });
+
+      it("adds styles using CSSStyleSheet instance", () => {
+        const container = fragment.attachShadow({ mode: "open" });
+
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync("div { color: red }");
+
+        render.style(sheet)({}, container);
+
+        expect(getComputedStyle(container.children[0]).color).toBe(
+          "rgb(255, 0, 0)",
+        );
+      });
+    }
   });
 
   describe("ShadyDOM polyfill", () => {
