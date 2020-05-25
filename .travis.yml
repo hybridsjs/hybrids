@@ -1,7 +1,11 @@
 sudo: required
-dist: trusty
+dist: xenial
 language: node_js
 node_js: stable
+
+addons:
+  chrome: stable
+  firefox: latest
 
 notifications:
   email: false
