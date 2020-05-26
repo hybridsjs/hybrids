@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0](https://github.com/hybridsjs/hybrids/compare/v4.1.9...v4.2.0) (2020-05-26)
+
+
+### Features
+
+* **html:** adds support for constructable stylesheets ([#112](https://github.com/hybridsjs/hybrids/issues/112)) ([80ad928](https://github.com/hybridsjs/hybrids/commit/80ad928699aa2c8d532365f071c909f57505116f))
+
 ### [4.1.9](https://github.com/hybridsjs/hybrids/compare/v4.1.8...v4.1.9) (2020-05-09)
 
 
