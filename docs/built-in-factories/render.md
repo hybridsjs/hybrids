@@ -37,22 +37,23 @@ If you use render factory for wrapping other UI libraries, remember to access re
 
 ## Translation
 
-The `render` key of the property is not mandatory. However, the first rule of the [translation](../core-concepts/translation.md) makes possible to set `fn` function as a `render` property to use the render factory implicitly:
+The `render` key of the property is not mandatory. The first rule of the [translation](../core-concepts/translation.md) allows setting `fn` function as a `render` property directly, and use the render factory implicitly:
 
 ```javascript
 import { html } from 'hybrids';
 
 const MyElement = {
   value: 1,
-  render: ({ value }) => html`<div>${value}</div>`, // It equals `render: render(({ value }) => ...)`
+  // Equals to render: render(({ value }) => html...
+  render: ({ value }) => html`<div>${value}</div>`,
 };
 ```
 
 ## Shadow DOM
 
-The factory by default uses [Shadow DOM](https://developer.mozilla.org/docs/Web/Web_Components/Using_shadow_DOM) as a `target`, which is created synchronously in `connect` callback. It is expected behavior, so usually you can omit `options` object and use [translation](../core-concepts/translation.md) rule for the render factory.
+The factory by default uses [Shadow DOM](https://developer.mozilla.org/docs/Web/Web_Components/Using_shadow_DOM) as a `target`, which is initialized when the component is rendered for the first time. Usually, you can omit `options` object and use [translation](../core-concepts/translation.md) rule for the render factory (described above).
 
-Although, If your element does not require [style encapsulation](https://developers.google.com/web/fundamentals/web-components/shadowdom#styling) and [children distribution](https://developers.google.com/web/fundamentals/web-components/shadowdom#composition_slot) (`<slot>` element can be used only inside of the `shadowRoot`) you can disable Shadow DOM in the `options` object. Then, `target` argument of the update function becomes a `host`. As a result, your template will replace children's content of the custom element (in Light DOM).
+Although, If your element does not require [style encapsulation](https://developers.google.com/web/fundamentals/web-components/shadowdom#styling) and [children distribution](https://developers.google.com/web/fundamentals/web-components/shadowdom#composition_slot) (`<slot>` element can be used only inside of the `shadowRoot`) you can disable Shadow DOM in the `options` object. Then, `target` argument of the update function becomes a `host`. As a result, your template will replace children's content of the custom element.
 
 Keep in mind that the `options` can be passed only with `render(fn, options)` factory function called explicitly:
 
@@ -70,7 +71,7 @@ const MyElement = {
 
 ## Manual Update
 
-It is possible to trigger an update by calling property manually on the element instance:
+You can trigger an update process by calling property manually from the element instance:
 
 ```javascript
 const myElement = document.getElementsByTagName('my-element')[0];
@@ -79,11 +80,11 @@ const target = myElement.render();
 console.log(target); // returns `host.shadowRoot` or `host` element according to the `shadowRoot` option
 ```
 
-Property defined with `render` factory uses the same cache mechanism like other properties. The update process calls `fn` only if related properties have changed. However, calling `myElement.render()` always invoke the result of the `fn()` (the update function).
+The `render` factory uses the same cache mechanism like other properties. The update process calls `fn` only if related properties have changed. However, calling `myElement.render()` manually always invokes the result of the `fn()` (it always triggers update process).
 
 ## Reference Internals
 
-If your element should expose internal parts of the content as a public API, you can use `render()` to set custom property as an internal DOM element from the rendered content. Using `render` in the getter of the defined property ensures that render process is called and it adds it to the dependencies of the property. The result of the call gives us a `target` element, so you don't have to relay on the render configuration (it might be the `shadowRoot` as well as the `host` element - but both has `querySelector` API):
+If your element should expose internal parts of the content as a public API, you can use `render` property to define an internal DOM element from the rendered content as another property. Using `render` in the getter of the defined property ensures that render process is called and it adds it to the dependencies of the property. The result of the call gives us a `target` element, so you don't have to relay on the render configuration (it might be the `shadowRoot` as well as the `host` element - but both has `querySelector` API):
 
 ```javascript
 const MyCanvasElement = {
