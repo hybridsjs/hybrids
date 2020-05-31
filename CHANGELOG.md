@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.1](https://github.com/hybridsjs/hybrids/compare/v4.2.0...v4.2.1) (2020-05-31)
+
+
+### Bug Fixes
+
+* **cache:** removes unnecessary set protection guard ([#116](https://github.com/hybridsjs/hybrids/issues/116)) ([72ae0ce](https://github.com/hybridsjs/hybrids/commit/72ae0ce46f6e83a67509685393bb6472c8bf410c))
+
 ## [4.2.0](https://github.com/hybridsjs/hybrids/compare/v4.1.9...v4.2.0) (2020-05-26)
 
 
