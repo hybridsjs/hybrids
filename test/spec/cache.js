@@ -55,18 +55,6 @@ describe("cache:", () => {
   });
 
   describe("set()", () => {
-    it("throws called inside of the get()", () => {
-      expect(() =>
-        get(target, "key", () => set(target, "key", () => {})),
-      ).toThrow();
-    });
-
-    it("does not throws called inside of the get() when forced", () => {
-      expect(() =>
-        get(target, "key", () => set(target, "key", () => {}, "", true)),
-      ).not.toThrow();
-    });
-
     it("invalidates state for next get call", () => {
       get(target, "key", () => "value");
       get(target, "key", spy);

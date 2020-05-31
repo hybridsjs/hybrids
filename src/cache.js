@@ -124,13 +124,7 @@ export function get(target, key, getter) {
   return entry.value;
 }
 
-export function set(target, key, setter, value, force) {
-  if (contextStack.size && !force) {
-    throw Error(
-      `Setting property in chain of get calls is forbidden: '${key}'`,
-    );
-  }
-
+export function set(target, key, setter, value) {
   const entry = getEntry(target, key);
   const newValue = setter(target, value, entry.value);
 
