@@ -28,4 +28,6 @@ html`
 `
 ```
 
-👆 [Click and play with &lt;async-user&gt; custom element on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-async-user?file=async-user.js)
+> Click and play with web component example connected to external API:
+>
+> [![Edit <async-user> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/async-user-web-component-built-with-hybrids-library-fhx3j?file=/src/AsyncUser.js)

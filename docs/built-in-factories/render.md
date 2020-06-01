@@ -27,13 +27,17 @@ export const MyElement = {
 
 Render factory creates and updates the DOM structure of your custom element. It works out of the box with built-in [template engine](../template-engine/introduction.md), but the passed `fn` function may use any external UI library that renders DOM.
 
-👆 [Click and play with `render` factory using  `React` library on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js)
+> Click and play with render factory example using [React](http://reactjs.org/) library:
+>
+> [![Edit <react-counter> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/react-counter-web-component-built-with-hybrids-library-u0g8k?file=/src/ReactCounter.jsx)
 
 Render factory trigger the update of the DOM by the `observe` method of the descriptor. It means that an update is scheduled with the internal queue and executed in the next animation frame. The passed `fn` is always called for the first time and when related properties change.
 
 If you use render factory for wrapping other UI libraries, remember to access required properties from the `host` synchronously in the body of `fn` function (only then cache mechanism can save dependencies for the update). Otherwise, your function might be called only once.
 
-👆 [Click and play with `render` factory using  `lit-html` library on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-lit-html-counter?file=lit-counter.js)
+> Click and play with render factory using [lit-html](https://lit-html.polymer-project.org/) library:
+>
+> [![Edit <lit-counter> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/lit-counter-web-component-built-with-hybrids-library-qoqb5?file=/src/LitCounter.js)
 
 ## Translation
 

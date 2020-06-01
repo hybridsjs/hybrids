@@ -12,7 +12,9 @@ html`
 `;
 ```
 
-👆 [Click and play with todo list on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-children-factory?file=index.js)
+> Click and play with todo list example:
+>
+> [![Edit <app-todos> web components built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/app-todos-web-components-built-with-hybrids-library-behpb?file=/src/index.js)
 
 ## Keys
 

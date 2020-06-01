@@ -42,7 +42,9 @@ const MyElement = {
 </app-store>
 ```
 
-👆 [Click and play with parent factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js)
+> Click and play with parent factory example, which creates shared state between components:
+>
+> [![Edit <app-todos> web components built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/app-todos-web-components-built-with-hybrids-library-behpb?file=/src/index.js)
 
 ## Children
 
@@ -86,7 +88,9 @@ const TabGroup = {
 </tab-group>
 ```
 
-👆 [Click and play with children factory on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-children-factory?file=index.js)
+> Click and play with above children factory example:
+>
+> [![Edit <tab-group> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/tab-group-web-component-built-with-hybrids-library-e2t3e?file=/src/index.js)
 
 ## Complex Conditions
 

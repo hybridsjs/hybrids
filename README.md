@@ -28,11 +28,9 @@
 
 ## Getting Started
 
-Install npm package:
+Add the hybrids [npm package](https://www.npmjs.com/package/hybrids) to your application, or use [unpkg.com/hybrids](https://unpkg.com/hybrids@^4/src) CDN for direct usage in the browser. 
 
-<pre>npm i <a href=https://www.npmjs.com/package/hybrids>hybrids</a></pre>
-
-Then, import the required features and define a custom element:
+Then, import required features and define your custom element:
 
 ```javascript
 import { html, define } from 'hybrids';
@@ -53,40 +51,28 @@ export const SimpleCounter = {
 define('simple-counter', SimpleCounter);
 ```
 
-👆 [Click and play on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-simple-counter?file=simple-counter.js)
-
-Finally, use your custom element in HTML:
+Finally, use your custom element in HTML document:
 
 ```html
 <simple-counter count="10"></simple-counter>
 ```
 
+> Click and play with `<simple-counter>` example:
+>
+> [![Edit <simple-counter> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/simple-counter-web-component-built-with-hybrids-library-co2ow?file=/src/SimpleCounter.js)
+
 ### ES Modules
 
-If you target modern browsers and do not want to use external tooling (like [webpack](https://webpack.js.org) or [parcel](https://parceljs.org/)), you can use ES modules:
+If you target modern browsers you can use source code directly in the script tag:
 
 ```html
 <script type="module">
-  // We can use "/src" here - browsers, which support modules also support ES2015
-  import { html, define } from 'https://unpkg.com/hybrids@[PUT_VERSION_HERE:x.x.x]/src';
+  import { html, define } from 'https://unpkg.com/hybrids@^4/src';
   ...
 </script>
 ```
 
-Please take to account, that it does not provide code minification and loads all required files in separate requests.
-
-### Built Version
-
-For older browsers support you can use the built version (with `window.hybrids` global namespace):
-
-```html
-<script src="https://unpkg.com/hybrids@[PUT_VERSION_HERE:x.x.x]/dist/hybrids.js"></script>
-<script>
-  var define = window.hybrids.define;
-  var html = window.hybrids.html;
-  ...
-</script>
-```
+> Be aware, that this mode does not provide code minification and loads all required files in separate requests.
 
 ### Hot Module Replacement
 
@@ -97,7 +83,7 @@ HMR works out of the box, but your bundler setup may require indication that you
 if (process.env.NODE_ENV !== 'production') module.hot.accept();
 ```
 
-If your entry point imports files that do not support HMR, you can place the above snippet in a module where you define a custom element. (where `define` method is used).
+If your entry point imports files that do not support HMR, you can place the above snippet in a module where you define a custom element. (where `define` method from the library is used).
 
 ## Overview
 
@@ -113,10 +99,10 @@ With all of that, the code may become simple to understand, and the code is writ
 
 The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.org) or in the [docs](docs/README.md) path of the repository:
 
-- [Core Concepts](docs/core-concepts/README.md)
-- [Built-in Factories](docs/built-in-factories/README.md)
-- [Template Engine](docs/template-engine/README.md)
-- [Misc](docs/misc/README.md)
+* [Core Concepts](docs/core-concepts/README.md)
+* [Built-in Factories](docs/built-in-factories/README.md)
+* [Template Engine](docs/template-engine/README.md)
+* [Misc](docs/misc/README.md)
 
 ### Articles
 
@@ -133,23 +119,23 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 ### Videos
 
 * [Taste the Future with Functional Web Components](https://youtu.be/WZ1MEHuxHGg) *(EN, ConFrontJS Conference)*
-* [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) *(PL, WarsawJS Meetup #46)*
+* [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) *(PL, WarsawJS Meetup #46)
 
-## Live Examples
+### Live Examples
 
-- [&lt;simple-counter&gt;](https://stackblitz.com/edit/hybrids-simple-counter?file=simple-counter.js) - a button with counter controlled by own state
-- [&lt;redux-counter&gt;](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js) - Redux library for state management
-- [&lt;react-counter&gt;](https://stackblitz.com/edit/hybrids-react-counter?file=react-counter.js) - render factory and [React](https://reactjs.org/) library for rendering in shadow DOM
-- [&lt;lit-counter&gt;](https://stackblitz.com/edit/hybrids-lit-html-counter?file=lit-counter.js) - render factory and [lit-html](https://lit-html.polymer-project.org/) for rendering in shadow DOM
-- [&lt;app-todos&gt;](https://stackblitz.com/edit/hybrids-parent-factory?file=index.js) - todo list using parent factory for state management
-- [&lt;tab-group&gt;](https://stackblitz.com/edit/hybrids-children-factory?file=index.js) - switching tabs using children factory
-- [&lt;async-user&gt;](https://stackblitz.com/edit/hybrids-async-user?file=async-user.js) - async data in the template
+* [&lt;simple-counter&gt;](https://codesandbox.io/s/simple-counter-web-component-built-with-hybrids-library-co2ow?file=/src/SimpleCounter.js) - a button with counter controlled by own state
+* [&lt;redux-counter&gt;](https://codesandbox.io/s/redux-counter-web-component-built-with-hybrids-library-jrqzp?file=/src/ReduxCounter.js) - Redux library for state management
+* [&lt;react-counter&gt;](https://codesandbox.io/s/react-counter-web-component-built-with-hybrids-library-u0g8k?file=/src/ReactCounter.jsx) - render factory and [React](https://reactjs.org/) library for rendering in shadow DOM
+* [&lt;lit-counter&gt;](https://codesandbox.io/s/lit-counter-web-component-built-with-hybrids-library-qoqb5?file=/src/LitCounter.js) - render factory and [lit-html](https://lit-html.polymer-project.org/) for rendering in shadow DOM
+* [&lt;app-todos&gt;](https://codesandbox.io/s/app-todos-web-components-built-with-hybrids-library-behpb?file=/src/index.js) - todo list using parent factory for state management
+* [&lt;tab-group&gt;](https://codesandbox.io/s/tab-group-web-component-built-with-hybrids-library-e2t3e?file=/src/index.js) - switching tabs using children factory
+* [&lt;async-user&gt;](https://codesandbox.io/s/async-user-web-component-built-with-hybrids-library-fhx3j?file=/src/AsyncUser.js) - async data in the template
 
 ## Browser Support
 
 [![Build Status](https://app.saucelabs.com/browser-matrix/hybrids.svg)](https://app.saucelabs.com/open_sauce/user/hybrids/builds)
 
-The library requires some of the ES2015 APIs and [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use `hybrids` in all evergreen browsers and IE11 including a list of required polyfills and shims. The easiest way is to add a bundle from [`@webcomponents/webcomponentsjs`](https://github.com/webcomponents/webcomponentsjs) package on top of your project:
+The library requires ES2015 APIs, [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use hybrids in all evergreen browsers without additional preparation. However, if you still target obsolete browsers (like IE11) you must add a list of required polyfills and shims. The easiest way is to add a bundle from [`@webcomponents/webcomponentsjs`](https://github.com/webcomponents/webcomponentsjs) package on top of your project:
 
 ```javascript
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';

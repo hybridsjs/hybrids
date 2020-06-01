@@ -174,7 +174,9 @@ const MyElement = {
 };
 ```
 
-👆 [Click and play with `redux` integration on ⚡StackBlitz](https://stackblitz.com/edit/hybrids-redux-counter?file=redux-counter.js)
+> Click and play with [redux](redux.js.org) library integration example:
+>
+> [![Edit <redux-counter> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/redux-counter-web-component-built-with-hybrids-library-jrqzp?file=/src/ReduxCounter.js)
 
 In the above example, a cached value of `name` property invalidates if `reduxStore` changes. However, the `get` method is called if you access the property.
 
