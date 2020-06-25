@@ -61,34 +61,31 @@ export default function resolveArray(host, target, value, resolveValue) {
       }
     }
 
-    let placeholder;
     if (matchedEntry) {
       matchedEntry.available = false;
-      placeholder = matchedEntry.placeholder;
+      entry.placeholder = matchedEntry.placeholder;
 
-      if (placeholder.previousSibling !== previousSibling) {
-        movePlaceholder(placeholder, previousSibling);
+      if (entry.placeholder.previousSibling !== previousSibling) {
+        movePlaceholder(entry.placeholder, previousSibling);
       }
       if (matchedEntry.value !== entry.value) {
-        resolveValue(host, placeholder, entry.value);
+        resolveValue(host, entry.placeholder, entry.value);
       }
     } else {
-      placeholder = document.createTextNode("");
+      entry.placeholder = document.createTextNode("");
       previousSibling.parentNode.insertBefore(
-        placeholder,
+        entry.placeholder,
         previousSibling.nextSibling,
       );
-      resolveValue(host, placeholder, entry.value);
+      resolveValue(host, entry.placeholder, entry.value);
     }
 
     previousSibling = getTemplateEnd(
-      dataMap.get(placeholder).endNode || placeholder,
+      dataMap.get(entry.placeholder).endNode || entry.placeholder,
     );
 
-    if (index === 0) data.startNode = placeholder;
+    if (index === 0) data.startNode = entry.placeholder;
     if (index === lastIndex) data.endNode = previousSibling;
-
-    entry.placeholder = placeholder;
   }
 
   if (lastEntries) {
