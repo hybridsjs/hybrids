@@ -164,6 +164,45 @@ const createWalker =
 const container = document.createElement("div");
 const styleSheetsMap = new Map();
 
+function normalizeWhitespace(input, startIndent = 0) {
+  input = input.replace(/(^[\n\s\t ]+)|([\n\s\t ]+$)+/g, "");
+
+  let i = input.indexOf("\n");
+  if (i > -1) {
+    let indent = 0 - startIndent - 2;
+    for (i += 1; input[i] === " " && i < input.length; i += 1) {
+      indent += 1;
+    }
+    return input.replace(/\n +/g, t =>
+      t.substr(0, Math.max(t.length - indent, 1)),
+    );
+  }
+
+  return input;
+}
+
+function beautifyTemplateLog(input, index) {
+  const placeholder = getPlaceholder(index);
+
+  const output = normalizeWhitespace(input)
+    .split("\n")
+    .filter(i => i)
+    .map(line => {
+      const startIndex = line.indexOf(placeholder);
+
+      if (startIndex > -1) {
+        return `| ${line}\n--${"-".repeat(startIndex)}${"^".repeat(6)}`;
+      }
+
+      return `| ${line}`;
+    })
+    .join("\n")
+    // eslint-disable-next-line no-template-curly-in-string
+    .replace(PLACEHOLDER_REGEXP_ALL, "${...}");
+
+  return `${output}`;
+}
+
 export function compileTemplate(rawParts, isSVG, styles) {
   const template = document.createElement("template");
   const parts = [];
@@ -401,7 +440,25 @@ export function compileTemplate(rawParts, isSVG, styles) {
     for (let index = 0; index < data.markers.length; index += 1) {
       const [node, marker] = data.markers[index];
       if (!prevArgs || prevArgs[index] !== args[index]) {
-        marker(host, node, args[index], prevArgs ? prevArgs[index] : undefined);
+        try {
+          marker(
+            host,
+            node,
+            args[index],
+            prevArgs ? prevArgs[index] : undefined,
+          );
+        } catch (error) {
+          if (process.env.NODE_ENV !== "production") {
+            // eslint-disable-next-line no-console
+            console.error(
+              `An error was thrown when updating a template expression:\n${beautifyTemplateLog(
+                signature,
+                index,
+              )}`,
+            );
+          }
+          throw error;
+        }
       }
     }
 

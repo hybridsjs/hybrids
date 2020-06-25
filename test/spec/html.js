@@ -4,6 +4,7 @@ import define from "../../src/define.js";
 import renderFactory from "../../src/render.js";
 import { dispatch, IS_IE } from "../../src/utils.js";
 import { test, resolveTimeout } from "../helpers.js";
+import { property } from "../../src/index.js";
 
 describe("html:", () => {
   let fragment;
@@ -60,8 +61,37 @@ describe("html:", () => {
     expect(div.innerHTML).toBe("1");
   });
 
-  it("throws for missing custom element in dev environment", () => {
+  it("logs template with highlight expression when an error occur", () => {
+    define("test-html-object-property", {
+      model: property({}),
+    });
+
+    const renderWithNewLines = value => html`
+      <test-html-object-property model=${value}>
+        <div></div>
+      </test-html-object-property>
+    `;
+
+    // eslint-disable-next-line prettier/prettier
+    const renderWithoutNewLines = value => html`<test-html-object-property model=${value}></test-html-object-property>`;
+
+    expect(() => {
+      renderWithNewLines(undefined)(fragment);
+    }).toThrow();
+    expect(() => {
+      renderWithoutNewLines(undefined)(fragment);
+    }).toThrow();
+
+    window.env = "production";
+
+    expect(() => {
+      renderWithoutNewLines(true)(fragment);
+    }).toThrow();
+
     window.env = "development";
+  });
+
+  it("throws for missing custom element in dev environment", () => {
     expect(() =>
       html`
         <missing-element></missing-element>
@@ -76,6 +106,7 @@ describe("html:", () => {
         <missing-element></missing-element>
       `(fragment),
     ).not.toThrow();
+    window.env = "development";
   });
 
   it("clears arguments cache when template changes", () => {
