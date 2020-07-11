@@ -48,7 +48,7 @@ export const TitleCounter = {
   `,
 };
 
-define('title-counter', SimpleCounter);
+define('title-counter', TitleCounter);
 ```
 
 ## Built-in Factories
