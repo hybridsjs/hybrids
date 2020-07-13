@@ -10,6 +10,10 @@ addons:
 notifications:
   email: false
 
+branches:
+  only:
+  - master
+
 script: 
   - npm run test
   - npm run coveralls
