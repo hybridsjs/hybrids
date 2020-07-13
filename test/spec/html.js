@@ -3,7 +3,7 @@ import { createInternalWalker } from "../../src/template/core.js";
 import define from "../../src/define.js";
 import renderFactory from "../../src/render.js";
 import { dispatch, IS_IE } from "../../src/utils.js";
-import { test, resolveTimeout } from "../helpers.js";
+import { test, resolveTimeout, runInProd } from "../helpers.js";
 import { property } from "../../src/index.js";
 
 describe("html:", () => {
@@ -82,13 +82,11 @@ describe("html:", () => {
       renderWithoutNewLines(undefined)(fragment);
     }).toThrow();
 
-    window.env = "production";
-
-    expect(() => {
-      renderWithoutNewLines(true)(fragment);
-    }).toThrow();
-
-    window.env = "development";
+    runInProd(() => {
+      expect(() => {
+        renderWithoutNewLines(true)(fragment);
+      }).toThrow();
+    });
   });
 
   it("throws for missing custom element in dev environment", () => {
@@ -100,13 +98,13 @@ describe("html:", () => {
   });
 
   it("does not throw for missing custom element in prod environment", () => {
-    window.env = "production";
-    expect(() =>
-      html`
-        <missing-element></missing-element>
-      `(fragment),
-    ).not.toThrow();
-    window.env = "development";
+    runInProd(() => {
+      expect(() =>
+        html`
+          <missing-element></missing-element>
+        `(fragment),
+      ).not.toThrow();
+    });
   });
 
   it("clears arguments cache when template changes", () => {

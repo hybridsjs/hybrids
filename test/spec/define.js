@@ -1,4 +1,4 @@
-import { test, resolveRaf } from "../helpers.js";
+import { test, resolveRaf, runInProd } from "../helpers.js";
 import define from "../../src/define.js";
 import { invalidate } from "../../src/cache.js";
 
@@ -281,16 +281,12 @@ describe("define:", () => {
       </test-define-multiple>
     `);
 
-    beforeEach(() => {
-      window.env = "development";
-    });
-
     it("returns the same custom element", () => {
-      window.env = "development";
       expect(define("test-define-multiple", hybrids)).toBe(CustomElement);
 
-      window.env = "production";
-      expect(define("test-define-multiple", hybrids)).toBe(CustomElement);
+      runInProd(() => {
+        expect(define("test-define-multiple", hybrids)).toBe(CustomElement);
+      });
     });
 
     describe("in dev environment", () => {
@@ -368,10 +364,9 @@ describe("define:", () => {
     });
 
     it("in prod environment throws when hybrids does not match", () => {
-      window.env = "production";
-      expect(() => define("test-define-multiple", {})).toThrow();
-
-      window.env = "development";
+      runInProd(() => {
+        expect(() => define("test-define-multiple", {})).toThrow();
+      });
     });
   });
 });
