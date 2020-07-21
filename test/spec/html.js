@@ -903,6 +903,25 @@ describe("html:", () => {
     });
   });
 
+  describe("scope method", () => {
+    it("replaces and defines scope element", () => {
+      const ScopedElement = {
+        value: "test",
+      };
+
+      const render = html`
+        <scoped-element></scoped-element>
+      `.scope({ ScopedElement });
+
+      render(fragment);
+
+      expect(fragment.children[0].value).toBe("test");
+      expect(fragment.children[0].tagName.toLowerCase()).not.toBe(
+        "scoped-element",
+      );
+    });
+  });
+
   describe("style method", () => {
     const render = html`
       <div>content</div>

@@ -2,6 +2,7 @@ import defineElements from "../define.js";
 
 import { compileTemplate, getPlaceholder } from "./core.js";
 import * as helpers from "./helpers.js";
+import { camelToDash } from "../utils.js";
 
 const PLACEHOLDER = getPlaceholder();
 const SVG_PLACEHOLDER = getPlaceholder("svg");
@@ -9,10 +10,32 @@ const STYLE_IMPORT_REGEXP = /@import/;
 
 const templatesMap = new Map();
 const stylesMap = new WeakMap();
+const scopeMap = new WeakMap();
+const scopeNames = new WeakMap();
+
+let scopeCounter = 1;
 
 const methods = {
   define(elements) {
     defineElements(elements);
+    return this;
+  },
+  scope(elements) {
+    scopeMap.set(
+      this,
+      Object.keys(elements).map(key => {
+        let name = scopeNames.get(elements[key]);
+        if (!name) {
+          const rawName = camelToDash(key);
+          // eslint-disable-next-line no-plusplus
+          const finalName = `${rawName}-${scopeCounter++}`;
+          defineElements({ [finalName]: elements[key] });
+          name = { rawName, finalName };
+        }
+
+        return name;
+      }),
+    );
     return this;
   },
   key(id) {
@@ -34,6 +57,14 @@ function create(parts, args, isSVG) {
     let hasAdoptedStyleSheets;
     let id = parts.join(PLACEHOLDER);
 
+    const scopedElements = scopeMap.get(createTemplate);
+
+    if (scopedElements) {
+      scopedElements.forEach(({ rawName, finalName }) => {
+        id += `${rawName}-${finalName}`;
+      });
+    }
+
     if (styles) {
       const joinedStyles = styles.join(PLACEHOLDER);
       hasAdoptedStyleSheets =
@@ -45,7 +76,12 @@ function create(parts, args, isSVG) {
 
     let render = templatesMap.get(id);
     if (!render) {
-      render = compileTemplate(parts, isSVG, !hasAdoptedStyleSheets && styles);
+      render = compileTemplate(
+        parts,
+        isSVG,
+        !hasAdoptedStyleSheets && styles,
+        scopedElements,
+      );
       templatesMap.set(id, render);
     }
 

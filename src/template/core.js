@@ -57,8 +57,17 @@ function applyShadyCSS(template, tagName) {
   }, template);
 }
 
-function createSignature(parts, styles) {
+function createSignature(parts, styles, scopedElements) {
   let signature = parts.reduce((acc, part, index) => {
+    if (scopedElements) {
+      scopedElements.forEach(({ rawName, finalName }) => {
+        part = part.replace(new RegExp(`<${rawName}>`, "g"), `<${finalName}>`);
+        part = part.replace(
+          new RegExp(`</${rawName}>`, "g"),
+          `</${finalName}>`,
+        );
+      });
+    }
     if (index === 0) {
       return part;
     }
@@ -203,11 +212,11 @@ function beautifyTemplateLog(input, index) {
   return `${output}`;
 }
 
-export function compileTemplate(rawParts, isSVG, styles) {
+export function compileTemplate(rawParts, isSVG, styles, scopedElements) {
   const template = document.createElement("template");
   const parts = [];
 
-  let signature = createSignature(rawParts, styles);
+  let signature = createSignature(rawParts, styles, scopedElements);
   if (isSVG) signature = `<svg>${signature}</svg>`;
 
   /* istanbul ignore if */
