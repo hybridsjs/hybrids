@@ -11,6 +11,22 @@ describe("define:", () => {
     expect(CustomElement.name).toBe("test-define-custom-element");
   });
 
+  it("returns the constructor without defining in the registry", () => {
+    const MyElement = {
+      value: "test",
+    };
+
+    const Constructor = define(null, MyElement);
+
+    expect(Constructor.prototype.value).toBeDefined();
+    expect(define(null, MyElement)).not.toBe(Constructor);
+
+    customElements.define("test-define-from-constructor", Constructor);
+    const el = document.createElement("test-define-from-constructor");
+
+    expect(el.value).toBe("test");
+  });
+
   describe("for map argument", () => {
     it("defines hybrids", done => {
       const testHtmlDefine = { value: "test" };

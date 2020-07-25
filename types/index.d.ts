@@ -46,7 +46,7 @@ declare namespace hybrids {
 
   /* Define */
 
-  function define<E extends HTMLElement>(tagName: string, hybridsOrConstructor: Hybrids<E> | typeof HTMLElement): HybridElement<E>;
+  function define<E extends HTMLElement>(tagName: string | null, hybridsOrConstructor: Hybrids<E> | typeof HTMLElement): HybridElement<E>;
   function define(mapOfHybridsOrConstructors: MapOfHybridsOrConstructors): MapOfConstructors<typeof mapOfHybridsOrConstructors>;
 
   /* Factories */
