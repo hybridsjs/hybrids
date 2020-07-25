@@ -117,40 +117,38 @@ function defineElement(tagName, hybridsOrConstructor) {
     throw TypeError(`Second argument must be an object or a function: ${type}`);
   }
 
-  const CustomElement = window.customElements.get(tagName);
+  if (tagName !== null) {
+    const CustomElement = window.customElements.get(tagName);
 
-  if (type === "function") {
-    if (CustomElement !== hybridsOrConstructor) {
-      return window.customElements.define(tagName, hybridsOrConstructor);
-    }
-    return CustomElement;
-  }
-
-  if (CustomElement) {
-    if (CustomElement.hybrids === hybridsOrConstructor) {
-      return CustomElement;
-    }
-    if (process.env.NODE_ENV !== "production" && CustomElement.hybrids) {
-      Object.keys(CustomElement.hybrids).forEach(key => {
-        delete CustomElement.prototype[key];
-      });
-
-      const lastHybrids = CustomElement.hybrids;
-
-      compile(CustomElement, hybridsOrConstructor);
-      update(CustomElement, lastHybrids);
-
+    if (type === "function") {
+      if (CustomElement !== hybridsOrConstructor) {
+        return window.customElements.define(tagName, hybridsOrConstructor);
+      }
       return CustomElement;
     }
 
-    throw Error(`Element '${tagName}' already defined`);
+    if (CustomElement) {
+      if (CustomElement.hybrids === hybridsOrConstructor) {
+        return CustomElement;
+      }
+      if (process.env.NODE_ENV !== "production" && CustomElement.hybrids) {
+        Object.keys(CustomElement.hybrids).forEach(key => {
+          delete CustomElement.prototype[key];
+        });
+
+        const lastHybrids = CustomElement.hybrids;
+
+        compile(CustomElement, hybridsOrConstructor);
+        update(CustomElement, lastHybrids);
+
+        return CustomElement;
+      }
+
+      throw Error(`Element '${tagName}' already defined`);
+    }
   }
 
   class Hybrid extends HTMLElement {
-    static get name() {
-      return tagName;
-    }
-
     constructor() {
       super();
 
@@ -187,7 +185,13 @@ function defineElement(tagName, hybridsOrConstructor) {
   }
 
   compile(Hybrid, hybridsOrConstructor);
-  customElements.define(tagName, Hybrid);
+
+  if (tagName !== null) {
+    Object.defineProperty(Hybrid, "name", {
+      get: () => tagName,
+    });
+    customElements.define(tagName, Hybrid);
+  }
 
   return Hybrid;
 }
@@ -202,7 +206,7 @@ function defineMap(elements) {
 }
 
 export default function define(...args) {
-  if (typeof args[0] === "object") {
+  if (typeof args[0] === "object" && args[0] !== null) {
     return defineMap(args[0]);
   }
 
