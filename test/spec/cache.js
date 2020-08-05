@@ -1,4 +1,11 @@
-import { get, set, invalidate, observe } from "../../src/cache.js";
+import {
+  get,
+  set,
+  getEntries,
+  invalidate,
+  invalidateAll,
+  observe,
+} from "../../src/cache.js";
 
 describe("cache:", () => {
   let target;
@@ -52,6 +59,13 @@ describe("cache:", () => {
 
       expect(spy).not.toHaveBeenCalled();
     });
+
+    it("forces getter to be called if validation fails", () => {
+      get(target, "key", () => get(target, "otherKey", () => "value"));
+      get(target, "key", spy, () => false);
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("set()", () => {
@@ -68,6 +82,18 @@ describe("cache:", () => {
       expect(spy).toHaveBeenCalledWith(target, "new value");
     });
 
+    it("does not invalidates state for next get call", () => {
+      get(target, "key", () => "value");
+      get(target, "key", spy);
+
+      expect(spy).toHaveBeenCalledTimes(0);
+
+      set(target, "key", () => "value");
+      get(target, "key", spy);
+
+      expect(spy).toHaveBeenCalledTimes(0);
+    });
+
     it("invalidates dependant properties", () => {
       get(target, "key", () => get(target, "otherKey", () => "value"));
       set(target, "otherKey", () => "new value");
@@ -76,6 +102,23 @@ describe("cache:", () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith(target, "value");
+    });
+  });
+
+  describe("getEntries()", () => {
+    it("returns empty array for new object", () => {
+      expect(getEntries({})).toEqual([]);
+    });
+
+    it("returns an array with entries", () => {
+      const host = {};
+      get(host, "key", () => "value");
+      expect(getEntries(host)).toEqual([
+        jasmine.objectContaining({
+          value: "value",
+          key: "key",
+        }),
+      ]);
     });
   });
 
@@ -103,6 +146,30 @@ describe("cache:", () => {
       get(target, "key", spy);
 
       expect(spy).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe("invalidateAll()", () => {
+    it("throws if called inside of the get()", () => {
+      expect(() => get(target, "key", () => invalidateAll(target))).toThrow();
+    });
+
+    it("does nothing if target has no entries", () => {
+      expect(() => invalidateAll({})).not.toThrow();
+    });
+
+    it("clears all entries", () => {
+      get(target, "key", () => "value");
+
+      expect(getEntries(target).length).toBe(1);
+
+      invalidateAll(target, true);
+      expect(getEntries(target)).toEqual([
+        jasmine.objectContaining({
+          value: undefined,
+          key: "key",
+        }),
+      ]);
     });
   });
 

@@ -371,9 +371,9 @@ export function compileTemplate(rawParts, isSVG, styles) {
             !customElements.get(node.tagName.toLowerCase())
           ) {
             throw Error(
-              `Missing '${stringifyElement(
+              `Missing ${stringifyElement(
                 node,
-              )}' element definition in '${stringifyElement(host)}'`,
+              )} element definition in ${stringifyElement(host)}`,
             );
           }
         }
@@ -451,10 +451,9 @@ export function compileTemplate(rawParts, isSVG, styles) {
           if (process.env.NODE_ENV !== "production") {
             // eslint-disable-next-line no-console
             console.error(
-              `An error was thrown when updating a template expression:\n${beautifyTemplateLog(
-                signature,
-                index,
-              )}`,
+              `Following error was thrown when updating a template expression in ${stringifyElement(
+                host,
+              )}\n${beautifyTemplateLog(signature, index)}`,
             );
           }
           throw error;

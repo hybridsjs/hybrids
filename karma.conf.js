@@ -89,17 +89,19 @@ module.exports = config => {
     reporters,
     browsers: IS_SAUCE_LABS ? Object.keys(customLaunchers) : ["ChromeHeadless"],
     files: [
+      "node_modules/core-js/es/weak-map/index.js",
       "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js",
       "test/runner.js",
     ],
     preprocessors: {
+      "node_modules/core-js/**/*": ["webpack"],
       "test/runner.js": ["webpack", "sourcemap"],
     },
     webpack: {
       module: {
         ...webpackConfig.module,
       },
-      devtool: "inline-source-map",
+      devtool: false, // "inline-source-map",
       mode: "development",
       plugins: [
         new webpack.DefinePlugin({

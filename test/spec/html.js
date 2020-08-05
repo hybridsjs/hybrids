@@ -5,6 +5,7 @@ import renderFactory from "../../src/render.js";
 import { dispatch, IS_IE } from "../../src/utils.js";
 import { test, resolveTimeout, runInProd } from "../helpers.js";
 import { property } from "../../src/index.js";
+import store from "../../src/store.js";
 
 describe("html:", () => {
   let fragment;
@@ -799,12 +800,12 @@ describe("html:", () => {
     let host;
 
     beforeEach(() => {
-      host = { firstName: "" };
+      host = { value: "" };
     });
 
-    it('uses "value" from input', () => {
+    it("uses value property from text input", () => {
       const render = html`
-        <input type="text" oninput=${html.set("firstName")} />
+        <input type="text" oninput=${html.set("value")} />
       `;
       render(host, fragment);
 
@@ -812,19 +813,143 @@ describe("html:", () => {
       input.value = "John";
       dispatch(input, "input");
 
-      expect(host.firstName).toBe("John");
+      expect(host.value).toBe("John");
+    });
+
+    it("uses value property from radio input", () => {
+      const render = html`
+        <input
+          type="radio"
+          name="val"
+          onchange=${html.set("value")}
+          value="one"
+        />
+        <input
+          type="radio"
+          name="val"
+          onchange=${html.set("value")}
+          value="two"
+        />
+      `;
+
+      render(host, fragment);
+      fragment.children[0].click();
+      expect(host.value).toBe("one");
+
+      fragment.children[1].click();
+      expect(host.value).toBe("two");
+
+      dispatch(fragment.children[1], "change");
+      expect(host.value).toBe("two");
+    });
+
+    it("uses value property from checkbox input", () => {
+      const render = html`
+        <input type="checkbox" onchange=${html.set("value")} />
+      `;
+
+      render(host, fragment);
+      fragment.children[0].click();
+      expect(host.value).toBeTruthy();
+
+      fragment.children[0].click();
+      expect(host.value).toBeFalsy();
+    });
+
+    it("uses files property from file input", () => {
+      const render = html`
+        <input type="file" oncustomevent=${html.set("value")} />
+      `;
+
+      render(host, fragment);
+      dispatch(fragment.children[0], "customevent");
+      expect(host.value).toBeInstanceOf(FileList);
+    });
+
+    it("throws when set store model instance without property name", () => {
+      expect(() => {
+        html.set({});
+      }).toThrow();
+    });
+
+    it("throws when set object instance, which is not a valid store model instance", () => {
+      expect(() => {
+        html.set({}, "value");
+      }).toThrow();
+    });
+
+    it("set property of the store model instance", done => {
+      const model = store.get({ value: "test" });
+
+      const render = html`
+        <input type="text" oninput=${html.set(model, "value")} />
+      `;
+
+      render(host, fragment);
+
+      const input = fragment.children[0];
+      input.value = "John";
+      dispatch(input, "input");
+
+      store
+        .pending(model)
+        .then(nextModel => {
+          expect(nextModel).toEqual({ value: "John" });
+        })
+        .then(done);
+    });
+
+    it("set nested property of the store model instance", done => {
+      const model = store.get({ nested: { value: "test" } });
+
+      const render = html`
+        <input type="text" oninput=${html.set(model, "nested.value")} />
+      `;
+
+      render(host, fragment);
+
+      const input = fragment.children[0];
+      input.value = "John";
+      dispatch(input, "input");
+
+      store
+        .pending(model)
+        .then(nextModel => {
+          expect(nextModel).toEqual({ nested: { value: "John" } });
+        })
+        .then(done);
+    });
+
+    it("reset store model instance by setting null", done => {
+      const model = store.get({ value: "test" });
+
+      store
+        .set(model, { value: "other" })
+        .then(nextModel => {
+          const render = html`
+            <button type="text" onclick=${html.set(nextModel, null)}></button>
+          `;
+
+          render(host, fragment);
+          fragment.children[0].click();
+
+          return store.pending(nextModel).then(finalModel => {
+            expect(finalModel).toEqual({ value: "test" });
+          });
+        })
+        .then(done);
     });
 
     it("set custom value", () => {
       const render = html`
-        <input type="text" oninput=${html.set("firstName", undefined)} />
+        <input type="text" oninput=${html.set("value", undefined)} />
       `;
       render(host, fragment);
 
       const input = fragment.children[0];
       dispatch(input, "input");
 
-      expect(host.firstName).toBe(undefined);
+      expect(host.value).toBe(undefined);
     });
 
     it("saves callback in the cache", () => {

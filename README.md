@@ -135,18 +135,31 @@ The hybrids documentation is available at [hybrids.js.org](https://hybrids.js.or
 
 [![Build Status](https://app.saucelabs.com/browser-matrix/hybrids.svg)](https://app.saucelabs.com/open_sauce/user/hybrids/builds)
 
-The library requires ES2015 APIs, [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use hybrids in all evergreen browsers without additional preparation. However, if you still target obsolete browsers (like IE11) you must add a list of required polyfills and shims. The easiest way is to add a bundle from [`@webcomponents/webcomponentsjs`](https://github.com/webcomponents/webcomponentsjs) package on top of your project:
+The library requires ES2015 APIs, [Shadow DOM](https://w3c.github.io/webcomponents/spec/shadow/), [Custom Elements](https://www.w3.org/TR/custom-elements/), and [Template](https://www.w3.org/TR/html-templates/) specifications. You can use hybrids in all evergreen browsers without additional preparation.
+
+### Older Browsers
+
+The library test suite runs on IE11, but in near future only evergreen browsers will be supported starting from `v5.0.0` release. However, if you still target obsolete or dead browsers (like IE11) you must add a list of required polyfills and shims.
+
+#### Web Components
+
+At first, add [`@webcomponents/webcomponentsjs`](https://github.com/webcomponents/webcomponentsjs) package on top of your project:
 
 ```javascript
 import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
-import { define, ... } from 'hybrids';
-
-...
 ```
 
 The polyfill package provides two modes in which you can use it (`webcomponents-bundle.js` and `webcomponents-loader.js`). Read more in the [How to use](https://github.com/webcomponents/polyfills/tree/master/packages/webcomponentsjs#how-to-use) section of the documentation.
 
 Web components shims have some limitations. Especially, [`webcomponents/shadycss`](https://github.com/webcomponents/polyfills/tree/master/packages/shadycss#shadycss) approximates CSS scoping and CSS custom properties inheritance. Read more on the [known issues](https://github.com/webcomponents/polyfills/tree/master/packages/webcomponentsjs#known-issues) and [custom properties shim limitations](https://www.polymer-project.org/3.0/docs/devguide/custom-css-properties#custom-properties-shim-limitations) pages.
+
+#### Store
+
+Additionally, the [store](./docs/store/introduction.md) feature requires a fix for [broken implementation](https://github.com/zloirock/core-js/issues/384) of the `WeakMap` in IE11:
+
+```javascript
+import "core-js/es/weak-map";
+```
 
 ## License
 
