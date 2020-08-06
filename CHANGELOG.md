@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.3.0](https://github.com/hybridsjs/hybrids/compare/v4.2.1...v4.3.0) (2020-08-06)
+
+
+### Features
+
+* **define:** Hybrid constructor without definition in the registry ([c73b5af](https://github.com/hybridsjs/hybrids/commit/c73b5afdfd5f8a0f2d7376596494cbb14de34d66))
+* **store:** global state management ([#85](https://github.com/hybridsjs/hybrids/issues/85)) ([f27fc8a](https://github.com/hybridsjs/hybrids/commit/f27fc8ab67afbc09d283965782179097f2e38998))
+
+
+### Bug Fixes
+
+* **html:** print logs in dev environment for expression errors ([a75f415](https://github.com/hybridsjs/hybrids/commit/a75f4153e988ebbd444a5a5a1c7f7a3959c08c30))
+* **html:** proper placeholder resolve in case of an error ([8f1019c](https://github.com/hybridsjs/hybrids/commit/8f1019c2da87576c5c7c8ba4c375bc1292fcce94))
+
 ### [4.2.1](https://github.com/hybridsjs/hybrids/compare/v4.2.0...v4.2.1) (2020-05-31)
 
 
