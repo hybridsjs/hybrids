@@ -1,12 +1,12 @@
 # Introduction
 
-The store provides global state management based on model definitions with built-in support for external storage. Use the store to share internal state between the components or create a container for the data from internal and external APIs.
+The store provides global state management based on model definitions with built-in support for external storages. Use the store to share internal state between the components or create a container for the data from internal or external APIs.
 
-The feature follows all of the concepts of the library, including an extremely declarative approach. To use the store, define your model, and start using it. The same cache mechanism protects synchronization, so the state of the model is always up to date inside of the web components created by the library. The store simplifies access to different sources of data, as the communication with the model is the same, regardless of the source of the data - either from memory or from the async APIs.
+The feature follows all of the concepts of the library, including an extremely declarative approach. To use the store, just define your model, and start using it. The same cache mechanism protects synchronization, so the state of the models is always up to date inside of the web components created by the library. The store also simplifies access to different sources of data. The communication with models is the same, regardless of the source - either from sync storage like memory or from the async APIs.
 
-## Concept
+To share the same values between components, create a singleton definition, and use it inside the components. All of them will share the same store model instance.
 
-To share values between components, create a singleton definition, and use it inside the component. All of the components will share the same store model instance:
+All interactions with the model can be placed in a separate module:
 
 ```javascript
 import { store } from "hybrids";
@@ -23,7 +23,7 @@ export function setDarkTheme() {
 export default Settings;
 ```
 
-There are a few ways to interact with the model instances, but as you can see above, the `setDarkTheme()` function does not rely on the `host` argument at all. It does not have to, as the model is a singleton, so we can use the model definition to update the model instance (the instance can be only one). All interactions with the model can be placed in a separate module, and used in the component:
+Then, in the component definition use `store` factory to access values by the model definition:
 
 ```javascript
 import { store } from "hybrids";
@@ -43,7 +43,9 @@ const MyButton = {
 };
 ```
 
-On the other hand, let's create a web component, where we want to display the user's data fetched from the external API. Even though the source is asynchronous, the fetching process is hidden. The interaction with the model is the same as with data from memory (as shown in the above example).
+In the above example, the `setDarkTheme` function could be run outside of the component as well. It does not rely on the `host` element. Nevertheless, the component will re-render when `Settings` model instance changes.
+
+On the other hand, let's create a web component, which displays the user's data fetched from the external API:
 
 ```javascript
 import { store } from 'hybrids';
@@ -53,15 +55,15 @@ export const User = {
   id: true,
   firstName: '',
   lastName: '',
-  [store.connect]: {
+  [store.connect] : {
     get: id => fetch(`/users/${id}`).then(res => res.data),
   },
 };
 ```
 
-The above `User` model definition creates a structure for each user instance with predefined default values. The `true` value of the `id` property says that `User` is an enumerable model, so there might be multiple instances of it with the unique id provided by the storage. The optional `[store.connect]` configures the source of the data.
+The above `User` model definition creates a structure for each user instance with predefined default values. It is connected to external source of data by the `[store.connect]` property. The `true` value of the `id` property says that `User` is an enumerable model, so there might be multiple instances of it with unique id provided by the storage.
 
-Then we can use it inside of the web component:
+Even though the source is the external API, the interaction with the model is the same as with models from memory - there is no explicit call to the async storage:
 
 ```javascript
 import { store, html } from 'hybrids';
@@ -83,10 +85,10 @@ const UserDetails = {
 }
 ```
 
-The `UserDetails` component uses `store` factory, which connects `user` property to its model instance by provided `userId`. Take a closer look, that there is no fetching process. It is made under the hood by the store. If not directly defined, the model instances are permanently cached, so the storage is called only once (the cache might be set to a time-based value).
+However, models from asynchronous storages are not available immediately. As you can see in the example, the store provides three guards (like `store.ready()`), which return information about the current state of the model instance. Using them we can create UI, which displays to the user all of the required information.
 
-The store provides three guards (like `store.ready()`), which return information about the current state of the model instance. In that matter, the store is unique as well - there might be more than one guard, which results in truthy value.
+The guards are not always exclusive, so you can combine them to have different results. For example, if the store looks for a new model (when `userId` changes), it still returns the last model until the new one is ready. The template will show the loading indicator as well.
 
-For example, if the store looks for a new model (when `userId` changes), it still returns the last model until the new one is ready. However, the template will show the loading indicator as well. On the other hand, if the fetching process fails, the component still contains the last value, but also the error is shown. Moreover, the guards can work with any data passed from the store, so you might create a standalone web component for displaying your loading & error states instead of using guards directly in each template!
+On the other hand, if the fetching process fails, the component still contains the last value, but also the error is shown. Moreover, the guards can work with any data passed from the store, so you might create a standalone web component for displaying your loading & error states instead of using guards directly in each template!
 
-Finally, the most important fact is that from the perspective of the `UserDetails` component, how the `User` data is fetched is irrelevant. The only thing that you care about most is what kind of data you need and how you want to use it.
+The most important fact is that how the `User` data is fetched is irrelevant. The only thing that you care about most is what data you need and how you want to use it.

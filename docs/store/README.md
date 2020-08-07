@@ -1,6 +1,6 @@
 # Store
 
 - [Introduction](introduction.md)
-- [Model Definition](model-definition.md)
+- [Model](model.md)
 - [Usage](usage.md)
 - [Storage](storage.md)

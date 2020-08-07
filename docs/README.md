@@ -19,7 +19,7 @@
 ## Store
 
 - [Introduction](store/introduction.md)
-- [Model Definition](store/model-definition.md)
+- [Model](store/model.md)
 - [Usage](store/usage.md)
 - [Storage](store/storage.md)
 

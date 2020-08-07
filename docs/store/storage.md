@@ -1,14 +1,14 @@
 # Storage
 
-A model definition is connected to the data source with the cache mechanism attached to it. By default, the model definition uses memory storage attached to the persistent cache. You can define custom storage by the `[store.connect]` property in the model definition. The storage can synchronous (memory, localStorage, etc.), as well as asynchronous , like external APIs.
+Every model definition is connected to its storage. By default, the model definition uses memory attached to the persistent cache layer. You can define a custom storage by the `[store.connect]` property in the model definition. It can be synchronous (memory, localStorage, etc.), as well as asynchronous, like external APIs.
 
 ## Memory
 
-The `[store.connect]` not defined.
+The `[store.connect]` property is not defined.
 
 ### Singleton
 
-For the singleton model definition, the store always returns an instance of the model. It means that the model does not have to be initialized before the first usage.
+For a singleton, the memory storage always returns an instance of the model. It initializes new instance when model is accessed for the first time. On other hand, deleting the model resets values to defaults rather than removes the model instance from the memory.
 
 ```javascript
 const Globals = {
@@ -33,7 +33,7 @@ store.set(Globals, null).then(() => {
 
 ### Enumerable
 
-For the enumerable model definition, the memory storage supports listing with all of the model instances. However, it does not support passing `string` or `object` id (it always returns all of the instances).
+For the enumerables, the memory storage returns only models, which were created before. It also supports listing type of the definition. However, it does not support passing `string` or `object` id. It always returns all of the instances.
 
 ```javascript
 const Todo = {
@@ -42,25 +42,27 @@ const Todo = {
   checked: false,
 };
 
-// Logs an array with all of the instances of the Todo model
+// Logs an array with all of the instances of the Todo model in memory
 console.log(store.get([Todo]));
 ```
 
 ## External
 
-Set the `[store.connect]` property in the model definition:
+To define custom storage set the `[store.connect]` property in the model definition:
 
 ```javascript
 const Model = {
   ...,
   [store.connect] : {
-    get: (id) => {...},
+    get?: (id) => {...},
     set?: (id, values, keys) => {...},
     list?: (id) => {...},
     cache?: boolean | number [ms] = true,
   },
 };
 ```
+
+All of the options are optional, but at least `get` or `list` method must be defined.
 
 ### get
 
@@ -73,32 +75,32 @@ get: (id: string | object) => object | null | Promise<object | null>
 * **returns (required)**:
   * `null`, an `object` representing model values or a `promise` resolving to the values for the model
 
-If the storage definition only contains `get` method, you can use shorter syntax using a function as a value of the `[store.connect]` property (it works similar to the property descriptor):
+If the storage definition only contains `get` method, you can use shorter syntax using a function as a value of the `[store.connect]` property (it works similar to the [translation](../core-concepts/translation.md) feature of the property descriptor):
 
 ```javascript
 const Model = {
   ...,
   // equals to { get: (id) => {...} }
-  [store.connect]: (id) => {...},
+  [store.connect] : (id) => {...},
 };
 ```
   
 ### set
 
 ```typescript
-set?: (id: undefined | string | object, values: object, keys: [string]) => object | null | Promise<object | null>
+set: (id: undefined | string | object, values: object, keys: [string]) => object | null | Promise<object | null>
 ```
 
 * **arguments**:
   * `id` - `undefined`, a `string` or `object` model instance identifier
-  * `values` - a model draft with updated values
+  * `values` - an object with new values combined with current model state
   * `keys` - a list of names of the updated properties
 * **returns (required)**:
   * `null`, an `object` representing model values or a `promise` resolving to the values for the model
 
-When `set` method is omitted, the model definition became read-only, and it is not possible to update values. As the `store.set()` method supports partial values, the `keys` argument contains a list of actually updated properties (it might be helpful if the source supports partial update).
+When `set` method is omitted, the model definition become read-only, and it is not possible to update values. As the `store.set()` method supports partial values, the `keys` argument contains a list of actually updated properties (it might be helpful if the storage supports partial update).
 
-The configuration does not provide a separate method for creating a new instance of the model definition, but the `id` field is then set to `undefined` (for singleton model definition it is always `undefined`). Still, the `values` contains the `id` property generated on the client-side.
+The configuration does not provide a separate method for creating a new instance of the model definition. Then the `id` field is set to `undefined`. Still, the `values` contains the `id` property generated on the client-side.
 
 ```javascript
 {
@@ -115,7 +117,7 @@ The configuration does not provide a separate method for creating a new instance
 ### list
 
 ```typescript
-list?: (id: undefined | string | object) => [object] | Promise<[object]>
+list: (id: undefined | string | object) => [object] | Promise<[object]>
 ```
 
 * **arguments**:
@@ -123,7 +125,7 @@ list?: (id: undefined | string | object) => [object] | Promise<[object]>
 * **returns (required)**:
   * an `array` of model instances or a `promise` resolving to the `array` of models
 
-Use `list` method to support the [listing type](./model-definition.md#listing-mode) of the enumerable model definition. The listing type creates its own cache space mapped by the `id`, respecting the `cache` setting of the model. You can support passing query parameters, string values, or skip the `id` and return all instances.
+Use `list` method for [listing](./model.md#listing-mode) enumerable model definition. The listing type creates its own cache space mapped by the `id`, respecting the `cache` setting of the storage. It supports passing string identifier or object record.
 
 ```javascript
 const Movie = {
@@ -168,18 +170,18 @@ const MovieSearchResult = {
 ### cache
 
 ```typescript
-cache?: boolean | number [ms] = `true`
+cache: boolean | number [ms] = `true`
 ```
 
-`cache` option sets the expiration time for the cached value of the model instance. By default, it is set to `true`, which makes the cache persistent. It means that the data source is called only once or if the cache is invalidated manually (explained below).
+The `cache` option sets expiration time for the cached value of the model instance. By default, it is set to `true`, which makes the cache persistent. Then, the data source is called only once or again if the cache is invalidated manually (explained below).
 
-If `cache` is set to a `number`, it represents a time to invalidation counted in milliseconds. Expired models are not automatically fetched, or removed from the memory. Only the next call for the model after its expiration fetches data from the source again.
+If `cache` is set to a `number`, it represents a time to invalidation counted in milliseconds. Expired models are not automatically fetched, or deleted from the cache. Only the next call for the model after its expiration time fetches data from the source again.
 
-For the high-frequency data, set `cache` value to `false` or `0`. Then, each call for the model will fetch data from the store. Usually, the store is used inside of the component properties. In that case, its value is cached also on the host property level, so updating other properties won't trigger fetching the model again (use cache invalidation for manual update).
+For the high-frequency data, set `cache` value to `false` or `0`. Then, each call for the model will fetch data from the store. Usually, the store is used inside of the component properties, so its value is cached also on the host property level. Updating other properties won't trigger fetching data again (use cache invalidation for manual update).
 
 #### Invalidation
 
-Models with memory or external storage use a global cache mechanism based on the model definition reference. Model instances are global, so the cache mechanism cannot automatically predict which instance is no longer required. Because of that, the store provides `store.clear()` method for invalidating all of the model instances by the model definition or specific instance of the model.
+Both memory and external storage uses a global cache mechanism based on the model definition reference. Model instances are global, so the cache mechanism cannot automatically predict which instance is no longer required. Because of that, the store provides `store.clear()` method for invalidating model instances by the model definition or specific instance of the model.
 
 ```typescript
 store.clear(model: object, clearValue?: boolean = true)
@@ -189,13 +191,13 @@ store.clear(model: object, clearValue?: boolean = true)
   * `model` - a model definition (for all instances) or a model instance (for a specific one)
   * `clearValue` - indicates if the cached value should be deleted (`true`), or it should only notify the cache mechanism, that the value expired, but leaves the value untouched (`false`)
 
-For example, it might be useful to set the `clearValue` to `false` for the case when you want to implement the refresh button. Then, the values stay in the cache, but the store will fetch the next version of the models.
+For example, it might be useful to set the `clearValue` to `false` for the case when you want to implement the refresh button. Then, the values stay in the cache, but the store will fetch the next version of the instance.
 
 ```javascript
 import Email from "./email.js";
 
-function refresh() {
-  store.clear([Email], false);
+function refresh(host) {
+  store.clear(host.emails, false);
 }
 
 const MyElement = {
@@ -210,4 +212,4 @@ const MyElement = {
 
 #### Garbage Collector
 
-The `store.clear()` method also works as a garbage collector for unused model instances. Those that are not a dependency of any component property will be deleted entirely from the cache registry (as they would never exist) protecting from the memory leaks. It means, that even if you set `clearValue` to `false`, those instances that are not currently attached to the components, will be permanently deleted.
+The `store.clear()` method works as a garbage collector for unused model instances. Those that are not a dependency of any component will be deleted entirely from the cache registry (as they would never exist) protecting from the memory leaks. It means, that even if you set `clearValue` to `false`, those instances that are not currently attached to the components, will be permanently deleted when `store.clear()` method is used.
