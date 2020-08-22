@@ -695,7 +695,7 @@ function get(Model, id) {
           throw Error(
             `Model instance ${
               stringId !== undefined ? `with '${stringId}' id` : ""
-            } does not exist: ${result}`,
+            } does not exist`,
           );
         }
 
@@ -706,7 +706,7 @@ function get(Model, id) {
                 throw Error(
                   `Model instance ${
                     stringId !== undefined ? `with '${stringId}' id` : ""
-                  } does not exist: ${result}`,
+                  } does not exist`,
                 );
               }
 
@@ -893,7 +893,7 @@ function set(model, values = {}) {
               Error(
                 `Model instance ${
                   id !== undefined ? `with '${id}' id` : ""
-                } does not exist: ${resultModel}`,
+                } does not exist`,
               ),
               false,
             ),
