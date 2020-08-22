@@ -85,6 +85,10 @@ const UserDetails = {
 }
 ```
 
+> Click and play with `<store-user>` example:
+>
+> [![Edit <store-user> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/store-user-web-component-built-with-hybrids-library-dldtv?file=/src/StoreUser.js)
+
 However, models from asynchronous storages are not available immediately. As you can see in the example, the store provides three guards (like `store.ready()`), which return information about the current state of the model instance. Using them we can create UI, which displays to the user all of the required information.
 
 The guards are not always exclusive, so you can combine them to have different results. For example, if the store looks for a new model (when `userId` changes), it still returns the last model until the new one is ready. The template will show the loading indicator as well.
