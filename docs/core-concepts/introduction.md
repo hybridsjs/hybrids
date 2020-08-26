@@ -27,7 +27,7 @@ const MyElement = {
 define('my-element', MyElement);
 ```
 
-Even though the above code might look straightforward, there are applied unique concepts, that make it possible. This example relays on the three property-related ideas used together: [descriptors](descriptors.md), [factories](factories.md) and [translation](translation.md). Additionally, the library uses change detection and cache mechanism to simplify the lifecycle of the component.
+Even though the above code might look straightforward, there are applied unique concepts, that make it possible. This example relies on the three property-related ideas used together: [descriptors](descriptors.md), [factories](factories.md) and [translation](translation.md). Additionally, the library uses change detection and cache mechanism to simplify the lifecycle of the component.
 
 ### Customized Built-in Elements
 
