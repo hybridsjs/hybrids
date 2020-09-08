@@ -1,12 +1,6 @@
-# Descriptors
+# Descriptor
 
-The library provides `define` function, which under the hood calls Custom Element API (read more in [Definition](./definition.md) section). Because of that, the library has all control over the parameters of the custom element definition. It creates class wrapper constructor dynamically, applies properties on its prototype, and finally defines custom element using `customElements.define()` method.
-
-The property definition is known as a *property descriptor*. The name came from the third argument of the `Object.defineProperty(obj, prop, descriptor)` method, which is used to set those properties on the `prototype` of the custom element constructor.
-
-## Structure
-
-The descriptor structure is similar to what `Object.defineProperty()` requires for getter/setter property:
+Descriptor defines single property of the component. Its structure is similar to the property descriptor passed to `Object.defineProperty()` method for getter/setter type:
 
 ```javascript
 const MyElement = {
@@ -23,15 +17,13 @@ const MyElement = {
 };
 ```
 
-However, there are a few differences. Instead of using function context (`this` keyword), the first argument of all methods is the instance of an element. It allows using arrow functions and destructuring function arguments.
+However, there are a few differences. Instead of using function context (`this` keyword), the first argument of methods is an instance of the element, so we can use pure functions. The second difference is the cache mechanism, which controls and holds current value of the property. By the specs, accessor property requires an external variable for keeping the value. In hybrids, cache layer covers that for you. Additionally, the library provides a mechanism for change detection which calls `observe` method, when the value of the property has changed.
 
-The second most change is the cache mechanism, which controls and holds current property value. By the specs, getter/setter property requires an external variable for keeping the value. In the hybrids, cache covers that for you. Additionally, the library provides a mechanism for change detection and calls `observe` method, when the value of the property has changed (directly or when one of the dependency changes).
+> **Despite the factories and translation concepts, you can always define property using descriptor**. The only requirement is that your definition has to be an object instance (instead of a function reference, an array instance or primitive value).
 
-**Despite the [factories](factories.md) and [translation](translation.md) concepts, you can always define properties using descriptors**. The only requirement is that your definition has to be an object instance (instead of a function reference, an array instance or primitive value).
+## Default Values
 
-## Defaults
-
-The library provides a default method for `get` or `set` if they are omitted in the definition. The fallback method returns last saved value for `get`, and saves passed value for `set`. If the `get` method is defined, the `set` method does not support fallback to default (it allows creating read-only property).
+The library provides default values for `get` or `set` methods if they are omitted in the descriptor. The fallback method returns last saved value for `get`, and saves passed value for `set`. If only `get` method is defined, the `set` method does not fallback to the default value (this mode creates read-only property).
 
 ```javascript
 const MyElement = {
@@ -79,11 +71,11 @@ get: (host: Element, lastValue: any) => {
 * **returns (required)**:
   * `nextValue` - a value of the current state of the property
 
-It calculates the current property value. The returned value is cached by default. The cache mechanism works between properties defined by the library (even between different elements). If your `get` method does not use other properties, it won't be called again (the only way to update the value then is to assert new value or call `invalidate` from `connect` method).
+`get` calculates the current property value. The returned value is always cached. The cache mechanism works between properties defined by the library (even between different elements). If your `get` method does not use other properties, it won't be called again (then, the only way to update the value is to assert new value or call `invalidate` from `connect` method).
 
 Cache mechanism uses equality check to compare values (`nextValue !== lastValue`), so it enforces using immutable data, which is one of the ground rules of the library.
 
-In the following example, the `get` method of the `name` property is called again if `firstName` or `lastName` has changed:
+In the following example, the `get` method of the `name` property is called again only if `firstName` or `lastName` has changed:
 
 ```javascript
 const MyElement = {
@@ -196,4 +188,4 @@ observe: (host: Element, value: any, lastValue: any) => {
 
 When property cache invalidates (directly by the assertion or when one of the dependency invalidates) and `observe` method is set, the change detection mechanism adds the property to the internal queue. Within the next animation frame (using `requestAnimationFrame`) properties from the queue are checked if they have changed, and if they did, `observe` method of the property is called. It means, that `observe` method is asynchronous by default, and it is only called for properties, which value is different in the time of execution of the queue (in the `requestAnimationFrame` call).
 
-The property is added to the queue (if `observe` is set) for the first time when an element instance is created (in the `constructor()` of the element). Property value defaults to `undefined`. The `observe` method will be called at the start only if your `get` method returns other value than `undefined`.
+The property is added to the queue (if `observe` is set) for the first time when an element instance is created. The `observe` method will be called at the start only if your `get` method returns other value than `undefined`.

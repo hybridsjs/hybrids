@@ -68,13 +68,13 @@ render(fn: Function, options: Object = { shadowRoot: true }): Object
 ```
 
 * **arguments**:
-  * `fn(host: Element): Function` - callback function with `host` argument; returned function has `host` and `target` arguments
+  * `fn(host: Element): (host, target) => {}` - a callback function with `host` argument, which returns a function with `host` and `target` arguments
   * `options: Object` - an object, which has a following structure:
-    * `{ shadowRoot: true }` (default value) - initializes Shadow DOM and set `target` as `shadowRoot`
+    * `{ shadowRoot: true }` (default) - initializes Shadow DOM and set `target` as `shadowRoot`
     * `{ shadowRoot: false }` - sets `target` argument as `host`,
     * `{ shadowRoot: { extraOption: true, ... } }` - initializes Shadow DOM with passed options for `attachShadow()` method
 * **returns**:
-  * hybrid property descriptor, which resolves to a function
+  * hybrid property descriptor, which resolves to a function (when called manually, it returns `target`)
 
 ## store
 

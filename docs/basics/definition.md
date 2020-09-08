@@ -1,8 +1,10 @@
 # Definition
 
-To define custom element use `define` function. It takes a tag name and plain object with property descriptors, or an object with a map of definitions.
+```javascript
+import { define } from 'hybrids';
+```
 
-To simplify using external custom elements with those created by the library, you can pass `constructor` instead of a plain object. Then `define` works exactly the same as the `customElements.define()` method.
+To define web components from a map of descriptors use custom `define()` function. To simplify using external custom elements with those created by the library, you can pass `constructor` instead of a plain object. For those, the `define()` function works exactly the same as the `customElements.define()` method.
 
 ## Single Element
 
@@ -13,7 +15,7 @@ const MyElement = {
   ...
 };
 
-// Define one element with explicit tag name
+// Define single element with explicit tag name
 define('my-element', MyElement);
 ```
 
@@ -27,19 +29,21 @@ define(tagName: string | null, descriptorsOrConstructor: Object | Function): Wra
 * **returns**:
   * `Wrapper` - custom element constructor (extends `HTMLElement`)
 
-If the `tagName` is set to `null`, the `define` function only generates a class constructor without registering it in the global custom elements registry. This mode might be helpful for creating a custom element for external usage without dependency on tag name, and where the `hybrids` library is not used directly.
+### Class Constructor
+
+If the `tagName` is set to `null`, the `define` function only generates class constructor without registering it in the global custom elements registry. This mode might be helpful for creating a custom element for external usage without depending on tag name, and where the `hybrids` library is not used directly.
 
 ```javascript
-// in the package
+// package
 const MyElement = { ... };
 export default define(null, MyElement);
 
-// in the client
+// customer
 import { MyElement } from "components-library";
 customElements.define("my-super-element", MyElement);
 ```
 
-## Map of Elements
+## Multiple Elements
 
 ```javascript
 import { define } from 'hybrids';

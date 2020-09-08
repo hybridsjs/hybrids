@@ -4,11 +4,11 @@
 import { store } from "hybrids";
 ```
 
-You can access the store by the `store` factory and two direct methods: `store.get()` and `store.set()`.
+You can interact with the store by the `store` factory and two direct methods: `store.get()` and `store.set()`.
 
-Usually, all you need is a factory, which covers most of the cases. Direct access might be required for more advanced structures. For example, it is straightforward to create a paginated view with a list of data with the factory. Still, for infinite scroll behavior, you should display data from all of the pages, so you have to call `store.get()` directly inside of the property getter.
+Usually, all you need is the factory, which covers most of the cases. Direct access might be required for more advanced structures. For example, it is straightforward to create a paginated view with a list of data with the factory. Still, for infinite scroll behavior, you should display data from all of the pages, so you have to call `store.get()` directly inside of the property getter.
 
-## Direct Methods
+## Ground Rules
 
 The `store` factory uses direct methods internally. Because of that, it is important to understand how they work. The most important are the following three ground rules:
 
@@ -18,7 +18,9 @@ The `store` factory uses direct methods internally. Because of that, it is impor
 
 Those unique principals unify access to async and sync sources. From the user perspective, it is irrelevant what kind of data source has the model. The store provides a placeholder type, which is returned if there is no previous value of the model instance (the model instance is not found, it is in pending state, or an error was returned). The placeholder protects access to its properties, so you won't use it by mistake (the guards help using the current state of the model instance properly).
 
-### `store.get()`
+## Direct Methods
+
+### Get
 
 ```typescript
 store.get(Model: object, id?: string | object) : Model;
@@ -30,7 +32,7 @@ store.get(Model: object, id?: string | object) : Model;
 * **returns**:
   * Model instance or model instance placeholder
 
-The `store.get` method always returns an object - model instance or a model placeholder. If the model source is synchronous (memory-based or external sync source, like `localStorage`), the get method immediately returns an instance. Otherwise, depending on the cached value and validation, the placeholder might be returned instead. When the promise resolves, the next call to the store returns an instance. The cache mechanism takes care to notify the component that data has changed (if you need to use this method outside of the component definition, you can use `store.pending()` guard to access the returned promise).
+The `store.get` method always returns an object - model instance or a model placeholder. If the model source is synchronous (memory-based or external sync source, like `localStorage`), the get method immediately returns an instance. Otherwise, before the cache has instance of the model, the placeholder is returned instead. When the promise resolves, the next call to the store returns an instance. The cache takes care to notify the component that data has changed (if you need to use this method outside of the component definition, you can use `store.pending()` guard to access the returned promise).
 
 ```javascript
 const GlobalState = {
@@ -51,11 +53,11 @@ const MyElement = {
 
 The above example uses a singleton memory-based model, so the data is available instantly. The `count` property can be returned directly inside of the host property definition. Even the `count` property of the host does not rely on other properties, the `render` property will be notified when the current value of the `GlobalState` changes (keep in mind that this approach creates a global state object, which is shared between all of the component instances).
 
-### `store.set()`
+### Set
 
 The `store.set()` method can create a new instance or update an existing model. According to the mode, the first argument should be a model definition or a model instance.
 
-The set method always return a promise regardless of the type of data source. The model values are updated within the next microtask. However, the current state of the model instance will be updated instantly. After calling the set method the `store.pending()` guard will return a truthy value, up to when the promise is resolved.
+The set method always return a promise regardless of the type of data source. The model values are updated within the next microtask. However, the current state of the model instance will be updated instantly. After calling the set method the `store.pending()` guard will return a truthy value (a promise instance), up to when the promise is resolved.
 
 #### Create
 
@@ -96,7 +98,7 @@ store.set(modelInstance: Model, values: object | null): Promise<Model>;
 * **returns**:
   * A promise, which resolves to the model instance or placeholder (for model deletion)
 
-The only valid argument for values besides an object instance is a `null` pointer. It should be used to delete the model instance. However, as the last ground principle states, the store always returns an object. If the model instance does not exist, the placeholder is returned in the error state (with an error attached).
+The only valid argument for `values` is an object or a `null` pointer, which should be used to delete the model instance. However, as the last ground principle states, the store always returns an object. If the model instance does not exist, the placeholder is returned in the error state (with an error attached).
 
 ```javascript
 function handleDeleteUser(host) {
@@ -111,7 +113,7 @@ function handleDeleteUser(host) {
 
 #### Partial Values
 
-The `store.set` supports partial values to update the model only with subset of values. If you use nested object structures, you can update them partially as well:
+The `store.set` supports partial values for updating the model only with subset of values. If you use nested object structures, you can update them partially as well:
 
 ```javascript
 store.set(myUser, { address: { street: "New Street" }});
@@ -134,8 +136,6 @@ store(Model: object, options?: id | { id?: string | (host) => any, draft?: boole
     * `draft` - a boolean switch for the draft mode, where the property returns a copy of the model instance for the form manipulation
 * **returns**:
   * a hybrid property descriptor, which resolves to a store model instance
-
-### Writable
 
 If the model definition storage supports set action, the defined property will be writable using the `store.set()` method internally. However, direct usage of the method is not required. Instead, use the assertion.
 
@@ -171,7 +171,7 @@ const MyElement = {
 
 ### Enumerable
 
-For the enumerable model definition, the `id` must be set (except the draft mode), either by the property name or a function.
+For the enumerable model definition, the `id` must be set (except the draft mode) by the property name or a function.
 
 ```javascript
 import { User, SearchResult }  from "./models.js";
@@ -193,7 +193,7 @@ const MyElement = {
 
 #### Cache
 
-The significant difference between using `store.get()` method directly and the factory for enumerable models is a unique behavior implemented for returning the last resolved value when identifier has changed. The get method always returns the data according to the current state of the model. However, The factory caches the last value of the property, so when the id changes, the property still returns the previous state until the next instance is ready.
+The significant difference between using `store.get()` method directly and the factory for enumerable models is a unique behavior implemented for returning the last resolved value when identifier changes. The get method always returns the data according to the current state of the model. However, The factory caches the last value of the property, so when the id changes, the property still returns the previous state until the next instance is ready.
 
 ```javascript
 import { User } from "./models.js";
@@ -221,13 +221,13 @@ const MyElement = {
 };
 ```
 
-In above example when the `page` changes, the `userList` property still returns the last page with the pending state from the next instance. Because of that, you can avoid a situation when the user sees an empty screen with loading indicator - the old data are displayed until the new page is ready to be displayed. However, you have an option to hide data immediately - use `store.pending()` guard for it.
+In above example when the `page` changes, the `userList` property still returns the last page with the pending state from the next instance. Because of that, you can avoid a situation when the user sees an empty screen with loading indicator - the old data are displayed until the new one is ready to be displayed. However, you have an option to hide data immediately - use the `store.pending()` guard.
 
 ### Draft Mode
 
-The draft mode provides a copy of the model instance or a new one with default values. The model definition used in draft mode is a memory-based version of the given model definition. The instance is deleted from the memory when component disconnects.
+The draft mode provides a copy of the model instance or a new one with default values. The model definition used in draft mode is a memory-based version of the given model definition. The draft instance is deleted from the memory when component disconnects.
 
-This mode can be especially useful when working with forms. If you want to use store to keep form values, which also supports validation, use draft mode. When all of the changes are finished, use the `store.submit(draft)` method to create or update the primary model instance.
+This mode can be especially useful when working with forms. If you want to use store to keep form values, which also supports validation, use draft mode. When all of the changes are done, use the `store.submit(draft)` method to create or update the primary model instance.
 
 ```typescript
 store.submit(model: Model): Promise<Model>
