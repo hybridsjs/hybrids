@@ -2,6 +2,7 @@
   "name": "hybrids",
   "version": "4.3.0",
   "description": "The simplest way to create web components with plain objects and pure functions!",
+  "sideEffects": false,
   "main": "./lib/index.js",
   "module": "./esm/index.js",
   "browser": "./esm/index.js",
