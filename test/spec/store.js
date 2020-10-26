@@ -1435,6 +1435,13 @@ describe("store:", () => {
       ]);
     });
 
+    it("returns a list of models with parameters", () => {
+      expect(store.get([Model], { page: 1 })).toEqual([
+        { id: "1", value: "test" },
+        { id: "2", value: "other" },
+      ]);
+    });
+
     it("adds item to list of models", done => {
       expect(store.get([Model]).length).toBe(2);
       store
@@ -1589,7 +1596,9 @@ describe("store:", () => {
       const setupDep = options => {
         return {
           items: [Model, options],
-          [store.connect]: () => ({ items: Object.keys(storage).map(key => storage[key]) }),
+          [store.connect]: () => ({
+            items: Object.keys(storage).map(key => storage[key]),
+          }),
         };
       };
 

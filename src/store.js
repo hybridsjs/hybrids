@@ -733,7 +733,9 @@ function get(Model, id) {
 
         if (cachedModel) definitions.set(cachedModel, null);
         return setTimestamp(
-          config.create(stringId ? { ...result, id: stringId } : result),
+          config.create(
+            !config.list && stringId ? { ...result, id: stringId } : result,
+          ),
         );
       } catch (e) {
         return setTimestamp(
