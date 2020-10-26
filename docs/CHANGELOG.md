@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.3.3](https://github.com/hybridsjs/hybrids/compare/v4.3.2...v4.3.3) (2020-10-26)
+
+
+### Bug Fixes
+
+* **store:** dont rewrite id for list type in async storage ([2196fe9](https://github.com/hybridsjs/hybrids/commit/2196fe925869de670cf78a71d8bfa76f7564a52f))
+
 ### [4.3.2](https://github.com/hybridsjs/hybrids/compare/v4.3.1...v4.3.2) (2020-10-26)
 
 
