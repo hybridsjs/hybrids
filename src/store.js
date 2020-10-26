@@ -83,6 +83,10 @@ function setupStorage(storage) {
     );
   }
 
+  if (!result.get && result.list) {
+    result.get = () => {};
+  }
+
   return Object.freeze(result);
 }
 
@@ -713,7 +717,9 @@ function get(Model, id) {
               return sync(
                 config,
                 stringId,
-                config.create(stringId ? { ...data, id: stringId } : data),
+                config.create(
+                  !config.list && stringId ? { ...data, id: stringId } : data,
+                ),
               );
             })
             .catch(e => {

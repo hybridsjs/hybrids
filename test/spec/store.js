@@ -1908,6 +1908,21 @@ describe("store:", () => {
       });
     });
 
+    it("returns a list with parameters", done => {
+      Model = {
+        id: true,
+        value: "",
+        [store.connect]: {
+          list: () => Promise.resolve([{ id: "1", value: "test" }]),
+        },
+      };
+
+      store.pending(store.get([Model], { page: 1 })).then(resolvedModel => {
+        expect(resolvedModel).toEqual([{ id: "1", value: "test" }]);
+        done();
+      });
+    });
+
     it("returns placeholder in async calls for long fetching model", done => {
       let resolvePromise;
       Model = {
