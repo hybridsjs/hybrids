@@ -47,5 +47,19 @@
 
   <script src="//cdn.jsdelivr.net/npm/docsify-themeable@0"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+
+  <script>
+    var tempHighlight = Prism.highlight;
+    Prism.highlight = function highlight(code, langOrMarkup) {
+      var lang;
+      switch (langOrMarkup.__id) {
+        case (80): lang = "javascript"; break;
+        case (109): lang = "typescript"; break;
+        case (87): lang = "html"; break;
+        default: lang = "markup";
+      }
+      return tempHighlight.call(this, code, langOrMarkup, lang);
+    }
+  </script>
 </body>
 </html>
