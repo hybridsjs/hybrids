@@ -29,6 +29,7 @@ function getPartialObject(name, value) {
 }
 
 const stringCache = new Map();
+const storeValues = new WeakMap();
 
 export function set(property, valueOrPath) {
   if (!property) {
@@ -50,14 +51,31 @@ export function set(property, valueOrPath) {
       throw Error("Provided object must be a model instance of the store");
     }
 
+    if (valueOrPath === null) {
+      return () => {
+        store.set(property, null);
+      };
+    }
+
     return (host, event) => {
       resolveValue(event, value => {
-        store.set(
-          property,
-          valueOrPath !== null
-            ? getPartialObject(valueOrPath, value)
-            : valueOrPath,
-        );
+        const values = storeValues.get(property);
+
+        if (!values) {
+          requestAnimationFrame(() => {
+            const result = storeValues.get(property);
+            storeValues.delete(property);
+
+            store
+              .set(property, result)
+              .catch(/* istanbul ignore next */ () => {});
+          });
+        }
+
+        storeValues.set(property, {
+          ...values,
+          ...getPartialObject(valueOrPath, value),
+        });
       });
     };
   }

@@ -891,12 +891,37 @@ describe("html:", () => {
       input.value = "John";
       dispatch(input, "input");
 
-      store
-        .pending(model)
-        .then(nextModel => {
-          expect(nextModel).toEqual({ value: "John" });
-        })
-        .then(done);
+      requestAnimationFrame(() => {
+        store
+          .pending(model)
+          .then(nextModel => {
+            expect(nextModel).toEqual({ value: "John" });
+          })
+          .then(done);
+      });
+    });
+
+    it("set multiple properties of the store model instance", done => {
+      const model = store.get({ value: "test", other: "test" });
+
+      const render = html`
+        <input type="text" oninput=${html.set(model, "value")} value="John" />
+        <input type="text" oninput=${html.set(model, "other")} value="Smith" />
+      `;
+
+      render(host, fragment);
+
+      dispatch(fragment.children[0], "input");
+      dispatch(fragment.children[1], "input");
+
+      requestAnimationFrame(() => {
+        store
+          .pending(model)
+          .then(nextModel => {
+            expect(nextModel).toEqual({ value: "John", other: "Smith" });
+          })
+          .then(done);
+      });
     });
 
     it("set nested property of the store model instance", done => {
@@ -912,12 +937,14 @@ describe("html:", () => {
       input.value = "John";
       dispatch(input, "input");
 
-      store
-        .pending(model)
-        .then(nextModel => {
-          expect(nextModel).toEqual({ nested: { value: "John" } });
-        })
-        .then(done);
+      requestAnimationFrame(() => {
+        store
+          .pending(model)
+          .then(nextModel => {
+            expect(nextModel).toEqual({ nested: { value: "John" } });
+          })
+          .then(done);
+      });
     });
 
     it("reset store model instance by setting null", done => {
