@@ -101,7 +101,7 @@ module.exports = config => {
       module: {
         ...webpackConfig.module,
       },
-      devtool: false, // "inline-source-map",
+      devtool: "inline-source-map",
       mode: "development",
       plugins: [
         new webpack.DefinePlugin({

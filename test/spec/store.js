@@ -323,9 +323,11 @@ describe("store:", () => {
     it("rejects an error when array with primitives is set with wrong type", done => {
       promise
         .then(model => {
-          store.set(model, {
-            nestedArrayOfPrimitives: "test",
-          });
+          store
+            .set(model, {
+              nestedArrayOfPrimitives: "test",
+            })
+            .catch(() => {});
         })
         .catch(e => {
           expect(e).toBeInstanceOf(Error);
@@ -883,7 +885,7 @@ describe("store:", () => {
       store
         .set(Model, {})
         .then(model => {
-          store.set(model, { value: "" });
+          store.set(model, { value: "" }).catch(() => {});
           expect(store.error(model, "value")).toBe("value is required");
         })
         .then(done);
@@ -906,10 +908,6 @@ describe("store:", () => {
             expect(desc.get(model)).toBe(model);
           })
           .then(done);
-      });
-
-      it("throws when setting not initialized model", () => {
-        expect(() => desc.set({ id: 1 })).toThrow();
       });
 
       it("maps id to host property", done => {
@@ -1144,16 +1142,34 @@ describe("store:", () => {
       it("throws when setting model is in pending state", () => {
         Model = {
           value: "test",
-          [store.connect]: () => Promise.resolve({}),
+          [store.connect]: {
+            get: () => Promise.resolve({}),
+            set: (id, values) => values,
+          },
         };
 
         desc = store(Model);
 
         const pendingModel = desc.get({});
-        expect(() => desc.set({}, {}, pendingModel)).toThrow();
+        expect(() => {
+          desc.set({}, {}, pendingModel);
+        }).toThrow();
       });
 
       it("returns model instance", () => {
+        expect(desc.get({})).toEqual({ value: "test" });
+      });
+
+      it("uses default values for external storage in draft mode", () => {
+        Model = {
+          value: "test",
+          [store.connect]: {
+            get: () => {},
+            set: (id, values) => values,
+          },
+        };
+
+        desc = store(Model, { draft: true });
         expect(desc.get({})).toEqual({ value: "test" });
       });
 
@@ -1590,6 +1606,20 @@ describe("store:", () => {
         expect(store.get(Model, 1)).not.toBe(model);
         done();
       });
+    });
+
+    it("returns specific model for storage with list method", () => {
+      Model = {
+        id: true,
+        value: "",
+        [store.connect]: {
+          list: () => [{ id: "1", value: "test" }],
+        },
+      };
+
+      store.get([Model]);
+      expect(store.get(Model, "1")).toEqual({ id: "1", value: "test" });
+      expect(store.error(store.get(Model, 2))).not.toBeUndefined();
     });
 
     describe("with nested array options", () => {

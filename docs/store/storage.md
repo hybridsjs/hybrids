@@ -88,12 +88,12 @@ const Model = {
 ### set
 
 ```typescript
-set: (id: undefined | string | object, values: object, keys: [string]) => object | null | Promise<object | null>
+set: (id: undefined | string | object, values: object | null, keys: [string]) => object | null | Promise<object | null>
 ```
 
 * **arguments**:
   * `id` - `undefined`, a `string` or `object` model instance identifier
-  * `values` - an object with new values combined with current model state
+  * `values` - an object with new values combined with current model state or `null` for deleting or reset model instance
   * `keys` - a list of names of the updated properties
 * **returns (required)**:
   * `null`, an `object` representing model values or a `promise` resolving to the values for the model

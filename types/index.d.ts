@@ -62,7 +62,9 @@ declare namespace hybrids {
     [property in keyof Omit<M, "id">]: M[property] | ((model: M) => any);
   } & {
     id?: true;
-    __store__connect__?: Storage<M>;
+    __store__connect__?: 
+      | Storage<M> 
+      | ((id?: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>);
   };
   
   type ModelIdentifier = 
@@ -84,8 +86,8 @@ declare namespace hybrids {
 
   type Storage<M> = {
     cache?: boolean | number;
-    get: (id?: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>;
-    set?: (id: ModelIdentifier, values: ModelValues<M> | null, keys: [keyof M]) => StorageResult<M> | Promise<StorageResult<M>>;
+    get?: (id?: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>;
+    set?: (id: ModelIdentifier, values: M | null, keys: [keyof M]) => StorageResult<M> | Promise<StorageResult<M>>;
     list?: (id: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>;
   }
 

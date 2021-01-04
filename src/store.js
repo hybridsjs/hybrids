@@ -180,14 +180,14 @@ function resolveKey(Model, key, config) {
 }
 
 function stringifyModel(Model, msg) {
-  return `${msg}:\n\n${JSON.stringify(
+  return `${msg}\n\nModel = ${JSON.stringify(
     Model,
     (key, value) => {
       if (key === connect) return undefined;
       return value;
     },
     2,
-  )}\n\n`;
+  )}\n`;
 }
 
 const _ = (h, v) => v;
@@ -235,8 +235,14 @@ function setupModel(Model, nested) {
       external: !!storage,
       enumerable,
       nested: !enumerable && nested,
-      placeholder: id =>
-        Object.freeze(Object.assign(Object.create(placeholder), { id })),
+      placeholder: id => {
+        const model = Object.create(placeholder);
+        definitions.set(model, config);
+
+        if (enumerable) model.id = id;
+
+        return Object.freeze(model);
+      },
       isInstance: model => Object.getPrototypeOf(model) !== placeholder,
       invalidate: () => {
         if (!invalidatePromise) {
@@ -541,7 +547,12 @@ function setupListModel(Model, nested) {
             return modelConfig.storage.list(id);
           }),
       }),
-      placeholder: () => Object.freeze(Object.create(listPlaceholderPrototype)),
+      placeholder: () => {
+        const model = Object.create(listPlaceholderPrototype);
+        definitions.set(model, config);
+
+        return Object.freeze(model);
+      },
       isInstance: model =>
         Object.getPrototypeOf(model) !== listPlaceholderPrototype,
       create(items) {
@@ -697,9 +708,12 @@ function get(Model, id) {
 
         if (typeof result !== "object" || result === null) {
           throw Error(
-            `Model instance ${
-              stringId !== undefined ? `with '${stringId}' id` : ""
-            } does not exist`,
+            stringifyModel(
+              Model,
+              `Model instance ${
+                stringId !== undefined ? `with '${stringId}' id ` : ""
+              }does not exist`,
+            ),
           );
         }
 
@@ -708,9 +722,12 @@ function get(Model, id) {
             .then(data => {
               if (typeof data !== "object" || data === null) {
                 throw Error(
-                  `Model instance ${
-                    stringId !== undefined ? `with '${stringId}' id` : ""
-                  } does not exist`,
+                  stringifyModel(
+                    Model,
+                    `Model instance ${
+                      stringId !== undefined ? `with '${stringId}' id ` : ""
+                    }does not exist`,
+                  ),
                 );
               }
 
@@ -1116,7 +1133,10 @@ function store(Model, options = {}) {
     draftMap.set(options.draft, { model: config.model, id: options.id });
   }
 
-  const createMode = options.draft && config.enumerable && !options.id;
+  const createMode =
+    options.draft &&
+    ((config.enumerable && !options.id) ||
+      (!config.enumerable && config.external));
 
   const desc = {
     get: (host, lastValue) => {
