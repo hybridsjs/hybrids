@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.3.4](https://github.com/hybridsjs/hybrids/compare/v4.3.3...v4.3.4) (2021-01-14)
+
+
+### Bug Fixes
+
+* **html:** allow multiple browser autocomplete for store models ([baca71a](https://github.com/hybridsjs/hybrids/commit/baca71a196b99973593c1592cbe6aeb78094166b))
+* **store:** create mode for singletons in draft mode, placeholders connected to configs ([d69b63e](https://github.com/hybridsjs/hybrids/commit/d69b63e365e98d3b3d0b0a85e28683f985f729d5))
+
 ### [4.3.3](https://github.com/hybridsjs/hybrids/compare/v4.3.2...v4.3.3) (2020-10-26)
 
 
