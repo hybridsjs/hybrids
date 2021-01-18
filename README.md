@@ -29,30 +29,26 @@
 
 ## Quick Look
 
-Add the hybrids [npm package](https://www.npmjs.com/package/hybrids) to your application, import required features, and define your custom element:
-
-```javascript
-import { html, define } from 'hybrids';
-
-export function increaseCount(host) {
-  host.count += 1;
-}
-
-export const SimpleCounter = {
-  count: 0,
-  render: ({ count }) => html`
-    <button onclick="${increaseCount}">
-      Count: ${count}
-    </button>
-  `,
-};
-
-define('simple-counter', SimpleCounter);
-```
-
-Use the custom element in HTML document:
-
 ```html
+<script type="module">
+  import { html, define } from 'https://unpkg.com/hybrids@^5';
+  
+  function increaseCount(host) {
+    host.count += 1;
+  }
+
+  const SimpleCounter = {
+    count: 0,
+    render: ({ count }) => html`
+      <button onclick="${increaseCount}">
+        Count: ${count}
+      </button>
+    `,
+  };
+
+  define('simple-counter', SimpleCounter);
+</script>
+
 <simple-counter count="10"></simple-counter>
 ```
 

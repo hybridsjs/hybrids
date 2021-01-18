@@ -33,7 +33,6 @@ export function stringifyElement(target) {
   return `<${String(target.tagName).toLowerCase()}>`;
 }
 
-export const IS_IE = "ActiveXObject" in window;
 export const deferred = Promise.resolve();
 
 export const storePointer = new WeakMap();

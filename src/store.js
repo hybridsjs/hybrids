@@ -2,9 +2,6 @@
 import * as cache from "./cache.js";
 import { storePointer } from "./utils.js";
 
-/* istanbul ignore next */
-try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
-
 export const connect = `__store__connect__${Date.now()}__`;
 const definitions = new WeakMap();
 
@@ -541,11 +538,7 @@ function setupListModel(Model, nested) {
       enumerable: modelConfig.enumerable,
       storage: setupStorage({
         cache: modelConfig.storage.cache,
-        get:
-          !nested &&
-          (id => {
-            return modelConfig.storage.list(id);
-          }),
+        get: !nested && (id => modelConfig.storage.list(id)),
       }),
       placeholder: () => {
         const model = Object.create(listPlaceholderPrototype);
@@ -638,8 +631,7 @@ function stringifyId(id) {
 }
 
 function mapError(model, err, suppressLog) {
-  /* istanbul ignore next */
-  if (process.env.NODE_ENV !== "production" && suppressLog !== false) {
+  if (suppressLog !== false) {
     // eslint-disable-next-line no-console
     console.error(err);
   }
@@ -739,13 +731,13 @@ function get(Model, id) {
                 ),
               );
             })
-            .catch(e => {
-              return sync(
+            .catch(e =>
+              sync(
                 config,
                 stringId,
                 mapError(cachedModel || config.placeholder(stringId), e),
-              );
-            });
+              ),
+            );
 
           return setModelState(
             cachedModel || config.placeholder(stringId),

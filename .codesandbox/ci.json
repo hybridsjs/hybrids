@@ -1,3 +1,5 @@
 {
-  "sandboxes": ["161qu"]
+  "sandboxes": ["161qu"],
+  "buildCommand": false,
+  "node": "14"
 }

@@ -1,7 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-const webpack = require("webpack");
-const webpackConfig = require("./webpack.config");
-
 const IS_COVERAGE = process.env.NODE_ENV === "coverage";
 const IS_SAUCE_LABS =
   !IS_COVERAGE &&
@@ -46,12 +42,6 @@ const customLaunchers = {
     platform: "macOS 10.13",
     version: "latest-1",
   },
-  SL_IE_11: {
-    base: "SauceLabs",
-    browserName: "internet explorer",
-    platform: "Windows 8.1",
-    version: "11",
-  },
   SL_EDGE: {
     base: "SauceLabs",
     browserName: "microsoftedge",
@@ -85,33 +75,17 @@ if (IS_SAUCE_LABS) reporters.push("saucelabs");
 
 module.exports = config => {
   config.set({
+    basePath: "./",
     frameworks: ["jasmine"],
     reporters,
     browsers: IS_SAUCE_LABS ? Object.keys(customLaunchers) : ["ChromeHeadless"],
     files: [
-      "node_modules/core-js/es/weak-map/index.js",
       "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js",
-      "test/runner.js",
+      { pattern: "src/**/*.js", type: "module" },
+      { pattern: "test/**/*.js", type: "module" },
     ],
     preprocessors: {
-      "node_modules/core-js/**/*": ["webpack"],
-      "test/runner.js": ["webpack", "sourcemap"],
-    },
-    webpack: {
-      module: {
-        ...webpackConfig.module,
-      },
-      devtool: "inline-source-map",
-      mode: "development",
-      plugins: [
-        new webpack.DefinePlugin({
-          "process.env.NODE_ENV": "env",
-        }),
-      ],
-    },
-    webpackMiddleware: {
-      noInfo: true,
-      stats: "errors-only",
+      "src/**/*.js": IS_COVERAGE ? ["coverage"] : [],
     },
     coverageReporter: {
       dir: "coverage/",

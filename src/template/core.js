@@ -1,11 +1,8 @@
-import { stringifyElement, shadyCSS, IS_IE } from "../utils.js";
+import { stringifyElement, shadyCSS } from "../utils.js";
 import { dataMap, removeTemplate } from "./utils.js";
 
 import resolveValue from "./resolvers/value.js";
 import resolveProperty from "./resolvers/property.js";
-
-/* istanbul ignore next */
-try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
 
 const TIMESTAMP = Date.now();
 
@@ -14,9 +11,6 @@ export const getPlaceholder = (id = 0) => `{{h-${TIMESTAMP}-${id}}}`;
 const PLACEHOLDER_REGEXP_TEXT = getPlaceholder("(\\d+)");
 const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
 const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, "g");
-
-const ATTR_PREFIX = `--${TIMESTAMP}--`;
-const ATTR_REGEXP = new RegExp(ATTR_PREFIX, "g");
 
 const preparedTemplates = new WeakMap();
 
@@ -76,14 +70,6 @@ function createSignature(parts, styles) {
 
   if (styles) {
     signature += `<style>\n${styles.join("\n/*------*/\n")}\n</style>`;
-  }
-
-  /* istanbul ignore if */
-  if (IS_IE) {
-    return signature.replace(
-      /style\s*=\s*(["][^"]+["]|['][^']+[']|[^\s"'<>/]+)/g,
-      match => `${ATTR_PREFIX}${match}`,
-    );
   }
 
   return signature;
@@ -210,13 +196,8 @@ export function compileTemplate(rawParts, isSVG, styles) {
   let signature = createSignature(rawParts, styles);
   if (isSVG) signature = `<svg>${signature}</svg>`;
 
-  /* istanbul ignore if */
-  if (IS_IE) {
-    template.innerHTML = signature;
-  } else {
-    container.innerHTML = `<template>${signature}</template>`;
-    template.content.appendChild(container.children[0].content);
-  }
+  container.innerHTML = `<template>${signature}</template>`;
+  template.content.appendChild(container.children[0].content);
 
   if (isSVG) {
     const svgRoot = template.content.firstChild;
@@ -267,8 +248,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
 
       const equal = node.textContent.match(PLACEHOLDER_REGEXP_EQUAL);
       if (equal) {
-        /* istanbul ignore else */
-        if (!IS_IE) node.textContent = "";
+        node.textContent = "";
         parts[equal[1]] = [compileIndex, resolveValue];
       }
     } else {
@@ -277,7 +257,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
         Array.from(node.attributes).forEach(attr => {
           const value = attr.value.trim();
           /* istanbul ignore next */
-          const name = IS_IE ? attr.name.replace(ATTR_PREFIX, "") : attr.name;
+          const name = attr.name;
           const equal = value.match(PLACEHOLDER_REGEXP_EQUAL);
           if (equal) {
             const propertyName = getPropertyName(rawParts[equal[1]]);
@@ -311,12 +291,6 @@ export function compileTemplate(rawParts, isSVG, styles) {
               });
 
               attr.value = "";
-
-              /* istanbul ignore next */
-              if (IS_IE && name !== attr.name) {
-                node.removeAttribute(attr.name);
-                node.setAttribute(name, "");
-              }
             }
           }
         });
@@ -359,23 +333,17 @@ export function compileTemplate(rawParts, isSVG, styles) {
           /* istanbul ignore next */
           if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
             node.textContent = "";
-          } else if (IS_IE) {
-            node.textContent = node.textContent.replace(ATTR_REGEXP, "");
           }
         } else if (
-          process.env.NODE_ENV !== "production" &&
-          node.nodeType === Node.ELEMENT_NODE
+          node.nodeType === Node.ELEMENT_NODE &&
+          node.tagName.indexOf("-") > -1 &&
+          !customElements.get(node.tagName.toLowerCase())
         ) {
-          if (
-            node.tagName.indexOf("-") > -1 &&
-            !customElements.get(node.tagName.toLowerCase())
-          ) {
-            throw Error(
-              `Missing ${stringifyElement(
-                node,
-              )} element definition in ${stringifyElement(host)}`,
-            );
-          }
+          throw Error(
+            `Missing ${stringifyElement(
+              node,
+            )} element definition in ${stringifyElement(host)}`,
+          );
         }
 
         while (currentPart && currentPart[0] === renderIndex) {
@@ -448,14 +416,12 @@ export function compileTemplate(rawParts, isSVG, styles) {
             prevArgs ? prevArgs[index] : undefined,
           );
         } catch (error) {
-          if (process.env.NODE_ENV !== "production") {
-            // eslint-disable-next-line no-console
-            console.error(
-              `Following error was thrown when updating a template expression in ${stringifyElement(
-                host,
-              )}\n${beautifyTemplateLog(signature, index)}`,
-            );
-          }
+          // eslint-disable-next-line no-console
+          console.error(
+            `Following error was thrown when updating a template expression in ${stringifyElement(
+              host,
+            )}\n${beautifyTemplateLog(signature, index)}`,
+          );
           throw error;
         }
       }
