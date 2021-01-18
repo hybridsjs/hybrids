@@ -1,5 +1,5 @@
 {
-  "extends": ["airbnb-base", "plugin:prettier/recommended"],
+  "extends": ["airbnb-base", "prettier"],
   "env": {
     "browser": true,
     "jasmine": true
@@ -12,6 +12,7 @@
     "new-cap": 0,
     "prefer-destructuring": 0,
     "block-scoped-var": 0,
+    "max-classes-per-file": 0,
     "import/no-extraneous-dependencies": [
       "error",
       {

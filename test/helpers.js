@@ -46,16 +46,5 @@ export function resolveTimeout(fn) {
   });
 }
 
-// Set default env variable
-window.env = "development";
-
-export function runInProd(fn) {
-  window.env = "production";
-  try {
-    fn();
-  } catch (e) {
-    window.env = "development";
-    throw e;
-  }
-  window.env = "development";
-}
+// Suppress console error logs
+console.error = () => {};

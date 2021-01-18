@@ -1,8 +1,12 @@
-import { test, resolveRaf, runInProd } from "../helpers.js";
+import { test, resolveRaf } from "../helpers.js";
 import define from "../../src/define.js";
 import { invalidate } from "../../src/cache.js";
 
 describe("define:", () => {
+  it("throws when element constructor is not a function or an object", () => {
+    expect(() => define("test-define-multiple", null)).toThrow();
+  });
+
   it("returns custom element with a name", () => {
     const CustomElement = define("test-define-custom-element", {});
     expect(
@@ -297,92 +301,84 @@ describe("define:", () => {
       </test-define-multiple>
     `);
 
+    it("throws when element is built with constructor", () => {
+      define("test-define-multiple-class", class extends HTMLElement {});
+      expect(() => define("test-define-multiple-class", {})).toThrow();
+    });
+
     it("returns the same custom element", () => {
       expect(define("test-define-multiple", hybrids)).toBe(CustomElement);
-
-      runInProd(() => {
-        expect(define("test-define-multiple", hybrids)).toBe(CustomElement);
-      });
     });
 
-    describe("in dev environment", () => {
-      it("updates when hybrids does not match", done => {
-        test(`
-          <test-define-multiple>
-            <test-define-multiple-two></test-define-multiple-two>
-          </test-define-multiple>
-        `)(el => {
-          const spy = jasmine.createSpy("connect");
-          const newHybrids = {
-            one: "text",
-            two: {
-              get: () => null,
-              connect: spy,
-            },
-          };
-          define("test-define-multiple", newHybrids);
-          define("test-define-multiple-two", newHybrids);
+    it("updates when hybrids does not match", done => {
+      test(`
+        <test-define-multiple>
+          <test-define-multiple-two></test-define-multiple-two>
+        </test-define-multiple>
+      `)(el => {
+        const spy = jasmine.createSpy("connect");
+        const newHybrids = {
+          one: "text",
+          two: {
+            get: () => null,
+            connect: spy,
+          },
+        };
+        define("test-define-multiple", newHybrids);
+        define("test-define-multiple-two", newHybrids);
 
-          return Promise.resolve().then(() => {
-            expect(el.one).toBe("text");
-            expect(el.children[0].one).toBe("text");
+        return Promise.resolve().then(() => {
+          expect(el.one).toBe("text");
+          expect(el.children[0].one).toBe("text");
 
-            expect(spy).toHaveBeenCalledTimes(2);
-          });
-        })(done);
-      });
-
-      it(
-        "updates & calls observe only on connected elements when hybrids does not match",
-        editTree(el => {
-          const spy = jasmine.createSpy("connect");
-          const newHybrids = {
-            one: "text",
-            two: {
-              get: () => "test",
-              observe: spy,
-            },
-          };
-
-          define("test-define-multiple", newHybrids);
-          define("test-define-multiple-two", newHybrids);
-
-          el.innerHTML =
-            "<test-define-multiple-two></test-define-multiple-two>";
-
-          return resolveRaf(() => {
-            expect(el.one).toBe("text");
-            expect(el.children[0].one).toBe("text");
-
-            expect(spy).toHaveBeenCalledTimes(2);
-          });
-        }),
-      );
-
-      it("updates elements in shadowRoot", done => {
-        test("<div></div>")(el => {
-          const connect = jasmine.createSpy();
-
-          el.attachShadow({ mode: "open" });
-          const child = document.createElement("test-define-multiple");
-          el.shadowRoot.appendChild(child);
-
-          define("test-define-multiple", {
-            one: { get: () => "text", connect },
-          });
-
-          return Promise.resolve().then(() => {
-            expect(connect).toHaveBeenCalledTimes(1);
-            expect(child.one).toBe("text");
-          });
-        })(done);
-      });
+          expect(spy).toHaveBeenCalledTimes(2);
+        });
+      })(done);
     });
 
-    it("in prod environment throws when hybrids does not match", () => {
-      runInProd(() => {
-        expect(() => define("test-define-multiple", {})).toThrow();
-      });
+    it(
+      "updates & calls observe only on connected elements when hybrids does not match",
+      editTree(el => {
+        const spy = jasmine.createSpy("connect");
+        const newHybrids = {
+          one: "text",
+          two: {
+            get: () => "test",
+            observe: spy,
+          },
+        };
+
+        define("test-define-multiple", newHybrids);
+        define("test-define-multiple-two", newHybrids);
+
+        el.innerHTML = "<test-define-multiple-two></test-define-multiple-two>";
+
+        return resolveRaf(() => {
+          expect(el.one).toBe("text");
+          expect(el.children[0].one).toBe("text");
+
+          expect(spy).toHaveBeenCalledTimes(2);
+        });
+      }),
+    );
+
+    it("updates elements in shadowRoot", done => {
+      test("<div></div>")(el => {
+        const connect = jasmine.createSpy();
+
+        el.attachShadow({ mode: "open" });
+        const child = document.createElement("test-define-multiple");
+        el.shadowRoot.appendChild(child);
+
+        define("test-define-multiple", {
+          one: { get: () => "text", connect },
+        });
+
+        return Promise.resolve().then(() => {
+          expect(connect).toHaveBeenCalledTimes(1);
+          expect(child.one).toBe("text");
+        });
+      })(done);
     });
   });
 });

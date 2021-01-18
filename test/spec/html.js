@@ -2,8 +2,8 @@ import { html } from "../../src/template/index.js";
 import { createInternalWalker } from "../../src/template/core.js";
 import define from "../../src/define.js";
 import renderFactory from "../../src/render.js";
-import { dispatch, IS_IE } from "../../src/utils.js";
-import { test, resolveTimeout, runInProd } from "../helpers.js";
+import { dispatch } from "../../src/utils.js";
+import { test, resolveTimeout } from "../helpers.js";
 import { property } from "../../src/index.js";
 import store from "../../src/store.js";
 
@@ -33,14 +33,12 @@ describe("html:", () => {
   });
 
   it("creates template unique id", () => {
-    const renderOne = () =>
-      html`
-        <div>value:</div>
-      `;
-    const renderTwo = value =>
-      html`
-        <div>value:${value}</div>
-      `;
+    const renderOne = () => html`
+      <div>value:</div>
+    `;
+    const renderTwo = value => html`
+      <div>value:${value}</div>
+    `;
 
     renderOne()({}, fragment);
     renderTwo(0)({}, fragment);
@@ -49,11 +47,10 @@ describe("html:", () => {
   });
 
   it("reuses the same elements when re-render", () => {
-    const render = value =>
-      html`
-        <!-- some comment -->
-        <div>${value}</div>
-      `;
+    const render = value => html`
+      <!-- some comment -->
+      <div>${value}</div>
+    `;
     render(0)(fragment);
     const div = fragment.children[0];
     render(1)(fragment);
@@ -73,8 +70,8 @@ describe("html:", () => {
       </test-html-object-property>
     `;
 
-    // eslint-disable-next-line prettier/prettier
-    const renderWithoutNewLines = value => html`<test-html-object-property model=${value}></test-html-object-property>`;
+    // prettier-ignore
+    const renderWithoutNewLines = (value) => html`<test-html-object-property model=${value}></test-html-object-property>`;
 
     expect(() => {
       renderWithNewLines(undefined)(fragment);
@@ -83,29 +80,17 @@ describe("html:", () => {
       renderWithoutNewLines(undefined)(fragment);
     }).toThrow();
 
-    runInProd(() => {
-      expect(() => {
-        renderWithoutNewLines(true)(fragment);
-      }).toThrow();
-    });
+    expect(() => {
+      renderWithoutNewLines(true)(fragment);
+    }).toThrow();
   });
 
-  it("throws for missing custom element in dev environment", () => {
+  it("throws for missing custom element", () => {
     expect(() =>
       html`
         <missing-element></missing-element>
       `(fragment),
     ).toThrow();
-  });
-
-  it("does not throw for missing custom element in prod environment", () => {
-    runInProd(() => {
-      expect(() =>
-        html`
-          <missing-element></missing-element>
-        `(fragment),
-      ).not.toThrow();
-    });
   });
 
   it("clears arguments cache when template changes", () => {
@@ -121,21 +106,19 @@ describe("html:", () => {
   it("replaces resolved nested custom element template", done => {
     define("test-replace-trigger", {
       render: renderFactory(
-        () =>
-          html`
-            content
-          `,
+        () => html`
+          content
+        `,
         { shadowRoot: false },
       ),
     });
 
-    const render = flag =>
-      html`
-        ${flag &&
-          html`
-            <test-replace-trigger></test-replace-trigger>
-          `}<button></button>
-      `;
+    const render = flag => html`
+      ${flag &&
+        html`
+          <test-replace-trigger></test-replace-trigger>
+        `}<button></button>
+    `;
     render(true)(fragment);
 
     resolveTimeout(() => {
@@ -146,10 +129,9 @@ describe("html:", () => {
   });
 
   describe("attribute expression with combined text value", () => {
-    const render = (two, three) =>
-      html`
-        <div name="test" class="class-one ${two} ${three}"></div>
-      `;
+    const render = (two, three) => html`
+      <div name="test" class="class-one ${two} ${three}"></div>
+    `;
 
     it("sets attribute", () => {
       render("class-two", "class-three")({}, fragment);
@@ -171,10 +153,9 @@ describe("html:", () => {
   });
 
   describe("attribute expression with non existing property", () => {
-    const render = value =>
-      html`
-        <div text-property="${value}"></div>
-      `;
+    const render = value => html`
+      <div text-property="${value}"></div>
+    `;
 
     beforeEach(() => render("value")(fragment));
 
@@ -236,10 +217,9 @@ describe("html:", () => {
   });
 
   describe("class expression attribute", () => {
-    const render = classList =>
-      html`
-        <div class=${classList}></div>
-      `;
+    const render = classList => html`
+      <div class=${classList}></div>
+    `;
     const hasClass = className =>
       fragment.children[0].classList.contains(className);
 
@@ -278,10 +258,9 @@ describe("html:", () => {
   });
 
   describe("style expression attribute", () => {
-    const renderObject = styleList =>
-      html`
-        <div style="${styleList}"></div>
-      `;
+    const renderObject = styleList => html`
+      <div style="${styleList}"></div>
+    `;
     const renderAttr = text => html`
       <div style="color: red; ${text}" asd="<>/">
         <div style="color: red; ${text}"></div>
@@ -329,14 +308,12 @@ describe("html:", () => {
   });
 
   describe("event attribute expression", () => {
-    const render = value =>
-      html`
-        <button onclick=${value}></button><button onclick=${value}></button>
-      `;
-    const renderWithQuotes = value =>
-      html`
-        <button onclick="${value}"></button>
-      `;
+    const render = value => html`
+      <button onclick=${value}></button><button onclick=${value}></button>
+    `;
+    const renderWithQuotes = value => html`
+      <button onclick="${value}"></button>
+    `;
 
     const click = () => fragment.children[0].click();
     let spy;
@@ -470,7 +447,7 @@ describe("html:", () => {
 
   describe("flat array content expression with primitive values", () => {
     const render = items =>
-      // eslint-disable-next-line prettier/prettier
+      // prettier-ignore
       html`${items}`;
 
     beforeEach(() => {
@@ -498,15 +475,14 @@ describe("html:", () => {
   });
 
   describe("flat array content expression", () => {
-    const render = items =>
-      html`
-        ${items &&
-          items.map(v =>
-            html`
-              <span>${v}</span>
-            `.key(v),
-          )}
-      `;
+    const render = items => html`
+      ${items &&
+        items.map(v =>
+          html`
+            <span>${v}</span>
+          `.key(v),
+        )}
+    `;
 
     beforeEach(() => {
       render([1, 2, 3])(fragment);
@@ -579,15 +555,14 @@ describe("html:", () => {
 
   describe("nested array content expression", () => {
     const renderItem = item =>
-      // eslint-disable-next-line prettier/prettier
+      // prettier-ignore
       html`<span>${item}</span>`.key(item);
     const renderArray = array =>
-      // eslint-disable-next-line prettier/prettier
-      html`${array.map(renderItem)}`.key(array.join(""));
-    const render = items =>
-      html`
-        ${items && items.map(renderArray)} static value
-      `;
+      // prettier-ignore
+      html`${array.map(renderItem)}`.key(array.join(''));
+    const render = items => html`
+      ${items && items.map(renderArray)} static value
+    `;
 
     beforeEach(() => {
       render([[1, 2, 3], [4, 5, 6], [7]])(fragment);
@@ -993,10 +968,9 @@ describe("html:", () => {
     const render = (promise, value, placeholder) => html`
       ${html.resolve(
         promise.then(
-          () =>
-            html`
-              <div>${value}</div>
-            `,
+          () => html`
+            <div>${value}</div>
+          `,
         ),
         placeholder,
       )}
@@ -1100,11 +1074,9 @@ describe("html:", () => {
         <div>content</div>
       `({}, container);
 
-      if (!IS_IE) {
-        expect(getComputedStyle(container.children[0]).color).toBe(
-          "rgb(0, 0, 0)",
-        );
-      }
+      expect(getComputedStyle(container.children[0]).color).toBe(
+        "rgb(0, 0, 0)",
+      );
 
       expect(container.children.length).toBe(1);
     });
@@ -1123,11 +1095,9 @@ describe("html:", () => {
           <div>content</div>
         `({}, container);
 
-        if (!IS_IE) {
-          expect(getComputedStyle(container.children[0]).color).toBe(
-            "rgb(0, 0, 0)",
-          );
-        }
+        expect(getComputedStyle(container.children[0]).color).toBe(
+          "rgb(0, 0, 0)",
+        );
 
         expect(container.children.length).toBe(1);
       }).then(done);

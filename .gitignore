@@ -13,6 +13,7 @@
 # OS or Editor folders
 .DS_Store
 .cache
+.eslintcache
 .project
 .settings
 .tmproj
@@ -24,9 +25,5 @@ Thumbs.db
 # NPMs
 node_modules/
 npm-debug.log
-lerna-debug.log
 
-lib/
-esm/
-dist/
 coverage/

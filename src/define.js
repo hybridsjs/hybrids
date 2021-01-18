@@ -4,9 +4,6 @@ import render from "./render.js";
 import * as cache from "./cache.js";
 import { pascalToDash, deferred } from "./utils.js";
 
-/* istanbul ignore next */
-try { process.env.NODE_ENV } catch(e) { var process = { env: { NODE_ENV: 'production' } }; } // eslint-disable-line
-
 const defaultMethod = (host, value) => value;
 
 const callbacksMap = new WeakMap();
@@ -50,7 +47,7 @@ function compile(Hybrid, descriptors) {
           cache.set(this, key, config.set, newValue);
         },
       enumerable: true,
-      configurable: process.env.NODE_ENV !== "production",
+      configurable: true,
     });
 
     if (config.observe) {
@@ -69,51 +66,47 @@ function compile(Hybrid, descriptors) {
   });
 }
 
-let update;
-/* istanbul ignore else */
-if (process.env.NODE_ENV !== "production") {
-  const walkInShadow = (node, fn) => {
-    fn(node);
+function walkInShadow(node, fn) {
+  fn(node);
 
-    Array.from(node.children).forEach(el => walkInShadow(el, fn));
+  Array.from(node.children).forEach(el => walkInShadow(el, fn));
 
-    if (node.shadowRoot) {
-      Array.from(node.shadowRoot.children).forEach(el => walkInShadow(el, fn));
-    }
-  };
+  if (node.shadowRoot) {
+    Array.from(node.shadowRoot.children).forEach(el => walkInShadow(el, fn));
+  }
+}
 
-  const updateQueue = new Map();
-  update = (Hybrid, lastHybrids) => {
-    if (!updateQueue.size) {
-      deferred.then(() => {
-        walkInShadow(document.body, node => {
-          if (updateQueue.has(node.constructor)) {
-            const hybrids = updateQueue.get(node.constructor);
-            node.disconnectedCallback();
+const updateQueue = new Map();
+function update(Hybrid, lastHybrids) {
+  if (!updateQueue.size) {
+    deferred.then(() => {
+      walkInShadow(document.body, node => {
+        if (updateQueue.has(node.constructor)) {
+          const hybrids = updateQueue.get(node.constructor);
+          node.disconnectedCallback();
 
-            Object.keys(node.constructor.hybrids).forEach(key => {
-              cache.invalidate(
-                node,
-                key,
-                node.constructor.hybrids[key] !== hybrids[key],
-              );
-            });
+          Object.keys(node.constructor.hybrids).forEach(key => {
+            cache.invalidate(
+              node,
+              key,
+              node.constructor.hybrids[key] !== hybrids[key],
+            );
+          });
 
-            node.connectedCallback();
-          }
-        });
-        updateQueue.clear();
+          node.connectedCallback();
+        }
       });
-    }
-    updateQueue.set(Hybrid, lastHybrids);
-  };
+      updateQueue.clear();
+    });
+  }
+  updateQueue.set(Hybrid, lastHybrids);
 }
 
 const disconnects = new WeakMap();
 
 function defineElement(tagName, hybridsOrConstructor) {
   const type = typeof hybridsOrConstructor;
-  if (type !== "object" && type !== "function") {
+  if (!hybridsOrConstructor || (type !== "object" && type !== "function")) {
     throw TypeError(`Second argument must be an object or a function: ${type}`);
   }
 
@@ -131,7 +124,7 @@ function defineElement(tagName, hybridsOrConstructor) {
       if (CustomElement.hybrids === hybridsOrConstructor) {
         return CustomElement;
       }
-      if (process.env.NODE_ENV !== "production" && CustomElement.hybrids) {
+      if (CustomElement.hybrids) {
         Object.keys(CustomElement.hybrids).forEach(key => {
           delete CustomElement.prototype[key];
         });
@@ -144,7 +137,7 @@ function defineElement(tagName, hybridsOrConstructor) {
         return CustomElement;
       }
 
-      throw Error(`Element '${tagName}' already defined`);
+      return window.customElements.define(tagName, hybridsOrConstructor);
     }
   }
 
