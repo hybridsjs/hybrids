@@ -281,10 +281,10 @@ function setupModel(Model, nested) {
           }
           return (model, data, lastModel) => {
             let id;
-            if (lastModel) {
+            if (hasOwnProperty.call(data, "id")) {
+              id = stringifyId(data.id);
+            } else if (lastModel) {
               id = lastModel.id;
-            } else if (hasOwnProperty.call(data, "id")) {
-              id = String(data.id);
             } else {
               id = uuid();
             }
@@ -797,6 +797,8 @@ function set(model, values = {}) {
 
   if (!config) config = bootstrap(model);
 
+  const isDraft = draftMap.get(config);
+
   if (config.nested) {
     throw stringifyModel(
       config.model,
@@ -844,13 +846,13 @@ function set(model, values = {}) {
       throw TypeError(`Values must be an object instance: ${values}`);
     }
 
-    if (values && hasOwnProperty.call(values, "id")) {
+    if (!isDraft && values && hasOwnProperty.call(values, "id")) {
       throw TypeError(`Values must not contain 'id' property: ${values.id}`);
     }
 
     const localModel = config.create(values, isInstance ? model : undefined);
     const keys = values ? Object.keys(values) : [];
-    const isDraft = draftMap.get(config);
+
     const errors = {};
     const lastError = isInstance && isDraft && error(model);
 
@@ -903,10 +905,19 @@ function set(model, values = {}) {
           );
         }
 
-        const resultId = resultModel ? resultModel.id : id;
+        let resultId = resultModel ? resultModel.id : id;
 
         if (hasErrors && isDraft) {
           setModelState(resultModel, "error", getValidationError(errors));
+        }
+
+        if (
+          isDraft &&
+          isInstance &&
+          hasOwnProperty.call(data, "id") &&
+          (!localModel || localModel.id !== model.id)
+        ) {
+          resultId = model.id;
         }
 
         return sync(
@@ -1028,20 +1039,18 @@ function submit(draft) {
   let result;
 
   if (!options.id) {
-    result = store.set(options.model, getValuesFromModel(draft));
+    result = set(options.model, getValuesFromModel(draft));
   } else {
-    const model = store.get(options.model, draft.id);
+    const model = get(options.model, draft.id);
     result = Promise.resolve(pending(model) || model).then(resolvedModel =>
-      store.set(resolvedModel, getValuesFromModel(draft)),
+      set(resolvedModel, getValuesFromModel(draft)),
     );
   }
 
   result = result
     .then(resultModel => {
       setModelState(draft, "ready");
-      return store
-        .set(draft, getValuesFromModel(resultModel))
-        .then(() => resultModel);
+      return set(draft, resultModel).then(() => resultModel);
     })
     .catch(e => {
       setModelState(draft, "error", e);
@@ -1118,9 +1127,9 @@ function store(Model, options = {}) {
 
     Model = {
       ...Model,
-      [store.connect]: {
+      [connect]: {
         get(id) {
-          const model = store.get(config.model, id);
+          const model = get(config.model, id);
           return ready(model) ? model : pending(model);
         },
         set(id, values) {
@@ -1143,7 +1152,7 @@ function store(Model, options = {}) {
       if (createMode && !lastValue) {
         const nextValue = options.draft.create({});
         sync(options.draft, nextValue.id, nextValue);
-        return store.get(Model, nextValue.id);
+        return get(Model, nextValue.id);
       }
 
       const id =
@@ -1151,7 +1160,7 @@ function store(Model, options = {}) {
           ? lastValue.id
           : options.id && options.id(host);
 
-      const nextValue = store.get(Model, id);
+      const nextValue = get(Model, id);
 
       if (lastValue && nextValue !== lastValue && !ready(nextValue)) {
         return mapValueWithState(lastValue, nextValue);

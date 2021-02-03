@@ -1101,6 +1101,8 @@ describe("store:", () => {
             return store.submit(nextDraftModel).then(targetModel => {
               expect(store.get(Model, targetModel.id)).toBe(targetModel);
               expect(targetModel.id).not.toBe(nextDraftModel.id);
+              expect(targetModel.id).toBe(desc.get({}, nextDraftModel).id);
+
               expect(targetModel.string).toBe(nextDraftModel.string);
 
               const targetDraftModel = desc.get({}, nextDraftModel);
@@ -1108,6 +1110,9 @@ describe("store:", () => {
 
               return store.submit(targetDraftModel).then(nextTargetModel => {
                 expect(nextTargetModel.id).not.toBe(targetModel);
+                expect(nextTargetModel.id).toBe(
+                  desc.get({}, targetDraftModel).id,
+                );
               });
             });
           })
