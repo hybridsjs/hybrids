@@ -5,6 +5,10 @@ import {
   invalidate,
   invalidateAll,
   observe,
+  suspend,
+  unsuspend,
+  getEntry,
+  clear,
 } from "../../src/cache.js";
 
 describe("cache:", () => {
@@ -326,6 +330,75 @@ describe("cache:", () => {
         expect(() => unobserve()).not.toThrow();
         done();
       });
+    });
+  });
+
+  describe("clear()", () => {
+    it("removes references from deps", done => {
+      const dep = {};
+      get(target, "key", () => get(dep, "value", () => "value"));
+      const hasTarget = () =>
+        [...getEntry(dep, "value").contexts].some(
+          entry => entry.target === target,
+        );
+      expect(hasTarget()).toBe(true);
+
+      clear(target);
+
+      requestAnimationFrame(() => {
+        expect(hasTarget()).toBe(false);
+        done();
+      });
+    });
+
+    it("skip when already added", done => {
+      clear(target);
+      clear(target);
+
+      requestAnimationFrame(() => {
+        done();
+      });
+    });
+  });
+
+  describe("suspend()", () => {
+    it("disables cache hits", () => {
+      get(target, "key", spy);
+
+      suspend(target);
+
+      get(target, "key", spy);
+
+      expect(spy).toHaveBeenCalledTimes(2);
+    });
+
+    it("disables observe callback", done => {
+      get(target, "key", () => "value");
+      suspend(target);
+      observe(target, "key", (_, v) => v, spy);
+
+      requestAnimationFrame(() => {
+        expect(spy).not.toHaveBeenCalled();
+        done();
+      });
+    });
+  });
+
+  describe("unsuspend()", () => {
+    it("enables cache hits", () => {
+      const cb = () => get(target, "key", spy);
+
+      cb();
+      suspend(target);
+      cb();
+
+      unsuspend(target);
+
+      cb();
+      expect(spy).toHaveBeenCalledTimes(3);
+
+      cb();
+      expect(spy).toHaveBeenCalledTimes(3);
     });
   });
 });

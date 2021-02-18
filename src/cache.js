@@ -1,6 +1,8 @@
 import * as emitter from "./emitter.js";
 
 const entries = new WeakMap();
+const suspense = new WeakSet();
+
 export function getEntry(target, key) {
   let targetMap = entries.get(target);
   if (!targetMap) {
@@ -15,11 +17,9 @@ export function getEntry(target, key) {
       target,
       key,
       value: undefined,
-      contexts: undefined,
-      deps: undefined,
-      state: 0,
-      checksum: 0,
-      observed: false,
+      contexts: new Set(),
+      deps: new Set(),
+      resolved: false,
     };
     targetMap.set(key, entry);
   }
@@ -38,100 +38,63 @@ export function getEntries(target) {
   return result;
 }
 
-function calculateChecksum(entry) {
-  let checksum = entry.state;
-  if (entry.deps) {
-    entry.deps.forEach(depEntry => {
-      checksum += depEntry.state;
-    });
-  }
-
-  return checksum;
-}
-
 function dispatchDeep(entry) {
-  if (entry.observed) emitter.dispatch(entry);
-  if (entry.contexts) entry.contexts.forEach(dispatchDeep);
+  entry.resolved = false;
+
+  emitter.dispatch(entry);
+  entry.contexts.forEach(dispatchDeep);
 }
 
-function restoreDeepDeps(entry, deps) {
-  if (deps) {
-    deps.forEach(depEntry => {
-      entry.deps.add(depEntry);
-
-      if (entry.observed) {
-        /* istanbul ignore if */
-        if (!depEntry.contexts) depEntry.contexts = new Set();
-        depEntry.contexts.add(entry);
-      }
-
-      restoreDeepDeps(entry, depEntry.deps);
-    });
-  }
-}
-
-const contextStack = new Set();
+const contexts = [];
 export function get(target, key, getter, validate) {
   const entry = getEntry(target, key);
 
-  if (contextStack.size && contextStack.has(entry)) {
+  if (contexts.includes(entry)) {
     throw Error(`Circular get invocation is forbidden: '${key}'`);
   }
 
-  contextStack.forEach(context => {
-    if (!context.deps) context.deps = new Set();
-    context.deps.add(entry);
+  const context = contexts[0];
 
-    if (context.observed) {
-      if (!entry.contexts) entry.contexts = new Set();
-      entry.contexts.add(context);
-    }
-  });
+  if (context && !suspense.has(context)) {
+    context.deps.add(entry);
+    entry.contexts.add(context);
+  }
 
   if (
-    ((validate && validate(entry.value)) || !validate) &&
-    entry.checksum &&
-    entry.checksum === calculateChecksum(entry)
+    !suspense.has(target) &&
+    entry.resolved &&
+    ((validate && validate(entry.value)) || !validate)
   ) {
     return entry.value;
   }
 
   try {
-    contextStack.add(entry);
+    contexts.unshift(entry);
 
-    if (entry.observed && entry.deps && entry.deps.size) {
-      entry.deps.forEach(depEntry => {
-        /* istanbul ignore else */
-        if (depEntry.contexts) depEntry.contexts.delete(entry);
-      });
-    }
+    entry.deps.forEach(depEntry => {
+      depEntry.contexts.delete(entry);
+    });
+    entry.deps.clear();
 
-    entry.deps = undefined;
     const nextValue = getter(target, entry.value);
 
-    if (entry.deps) {
-      entry.deps.forEach(depEntry => {
-        restoreDeepDeps(entry, depEntry.deps);
-      });
-    }
-
     if (nextValue !== entry.value) {
-      entry.state += 1;
       entry.value = nextValue;
-
       dispatchDeep(entry);
     }
 
-    entry.checksum = calculateChecksum(entry);
-    contextStack.delete(entry);
-  } catch (e) {
-    entry.checksum = 0;
+    entry.resolved = !suspense.has(target);
 
-    contextStack.delete(entry);
-    contextStack.forEach(context => {
+    contexts.shift();
+  } catch (e) {
+    contexts.shift();
+
+    entry.resolved = false;
+
+    if (context && !suspense.has(context)) {
       context.deps.delete(entry);
-      if (context.observed) entry.contexts.delete(context);
-    });
+      entry.contexts.delete(context);
+    }
 
     throw e;
   }
@@ -144,10 +107,7 @@ export function set(target, key, setter, value) {
   const newValue = setter(target, value, entry.value);
 
   if (newValue !== entry.value) {
-    entry.checksum = 0;
-    entry.state += 1;
     entry.value = newValue;
-
     dispatchDeep(entry);
   }
 }
@@ -157,7 +117,11 @@ function deleteEntry(entry) {
   if (!gcList.size) {
     requestAnimationFrame(() => {
       gcList.forEach(e => {
-        if (!e.contexts || (e.contexts && e.contexts.size === 0)) {
+        if (e.contexts.size === 0) {
+          e.deps.forEach(depEntry => {
+            depEntry.contexts.delete(e);
+          });
+
           const targetMap = entries.get(e.target);
           targetMap.delete(e.key);
         }
@@ -170,19 +134,19 @@ function deleteEntry(entry) {
 }
 
 function invalidateEntry(entry, clearValue, deleteValue) {
-  entry.checksum = 0;
-  entry.state += 1;
-
   dispatchDeep(entry);
-  if (deleteValue) deleteEntry(entry);
 
   if (clearValue) {
     entry.value = undefined;
   }
+
+  if (deleteValue) {
+    deleteEntry(entry);
+  }
 }
 
 export function invalidate(target, key, clearValue, deleteValue) {
-  if (contextStack.size) {
+  if (contexts.length) {
     throw Error(
       `Invalidating property in chain of get calls is forbidden: '${key}'`,
     );
@@ -193,7 +157,7 @@ export function invalidate(target, key, clearValue, deleteValue) {
 }
 
 export function invalidateAll(target, clearValue, deleteValue) {
-  if (contextStack.size) {
+  if (contexts.length) {
     throw Error(
       "Invalidating all properties in chain of get calls is forbidden",
     );
@@ -209,33 +173,50 @@ export function invalidateAll(target, clearValue, deleteValue) {
 
 export function observe(target, key, getter, fn) {
   const entry = getEntry(target, key);
-  entry.observed = true;
-
   let lastValue;
-  const unsubscribe = emitter.subscribe(entry, () => {
-    const value = get(target, key, getter);
-    if (value !== lastValue) {
-      fn(target, value, lastValue);
-      lastValue = value;
+
+  return emitter.subscribe(entry, () => {
+    if (!suspense.has(target)) {
+      const value = get(target, key, getter);
+      if (value !== lastValue) {
+        fn(target, value, lastValue);
+        lastValue = value;
+      }
     }
   });
+}
 
-  if (entry.deps) {
-    entry.deps.forEach(depEntry => {
-      /* istanbul ignore else */
-      if (!depEntry.contexts) depEntry.contexts = new Set();
-      depEntry.contexts.add(entry);
+const clearTargets = new Set();
+export function clear(target) {
+  if (clearTargets.size === 0) {
+    requestAnimationFrame(() => {
+      clearTargets.forEach(t => {
+        const targetMap = entries.get(t);
+        if (targetMap) {
+          targetMap.forEach(entry => {
+            entry.resolved = false;
+
+            entry.deps.forEach(depEntry => {
+              depEntry.contexts.delete(entry);
+            });
+
+            entry.deps.clear();
+            entry.contexts.clear();
+          });
+        }
+      });
+
+      clearTargets.clear();
     });
   }
+  clearTargets.add(target);
+}
 
-  return function unobserve() {
-    unsubscribe();
-    entry.observed = false;
-    if (entry.deps && entry.deps.size) {
-      entry.deps.forEach(depEntry => {
-        /* istanbul ignore else */
-        if (depEntry.contexts) depEntry.contexts.delete(entry);
-      });
-    }
-  };
+export function suspend(target) {
+  suspense.add(target);
+}
+
+export function unsuspend(target) {
+  suspense.delete(target);
+  clearTargets.delete(target);
 }

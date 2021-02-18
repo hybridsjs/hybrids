@@ -19,10 +19,12 @@ function execute() {
 }
 
 export function dispatch(target) {
-  if (!queue.size) {
-    requestAnimationFrame(execute);
+  if (callbacks.has(target)) {
+    if (!queue.size) {
+      requestAnimationFrame(execute);
+    }
+    queue.add(target);
   }
-  queue.add(target);
 }
 
 export function subscribe(target, cb) {

@@ -155,9 +155,13 @@ function defineElement(tagName, hybridsOrConstructor) {
           this[key] = value;
         }
       }
+
+      cache.suspend(this);
     }
 
     connectedCallback() {
+      cache.unsuspend(this);
+
       const callbacks = callbacksMap.get(Hybrid);
       const list = [];
 
@@ -174,6 +178,9 @@ function defineElement(tagName, hybridsOrConstructor) {
       for (let index = 0; index < list.length; index += 1) {
         list[index]();
       }
+
+      cache.suspend(this);
+      cache.clear(this);
     }
   }
 
