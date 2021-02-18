@@ -147,6 +147,16 @@ The process is done in the following order:
     { render: render(() => {...}) }
     ```
 
+1. **`content` key descriptor with value as a function** translates to [`render`](../core-features/render.md) factory:
+
+    ```javascript
+    import { render } from 'hybrids';
+
+    { content: () => { ... } }
+    // Translates to:
+    { content: render(() => {...}, { shadowRoot: false }) }
+    ```
+
 2. **The descriptor value as a function** translates to the descriptor with get method:
 
     ```javascript

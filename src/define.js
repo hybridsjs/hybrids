@@ -6,8 +6,38 @@ import { pascalToDash, deferred } from "./utils.js";
 
 const defaultMethod = (host, value) => value;
 
-const callbacksMap = new WeakMap();
+export const callbacksMap = new WeakMap();
 const propsMap = new WeakMap();
+
+function translate(key, desc) {
+  const type = typeof desc;
+
+  let config;
+
+  if (type === "function") {
+    switch (key) {
+      case "render":
+        config = render(desc);
+        break;
+      case "content":
+        config = render(desc, { shadowRoot: false });
+        break;
+      default:
+        config = { get: desc };
+    }
+  } else if (type !== "object" || desc === null || Array.isArray(desc)) {
+    config = property(desc);
+  } else {
+    config = {
+      get: desc.get || defaultMethod,
+      set: desc.set || (!desc.get && defaultMethod) || undefined,
+      connect: desc.connect,
+      observe: desc.observe,
+    };
+  }
+
+  return config;
+}
 
 function compile(Hybrid, descriptors) {
   Hybrid.hybrids = descriptors;
@@ -19,23 +49,7 @@ function compile(Hybrid, descriptors) {
   propsMap.set(Hybrid, props);
 
   props.forEach(key => {
-    const desc = descriptors[key];
-    const type = typeof desc;
-
-    let config;
-
-    if (type === "function") {
-      config = key === "render" ? render(desc) : { get: desc };
-    } else if (type !== "object" || desc === null || Array.isArray(desc)) {
-      config = property(desc);
-    } else {
-      config = {
-        get: desc.get || defaultMethod,
-        set: desc.set || (!desc.get && defaultMethod) || undefined,
-        connect: desc.connect,
-        observe: desc.observe,
-      };
-    }
+    const config = translate(key, descriptors[key]);
 
     Object.defineProperty(Hybrid.prototype, key, {
       get: function get() {
@@ -104,7 +118,7 @@ function update(Hybrid, lastHybrids) {
 
 const disconnects = new WeakMap();
 
-function defineElement(tagName, hybridsOrConstructor) {
+export function defineElement(tagName, hybridsOrConstructor) {
   const type = typeof hybridsOrConstructor;
   if (!hybridsOrConstructor || (type !== "object" && type !== "function")) {
     throw TypeError(`Second argument must be an object or a function: ${type}`);

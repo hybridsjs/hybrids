@@ -268,6 +268,34 @@ describe("define:", () => {
     });
   });
 
+  describe("for content key", () => {
+    it("uses render factory if value is a function", done => {
+      define("test-define-content", {
+        content: () => () => {},
+      });
+
+      const tree = test("<test-define-content></test-define-content>");
+
+      tree(el => {
+        expect(typeof el.content).toBe("function");
+      })(done);
+    });
+
+    it("does not use render factory if value is not a function", done => {
+      define("test-define-content-other", {
+        content: [],
+      });
+
+      const tree = test(
+        "<test-define-content-other></test-define-content-other>",
+      );
+
+      tree(el => {
+        expect(typeof el.content).toBe("object");
+      })(done);
+    });
+  });
+
   describe("for array descriptor", () => {
     const one = [];
 

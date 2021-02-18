@@ -45,27 +45,9 @@ If you use render factory for wrapping other UI library, remember to access requ
 >
 > [![Edit <lit-counter> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/lit-counter-web-component-built-with-hybrids-library-qoqb5?file=/src/LitCounter.js)
 
-### Translation
-
-You can omit explicit usage of the render factory by one of the [translation](../getting-started/concepts.md#translation) rules. If the `render` property definition is a function, the render factory will be used implicitly:
-
-```javascript
-import { html } from 'hybrids';
-
-const MyElement = {
-  value: 1,
-  // Equals to render: render(({ value }) => html...
-  render: ({ value }) => html`<div>${value}</div>`,
-};
-```
-
 ### Shadow DOM
 
-The factory by default uses [Shadow DOM](https://developer.mozilla.org/docs/Web/Web_Components/Using_shadow_DOM) as a `target`, which is initialized when the component is rendered for the first time. Usually, you can omit `options` object and use [translation](../core-concepts/translation.md) rule for the render factory (described above).
-
-Although, If your element does not require [style encapsulation](https://developers.google.com/web/fundamentals/web-components/shadowdom#styling) and [children distribution](https://developers.google.com/web/fundamentals/web-components/shadowdom#composition_slot) (`<slot>` element can be used only inside of the `shadowRoot`) you can disable Shadow DOM in the `options` object. Then, `target` argument of the update function becomes a `host`. As a result, your template will replace children's content of the custom element.
-
-Keep in mind that the `options` can be passed only when `render(fn, options)` factory function is called explicitly:
+The factory by default uses [Shadow DOM](https://developer.mozilla.org/docs/Web/Web_Components/Using_shadow_DOM) as a `target`, which is initialized when the component is rendered for the first time. Although, If your element does not require [style encapsulation](https://developers.google.com/web/fundamentals/web-components/shadowdom#styling) and [children distribution](https://developers.google.com/web/fundamentals/web-components/shadowdom#composition_slot) (`<slot>` element can be used only inside of the `shadowRoot`) you can disable Shadow DOM in the `options` object. Then, `target` argument of the update function becomes a `host`.
 
 ```javascript
 import { html, render } from 'hybrids';
@@ -76,6 +58,80 @@ const MyElement = {
     ({ value }) => html`<div>${value}</div>`,
     { shadowRoot: false },
   ),
+};
+```
+
+### Translation
+
+You can omit explicit usage of the render factory by two of the [translation](../getting-started/concepts.md#translation) rules:
+
+1. The `render` property definition is a function, the render factory renders into the Shadow DOM
+
+    ```javascript
+    import { html } from 'hybrids';
+
+    const MyElement = {
+      value: 1,
+      // Equals to render: render(({ value }) => html...
+      render: ({ value }) => html`<div>${value}</div>`,
+    };
+    ```
+
+2. If the `content` property definition is a function, the render factory renders to the host element content
+
+    ```javascript
+    import { html } from 'hybrids';
+
+    const MyElement = {
+      value: 1,
+      // Equals to content: render(({ value }) => ..., { shadowRoot: false }),
+      content: ({ value }) => html`<div>${value}</div>`,
+    };
+    ```
+
+### Multiple Usage
+
+The render factory can be used multiple times on the same host element. This feature can be useful for building web components with hidden layout structure and data content in the light DOM. The two translation rules makes it super simple:
+
+```javascript
+import { store } from "hybrids";
+
+const Data = {
+  value: "My data",
+};
+
+const MyElement = {
+  data: store(Data),
+  title: "",
+  render: ({ title }) => html`
+    <h1>${title}</h1>
+    <div><slot></slot></div>
+  `,
+  content: ({ data }) => html`
+    ${store.ready(data) && html`<p>${data.value}</p>`}
+  `,
+}
+```
+
+In the result, in the Light DOM instance of the above element will look like this:
+
+```html
+<my-element>
+ <p>My data</p>
+</my-element>
+```
+
+Notice that the `<p>` element will be putted inside of the `<div>` element of the host `shadowRoot`.
+
+If the layout structure repeats often, you define it outside of the component definition:
+
+```javascript
+import ColumnLayout from "./layouts/column.js";
+
+const MyElement = {
+  ...ColumnLayout,
+  data: store(Data),
+  content: ({ data }) => ...,
 };
 ```
 
