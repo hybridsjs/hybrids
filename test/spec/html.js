@@ -771,6 +771,57 @@ describe("html:", () => {
     });
   });
 
+  describe("element value expression", () => {
+    const render = value =>
+      html`
+        <div>${value}</div>
+      `;
+
+    let el1;
+    let el2;
+
+    beforeEach(() => {
+      el1 = document.createElement("div");
+      el1.textContent = "one";
+      el2 = document.createElement("div");
+      el2.textContent = "two";
+    });
+
+    it("renders an element", () => {
+      render(el1)({}, fragment);
+      expect(fragment.children[0].innerHTML).toEqual("<div>one</div>");
+    });
+
+    it("removes an element", () => {
+      render(el1)({}, fragment);
+      render()({}, fragment);
+
+      expect(fragment.children[0].innerHTML).toEqual("");
+    });
+
+    it("replaces an element with another element", () => {
+      render(el1)({}, fragment);
+      render(el2)({}, fragment);
+
+      expect(fragment.children[0].innerHTML).toEqual("<div>two</div>");
+    });
+
+    it("replaces an element with nested template", () => {
+      render(el1)({}, fragment);
+      // prettier-ignore
+      render(html`<span>value</span>`)({}, fragment);
+
+      expect(fragment.children[0].innerHTML).toEqual("<span>value</span>");
+    });
+
+    it("does not replace an element when it is the same", () => {
+      render(el1)({}, fragment);
+      render(el1)({}, fragment);
+
+      expect(fragment.children[0].innerHTML).toEqual("<div>one</div>");
+    });
+  });
+
   describe("set helper", () => {
     let host;
 
