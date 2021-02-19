@@ -304,7 +304,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
     const data = dataMap.get(target, { type: "function" });
 
     if (template !== data.template) {
-      if (data.template || target.nodeType === Node.ELEMENT_NODE) {
+      if (data.template || target.nodeType !== Node.TEXT_NODE) {
         removeTemplate(target);
       }
 
