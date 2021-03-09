@@ -393,7 +393,7 @@ function setupModel(Model, nested) {
                       resultModel = nestedData;
                     } else {
                       resultModel = nestedConfig.create(nestedData);
-                      sync(nestedConfig, resultModel.id, resultModel);
+                      sync(nestedConfig, resultModel.id, resultModel, true);
                     }
                   }
                 } else {
