@@ -3,106 +3,160 @@ export = hybrids;
 export as namespace hybrids;
 
 declare namespace hybrids {
-  interface Descriptor<E extends HTMLElement> {
-    get?(host: E, lastValue: any): any;
-    set?(host: E, value: any, lastValue: any): any;
-    connect?(host: E, key: string, invalidate: Function): Function | void;
-    observe?(host: E, value: any, lastValue: any): void;
+  interface Descriptor<E, V> {
+    get?(host: E & HTMLElement, lastValue: V): V;
+    set?(host: E & HTMLElement, value: any, lastValue: V): V;
+    connect?(
+      host: E & HTMLElement,
+      key: keyof E,
+      invalidate: Function,
+    ): Function | void;
+    observe?(host: E & HTMLElement, value: any, lastValue: any): void;
   }
 
-  type Property<E extends HTMLElement> =
+  type DescriptorValue<D> = D extends (...args: any) => any
+    ? ReturnType<D> extends Descriptor<infer E, infer V>
+      ? V
+      : never
+    : D extends Descriptor<infer E, infer V>
+    ? V
+    : never;
+
+  type Property<E, V> =
     | string
     | number
     | boolean
     | null
     | undefined
     | any[]
-    | Descriptor<E>;
+    | Descriptor<E, V>
+    | Descriptor<E, V>["get"];
 
-  interface UpdateFunction<E extends HTMLElement> {
-    (host: E, target: ShadowRoot | Text | E): void;
+  interface UpdateFunction<E> {
+    (host: E & HTMLElement, target: ShadowRoot | Text | E): void;
   }
 
-  interface RenderFunction<E extends HTMLElement> {
-    (host: E) : UpdateFunction<E>;
+  interface RenderFunction<E> {
+    (host: E & HTMLElement): UpdateFunction<E>;
   }
 
-  type Hybrids<E extends HTMLElement> =
-   { render?: RenderFunction<E> | Property<E> }
-   & { [property in keyof E]?: Property<E> | Descriptor<E>['get'] }
+  type Hybrids<E> = {
+    render?: E extends { render: infer V } ? Property<E, V> : RenderFunction<E>;
+  } & {
+    [property in keyof Omit<E, keyof HTMLElement>]: Property<E, E[property]>;
+  };
 
   interface MapOfHybridsOrConstructors {
-    [tagName: string]: Hybrids<any> | typeof HTMLElement,
+    [tagName: string]: Hybrids<any> | typeof HTMLElement;
   }
 
   type MapOfConstructors<T> = {
     [tagName in keyof T]: typeof HTMLElement;
-  }
+  };
 
-  interface HybridElement<E extends HTMLElement> {
-    new(): E;
+  interface HybridElement<E> {
+    new (): E;
     prototype: E;
   }
 
   /* Define */
 
-  function define<E extends HTMLElement>(tagName: string | null, hybridsOrConstructor: Hybrids<E> | typeof HTMLElement): HybridElement<E>;
-  function define(mapOfHybridsOrConstructors: MapOfHybridsOrConstructors): MapOfConstructors<typeof mapOfHybridsOrConstructors>;
+  function define<E>(
+    tagName: string | null,
+    hybridsOrConstructor: Hybrids<E> | typeof HTMLElement,
+  ): HybridElement<E & HTMLElement>;
+  function define(
+    mapOfHybridsOrConstructors: MapOfHybridsOrConstructors,
+  ): MapOfConstructors<typeof mapOfHybridsOrConstructors>;
 
   /* Factories */
 
-  function property<E extends HTMLElement>(value: any, connect?: Descriptor<E>['connect']): Descriptor<E>;
-  function parent<E extends HTMLElement, T extends HTMLElement>(hybridsOrFn: Hybrids<T> | ((hybrids: Hybrids<E>) => boolean)): Descriptor<E>;
-  function children<E extends HTMLElement, T extends HTMLElement>(hybridsOrFn: (Hybrids<T> | ((hybrids: Hybrids<E>) => boolean)), options? : { deep?: boolean, nested?: boolean }): Descriptor<E>;
-  function render<E extends HTMLElement>(fn: RenderFunction<E>, customOptions?: { shadowRoot?: boolean | object }): Descriptor<E>;
+  function property<E, V>(
+    value: V,
+    connect?: Descriptor<E, V>["connect"],
+  ): Descriptor<
+    E,
+    V extends (...args: any) => any
+      ? ReturnType<V>
+      : V extends undefined
+      ? any
+      : V
+  >;
+  function parent<E, T>(
+    hybridsOrFn: Hybrids<T> | ((hybrids: Hybrids<E>) => boolean),
+  ): Descriptor<E, T>;
+  function children<E, T>(
+    hybridsOrFn: Hybrids<T> | ((hybrids: Hybrids<E>) => boolean),
+    options?: { deep?: boolean; nested?: boolean },
+  ): Descriptor<E, T>;
+  function render<E>(
+    fn: RenderFunction<E>,
+    customOptions?: { shadowRoot?: boolean | object },
+  ): Descriptor<E, Function>;
 
   /* Store */
 
   type Model<M> = {
-    [property in keyof Omit<M, "id">]: M[property] | ((model: M) => any);
+    [property in keyof Omit<M, "id">]: M[property] extends Array<infer T>
+      ? [Model<T>]
+      : M[property] extends Object
+      ? Model<M[property]>
+      : M[property] | ((model: M) => M[property]);
   } & {
     id?: true;
-    __store__connect__?: 
-      | Storage<M> 
-      | ((id?: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>);
+    __store__connect__?:
+      | Storage<M>
+      | ((
+          id?: ModelIdentifier,
+        ) => StorageResult<M> | Promise<StorageResult<M>>);
   };
-  
-  type ModelIdentifier = 
-    | string 
-    | undefined 
-    | { 
-      [property: string]: 
-       | string 
-       | boolean 
-       | number 
-       | null;
-    };
-  
+
+  type ModelIdentifier =
+    | string
+    | undefined
+    | {
+        [property: string]: string | boolean | number | null;
+      };
+
   type ModelValues<M> = {
     [property in keyof M]?: M[property];
-  }
+  };
 
   type StorageResult<M> = M | null;
 
   type Storage<M> = {
     cache?: boolean | number;
-    get?: (id?: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>;
-    set?: (id: ModelIdentifier, values: M | null, keys: [keyof M]) => StorageResult<M> | Promise<StorageResult<M>>;
-    list?: (id: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>;
-  }
+    get?: (
+      id?: ModelIdentifier,
+    ) => StorageResult<M> | Promise<StorageResult<M>>;
+    set?: (
+      id: ModelIdentifier,
+      values: M | null,
+      keys: [keyof M],
+    ) => StorageResult<M> | Promise<StorageResult<M>>;
+    list?: (
+      id: ModelIdentifier,
+    ) => StorageResult<M> | Promise<StorageResult<M>>;
+  };
 
-  type StoreOptions<E> = 
+  type StoreOptions<E> =
     | keyof E
     | ((host: E) => string)
-    | { id?: keyof E, draft: boolean };
+    | { id?: keyof E; draft: boolean };
 
-  function store<E extends HTMLElement, M>(Model: Model<M>, options?: StoreOptions<E>): Descriptor<E>;
+  function store<E, M>(
+    Model: Model<M>,
+    options?: StoreOptions<E>,
+  ): Descriptor<E, M>;
 
   namespace store {
     const connect = "__store__connect__";
 
     function get<M>(Model: Model<M>, id: ModelIdentifier): M;
-    function set<M>(model: Model<M> | M, values: ModelValues<M> | null): Promise<M>;
+    function set<M>(
+      model: Model<M> | M,
+      values: ModelValues<M> | null,
+    ): Promise<M>;
     function clear<M>(model: Model<M> | M, clearValue?: boolean): void;
 
     function pending<M>(model: M): false | Promise<M>;
@@ -115,41 +169,73 @@ declare namespace hybrids {
       (value: string | number, key: string, model: M): string | boolean | void;
     }
 
-    function value<M>(defaultValue: string, validate?: ValidateFunction<M> | RegExp, errorMessage?: string): string;
-    function value<M>(defaultValue: number, validate?: ValidateFunction<M> | RegExp, errorMessage?: string): number;
+    function value<M>(
+      defaultValue: string,
+      validate?: ValidateFunction<M> | RegExp,
+      errorMessage?: string,
+    ): string;
+    function value<M>(
+      defaultValue: number,
+      validate?: ValidateFunction<M> | RegExp,
+      errorMessage?: string,
+    ): number;
   }
 
   /* Utils */
 
-  function dispatch(host: EventTarget, eventType: string, options?: CustomEventInit): boolean;
+  function dispatch(
+    host: EventTarget,
+    eventType: string,
+    options?: CustomEventInit,
+  ): boolean;
 
   /* Template Engine */
 
-  interface UpdateFunctionWithMethods<E extends HTMLElement> extends UpdateFunction<E> {
+  interface UpdateFunctionWithMethods<E> extends UpdateFunction<E> {
     define: (elements: MapOfHybridsOrConstructors) => this;
     key: (id: any) => this;
     style: (...styles: Array<string | CSSStyleSheet>) => this;
   }
 
-  interface EventHandler<E extends HTMLElement> {
-    (host: E, event?: Event) : any;
+  interface EventHandler<E> {
+    (host: E & HTMLElement, event?: Event): any;
   }
 
-  function html<E extends HTMLElement>(parts: TemplateStringsArray, ...args: unknown[]): UpdateFunctionWithMethods<E>;
+  function html<E>(
+    parts: TemplateStringsArray,
+    ...args: unknown[]
+  ): UpdateFunctionWithMethods<E>;
 
   namespace html {
-    function set<E extends HTMLElement>(property: keyof E, valueOrPath?: any): EventHandler<E>;
-    function set<E extends HTMLElement, M>(property: Model<M>, valueOrPath: string | null): EventHandler<E>;
+    function set<E>(property: keyof E, valueOrPath?: any): EventHandler<E>;
+    function set<E, M>(
+      property: Model<M>,
+      valueOrPath: string | null,
+    ): EventHandler<E>;
 
-    function resolve<E extends HTMLElement>(promise: Promise<UpdateFunction<E>>, placeholder?: UpdateFunction<E>, delay?: number): UpdateFunction<E>;
+    function resolve<E>(
+      promise: Promise<UpdateFunction<E>>,
+      placeholder?: UpdateFunction<E>,
+      delay?: number,
+    ): UpdateFunction<E>;
   }
 
-  function svg<E extends HTMLElement>(parts: TemplateStringsArray, ...args: unknown[]): UpdateFunctionWithMethods<E>;
+  function svg<E>(
+    parts: TemplateStringsArray,
+    ...args: unknown[]
+  ): UpdateFunctionWithMethods<E>;
 
   namespace svg {
-    function set<E extends HTMLElement>(property: keyof E, valueOrPath?: any): EventHandler<E>;
-    function set<E extends HTMLElement, M>(property: Model<M>, valueOrPath: string | null): EventHandler<E>;
+    function set<E>(property: keyof E, valueOrPath?: any): EventHandler<E>;
+    function set<E, M>(
+      property: Model<M>,
+      valueOrPath: string | null,
+    ): EventHandler<E>;
 
-    function resolve<E extends HTMLElement>(promise: Promise<UpdateFunction<E>>, placeholder?: UpdateFunction<E>, delay?: number) : UpdateFunction<E>;
+    function resolve<E>(
+      promise: Promise<UpdateFunction<E>>,
+      placeholder?: UpdateFunction<E>,
+      delay?: number,
+    ): UpdateFunction<E>;
   }
 }
