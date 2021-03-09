@@ -1136,6 +1136,8 @@ describe("html:", () => {
       const container = fragment.attachShadow({ mode: "open" });
       render.style("@import 'style.css'; div { color: red }")({}, container);
 
+      getComputedStyle(container.children[0]);
+
       resolveTimeout(() => {
         expect(container.children.length).toBe(2);
         expect(getComputedStyle(container.children[0]).color).toBe(
