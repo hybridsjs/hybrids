@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0](https://github.com/hybridsjs/hybrids/compare/v4.3.4...v5.0.0) (2021-03-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **define:** `define()` no longer supports defining external custom elements with a custructor parameter. Use `customElements.define()` API directly.
+* **define:** `content` property set as a function must be wrapped to work as before:
+```js
+const MyElement = {
+  // from
+  content: () => { ... },
+  // to
+  content: {
+    get: () => { ... },
+  },
+};
+```
+* `/esm` and `/lib` paths are no longer generated - use `/src` with ES2015+ syntax
+* `/dist` path is no longer generated - use [unpkg.com/hybrids](https://unpkg.com/hybrids) in module scripts for direct usage
+* `process.env.NODE_ENV` is removed from the source code - no more prod/dev modes
+
+### Features
+
+* **define:** content property translates to render factory with Shadow DOM turned off ([90c0f8c](https://github.com/hybridsjs/hybrids/commit/90c0f8c462985d7f3d9cfab5fd4079629482eb0f))
+* **define:** remove constructor support in define method ([d91eec7](https://github.com/hybridsjs/hybrids/commit/d91eec78910347864123b76532eae0a794838b64))
+* **html:** support for nodes in expressions ([636872a](https://github.com/hybridsjs/hybrids/commit/636872a04a14a5418b8c7f5b130b788542106156))
+* Drop support for IE11 ([5cf1e3f](https://github.com/hybridsjs/hybrids/commit/5cf1e3fb4fa3b38750a6d12659e22a9954b6e402))
+
+
+### Bug Fixes
+
+* **cache:** simplified resolving algorhythm with suspense feature ([f9ed988](https://github.com/hybridsjs/hybrids/commit/f9ed9885d14fe708ba9ea6b7f06a526cc9406097))
+* **html:** remove template instance from the shadowRoot ([fb056cb](https://github.com/hybridsjs/hybrids/commit/fb056cbe02a851e74303bdda8c81ba47effa32e1))
+* **store:** invalidate list type when nested model is fetched ([18d3ad7](https://github.com/hybridsjs/hybrids/commit/18d3ad73fac4780b4f89e28276c274340ab91d05))
+* **store:** rewrite id from model to draft on submit ([81d833f](https://github.com/hybridsjs/hybrids/commit/81d833f861653894079433f8849b79c337e13222))
+* **typescript:** simplified types ([2b4f65f](https://github.com/hybridsjs/hybrids/commit/2b4f65f59ffa4e0e377d757aa4206ea9212abcd3))
+
 ### [4.3.4](https://github.com/hybridsjs/hybrids/compare/v4.3.3...v4.3.4) (2021-01-14)
 
 
