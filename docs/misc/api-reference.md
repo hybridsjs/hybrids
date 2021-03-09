@@ -5,23 +5,23 @@ The following functions are a public API of the hybrids library available as nam
 ## define
 
 ```typescript
-define(tagName: string, descriptorsOrConstructor: Object | Function): Wrapper
+define(tagName: string, descriptors: Object): Wrapper
 ```
 
 * **arguments**:
   * `tagName` - a custom element tag name,
-  * `descriptorsOrConstructor` - an object with a map of hybrid property descriptors or constructor
-* **returns**: 
+  * `descriptors` - an object with a map of hybrid property descriptors
+* **returns**:
   * `Wrapper` - custom element constructor (extends `HTMLElement`)
 
 ```typescript
-define({ tagName: descriptorsOrConstructor, ... }): { tagName: Wrapper, ... }
+define({ tagName: descriptors, ... }): { tagName: Wrapper, ... }
 ```
 
 * **arguments**:
   * `tagName` - a custom element tag name in pascal case or camel case,
-  * `descriptorsOrConstructor` - an object with a map of hybrid property descriptors or constructor
-* **returns**: 
+  * `descriptors` - an object with a map of hybrid property descriptors
+* **returns**:
   * `{ tagName: Wrapper, ...}` - a map of custom element constructors (extends `HTMLElement`)
 
 ## property

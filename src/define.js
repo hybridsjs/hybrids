@@ -118,24 +118,17 @@ function update(Hybrid, lastHybrids) {
 
 const disconnects = new WeakMap();
 
-export function defineElement(tagName, hybridsOrConstructor) {
-  const type = typeof hybridsOrConstructor;
-  if (!hybridsOrConstructor || (type !== "object" && type !== "function")) {
-    throw TypeError(`Second argument must be an object or a function: ${type}`);
+export function defineElement(tagName, hybrids) {
+  const type = typeof hybrids;
+  if (!hybrids || type !== "object") {
+    throw TypeError(`Second argument must be an object: ${type}`);
   }
 
   if (tagName !== null) {
     const CustomElement = window.customElements.get(tagName);
 
-    if (type === "function") {
-      if (CustomElement !== hybridsOrConstructor) {
-        return window.customElements.define(tagName, hybridsOrConstructor);
-      }
-      return CustomElement;
-    }
-
     if (CustomElement) {
-      if (CustomElement.hybrids === hybridsOrConstructor) {
+      if (CustomElement.hybrids === hybrids) {
         return CustomElement;
       }
       if (CustomElement.hybrids) {
@@ -145,13 +138,13 @@ export function defineElement(tagName, hybridsOrConstructor) {
 
         const lastHybrids = CustomElement.hybrids;
 
-        compile(CustomElement, hybridsOrConstructor);
+        compile(CustomElement, hybrids);
         update(CustomElement, lastHybrids);
 
         return CustomElement;
       }
 
-      return window.customElements.define(tagName, hybridsOrConstructor);
+      return window.customElements.define(tagName, HTMLElement);
     }
   }
 
@@ -198,7 +191,7 @@ export function defineElement(tagName, hybridsOrConstructor) {
     }
   }
 
-  compile(Hybrid, hybridsOrConstructor);
+  compile(Hybrid, hybrids);
 
   if (tagName !== null) {
     Object.defineProperty(Hybrid, "name", {

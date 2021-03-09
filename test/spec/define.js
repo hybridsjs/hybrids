@@ -3,7 +3,7 @@ import define from "../../src/define.js";
 import { invalidate } from "../../src/cache.js";
 
 describe("define:", () => {
-  it("throws when element constructor is not a function or an object", () => {
+  it("throws when element constructor is not an object", () => {
     expect(() => define("test-define-multiple", null)).toThrow();
   });
 
@@ -49,21 +49,6 @@ describe("define:", () => {
 
         done();
       });
-    });
-
-    it("defines custom elements constructor", () => {
-      class TestHtmlDefineExternalA extends HTMLElement {
-        constructor() {
-          super();
-          this.value = "test";
-        }
-      }
-
-      define({ TestHtmlDefineExternalA });
-      define({ TestHtmlDefineExternalA });
-
-      const el = document.createElement("test-html-define-external-a");
-      expect(el.value).toBe("test");
     });
 
     it("throws for invalid value", () => {
@@ -329,9 +314,9 @@ describe("define:", () => {
       </test-define-multiple>
     `);
 
-    it("throws when element is built with constructor", () => {
-      define("test-define-multiple-class", class extends HTMLElement {});
-      expect(() => define("test-define-multiple-class", {})).toThrow();
+    it("throws an error for replacing other custom element", () => {
+      customElements.define("test-define-multiple-other", HTMLElement);
+      expect(() => define("test-define-multiple-other", {})).toThrow();
     });
 
     it("returns the same custom element", () => {

@@ -4,7 +4,7 @@
 import { define } from 'hybrids';
 ```
 
-To define web components from a map of descriptors use custom `define()` function. To simplify using external custom elements with those created by the library, you can pass `constructor` instead of a plain object. For those, the `define()` function works exactly the same as the `customElements.define()` method.
+To define web components from a map of descriptors use custom `define()` function.
 
 ## Single Element
 
@@ -20,12 +20,12 @@ define('my-element', MyElement);
 ```
 
 ```typescript
-define(tagName: string | null, descriptorsOrConstructor: Object | Function): Wrapper
+define(tagName: string | null, descriptors: Object): Wrapper
 ```
 
 * **arguments**:
   * `tagName` - a custom element tag name or `null`,
-  * `descriptorsOrConstructor` - an object with a map of hybrid property descriptors or a constructor
+  * `descriptors` - an object with a map of hybrid property descriptors
 * **returns**:
   * `Wrapper` - custom element constructor (extends `HTMLElement`)
 
@@ -54,11 +54,11 @@ define({ MyElement, OtherElement, ... });
 ```
 
 ```typescript
-define({ tagName: descriptorsOrConstructor, ... }): { tagName: Wrapper, ... }
+define({ tagName: descriptors, ... }): { tagName: Wrapper, ... }
 ```
 
 * **arguments**:
   * `tagName` - a custom element tag name in pascal case or camel case,
-  * `descriptorsOrConstructor` - an object with a map of hybrid property descriptors or constructor
-* **returns**: 
+  * `descriptors` - an object with a map of hybrid property descriptors
+* **returns**:
   * `{ tagName: Wrapper, ...}` - a map of custom element constructors (extends `HTMLElement`)
