@@ -46,8 +46,8 @@ declare namespace hybrids {
     [property in keyof Omit<E, keyof HTMLElement>]: Property<E, E[property]>;
   };
 
-  interface MapOfHybridsOrConstructors {
-    [tagName: string]: Hybrids<any> | typeof HTMLElement;
+  interface MapOfHybrids {
+    [tagName: string]: Hybrids<any>;
   }
 
   type MapOfConstructors<T> = {
@@ -63,11 +63,11 @@ declare namespace hybrids {
 
   function define<E>(
     tagName: string | null,
-    hybridsOrConstructor: Hybrids<E> | typeof HTMLElement,
+    hybrids: Hybrids<E>,
   ): HybridElement<E & HTMLElement>;
   function define(
-    mapOfHybridsOrConstructors: MapOfHybridsOrConstructors,
-  ): MapOfConstructors<typeof mapOfHybridsOrConstructors>;
+    mapOfHybrids: MapOfHybrids,
+  ): MapOfConstructors<typeof mapOfHybrids>;
 
   /* Factories */
 
@@ -192,7 +192,7 @@ declare namespace hybrids {
   /* Template Engine */
 
   interface UpdateFunctionWithMethods<E> extends UpdateFunction<E> {
-    define: (elements: MapOfHybridsOrConstructors) => this;
+    define: (elements: MapOfHybrids) => this;
     key: (id: any) => this;
     style: (...styles: Array<string | CSSStyleSheet>) => this;
   }
