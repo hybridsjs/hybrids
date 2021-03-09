@@ -33,14 +33,14 @@ const customLaunchers = {
   SL_Safari: {
     base: "SauceLabs",
     browserName: "safari",
-    platform: "macOS 10.13",
+    platform: "macOS 11.00",
     version: "latest",
   },
   SL_Safari_1: {
     base: "SauceLabs",
     browserName: "safari",
-    platform: "macOS 10.13",
-    version: "latest-1",
+    platform: "macOS 10.15",
+    version: "latest",
   },
   SL_EDGE: {
     base: "SauceLabs",
@@ -57,13 +57,13 @@ const customLaunchers = {
   SL_iOS: {
     base: "SauceLabs",
     browserName: "iphone",
-    platform: "macOS 10.13",
+    platform: "macOS 11.00",
     version: "latest",
   },
   SL_iOS_1: {
     base: "SauceLabs",
     browserName: "iphone",
-    platform: "macOS 10.13",
+    platform: "macOS 11.00",
     version: "latest-1",
   },
 };
