@@ -42,6 +42,7 @@ declare namespace hybrids {
 
   type Hybrids<E> = {
     render?: E extends { render: infer V } ? Property<E, V> : RenderFunction<E>;
+    content?: E extends { render: infer V } ? Property<E, V> : RenderFunction<E>;
   } & {
     [property in keyof Omit<E, keyof HTMLElement>]: Property<E, E[property]>;
   };
@@ -152,7 +153,7 @@ declare namespace hybrids {
   namespace store {
     const connect = "__store__connect__";
 
-    function get<M>(Model: Model<M>, id: ModelIdentifier): M;
+    function get<M>(Model: Model<M>, id?: ModelIdentifier): M;
     function set<M>(
       model: Model<M> | M,
       values: ModelValues<M> | null,
