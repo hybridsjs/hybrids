@@ -372,6 +372,17 @@ describe("cache:", () => {
       expect(spy).toHaveBeenCalledTimes(2);
     });
 
+    it("disables saving deps", () => {
+      const getDep = () => get(target, "other", () => "value");
+
+      suspend(target);
+      get(target, "key", getDep);
+
+      const entry = getEntry(target, "key");
+
+      expect(entry.deps.size).toBe(0);
+    });
+
     it("disables observe callback", done => {
       get(target, "key", () => "value");
       suspend(target);

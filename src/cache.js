@@ -55,7 +55,7 @@ export function get(target, key, getter, validate) {
 
   const context = contexts[0];
 
-  if (context && !suspense.has(context)) {
+  if (context && !suspense.has(context.target)) {
     context.deps.add(entry);
     entry.contexts.add(context);
   }
