@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.1](https://github.com/hybridsjs/hybrids/compare/v5.0.0...v5.0.1) (2021-03-12)
+
+
+### Bug Fixes
+
+* **cache:** use target of entry in suspend condition ([86ddd19](https://github.com/hybridsjs/hybrids/commit/86ddd1987cb7fc2d30c179287c96887df7bbba79))
+* **types:** reflect removal of custructor support in define function ([d6742d6](https://github.com/hybridsjs/hybrids/commit/d6742d679fd9125f32045c06d6269c8abc0d18a1))
+* **typescript:** content type, optional id in store ([e03a63b](https://github.com/hybridsjs/hybrids/commit/e03a63bc72602f8dd3f21a40e953e68009378f36))
+
 ## [5.0.0](https://github.com/hybridsjs/hybrids/compare/v4.3.4...v5.0.0) (2021-03-09)
 
 
