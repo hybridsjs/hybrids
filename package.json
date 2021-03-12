@@ -62,5 +62,10 @@
       "eslint --cache --fix",
       "prettier --write"
     ]
+  },
+  "standard-version": {
+    "scripts": {
+      "precommit": "git add docs/CHANGELOG.md"
+    }
   }
 }
