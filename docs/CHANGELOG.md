@@ -9,16 +9,16 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **define:** `define()` no longer supports defining external custom elements with a custructor parameter. Use `customElements.define()` API directly.
 * **define:** `content` property set as a function must be wrapped to work as before:
-```js
-const MyElement = {
-  // from
-  content: () => { ... },
-  // to
-  content: {
-    get: () => { ... },
-  },
-};
-```
+  ```js
+  const MyElement = {
+    // from
+    content: () => { ... },
+    // to
+    content: {
+      get: () => { ... },
+    },
+  };
+  ```
 * `/esm` and `/lib` paths are no longer generated - use `/src` with ES2015+ syntax
 * `/dist` path is no longer generated - use [unpkg.com/hybrids](https://unpkg.com/hybrids) in module scripts for direct usage
 * `process.env.NODE_ENV` is removed from the source code - no more prod/dev modes
