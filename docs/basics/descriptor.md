@@ -131,7 +131,7 @@ If your property value only depends on other properties from the component, you 
 ```typescript
 connect: (host: Element, key: string, invalidate: Function) => {
   // attach event listeners, etc...
-  cb = () => {...};
+  const cb = () => {...};
   host.addEventListener('transitionend', cb);
 
   // return disconnect callback
