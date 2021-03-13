@@ -39,7 +39,7 @@ const MyElement = { ... };
 export default define(null, MyElement);
 
 // customer
-import { MyElement } from "components-library";
+import MyElement from "components-library";
 customElements.define("my-super-element", MyElement);
 ```
 
