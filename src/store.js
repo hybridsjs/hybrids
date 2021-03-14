@@ -3,10 +3,16 @@ import * as cache from "./cache.js";
 import { storePointer } from "./utils.js";
 
 export const connect = `__store__connect__${Date.now()}__`;
+
 const definitions = new WeakMap();
+const stales = new WeakMap();
 
 function resolve(config, model, lastModel) {
-  if (lastModel) definitions.set(lastModel, null);
+  if (lastModel) {
+    definitions.set(lastModel, null);
+    stales.set(lastModel, model);
+  }
+
   definitions.set(model, config);
 
   return model;
@@ -779,13 +785,19 @@ function getValidationError(errors) {
 
 function set(model, values = {}) {
   let config = definitions.get(model);
-  const isInstance = !!config;
+
+  if (config === null) {
+    model = stales.get(model);
+    config = definitions.get(model);
+  }
 
   if (config === null) {
     throw Error(
       "Provided model instance has expired. Haven't you used stale value?",
     );
   }
+
+  const isInstance = !!config;
 
   if (!config) config = bootstrap(model);
 

@@ -259,8 +259,10 @@ describe("store:", () => {
     it("throws when model has expired", done => {
       promise
         .then(model =>
-          store.set(model, { string: "" }).then(() => {
-            expect(() => store.set(model, { string: "" })).toThrow();
+          store.set(model, { string: "" }).then(newModel => {
+            store.set(newModel, { string: "other" }).then(() => {
+              expect(() => store.set(model, { string: "" })).toThrow();
+            });
           }),
         )
         .then(done);
@@ -594,6 +596,17 @@ describe("store:", () => {
           done();
         }),
       ));
+
+    it("updates model using stale instance", done => {
+      promise.then(model => {
+        store.set(model, { string: "test" }).then(() => {
+          store.set(model, { string: "other" }).then(finalModel => {
+            expect(finalModel.string).toBe("other");
+            done();
+          });
+        });
+      });
+    });
   });
 
   describe("clear()", () => {
@@ -708,12 +721,12 @@ describe("store:", () => {
 
       store
         .set(Model, {})
-        .then(model => {
-          return store.set(model, { value: "" }).catch(e => {
+        .then(model =>
+          store.set(model, { value: "" }).catch(e => {
             expect(e.errors.value).toBeDefined();
             expect(store.error(model)).toBe(e);
-          });
-        })
+          }),
+        )
         .then(done);
     });
 
@@ -733,12 +746,12 @@ describe("store:", () => {
 
       store
         .set(Model, {})
-        .then(model => {
-          return store.set(model, { value: 0 }).catch(e => {
+        .then(model =>
+          store.set(model, { value: 0 }).catch(e => {
             expect(e.errors.value).toBeDefined();
             expect(store.error(model)).toBe(e);
-          });
-        })
+          }),
+        )
         .then(done);
     });
 
@@ -1097,8 +1110,8 @@ describe("store:", () => {
 
         store
           .pending(draftModel)
-          .then(nextDraftModel => {
-            return store.submit(nextDraftModel).then(targetModel => {
+          .then(nextDraftModel =>
+            store.submit(nextDraftModel).then(targetModel => {
               expect(store.get(Model, targetModel.id)).toBe(targetModel);
               expect(targetModel.id).not.toBe(nextDraftModel.id);
               expect(targetModel.id).toBe(desc.get({}, nextDraftModel).id);
@@ -1114,8 +1127,8 @@ describe("store:", () => {
                   desc.get({}, targetDraftModel).id,
                 );
               });
-            });
-          })
+            }),
+          )
           .then(done);
       });
 
@@ -1302,9 +1315,7 @@ describe("store:", () => {
 
           store
             .pending(store.get(Model, "1"))
-            .then(model => {
-              return store.set(model, { value: "other" });
-            })
+            .then(model => store.set(model, { value: "other" }))
             .then(() => {
               expect(desc.get(host, draftModel).value).toBe("one");
             })
@@ -1384,9 +1395,7 @@ describe("store:", () => {
         value: "",
         [store.connect]: {
           get: id => storage[id],
-          set: (id, values) => {
-            return { ...values, id: parseInt(id, 10) + 1 };
-          },
+          set: (id, values) => ({ ...values, id: parseInt(id, 10) + 1 }),
         },
       };
 
@@ -1628,14 +1637,12 @@ describe("store:", () => {
     });
 
     describe("with nested array options", () => {
-      const setupDep = options => {
-        return {
-          items: [Model, options],
-          [store.connect]: () => ({
-            items: Object.keys(storage).map(key => storage[key]),
-          }),
-        };
-      };
+      const setupDep = options => ({
+        items: [Model, options],
+        [store.connect]: () => ({
+          items: Object.keys(storage).map(key => storage[key]),
+        }),
+      });
 
       it("throws an error when options are set with wrong type", () => {
         expect(() => store.get({ items: [Model, true] })).toThrow();
@@ -1771,9 +1778,7 @@ describe("store:", () => {
     });
 
     it("rejects an error when promise resolves with other type than object", done => {
-      fn = () => {
-        return Promise.resolve("value");
-      };
+      fn = () => Promise.resolve("value");
 
       store.get(Model, 1);
 
@@ -1910,9 +1915,7 @@ describe("store:", () => {
 
       store
         .pending(store.get([Model]))
-        .then(models => {
-          return store.pending(models[0]).then(() => models);
-        })
+        .then(models => store.pending(models[0]).then(() => models))
         .then(models => {
           const model = models[0];
           store.set(model, { value: "new value" });
