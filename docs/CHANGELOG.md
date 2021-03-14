@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.0.2](https://github.com/hybridsjs/hybrids/compare/v5.0.1...v5.0.2) (2021-03-14)
+
+
+### Bug Fixes
+
+* **store:** allow updating the last stale instance ([2603bc0](https://github.com/hybridsjs/hybrids/commit/2603bc094ba34d81bfab75cccae19204982f8c6d))
+
 ### [5.0.1](https://github.com/hybridsjs/hybrids/compare/v5.0.0...v5.0.1) (2021-03-12)
 
 
