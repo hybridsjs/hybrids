@@ -198,6 +198,16 @@ html`...`.style(...styles: Array<string | CSSStyleSheet>): Function
   * an update function compatible with content expression
 
 ```typescript
+html`...`.css`div { color: red; padding-top: ${value}; }`: Function
+```
+
+* **arguments**:
+  * CSS content in tagged template literals
+  * `value` - dynamic values concatenated with the template literal
+* **returns**:
+  * an update function compatible with content expression
+
+```typescript
 html.resolve(promise: Promise, placeholder: Function, delay = 200): Function
 ```
 
@@ -237,6 +247,16 @@ svg`...`.style(styles: string, [styles: string]...): Function
   * `styles` - text content of CSS stylesheet
 * **returns**:
   * update function compatible with content expression 
+
+```typescript
+svg`...`.css`path { color: ${value}; }`: Function
+```
+
+* **arguments**:
+  * CSS content in tagged template literals
+  * `value` - dynamic values concatenated with the template literal
+* **returns**:
+  * an update function compatible with content expression
 
 ```typescript
 svg.resolve(promise: Promise, placeholder: Function, delay = 200): Function

@@ -198,6 +198,7 @@ declare namespace hybrids {
     define: (elements: MapOfHybrids) => this;
     key: (id: any) => this;
     style: (...styles: Array<string | CSSStyleSheet>) => this;
+    css: (parts: TemplateStringsArray, ...args: unknown[]) => this;
   }
 
   interface EventHandler<E> {

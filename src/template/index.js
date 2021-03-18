@@ -22,7 +22,19 @@ const methods = {
   style(...styles) {
     stylesMap.set(
       this,
-      styles.filter(style => style),
+      (stylesMap.get(this) || []).concat(styles.filter(style => style)),
+    );
+    return this;
+  },
+  css(parts, ...args) {
+    stylesMap.set(
+      this,
+      (stylesMap.get(this) || []).concat(
+        parts.reduce(
+          (acc, part, index) => `${acc}${part}${args[index] || ""}`,
+          "",
+        ),
+      ),
     );
     return this;
   },

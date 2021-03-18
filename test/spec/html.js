@@ -1081,14 +1081,14 @@ describe("html:", () => {
   });
 
   describe("style method", () => {
-    const render = html`
+    const render = () => html`
       <div>content</div>
     `;
 
     it("adds single style with text content", () => {
       const container = fragment.attachShadow({ mode: "open" });
 
-      render.style("div { color: red }")(fragment, container);
+      render().style("div { color: red }")(fragment, container);
 
       expect(getComputedStyle(container.children[0]).color).toBe(
         "rgb(255, 0, 0)",
@@ -1098,7 +1098,7 @@ describe("html:", () => {
     it("adds multiple styles with text content", () => {
       const container = fragment.attachShadow({ mode: "open" });
 
-      render.style("div { color: red }", "div { padding-top: 20px }")(
+      render().style("div { color: red }", "div { padding-top: 20px }")(
         fragment,
         container,
       );
@@ -1109,9 +1109,22 @@ describe("html:", () => {
       expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
     });
 
+    it("adds multiple styles with text content by multiple call", () => {
+      const container = fragment.attachShadow({ mode: "open" });
+
+      render()
+        .style("div { color: red }")
+        .style("div { padding-top: 20px }")(fragment, container);
+
+      expect(getComputedStyle(container.children[0]).color).toBe(
+        "rgb(255, 0, 0)",
+      );
+      expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
+    });
+
     it("adds styles to the shadowRoot by adoptedStyleSheets or style tags", () => {
       const container = fragment.attachShadow({ mode: "open" });
-      render.style("div { color: red }")({}, container);
+      render().style("div { color: red }")({}, container);
 
       if (!document.adoptedStyleSheets) {
         expect(container.children.length).toBe(2);
@@ -1134,7 +1147,7 @@ describe("html:", () => {
 
     it("adds async styles by style tags to the shadowRoot", done => {
       const container = fragment.attachShadow({ mode: "open" });
-      render.style("@import 'style.css'; div { color: red }")({}, container);
+      render().style("@import 'style.css'; div { color: red }")({}, container);
 
       getComputedStyle(container.children[0]);
 
@@ -1159,20 +1172,20 @@ describe("html:", () => {
     if (document.adoptedStyleSheets) {
       it("does not replace adoptedStyleSheets array when styles are equal", () => {
         const container = fragment.attachShadow({ mode: "open" });
-        render.style("div { color: red }")({}, container);
+        render().style("div { color: red }")({}, container);
         const adoptedStyleSheets = container.adoptedStyleSheets;
 
-        render.style("div { color: red }")({}, container);
+        render().style("div { color: red }")({}, container);
 
         expect(container.adoptedStyleSheets[0]).toBe(adoptedStyleSheets[0]);
       });
 
       it("replaces adoptedStyleSheets array when styles are not equal", () => {
         const container = fragment.attachShadow({ mode: "open" });
-        render.style("div { color: red }")({}, container);
+        render().style("div { color: red }")({}, container);
         const adoptedStyleSheets = container.adoptedStyleSheets;
 
-        render.style("div { color: blue }")({}, container);
+        render().style("div { color: blue }")({}, container);
 
         expect(container.adoptedStyleSheets[0]).not.toBe(adoptedStyleSheets[0]);
       });
@@ -1183,13 +1196,57 @@ describe("html:", () => {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync("div { color: red }");
 
-        render.style(sheet)({}, container);
+        render().style(sheet)({}, container);
 
         expect(getComputedStyle(container.children[0]).color).toBe(
           "rgb(255, 0, 0)",
         );
       });
     }
+  });
+
+  describe("css method", () => {
+    const render = () => html`
+      <div>content</div>
+    `;
+
+    it("adds styles with text content", () => {
+      const container = fragment.attachShadow({ mode: "open" });
+
+      render().css`div { color: red }`(fragment, container);
+
+      expect(getComputedStyle(container.children[0]).color).toBe(
+        "rgb(255, 0, 0)",
+      );
+    });
+
+    it("adds styles with text content with an expression", () => {
+      const container = fragment.attachShadow({ mode: "open" });
+
+      render().css`div { color: ${"red"}; } div { padding-top: 20px; }`(
+        fragment,
+        container,
+      );
+
+      expect(getComputedStyle(container.children[0]).color).toBe(
+        "rgb(255, 0, 0)",
+      );
+      expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
+    });
+
+    it("adds multiple styles with text content", () => {
+      const container = fragment.attachShadow({ mode: "open" });
+
+      render().css`div { color: red }`.css`div { padding-top: 20px }`(
+        fragment,
+        container,
+      );
+
+      expect(getComputedStyle(container.children[0]).color).toBe(
+        "rgb(255, 0, 0)",
+      );
+      expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
+    });
   });
 
   describe("ShadyDOM polyfill", () => {

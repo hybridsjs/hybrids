@@ -73,7 +73,7 @@ const MyElement = {
 
 ## CSS Stylesheet
 
-For external CSS content, use `style` helper method from the result of the `html` or `svg` function:
+For CSS content generated outside of the template, use `style` or `css` helper method from the result of the `html` or `svg` function:
 
 ```typescript
 html`...`.style(...styles: Array<string | CSSStyleSheet>): Function
@@ -84,13 +84,24 @@ html`...`.style(...styles: Array<string | CSSStyleSheet>): Function
 * **returns**:
   * an update function compatible with content expression
 
-Style helper works the best with bundlers, which support importing text content of the CSS files (for [webpack](https://github.com/webpack/webpack), use [raw-loader](https://github.com/webpack-contrib/raw-loader). Do not use `css-loader` or `style-loader` like you may be used to, as either will interfere with the ability to parse the stylesheet). Still, you can create a string input in-place, and pass it to the style helper.
+```typescript
+html`...`.css`div { color: ${value}; }`: Function
+```
+
+* **arguments**:
+  * CSS content in tagged template literals
+  * `value` - dynamic values concatenated with the template literal
+* **returns**:
+  * an update function compatible with content expression
+
+Style helpers work the best with bundlers, which support importing text content of the CSS files (for [webpack](https://github.com/webpack/webpack), use [raw-loader](https://github.com/webpack-contrib/raw-loader)). Still, you can create a string input in-place, and pass it to the style helper.
 
 ```javascript
 // `styles` should contain text content of the CSS
 import globals from '../globals.css';
 import styles from './MyElement.css';
 
+// using style helper
 const inlineStyles = `
   div { color: red }
 `;
@@ -100,9 +111,18 @@ const MyElement = {
     <div>...</div>
   `.style(globals, styles, inlineStyles),
 };
+
+// using css helper
+const OtherElement = {
+  render: () => html`
+    <div>...</div>
+  `.css`
+    div { color: red }
+  `,
+};
 ```
 
-The style helper supports passing `CSSStyleSheet` instance, but it will work only for the described below mode. Do not use it if you target multiple environments, where it might not be yet supported.
+The style helper supports passing `CSSStyleSheet` instance, but it will work only for the mode described below. Do not use it if you target multiple environments, where it might not be yet supported.
 
 ### Constructable Stylesheets
 
