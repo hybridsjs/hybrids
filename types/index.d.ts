@@ -6,12 +6,12 @@ declare namespace hybrids {
   interface Descriptor<E, V> {
     get?(host: E & HTMLElement, lastValue: V): V;
     set?(host: E & HTMLElement, value: any, lastValue: V): V;
-    connect?(
-      host: E & HTMLElement,
-      key: keyof E,
+    connect?<K extends keyof E>(
+      host: E & HTMLElement & { [property in K]: V },
+      key: K,
       invalidate: Function,
     ): Function | void;
-    observe?(host: E & HTMLElement, value: any, lastValue: any): void;
+    observe?(host: E & HTMLElement, value: V, lastValue: V): void;
   }
 
   type DescriptorValue<D> = D extends (...args: any) => any
@@ -42,7 +42,9 @@ declare namespace hybrids {
 
   type Hybrids<E> = {
     render?: E extends { render: infer V } ? Property<E, V> : RenderFunction<E>;
-    content?: E extends { render: infer V } ? Property<E, V> : RenderFunction<E>;
+    content?: E extends { render: infer V }
+      ? Property<E, V>
+      : RenderFunction<E>;
   } & {
     [property in keyof Omit<E, keyof HTMLElement>]: Property<E, E[property]>;
   };
@@ -99,9 +101,9 @@ declare namespace hybrids {
 
   type Model<M> = {
     [property in keyof Omit<M, "id">]: M[property] extends Array<infer T>
-      ? [Model<T>]
+      ? [Model<T>] | ((model: M) => T[])
       : M[property] extends Object
-      ? Model<M[property]>
+      ? Model<M[property]> | ((model: M) => M[property])
       : M[property] | ((model: M) => M[property]);
   } & {
     id?: true;
