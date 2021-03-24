@@ -122,7 +122,9 @@ declare namespace hybrids {
       };
 
   type ModelValues<M> = {
-    [property in keyof M]?: M[property];
+    [property in keyof M]?: M[property] extends Object
+      ? ModelValues<M[property]>
+      : M[property];
   };
 
   type StorageResult<M> = M | null;
