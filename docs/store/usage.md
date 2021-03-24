@@ -350,6 +350,41 @@ The pending guard returns a promise when a model instance is fetched from async 
 
 Both pending and ready guards can be truthy if the already resolved model instance updates.
 
+#### Resolve Helper
+
+You can use `store.resolve()` helper method to simplify access to pending model instances, which can be updated at the moment. The function returns a promise resolving into the current model instance, regardless of pending state. It also supports multiple chain of set methods, so the result will always be the latest instance.
+
+```typescript
+store.resolve(model: Model): Promise<Model>
+```
+
+* **arguments**:
+  * `model` - a model instance
+* **returns**:
+  * A promise instance resolving with the latest model value or rejecting with an error
+
+```javascript
+const State = {
+  value: ""
+};
+
+async function sendValue(host) {
+  // state can be in pending state at the moment (updating by the change event)
+  const state = await store.resolve(host.state);
+  const res = await fetch("/my-endpoint", { method: "post", body: JSON.stringify(state) });
+
+  // do something with response
+}
+
+const MyElement = {
+  state: store(State),
+  render: ({ state }) => html`
+    <my-async-data-source onupdate="${html.set(state, "value")}"></my-async-data-source>
+    <button onclick="${sendValue}">Send</button>
+  `,
+};
+```
+
 ### Error
 
 ```typescript

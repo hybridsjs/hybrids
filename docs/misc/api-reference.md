@@ -124,6 +124,15 @@ store(Model: object, options?: id | { id?: string | (host) => any, draft?: boole
 * **returns**:
   * hybrid property descriptor, which resolves to a store model instance
 
+```typescript
+store.submit(model: Model): Promise<Model>
+```
+
+* **arguments**:
+  * `Model` - an instance of the draft model definition
+* **returns**:
+  * a promise resolving with the primary model instance
+
 ### guards
 
 ```typescript
@@ -166,6 +175,17 @@ store.value(defaultValue: string | number, validate?: fn | RegExp, errorMessage?
   * `errorMessage` - optional error message used when validation fails
 * **returns**:
   * a `String` or `Number` instance
+
+### resolve
+
+```typescript
+store.resolve(model: Model): Promise<Model>
+```
+
+* **arguments**:
+  * `model` - a model instance
+* **returns**:
+  * A promise instance resolving with the latest model value or rejecting with an error
 
 ## html
 

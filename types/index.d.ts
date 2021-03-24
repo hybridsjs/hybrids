@@ -167,6 +167,7 @@ declare namespace hybrids {
     function ready<M>(model: M): boolean;
 
     function submit<M>(draft: M): Promise<M>;
+    function resolve<M>(model: M): Promise<M>;
 
     interface ValidateFunction<M> {
       (value: string | number, key: string, model: M): string | boolean | void;

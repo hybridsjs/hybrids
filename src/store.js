@@ -991,6 +991,19 @@ function pending(model) {
   return state === "pending" && value;
 }
 
+function resolveToLatest(model) {
+  model = stales.get(model) || model;
+
+  const promise = pending(model);
+
+  if (!promise) {
+    const e = error(model);
+    return e ? Promise.reject(e) : Promise.resolve(model);
+  }
+
+  return promise.then(m => resolveToLatest(m));
+}
+
 function error(model, property) {
   if (model === null || typeof model !== "object") return false;
   const { state, value } = getModelState(model);
@@ -1209,4 +1222,5 @@ export default Object.assign(store, {
   // helpers
   submit,
   value: valueWithValidation,
+  resolve: resolveToLatest,
 });

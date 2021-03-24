@@ -910,6 +910,34 @@ describe("store:", () => {
         })
         .then(done);
     });
+
+    it("resolve() returns the latest model instance", done => {
+      store
+        .set(Model)
+        .then(model =>
+          store.resolve(model).then(m => {
+            expect(m).toBe(model);
+
+            store.set(m, { string: "my value" });
+            store.set(m, { string: "latest value" });
+            return store.resolve(m).then(nm => {
+              expect(nm).not.toBe(m);
+              expect(nm.string).toBe("latest value");
+            });
+          }),
+        )
+        .then(done);
+    });
+
+    it("resolve() rejects an error from the model instance", done => {
+      const model = store.get(Model, "test");
+      store
+        .resolve(model)
+        .catch(e => {
+          expect(e).toBeInstanceOf(Error);
+        })
+        .then(done);
+    });
   });
 
   describe("factory", () => {
