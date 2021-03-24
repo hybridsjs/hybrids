@@ -825,8 +825,11 @@ function set(model, values = {}) {
     );
   }
 
-  if (isInstance && pending(model)) {
-    throw Error("Provided model instance is in pending state");
+  if (isInstance) {
+    const promise = pending(model);
+    if (promise) {
+      return promise.then(m => set(m, values));
+    }
   }
 
   let id;

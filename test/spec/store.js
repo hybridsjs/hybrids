@@ -279,15 +279,6 @@ describe("store:", () => {
       expect(() => store.set(model, { value: "test" })).toThrow();
     });
 
-    it("throws when used on pending model instance", done => {
-      promise
-        .then(model => {
-          store.set(model, { string: "" });
-          expect(() => store.set(model, { string: "" })).toThrow();
-        })
-        .then(done);
-    });
-
     it("throws when updates a nested object directly", done => {
       promise
         .then(model => {
@@ -575,6 +566,22 @@ describe("store:", () => {
             done();
           }),
       );
+    });
+
+    it("updates in schedule on pending model instance", done => {
+      promise
+        .then(model => {
+          store.set(model, { string: "a" }).then(m => {
+            expect(m.string).toBe("a");
+          });
+          store.set(model, { string: "b" }).then(m => {
+            expect(m.string).toBe("b");
+          });
+          return store.set(model, { string: "c" }).then(m => {
+            expect(m.string).toBe("c");
+          });
+        })
+        .then(done);
     });
 
     it("updates singleton model by the model definition reference", () => {
@@ -1093,13 +1100,6 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("throws when setting draft model instance in pending state", () => {
-        const pendingModel = desc.set({}, { string: "my value" });
-        expect(() =>
-          desc.set({}, { string: "my value" }, pendingModel),
-        ).toThrow();
-      });
-
       it("throws when submits draft model instance in pending state", () => {
         const pendingModel = desc.set({}, { string: "my value" });
         expect(() => store.submit(pendingModel)).toThrow();
@@ -1155,23 +1155,6 @@ describe("store:", () => {
       beforeEach(() => {
         Model = { value: "test" };
         desc = store(Model);
-      });
-
-      it("throws when setting model is in pending state", () => {
-        Model = {
-          value: "test",
-          [store.connect]: {
-            get: () => Promise.resolve({}),
-            set: (id, values) => values,
-          },
-        };
-
-        desc = store(Model);
-
-        const pendingModel = desc.get({});
-        expect(() => {
-          desc.set({}, {}, pendingModel);
-        }).toThrow();
       });
 
       it("returns model instance", () => {
