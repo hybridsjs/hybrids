@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.1.0](https://github.com/hybridsjs/hybrids/compare/v5.0.2...v5.1.0) (2021-03-26)
+
+
+### Features
+
+* **html:** add css helper method for tagged template literals support ([8a3ac0d](https://github.com/hybridsjs/hybrids/commit/8a3ac0d41662d67ae4ad0f295de916180e9202d8))
+* **store:** resolve method for simplier access to pending instances ([38b40e2](https://github.com/hybridsjs/hybrids/commit/38b40e284c2b24b804e0a5a173ce9d3786af1378))
+
+
+### Bug Fixes
+
+* **store:** schedule set method in pending state ([00fb0f5](https://github.com/hybridsjs/hybrids/commit/00fb0f5d4645c2048e411ad073a1d46a7c0c38c0))
+* **types:** store model fixes, descriptor type update with key mapping ([53acb31](https://github.com/hybridsjs/hybrids/commit/53acb3114d079d2d9516549476e04b2dcbcb536b))
+* **types:** support nested partial values ([a810884](https://github.com/hybridsjs/hybrids/commit/a81088425e8ce0fabe16fc27a56ed2563bfdfe74))
+
 ### [5.0.2](https://github.com/hybridsjs/hybrids/compare/v5.0.1...v5.0.2) (2021-03-14)
 
 
