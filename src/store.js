@@ -18,17 +18,27 @@ function resolve(config, model, lastModel) {
   return model;
 }
 
+function shallowEqual(target, compare) {
+  return Object.keys(target).every(key => target[key] === compare[key]);
+}
+
 function resolveWithInvalidate(config, model, lastModel) {
   resolve(config, model, lastModel);
 
-  if ((config.external && model) || !lastModel || error(model)) {
+  if (
+    config.invalidate &&
+    (!lastModel ||
+      error(model) ||
+      !config.isInstance(lastModel) ||
+      !shallowEqual(model, lastModel))
+  ) {
     config.invalidate();
   }
 
   return model;
 }
 
-function syncCache(config, id, model, invalidate) {
+function syncCache(config, id, model, invalidate = true) {
   cache.set(
     config,
     id,
@@ -365,7 +375,7 @@ function setupModel(Model, nested) {
                       ]}`,
                     );
                   }
-                  model[key] = localConfig.create(data[key]);
+                  model[key] = localConfig.create(data[key], true);
                 } else {
                   model[key] =
                     (lastModel && lastModel[key]) ||
@@ -399,12 +409,7 @@ function setupModel(Model, nested) {
                       resultModel = nestedData;
                     } else {
                       resultModel = nestedConfig.create(nestedData);
-                      syncCache(
-                        nestedConfig,
-                        resultModel.id,
-                        resultModel,
-                        true,
-                      );
+                      syncCache(nestedConfig, resultModel.id, resultModel);
                     }
                   }
                 } else {
@@ -561,7 +566,7 @@ function setupListModel(Model, nested) {
       },
       isInstance: model =>
         Object.getPrototypeOf(model) !== listPlaceholderPrototype,
-      create(items) {
+      create(items, invalidate = false) {
         const result = items.reduce((acc, data) => {
           let id = data;
           if (typeof data === "object" && data !== null) {
@@ -576,7 +581,7 @@ function setupListModel(Model, nested) {
               model = modelConfig.create(data);
               if (modelConfig.enumerable) {
                 id = model.id;
-                syncCache(modelConfig, id, model);
+                syncCache(modelConfig, id, model, invalidate);
               }
             }
             if (!modelConfig.enumerable) {
@@ -1013,7 +1018,6 @@ function sync(model, values) {
         ),
         false,
       ),
-    true,
   );
 }
 
