@@ -162,6 +162,7 @@ declare namespace hybrids {
       model: Model<M> | M,
       values: ModelValues<M> | null,
     ): Promise<M>;
+    function sync<M>(model:  Model<M> | M, values: ModelValues<M> | null): M;
     function clear<M>(model: Model<M> | M, clearValue?: boolean): void;
 
     function pending<M>(model: M): false | Promise<M>;

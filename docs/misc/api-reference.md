@@ -110,6 +110,16 @@ store.set(modelInstance: object, values: object | null): Promise;
 * **returns**:
   * A promise, which resolves to the model instance or placeholder (for model deletion)
 
+```typescript
+store.sync(modelOrDefinition: object, values: object | null) : Model;
+```
+
+* **arguments**:
+  * `modelOrDefinition` - a model instance or model definition
+  * `values` - an object with partial values of the model instance or `null` for deleting the model
+* **returns**:
+  * Model instance or model instance placeholder
+
 ### factory
 
 ```typescript

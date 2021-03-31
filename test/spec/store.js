@@ -616,6 +616,99 @@ describe("store:", () => {
     });
   });
 
+  describe("sync()", () => {
+    let promise;
+    beforeEach(() => {
+      promise = store.set(Model, { string: "test" });
+    });
+
+    describe("for model instance", () => {
+      it("throws for wrong values", done => {
+        promise
+          .then(model => {
+            expect(() => store.sync(model, undefined)).toThrow();
+            expect(() => store.sync(model, { id: 123 })).toThrow();
+          })
+          .then(done);
+      });
+
+      it("throws for syncing deep stale model instance", done => {
+        promise
+          .then(model => {
+            store.sync(model, { string: "other" });
+            store.sync(model, { string: "two" });
+            expect(() => store.sync(model, { string: "three" })).toThrow();
+          })
+          .then(done);
+      });
+
+      it("updates memory cache of the model instance synchronously", done => {
+        promise
+          .then(model => {
+            const nextModel = store.sync(model, { string: "other" });
+            expect(store.get(Model, nextModel.id).string).toBe("other");
+            expect(store.ready(model)).toBe(false);
+          })
+          .then(done);
+      });
+
+      it("updates stale model instance", done => {
+        promise
+          .then(model => {
+            const nextModel = store.sync(model, { string: "other" });
+            store.sync(model, { string: "two" });
+            expect(store.get(Model, model.id).string).toBe("two");
+            expect(store.ready(nextModel)).toBe(false);
+          })
+          .then(done);
+      });
+
+      it("deletes model instance", done => {
+        promise
+          .then(model => {
+            const nextModel = store.sync(model, null);
+            expect(store.error(nextModel)).toBeInstanceOf(Error);
+          })
+          .then(done);
+      });
+
+      it("deletes singleton model instance", () => {
+        Model = { value: "test" };
+        const model = store.get(Model);
+        store.sync(model, null);
+        const nextModel = store.get(Model);
+        expect(store.error(nextModel)).toBeInstanceOf(Error);
+      });
+    });
+
+    describe("for model definition", () => {
+      beforeEach(() => {
+        Model = {
+          id: true,
+          value: "test",
+        };
+      });
+
+      it("throws when values are not an object instance", () => {
+        expect(() => store.sync(Model, null)).toThrow();
+      });
+
+      it("throws for listing model definition", () => {
+        expect(() => store.sync([Model], {})).toThrow();
+      });
+
+      it("creates new instance", () => {
+        const model = store.sync(Model, {});
+        expect(model.value).toBe("test");
+      });
+
+      it("creates new instance with external id", () => {
+        const model = store.sync(Model, { id: 1 });
+        expect(model.id).toBe("1");
+      });
+    });
+  });
+
   describe("clear()", () => {
     let promise;
     beforeEach(() => {

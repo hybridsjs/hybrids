@@ -28,7 +28,7 @@ function resolveWithInvalidate(config, model, lastModel) {
   return model;
 }
 
-function sync(config, id, model, invalidate) {
+function syncCache(config, id, model, invalidate) {
   cache.set(
     config,
     id,
@@ -399,7 +399,12 @@ function setupModel(Model, nested) {
                       resultModel = nestedData;
                     } else {
                       resultModel = nestedConfig.create(nestedData);
-                      sync(nestedConfig, resultModel.id, resultModel, true);
+                      syncCache(
+                        nestedConfig,
+                        resultModel.id,
+                        resultModel,
+                        true,
+                      );
                     }
                   }
                 } else {
@@ -536,9 +541,11 @@ function setupListModel(Model, nested) {
       }
     }
 
+    nested = !modelConfig.enumerable && nested;
+
     config = {
       list: true,
-      nested: !modelConfig.enumerable && nested,
+      nested,
       model: Model,
       contexts,
       enumerable: modelConfig.enumerable,
@@ -569,7 +576,7 @@ function setupListModel(Model, nested) {
               model = modelConfig.create(data);
               if (modelConfig.enumerable) {
                 id = model.id;
-                sync(modelConfig, id, model);
+                syncCache(modelConfig, id, model);
               }
             }
             if (!modelConfig.enumerable) {
@@ -723,13 +730,13 @@ function get(Model, id) {
                   stringifyModel(
                     Model,
                     `Model instance ${
-                      stringId !== undefined ? `with '${stringId}' id ` : ""
+                      stringId !== undefined ? ` with '${stringId}' id ` : ""
                     }does not exist`,
                   ),
                 );
               }
 
-              return sync(
+              return syncCache(
                 config,
                 stringId,
                 config.create(
@@ -738,7 +745,7 @@ function get(Model, id) {
               );
             })
             .catch(e =>
-              sync(
+              syncCache(
                 config,
                 stringId,
                 mapError(cachedModel || config.placeholder(stringId), e),
@@ -927,7 +934,7 @@ function set(model, values = {}) {
           resultId = model.id;
         }
 
-        return sync(
+        return syncCache(
           config,
           resultId,
           resultModel ||
@@ -936,7 +943,7 @@ function set(model, values = {}) {
               Error(
                 `Model instance ${
                   id !== undefined ? `with '${id}' id` : ""
-                } does not exist`,
+                }does not exist`,
               ),
               false,
             ),
@@ -956,6 +963,58 @@ function set(model, values = {}) {
     setState("error", e);
     return Promise.reject(e);
   }
+}
+
+function sync(model, values) {
+  if (typeof values !== "object") {
+    throw TypeError(`Values must be an object instance: ${values}`);
+  }
+
+  let config = definitions.get(model);
+
+  if (config === null) {
+    model = stales.get(model);
+    config = definitions.get(model);
+  }
+
+  if (config === null) {
+    throw Error(
+      "Provided model instance has expired. Haven't you used stale value?",
+    );
+  }
+
+  if (config === undefined) {
+    if (!values) {
+      throw TypeError("Values must be defined for usage with model definition");
+    }
+    config = bootstrap(model);
+    model = undefined;
+  } else if (values && hasOwnProperty.call(values, "id")) {
+    throw TypeError(`Values must not contain 'id' property: ${values.id}`);
+  }
+
+  if (config.list) {
+    throw TypeError("Listing model definition is not supported in sync method");
+  }
+
+  const resultModel = config.create(values, model);
+  const id = values ? resultModel.id : model.id;
+
+  return syncCache(
+    config,
+    id,
+    resultModel ||
+      mapError(
+        config.placeholder(id),
+        Error(
+          `Model instance ${
+            id !== undefined ? ` with '${id}' id` : ""
+          }does not exist`,
+        ),
+        false,
+      ),
+    true,
+  );
 }
 
 function clear(model, clearValue = true) {
@@ -1171,7 +1230,7 @@ function store(Model, options = {}) {
     get: (host, lastValue) => {
       if (createMode && !lastValue) {
         const nextValue = options.draft.create({});
-        sync(options.draft, nextValue.id, nextValue);
+        syncCache(options.draft, nextValue.id, nextValue);
         return get(Model, nextValue.id);
       }
 
@@ -1212,6 +1271,7 @@ export default Object.assign(store, {
   // actions
   get,
   set,
+  sync,
   clear,
 
   // guards

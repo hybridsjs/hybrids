@@ -213,3 +213,44 @@ const MyElement = {
 #### Garbage Collector
 
 The `store.clear()` method works as a garbage collector for unused model instances. Those that are not a dependency of any component connected to the DOM will be deleted entirely from the cache registry (as they would never exist) protecting from the memory leaks. It means, that even if you set `clearValue` to `false`, those instances that are not currently attached to the components, will be permanently deleted when `store.clear()` method is invoked.
+
+## Observables
+
+The storage methods are called only for the user interaction - when the model is get, or when new values for the model instance are set. However, there might be a case, where your model instance is been updated outside of the user scope, for example by the server.
+
+Using `store.set()` method as a callback for the update will trigger storage `set` method, which can lead to endless loop of updates. Fortunately, the store provides special `store.sync()` method, which does the trick. It only updates synchronously memory cache of the model instance without calling any storage method from `[store.connect]` configuration.
+
+!> This method bypass the storage, so use it with caution, and only if you would use `store.get()` in another context. This method does not replace `store.set()`.
+
+```typescript
+store.sync(modelOrDefinition: object, values: object | null) : Model;
+```
+
+* **arguments**:
+  * `modelOrDefinition` - a model instance or model definition
+  * `values` - an object with partial values of the model instance or `null` for deleting the model
+* **returns**:
+  * Model instance or model instance placeholder
+
+```javascript
+const Model = {
+  ...,
+  [store.connect] : {
+    get: (id) => myApi.get("/model", id),
+    set: (id, values) => myApi.set("/model", id, values),
+  },
+};
+
+const MyElement = {
+  model: store(Model),
+  socket: (host) => {
+    const socket = io();
+
+    socket.on("model:update", (values) => {
+      store.sync(host.model, values);
+    });
+  },
+};
+```
+
+In the above example, even though the `Model` is connected to the external storage, when websocket emits an event, the values of the model updates without calling `[store.connect].set()`, as we expect. It is an update triggered by the server, so we don't want to send new values to the server again.
