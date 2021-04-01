@@ -173,6 +173,18 @@ store.error(model: object, propertyName?: string): boolean | Error | any
 * **returns**:
   * An error instance or whatever has been thrown or `false`. When `propertyName` is set, it returns `err.errors[propertyName]` or `false`
 
+### ref
+
+```typescript
+store.ref(fn: () => Property): fn;
+```
+
+* **arguments**:
+  * `fn` - a function returning the property definition
+* **returns**:
+  * Passed function specially marked, to use the result of the call instead of creating computed property
+
+
 ### value
 
 ```typescript

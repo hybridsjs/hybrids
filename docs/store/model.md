@@ -246,6 +246,29 @@ const Model = {
 
 If the first item of the array is an enumerable model definition, the property represents a list of external model instances mapped by their ids. The parent model's storage may provide a list of data for model instances or a list of identifiers. The update process and binding between models work the same as for a single external nested object.
 
+### Self Reference & Import Cycles
+
+The model definition is based on the plain object definition, so by the JavaScript constraints, it is not possible to create property, which is a model definition of itself, or use definition from another ES module, which depends on the source file. In those situations you can use `store.ref(fn)` method, which sets property to the result of passed function in time of the definition (when model definition is used for the first time).
+
+```typescript
+store.ref(fn: () => Property): fn;
+```
+
+* **arguments**:
+  * `fn` - a function returning the property definition
+* **returns**:
+  * a marked passed function, to use the result of the call instead of creating computed property
+
+```javascript
+const Model = {
+  id: true,
+  value: "",
+  model: store.ref(() => Model),
+};
+```
+
+In the above example, the `Model` defines a connected list structure, where each instance can reference to the same definition.
+
 ### Cache Invalidation
 
 By default, the store does not invalidate the cached value of the parent model instance when nested external model changes. Because of the nature of the binding between models, when the nested model updates its state, the change will be reflected without a need to update the parent model's state.

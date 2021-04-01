@@ -966,6 +966,25 @@ describe("store:", () => {
     });
   });
 
+  describe("ref()", () => {
+    it("throws when the first argument is not a function", () => {
+      expect(() => store.ref()).toThrow();
+    });
+
+    it("resolves to the result of the function", () => {
+      Model = {
+        id: true,
+        value: "",
+        model: store.ref(() => Model),
+      };
+
+      store.set(Model, { value: "a", model: { value: "b" } }).then(model => {
+        expect(model.value).toBe("a");
+        expect(model.model.value).toBe("b");
+      });
+    });
+  });
+
   describe("guards", () => {
     it("returns false if value is not an object instance", () => {
       expect(store.pending(null)).toBe(false);
@@ -1477,11 +1496,6 @@ describe("store:", () => {
       };
     });
 
-    it("throws an error when get method is not defined", () => {
-      Model = { id: true, [store.connect]: {} };
-      expect(() => store.get(Model, "1")).toThrow();
-    });
-
     it("throws an error for listing model when list method is not defined", () => {
       Model = { id: true, [store.connect]: { get: () => {} } };
       expect(() => store.get([Model])).toThrow();
@@ -1850,9 +1864,9 @@ describe("store:", () => {
         two: "two",
         [store.connect]: {
           get: () => {},
-          set: (...args) => {
-            spy(...args);
-            return args[1];
+          set: (id, values, keys) => {
+            spy(keys);
+            return values;
           },
         },
       };
@@ -1863,8 +1877,7 @@ describe("store:", () => {
           expect(spy).toHaveBeenCalled();
 
           const args = spy.calls.first().args;
-          expect(args.length).toBe(3);
-          expect(args[2]).toEqual(["two"]);
+          expect(args[0]).toEqual(["two"]);
         })
         .then(done);
     });
@@ -2001,7 +2014,7 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("returns cached item of list in pending state", () => {
+    it("returns cached item of list in pending state", done => {
       Model = {
         id: true,
         value: "",
@@ -2022,13 +2035,13 @@ describe("store:", () => {
         .then(models => store.pending(models[0]).then(() => models))
         .then(models => {
           const model = models[0];
-          store.set(model, { value: "new value" });
 
-          Promise.resolve().then(() => {
+          store.set(model, { value: "new value" }).then(nextModel => {
             const nextModels = store.get([Model]);
-            expect(nextModels[0]).toBe(model);
+            expect(nextModels[0]).toBe(nextModel);
           });
-        });
+        })
+        .then(done);
     });
 
     it("returns the same list after timestamp changes", done => {

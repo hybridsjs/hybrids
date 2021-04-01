@@ -6,6 +6,7 @@ export const connect = `__store__connect__${Date.now()}__`;
 
 const definitions = new WeakMap();
 const stales = new WeakMap();
+const refs = new WeakSet();
 
 function resolve(config, model, lastModel) {
   if (lastModel) {
@@ -96,9 +97,7 @@ function setupStorage(storage) {
     );
   }
 
-  if (!result.get && result.list) {
-    result.get = () => {};
-  }
+  if (!result.get) result.get = () => {};
 
   return Object.freeze(result);
 }
@@ -166,11 +165,20 @@ function uuid(temp) {
     : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, uuid);
 }
 
-const validationMap = new WeakMap();
+function ref(fn) {
+  if (typeof fn !== "function") {
+    throw TypeError(`The first argument must be a funtion: ${typeof fn}`);
+  }
 
+  refs.add(fn);
+  return fn;
+}
+
+const validationMap = new WeakMap();
 function resolveKey(Model, key, config) {
   let defaultValue = config.model[key];
-  let type = typeof config.model[key];
+  if (refs.has(defaultValue)) defaultValue = defaultValue();
+  let type = typeof defaultValue;
 
   if (defaultValue instanceof String || defaultValue instanceof Number) {
     const check = validationMap.get(defaultValue);
@@ -202,8 +210,6 @@ function stringifyModel(Model, msg) {
     2,
   )}\n`;
 }
-
-const _ = (h, v) => v;
 
 const resolvedPromise = Promise.resolve();
 const configs = new WeakMap();
@@ -267,6 +273,8 @@ function setupModel(Model, nested) {
       },
       checks,
     };
+
+    configs.set(Model, config);
 
     config.storage = setupStorage(storage || memoryStorage(config, Model));
 
@@ -420,11 +428,7 @@ function setupModel(Model, nested) {
                   const id = resultModel.id;
                   Object.defineProperty(model, key, {
                     get() {
-                      return cache.get(
-                        this,
-                        key,
-                        pending(this) ? _ : () => get(defaultValue, id),
-                      );
+                      return cache.get(this, key, () => get(defaultValue, id));
                     },
                     enumerable: true,
                   });
@@ -482,8 +486,7 @@ function setupModel(Model, nested) {
     };
 
     Object.freeze(placeholder);
-
-    configs.set(Model, Object.freeze(config));
+    Object.freeze(config);
   }
 
   return config;
@@ -594,11 +597,7 @@ function setupListModel(Model, nested) {
             const key = acc.length;
             Object.defineProperty(acc, key, {
               get() {
-                return cache.get(
-                  this,
-                  key,
-                  pending(this) ? _ : () => get(Model, id),
-                );
+                return cache.get(this, key, () => get(Model, id));
               },
               enumerable: true,
             });
@@ -660,15 +659,6 @@ function mapError(model, err, suppressLog) {
 function get(Model, id) {
   const config = bootstrap(Model);
   let stringId;
-
-  if (!config.storage.get) {
-    throw TypeError(
-      stringifyModel(
-        Model,
-        "Provided model definition does not support 'get' method",
-      ),
-    );
-  }
 
   if (config.enumerable) {
     stringId = stringifyId(id);
@@ -1102,13 +1092,13 @@ function mapValueWithState(lastValue, nextValue) {
   return setModelState(result, state, value);
 }
 
-function getValuesFromModel(model) {
-  const values = { ...model };
-  delete values.id;
-  return values;
+function getValuesFromModel(model, values) {
+  model = { ...model, ...values };
+  delete model.id;
+  return model;
 }
 
-function submit(draft) {
+function submit(draft, values = {}) {
   const config = definitions.get(draft);
   if (!config || !draftMap.has(config)) {
     throw TypeError(`Provided model instance is not a draft: ${draft}`);
@@ -1122,11 +1112,11 @@ function submit(draft) {
   let result;
 
   if (!options.id) {
-    result = set(options.model, getValuesFromModel(draft));
+    result = set(options.model, getValuesFromModel(draft, values));
   } else {
     const model = get(options.model, draft.id);
     result = Promise.resolve(pending(model) || model).then(resolvedModel =>
-      set(resolvedModel, getValuesFromModel(draft)),
+      set(resolvedModel, getValuesFromModel(draft, values)),
     );
   }
 
@@ -1287,4 +1277,5 @@ export default Object.assign(store, {
   submit,
   value: valueWithValidation,
   resolve: resolveToLatest,
+  ref,
 });

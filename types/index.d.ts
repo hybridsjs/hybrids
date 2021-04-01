@@ -138,10 +138,9 @@ declare namespace hybrids {
       id: ModelIdentifier,
       values: M | null,
       keys: [keyof M],
+      lastValues: M | undefined,
     ) => StorageResult<M> | Promise<StorageResult<M>>;
-    list?: (
-      id: ModelIdentifier,
-    ) => StorageResult<M> | Promise<StorageResult<M>>;
+    list?: (id: ModelIdentifier) => Array<M> | Promise<Array<M>>;
   };
 
   type StoreOptions<E> =
@@ -162,15 +161,16 @@ declare namespace hybrids {
       model: Model<M> | M,
       values: ModelValues<M> | null,
     ): Promise<M>;
-    function sync<M>(model:  Model<M> | M, values: ModelValues<M> | null): M;
+    function sync<M>(model: Model<M> | M, values: ModelValues<M> | null): M;
     function clear<M>(model: Model<M> | M, clearValue?: boolean): void;
 
     function pending<M>(model: M): false | Promise<M>;
-    function error<M>(model: M): false | Error | any;
+    function error<M>(model: M, propertyName?: keyof M): false | Error | any;
     function ready<M>(model: M): boolean;
 
-    function submit<M>(draft: M): Promise<M>;
+    function submit<M>(draft: M, values?: ModelValues<M>): Promise<M>;
     function resolve<M>(model: M): Promise<M>;
+    function ref<M>(fn: () => M): M;
 
     interface ValidateFunction<M> {
       (value: string | number, key: string, model: M): string | boolean | void;
@@ -217,7 +217,7 @@ declare namespace hybrids {
   namespace html {
     function set<E>(property: keyof E, valueOrPath?: any): EventHandler<E>;
     function set<E, M>(
-      property: Model<M>,
+      property: M,
       valueOrPath: string | null,
     ): EventHandler<E>;
 
