@@ -100,11 +100,13 @@ declare namespace hybrids {
   /* Store */
 
   type Model<M> = {
-    [property in keyof Omit<M, "id">]: M[property] extends Array<infer T>
+    [property in keyof Omit<M, "id">]: Required<M>[property] extends Array<
+      infer T
+    >
       ? [Model<T>] | ((model: M) => T[])
-      : M[property] extends Object
-      ? Model<M[property]> | ((model: M) => M[property])
-      : M[property] | ((model: M) => M[property]);
+      : Required<M>[property] extends Object
+      ? Model<Required<M>[property]> | ((model: M) => M[property])
+      : Required<M>[property] | ((model: M) => M[property]);
   } & {
     id?: true;
     __store__connect__?:
