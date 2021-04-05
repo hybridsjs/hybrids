@@ -168,6 +168,42 @@ declare namespace hybrids {
     ): number;
   }
 
+  /* Router */
+  interface RouterOptions<E> {
+    url?: string;
+    params?: (host: E) => object;
+  }
+
+  type View<E> = Hybrids<E> & {
+    __router__connect__?: {
+      url?: string;
+      multiple?: boolean;
+      guard?: (host: E) => any;
+      stack?: MapOfViews;
+    };
+  };
+
+  interface MapOfViews {
+    [tagName: string]: View<any>;
+  }
+
+  function router<E>(
+    views: MapOfViews,
+    options: RouterOptions<E>,
+  ): Descriptor<E, HTMLElement[]>;
+
+  namespace router {
+    const connect = "__router__connect__";
+
+    function url<V>(view: V, params?: Record<string, any>): string;
+    function backUrl(params?: Record<string, any>): string;
+    function guardUrl(params?: Record<string, any>): string;
+    function currentUrl(params?: Record<string, any>): string;
+    function isActive<V>(...views: V[]): boolean;
+
+    function resolve(event: Event, promise: Promise<any>): void;
+  }
+
   /* Utils */
 
   function dispatch(
