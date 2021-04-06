@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.2.0](https://github.com/hybridsjs/hybrids/compare/v5.1.0...v5.2.0) (2021-04-06)
+
+
+### Features
+
+* **store:** adds ref method for self reference and import cycles ([93e451e](https://github.com/hybridsjs/hybrids/commit/93e451e2de28dc10aaa687148e46a8d9f32de3f3))
+* **store:** sync method for server side updates ([9de6140](https://github.com/hybridsjs/hybrids/commit/9de61404778bdac37ae6aa63be8475a74d1e0e77))
+
+
+### Bug Fixes
+
+* **npm:** use recommended exports and main fields ([e2605e7](https://github.com/hybridsjs/hybrids/commit/e2605e7fff5e467825aa304db3b035f1a6a4e656))
+* **store:** invlidate listing when nested list model updates ([05ffae6](https://github.com/hybridsjs/hybrids/commit/05ffae6649753fbfa93c95c1300aadc9e40b723d))
+* **types:** allow optional property in model definition ([0f3c660](https://github.com/hybridsjs/hybrids/commit/0f3c660224ad28299f0f25a8e7067f65d1d7c901))
+* **types:** clean storage definition ([9bbffdc](https://github.com/hybridsjs/hybrids/commit/9bbffdcc8eb993a3fbbb891fb22069e1561e2e91))
+
 ## [5.1.0](https://github.com/hybridsjs/hybrids/compare/v5.0.2...v5.1.0) (2021-03-26)
 
 
