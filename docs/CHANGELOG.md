@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.2.2](https://github.com/hybridsjs/hybrids/compare/v5.2.1...v5.2.2) (2021-04-09)
+
+
+### Bug Fixes
+
+* **html:** check text node twice, as it can be splitted in the compile process ([#153](https://github.com/hybridsjs/hybrids/issues/153)) ([cec63c8](https://github.com/hybridsjs/hybrids/commit/cec63c84f7491ad50438466b7d8b9b9ba83865c8))
+
 ### [5.2.1](https://github.com/hybridsjs/hybrids/compare/v5.2.0...v5.2.1) (2021-04-09)
 
 
