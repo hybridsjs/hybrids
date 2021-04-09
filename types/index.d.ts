@@ -22,15 +22,7 @@ declare namespace hybrids {
     ? V
     : never;
 
-  type Property<E, V> =
-    | string
-    | number
-    | boolean
-    | null
-    | undefined
-    | any[]
-    | Descriptor<E, V>
-    | Descriptor<E, V>["get"];
+  type Property<E, V> = V | Descriptor<E, V> | Descriptor<E, V>["get"];
 
   interface UpdateFunction<E> {
     (host: E & HTMLElement, target: ShadowRoot | Text | E): void;
@@ -75,16 +67,9 @@ declare namespace hybrids {
   /* Factories */
 
   function property<E, V>(
-    value: V,
+    value: V | null | undefined | ((value: any) => V),
     connect?: Descriptor<E, V>["connect"],
-  ): Descriptor<
-    E,
-    V extends (...args: any) => any
-      ? ReturnType<V>
-      : V extends undefined
-      ? any
-      : V
-  >;
+  ): Descriptor<E, V>;
   function parent<E, T>(
     hybridsOrFn: Hybrids<T> | ((hybrids: Hybrids<E>) => boolean),
   ): Descriptor<E, T>;
