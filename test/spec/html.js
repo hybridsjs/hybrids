@@ -387,28 +387,24 @@ describe("html:", () => {
           color: red;
         }
       </style>
-      <div id="text">values: ${one}, ${two}</div>
+      <div id="text">${one}, ${two}</div>
     `;
 
     beforeEach(() => render("one", "two")(fragment));
 
     it("renders values", () => {
-      expect(fragment.querySelector("div").textContent).toBe(
-        "values: one, two",
-      );
+      expect(fragment.querySelector("div").textContent).toBe("one, two");
     });
 
     it("updates values", () => {
       render("two", "one")(fragment);
-      expect(fragment.querySelector("div").textContent).toBe(
-        "values: two, one",
-      );
+      expect(fragment.querySelector("div").textContent).toBe("two, one");
     });
 
     it("removes values", () => {
       render(false, null)(fragment);
 
-      expect(fragment.querySelector("div").textContent).toBe("values: , ");
+      expect(fragment.querySelector("div").textContent).toBe(", ");
     });
   });
 

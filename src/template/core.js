@@ -213,12 +213,8 @@ export function compileTemplate(rawParts, isSVG, styles) {
 
     if (node.nodeType === Node.TEXT_NODE) {
       const text = node.textContent;
-      const equal = text.match(PLACEHOLDER_REGEXP_EQUAL);
 
-      if (equal) {
-        node.textContent = "";
-        parts[equal[1]] = [compileIndex, resolveValue];
-      } else {
+      if (!text.match(PLACEHOLDER_REGEXP_EQUAL)) {
         const results = text.match(PLACEHOLDER_REGEXP_ALL);
         if (results) {
           let currentNode = node;
@@ -244,6 +240,12 @@ export function compileTemplate(rawParts, isSVG, styles) {
               }
             });
         }
+      }
+
+      const equal = node.textContent.match(PLACEHOLDER_REGEXP_EQUAL);
+      if (equal) {
+        node.textContent = "";
+        parts[equal[1]] = [compileIndex, resolveValue];
       }
     } else {
       /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
