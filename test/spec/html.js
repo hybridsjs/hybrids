@@ -85,14 +85,6 @@ describe("html:", () => {
     }).toThrow();
   });
 
-  it("throws for missing custom element", () => {
-    expect(() =>
-      html`
-        <missing-element></missing-element>
-      `(fragment),
-    ).toThrow();
-  });
-
   it("clears arguments cache when template changes", () => {
     html`
       <div>${10}</div>

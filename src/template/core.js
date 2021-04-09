@@ -147,7 +147,6 @@ const createWalker =
     ? createInternalWalker
     : createExternalWalker;
 
-const container = document.createElement("div");
 const styleSheetsMap = new Map();
 
 function normalizeWhitespace(input, startIndent = 0) {
@@ -193,11 +192,8 @@ export function compileTemplate(rawParts, isSVG, styles) {
   const template = document.createElement("template");
   const parts = [];
 
-  let signature = createSignature(rawParts, styles);
-  if (isSVG) signature = `<svg>${signature}</svg>`;
-
-  container.innerHTML = `<template>${signature}</template>`;
-  template.content.appendChild(container.children[0].content);
+  const signature = createSignature(rawParts, styles);
+  template.innerHTML = isSVG ? `<svg>${signature}</svg>` : signature;
 
   if (isSVG) {
     const svgRoot = template.content.firstChild;
@@ -217,8 +213,12 @@ export function compileTemplate(rawParts, isSVG, styles) {
 
     if (node.nodeType === Node.TEXT_NODE) {
       const text = node.textContent;
+      const equal = text.match(PLACEHOLDER_REGEXP_EQUAL);
 
-      if (!text.match(PLACEHOLDER_REGEXP_EQUAL)) {
+      if (equal) {
+        node.textContent = "";
+        parts[equal[1]] = [compileIndex, resolveValue];
+      } else {
         const results = text.match(PLACEHOLDER_REGEXP_ALL);
         if (results) {
           let currentNode = node;
@@ -244,12 +244,6 @@ export function compileTemplate(rawParts, isSVG, styles) {
               }
             });
         }
-      }
-
-      const equal = node.textContent.match(PLACEHOLDER_REGEXP_EQUAL);
-      if (equal) {
-        node.textContent = "";
-        parts[equal[1]] = [compileIndex, resolveValue];
       }
     } else {
       /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
@@ -328,23 +322,6 @@ export function compileTemplate(rawParts, isSVG, styles) {
 
       while (renderWalker.nextNode()) {
         const node = renderWalker.currentNode;
-
-        if (node.nodeType === Node.TEXT_NODE) {
-          /* istanbul ignore next */
-          if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
-            node.textContent = "";
-          }
-        } else if (
-          node.nodeType === Node.ELEMENT_NODE &&
-          node.tagName.indexOf("-") > -1 &&
-          !customElements.get(node.tagName.toLowerCase())
-        ) {
-          throw Error(
-            `Missing ${stringifyElement(
-              node,
-            )} element definition in ${stringifyElement(host)}`,
-          );
-        }
 
         while (currentPart && currentPart[0] === renderIndex) {
           markers.push([node, currentPart[1]]);
