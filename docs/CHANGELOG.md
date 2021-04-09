@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.2.1](https://github.com/hybridsjs/hybrids/compare/v5.2.0...v5.2.1) (2021-04-09)
+
+
+### Bug Fixes
+
+* **html:** remove missing element check, clean code ([#153](https://github.com/hybridsjs/hybrids/issues/153)) ([79614c9](https://github.com/hybridsjs/hybrids/commit/79614c9508f8f846db23f6eca03229479b929877))
+* **types:** property values & property factory ([43b9102](https://github.com/hybridsjs/hybrids/commit/43b910245c2840c40ba54303134341e4c872730b))
+
 ## [5.2.0](https://github.com/hybridsjs/hybrids/compare/v5.1.0...v5.2.0) (2021-04-06)
 
 
