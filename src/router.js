@@ -141,7 +141,7 @@ function setupBrowserUrl(browserUrl) {
           if (pathnameParams.includes(key)) return;
 
           if (searchParams.includes(key)) {
-            url.searchParams.append(key, params[key]);
+            url.searchParams.append(key, params[key] || "");
           } else {
             throw TypeError(`The '${key}' parameter is not supported`);
           }
@@ -368,7 +368,7 @@ function setupView(name, view, prefix, parent) {
 
           Object.keys(params).forEach(key => {
             if (writableParams.has(key)) {
-              url.searchParams.append(key, params[key]);
+              url.searchParams.append(key, params[key] || "");
             } else {
               throw TypeError(`The '${key}' parameter is not supported`);
             }
