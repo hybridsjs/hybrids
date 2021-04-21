@@ -216,12 +216,12 @@ function getNestedRouterSettings(name, view, options) {
   return nestedRouters[0];
 }
 
-function setupViews(views, parent = null) {
+function setupViews(views, prefix = "view", parent = null) {
   if (typeof views === "function") views = views();
 
   const result = Object.entries(views).map(([name, view]) => {
     // eslint-disable-next-line no-use-before-define
-    const config = setupView(name, view, parent);
+    const config = setupView(name, view, prefix, parent);
 
     if (parent && hasInStack(config, parent)) {
       throw Error(
@@ -235,8 +235,8 @@ function setupViews(views, parent = null) {
   return result;
 }
 
-function setupView(name, view, parent) {
-  const id = pascalToDash(`${name}-view`);
+function setupView(name, view, prefix, parent) {
+  const id = `${pascalToDash(prefix)}-${pascalToDash(name)}`;
 
   if (!view || typeof view !== "object") {
     throw TypeError(
@@ -423,7 +423,7 @@ function setupView(name, view, parent) {
           `The 'stack' option is not supported for dialogs - remove it from '${name}'`,
         );
       }
-      config.stack = setupViews(options.stack, config);
+      config.stack = setupViews(options.stack, prefix, config);
     }
 
     if (nestedRouterSettings) {
@@ -810,7 +810,7 @@ function connectRootRouter(host, invalidate, settings) {
           window.history.go(-(state.length - i - 1));
         } else {
           window.history.replaceState(
-            [settings.roots[0].getEntry()],
+            [settings.roots[0].getEntry(settings.params(host))],
             "",
             settings.url,
           );
@@ -877,7 +877,7 @@ function router(views, settings = {}) {
   settings = {
     url: settings.url || "/",
     params: settings.params || (() => ({})),
-    roots: setupViews(views),
+    roots: setupViews(views, settings.prefix),
     stack: [],
     entryPoints: [],
   };

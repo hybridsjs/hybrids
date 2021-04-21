@@ -171,6 +171,7 @@ declare namespace hybrids {
   /* Router */
   interface RouterOptions<E> {
     url?: string;
+    prefix?: string;
     params?: (host: E) => object;
   }
 
