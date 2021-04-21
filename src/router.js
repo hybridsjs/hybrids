@@ -49,12 +49,13 @@ function saveLayout(target) {
   const map = new Map();
 
   if (!configs.get(target).nestedParent) {
-    map.set(window, { x: window.scrollX, y: window.scrollY });
+    const el = document.scrollingElement;
+    map.set(el, { left: el.scrollLeft, top: el.scrollTop });
   }
 
   mapDeepElements(target, el => {
-    if (el.scrollHeight > el.clientHeight || el.scrollLeft > el.clientLeft) {
-      map.set(el, { x: el.scrollLeft, y: el.scrollTop });
+    if (el.scrollLeft || el.scrollTop) {
+      map.set(el, { left: el.scrollLeft, top: el.scrollTop });
     }
   });
 
@@ -67,7 +68,7 @@ function restoreLayout(target, clear) {
 
   if (!focusTarget) {
     requestAnimationFrame(() => {
-      focusTarget.focus();
+      focusTarget.focus({ preventScroll: true });
       focusTarget = null;
     });
   }
@@ -75,13 +76,20 @@ function restoreLayout(target, clear) {
   focusTarget = focusEl;
 
   const map = scrollMap.get(target);
-  if (map) {
-    map.forEach(
-      clear
-        ? (_, el) => el.scrollTo(0, 0)
-        : ({ x, y }, el) => el.scrollTo(x, y),
-    );
+
+  if (map && !clear) {
+    Promise.resolve().then(() => {
+      map.forEach((pos, el) => {
+        el.scrollLeft = pos.left;
+        el.scrollTop = pos.top;
+      });
+    });
+
     scrollMap.delete(target);
+  } else if (!configs.get(target).nestedParent) {
+    const el = document.scrollingElement;
+    el.scrollLeft = 0;
+    el.scrollTop = 0;
   }
 }
 
@@ -611,6 +619,10 @@ function resolveStack(state, settings) {
   }, []);
   const offset = settings.stack.length - reducedState.length;
 
+  if (offset < 0 && settings.stack.length) {
+    saveLayout(settings.stack[0]);
+  }
+
   settings.stack = reducedState.map(({ id }, index) => {
     const prevView = settings.stack[index + offset];
     const config = getConfigById(id);
@@ -894,15 +906,10 @@ function router(views, settings = {}) {
   });
 
   const desc = {
-    get: (host, lastValue) => {
-      if (lastValue && lastValue[0] !== settings.stack[0]) {
-        saveLayout(lastValue[0]);
-      }
-
-      return settings.stack
+    get: () =>
+      settings.stack
         .slice(0, settings.stack.findIndex(el => !configs.get(el).dialog) + 1)
-        .reverse();
-    },
+        .reverse(),
     connect: (host, key, invalidate) =>
       configs.get(host)
         ? connectNestedRouter(host, invalidate, settings)
