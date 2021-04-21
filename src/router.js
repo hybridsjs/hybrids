@@ -62,18 +62,18 @@ function saveLayout(target) {
   scrollMap.set(target, map);
 }
 
-let focusTarget;
+// let focusTarget;
 function restoreLayout(target, clear) {
-  const focusEl = focusMap.get(target) || target;
+  // const focusEl = focusMap.get(target) || target;
 
-  if (!focusTarget) {
-    requestAnimationFrame(() => {
-      focusTarget.focus({ preventScroll: true });
-      focusTarget = null;
-    });
-  }
+  // if (!focusTarget) {
+  //   requestAnimationFrame(() => {
+  //     focusTarget.focus({ preventScroll: true });
+  //     focusTarget = null;
+  //   });
+  // }
 
-  focusTarget = focusEl;
+  // focusTarget = focusEl;
 
   const map = scrollMap.get(target);
 
