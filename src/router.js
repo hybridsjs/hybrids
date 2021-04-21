@@ -520,7 +520,8 @@ function isActive(...views) {
 
     let entry = state[0];
     while (entry) {
-      if (entry.id === config.id) return true;
+      const target = getConfigById(entry.id);
+      if (target === config || hasInStack(config, target)) return true;
       entry = entry.nested;
     }
 
@@ -758,6 +759,7 @@ function connectRootRouter(host, invalidate, settings) {
       const offset = findSameEntryIndex(state, nextEntry);
       if (offset > -1) {
         navigateBack(offset, nextEntry, nextUrl || settings.url);
+        restoreLayout(settings.stack[0], true);
       } else {
         window.history.pushState([nextEntry, ...state], "", nextUrl);
         flush();
