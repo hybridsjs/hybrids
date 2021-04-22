@@ -88,8 +88,10 @@ function restoreLayout(target, clear) {
     scrollMap.delete(target);
   } else if (!configs.get(target).nestedParent) {
     const el = document.scrollingElement;
-    el.scrollLeft = 0;
-    el.scrollTop = 0;
+    Promise.resolve().then(() => {
+      el.scrollLeft = 0;
+      el.scrollTop = 0;
+    });
   }
 }
 
