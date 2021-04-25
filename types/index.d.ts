@@ -199,7 +199,6 @@ declare namespace hybrids {
     function url<V>(view: V, params?: Record<string, any>): string;
     function backUrl(params?: Record<string, any>): string;
     function guardUrl(params?: Record<string, any>): string;
-    function currentUrl(params?: Record<string, any>): string;
     function isActive(...views: View<any>[]): boolean;
 
     function resolve(event: Event, promise: Promise<any>): void;

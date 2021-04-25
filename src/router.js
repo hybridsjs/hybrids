@@ -501,15 +501,6 @@ function getGuardUrl(params = {}) {
   return config.stack[0] ? config.stack[0].url(params) : "";
 }
 
-function getCurrentUrl(params = {}) {
-  const state = window.history.state;
-  if (!state) return "";
-
-  const entry = state[0];
-  const config = getConfigById(entry.id);
-  return config.url({ ...entry.params, ...params });
-}
-
 function isActive(...views) {
   const state = window.history.state;
   if (!state) return false;
@@ -937,7 +928,6 @@ export default Object.assign(router, {
   connect,
   url: getUrl,
   backUrl: getBackUrl,
-  currentUrl: getCurrentUrl,
   guardUrl: getGuardUrl,
   isActive,
   resolve: resolveEvent,
