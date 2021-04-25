@@ -172,7 +172,7 @@ declare namespace hybrids {
   interface RouterOptions<E> {
     url?: string;
     prefix?: string;
-    params?: (host: E) => object;
+    params?: Array<keyof E>;
   }
 
   type View<E> = Hybrids<E> & {

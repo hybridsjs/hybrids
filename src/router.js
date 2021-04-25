@@ -798,7 +798,7 @@ function connectRootRouter(host, invalidate, settings) {
   if (!window.history.state) {
     const entry =
       getEntryFromURL(new URL(window.location.href)) ||
-      settings.roots[0].getEntry(settings.params(host));
+      settings.roots[0].getEntry();
 
     window.history.scrollRestoration = "manual";
     window.history.replaceState([entry], "", settings.url);
@@ -814,7 +814,7 @@ function connectRootRouter(host, invalidate, settings) {
           window.history.go(-(state.length - i - 1));
         } else {
           window.history.replaceState(
-            [settings.roots[0].getEntry(settings.params(host))],
+            [settings.roots[0].getEntry()],
             "",
             settings.url,
           );
@@ -880,7 +880,7 @@ function connectNestedRouter(host, invalidate, settings) {
 function router(views, settings = {}) {
   settings = {
     url: settings.url || "/",
-    params: settings.params || (() => ({})),
+    params: settings.params || [],
     roots: setupViews(views, settings.prefix),
     stack: [],
     entryPoints: [],
@@ -910,10 +910,18 @@ function router(views, settings = {}) {
   });
 
   const desc = {
-    get: () =>
-      settings.stack
+    get: host => {
+      const stack = settings.stack
         .slice(0, settings.stack.findIndex(el => !configs.get(el).dialog) + 1)
-        .reverse(),
+        .reverse();
+
+      const el = stack[stack.length - 1];
+      settings.params.forEach(key => {
+        el[key] = host[key];
+      });
+
+      return stack;
+    },
     connect: (host, key, invalidate) =>
       configs.get(host)
         ? connectNestedRouter(host, invalidate, settings)

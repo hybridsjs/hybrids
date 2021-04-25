@@ -86,7 +86,7 @@ fdescribe("router:", () => {
       });
 
       it("returns a view saved in window history", () => {
-        window.history.replaceState([{ id: "two-view", params: {} }], "");
+        window.history.replaceState([{ id: "view-two", params: {} }], "");
         disconnect = prop.connect(el, "", spy);
         const list = prop.get(el);
 
@@ -97,7 +97,7 @@ fdescribe("router:", () => {
 
       it("returns a default view when saved view is not found", () => {
         window.history.replaceState(
-          [{ id: "some-other-view", params: {} }],
+          [{ id: "view-some-other", params: {} }],
           "",
         );
         disconnect = prop.connect(el, "", spy);
@@ -109,11 +109,11 @@ fdescribe("router:", () => {
       });
 
       it("goes back when dialog element is on the top of the stack", done => {
-        window.history.replaceState([{ id: "two-view", params: {} }], "");
+        window.history.replaceState([{ id: "view-two", params: {} }], "");
         window.history.pushState(
           [
-            { id: "dialog-view", params: {} },
-            { id: "two-view", params: {} },
+            { id: "view-dialog", params: {} },
+            { id: "view-two", params: {} },
           ],
           "",
         );
