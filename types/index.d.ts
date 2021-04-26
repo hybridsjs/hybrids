@@ -179,6 +179,7 @@ declare namespace hybrids {
     __router__connect__?: {
       url?: string;
       multiple?: boolean;
+      replace?: boolean;
       guard?: (host: E) => any;
       stack?: MapOfViews;
     };

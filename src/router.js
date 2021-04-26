@@ -6,10 +6,6 @@ import { dispatch, pascalToDash } from "./utils.js";
 
 # TODO LIST
 
-* Nested routers:
-  * navigate push on self (nested parent)
-  
-* is active route helper
 * Transition effect
 
 */
@@ -77,11 +73,11 @@ function restoreLayout(target, clear) {
 
   const map = scrollMap.get(target);
 
-  if (map && !clear) {
+  if (map) {
     Promise.resolve().then(() => {
       map.forEach((pos, el) => {
-        el.scrollLeft = pos.left;
-        el.scrollTop = pos.top;
+        el.scrollLeft = clear ? 0 : pos.left;
+        el.scrollTop = clear ? 0 : pos.top;
       });
     });
 
@@ -263,6 +259,7 @@ function setupView(name, view, prefix, parent) {
       dialog: false,
       guard: false,
       multiple: false,
+      replace: false,
       ...view[connect],
     };
 
@@ -358,6 +355,7 @@ function setupView(name, view, prefix, parent) {
       view,
       dialog: options.dialog,
       multiple: options.multiple,
+      replace: options.replace,
       guard,
       parent: undefined,
       parentsWithGuards: undefined,
@@ -612,8 +610,9 @@ function resolveStack(state, settings) {
     return acc;
   }, []);
   const offset = settings.stack.length - reducedState.length;
+  const lastStackView = settings.stack[0];
 
-  if (offset < 0 && settings.stack.length) {
+  if (offset <= 0 && settings.stack.length) {
     saveLayout(settings.stack[0]);
   }
 
@@ -624,7 +623,7 @@ function resolveStack(state, settings) {
 
     if (prevView) {
       const prevConfig = configs.get(prevView);
-      if (config.id !== prevConfig.id) {
+      if (config.id !== prevConfig.id || config.replace) {
         return config.create();
       }
       nextView = prevView;
@@ -640,6 +639,10 @@ function resolveStack(state, settings) {
 
     return nextView;
   });
+
+  if (settings.stack[0] === lastStackView) {
+    restoreLayout(lastStackView, true);
+  }
 
   Object.assign(settings.stack[0], state[0].params);
 
@@ -752,7 +755,6 @@ function connectRootRouter(host, invalidate, settings) {
       const offset = findSameEntryIndex(state, nextEntry);
       if (offset > -1) {
         navigateBack(offset, nextEntry, nextUrl || settings.url);
-        restoreLayout(settings.stack[0], true);
       } else {
         window.history.pushState([nextEntry, ...state], "", nextUrl);
         flush();
