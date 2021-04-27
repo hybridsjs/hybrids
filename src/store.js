@@ -1252,7 +1252,12 @@ function store(Model, options = {}) {
 
           return lastValue;
         },
-    connect: options.draft ? () => () => clear(Model, false) : undefined,
+    connect: options.draft
+      ? (host, key) => () => {
+          cache.invalidate(host, key, true);
+          clear(Model, false);
+        }
+      : undefined,
   };
 
   return desc;
