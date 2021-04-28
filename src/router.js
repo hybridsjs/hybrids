@@ -499,9 +499,11 @@ function getGuardUrl(params = {}) {
   return config.stack[0] ? config.stack[0].url(params) : "";
 }
 
-function isActive(...views) {
+function isActive(views, deep = false) {
   const state = window.history.state;
   if (!state) return false;
+
+  views = [].concat(views);
 
   return views.some(view => {
     const config = configs.get(view);
@@ -512,7 +514,9 @@ function isActive(...views) {
     let entry = state[0];
     while (entry) {
       const target = getConfigById(entry.id);
-      if (target === config || hasInStack(config, target)) return true;
+      if (target === config || (deep && hasInStack(config, target))) {
+        return true;
+      }
       entry = entry.nested;
     }
 
