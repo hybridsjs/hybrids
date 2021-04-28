@@ -874,6 +874,7 @@ function connectNestedRouter(host, invalidate, settings) {
   };
 }
 
+const stackMap = new WeakMap();
 function router(views, settings = {}) {
   settings = {
     url: settings.url || "/",
@@ -919,10 +920,18 @@ function router(views, settings = {}) {
 
       return stack;
     },
-    connect: (host, key, invalidate) =>
-      configs.get(host)
+    connect: (host, key, invalidate) => {
+      settings.stack = stackMap.get(host) || settings.stack;
+
+      const disconnect = configs.get(host)
         ? connectNestedRouter(host, invalidate, settings)
-        : connectRootRouter(host, invalidate, settings),
+        : connectRootRouter(host, invalidate, settings);
+
+      return () => {
+        stackMap.set(host, settings.stack);
+        disconnect();
+      };
+    },
   };
 
   routerSettings.set(desc, settings);
