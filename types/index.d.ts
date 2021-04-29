@@ -200,17 +200,25 @@ declare namespace hybrids {
 
   function router<E, K extends string, V>(
     views: MapOfViews,
-    options: RouterOptions<E>,
+    options?: RouterOptions<E>,
   ): Descriptor<E, K, HTMLElement[]>;
 
   namespace router {
     const connect = "__router__connect__";
 
-    function url<V>(view: V, params?: Record<string, any>): string;
-    function backUrl(params?: Record<string, any>): string;
-    function guardUrl(params?: Record<string, any>): string;
-    function active(views: View<any> | View<any>[], stack?: boolean): boolean;
+    type UrlParams = Record<string, any>;
 
+    function url<V>(view: V, params?: UrlParams): string;
+    function backUrl(
+      params?: UrlParams | null,
+      options?: { nested?: boolean },
+    ): string;
+    function guardUrl(params?: UrlParams): string;
+
+    function active(
+      views: View<any> | View<any>[],
+      options?: { stack?: boolean },
+    ): boolean;
     function resolve(event: Event, promise: Promise<any>): void;
   }
 

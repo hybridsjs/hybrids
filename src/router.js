@@ -14,6 +14,7 @@ const connect = Symbol("router.connect");
 const routers = new WeakMap();
 const configs = new WeakMap();
 const routerSettings = new WeakMap();
+let rootRouter = null;
 
 function mapDeepElements(target, cb) {
   cb(target);
@@ -448,14 +449,25 @@ function getUrl(view, params = {}) {
   return config.url(params);
 }
 
-function getBackUrl(params = {}) {
+function getBackUrl(params = {}, { nested = false } = {}) {
   const state = window.history.state;
   if (!state) return "";
 
   let config;
 
   if (state.length > 1) {
-    const prevEntry = state[1];
+    let i = 1;
+    let prevEntry = state[i];
+    if (nested) {
+      while (prevEntry.nested) {
+        prevEntry = prevEntry.nested;
+      }
+    } else
+      while (prevEntry.nested && i < state.length - 1) {
+        i += 1;
+        prevEntry = state[i];
+      }
+
     config = getConfigById(prevEntry.id);
 
     if (!config.guard) {
@@ -477,7 +489,7 @@ function getBackUrl(params = {}) {
     }
 
     if (config) {
-      return config.url(params);
+      return config.url(params || {});
     }
   }
 
@@ -499,7 +511,7 @@ function getGuardUrl(params = {}) {
   return config.stack[0] ? config.stack[0].url(params) : "";
 }
 
-function active(views, stack = false) {
+function active(views, { stack = false } = {}) {
   const state = window.history.state;
   if (!state) return false;
 
@@ -552,12 +564,7 @@ function handleNavigate(event) {
   }
 
   if (url && url.origin === window.location.origin) {
-    const target = event
-      .composedPath()
-      .reverse()
-      .find(el => routers.has(el));
-
-    dispatch(target, "navigate", { detail: { url, event } });
+    dispatch(rootRouter, "navigate", { detail: { url, event } });
   }
 }
 
@@ -790,7 +797,28 @@ function connectRootRouter(host, invalidate, settings) {
     }
   }
 
+  deepEach(settings.roots, (c, parent) => {
+    c.parent = parent;
+
+    if (parent) {
+      c.nestedParent =
+        parent.nested && parent.nested.includes(c)
+          ? parent
+          : parent.nestedParent;
+    }
+
+    let tempParent = parent;
+    c.parentsWithGuards = [];
+    while (tempParent) {
+      if (tempParent.guard) c.parentsWithGuards.unshift(tempParent);
+      tempParent = tempParent.parent;
+    }
+
+    if (c.browserUrl) settings.entryPoints.push(c);
+  });
+
   routers.set(host, flush);
+  rootRouter = host;
 
   if (!window.history.state) {
     const entry =
@@ -837,6 +865,7 @@ function connectRootRouter(host, invalidate, settings) {
     host.removeEventListener("navigate", navigate);
 
     routers.delete(host);
+    rootRouter = null;
   };
 }
 
@@ -845,13 +874,15 @@ function connectNestedRouter(host, invalidate, settings) {
   if (!viewConfig) return false;
 
   function getNestedState() {
-    return window.history.state.map(entry => {
-      while (entry) {
-        if (entry.id === viewConfig.id) return entry.nested;
-        entry = entry.nested;
-      }
-      return entry;
-    });
+    return window.history.state
+      .map(entry => {
+        while (entry) {
+          if (entry.id === viewConfig.id) return entry.nested;
+          entry = entry.nested;
+        }
+        return entry;
+      })
+      .filter(e => e);
   }
 
   function flush() {
@@ -890,23 +921,6 @@ function router(views, settings = {}) {
     );
   }
 
-  deepEach(settings.roots, (c, parent) => {
-    c.parent = parent;
-
-    if (parent && parent.nested && parent.nested.includes(c)) {
-      c.nestedParent = parent;
-    }
-
-    let tempParent = parent;
-    c.parentsWithGuards = [];
-    while (tempParent) {
-      if (tempParent.guard) c.parentsWithGuards.unshift(tempParent);
-      tempParent = tempParent.parent;
-    }
-
-    if (c.browserUrl) settings.entryPoints.push(c);
-  });
-
   const desc = {
     get: host => {
       const stack = settings.stack
@@ -929,7 +943,13 @@ function router(views, settings = {}) {
 
       return () => {
         stackMap.set(host, settings.stack);
+        settings.stack = [];
+
         disconnect();
+
+        Promise.resolve().then(() => {
+          stackMap.delete(host);
+        });
       };
     },
   };
