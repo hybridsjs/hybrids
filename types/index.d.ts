@@ -206,7 +206,7 @@ declare namespace hybrids {
   namespace router {
     const connect = "__router__connect__";
 
-    type UrlParams = Record<string, any>;
+    type UrlParams = Record<string, string | number | boolean>;
 
     function url<V>(view: V, params?: UrlParams): string;
     function backUrl(
