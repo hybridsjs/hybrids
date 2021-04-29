@@ -634,7 +634,7 @@ function resolveStack(state, settings) {
 
     if (prevView) {
       const prevConfig = configs.get(prevView);
-      if (config.id !== prevConfig.id || config.replace) {
+      if (config.id !== prevConfig.id || (index === 0 && config.replace)) {
         return config.create();
       }
       nextView = prevView;
