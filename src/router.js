@@ -449,7 +449,7 @@ function getUrl(view, params = {}) {
   return config.url(params);
 }
 
-function getBackUrl(params = {}, { nested = false } = {}) {
+function getBackUrl({ nested = false } = {}) {
   const state = window.history.state;
   if (!state) return "";
 
@@ -471,7 +471,7 @@ function getBackUrl(params = {}, { nested = false } = {}) {
     config = getConfigById(prevEntry.id);
 
     if (!config.guard) {
-      return config.url({ ...prevEntry.params, ...params });
+      return config.url(prevEntry.params);
     }
   } else {
     const currentConfig = getConfigById(state[0].id);
@@ -489,7 +489,7 @@ function getBackUrl(params = {}, { nested = false } = {}) {
     }
 
     if (config) {
-      return config.url(params || {});
+      return config.url({});
     }
   }
 

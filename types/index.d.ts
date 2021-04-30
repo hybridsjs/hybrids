@@ -4,8 +4,8 @@ export as namespace hybrids;
 
 declare namespace hybrids {
   interface Descriptor<E, K extends string, V> {
-    get?(host: E & HTMLElement, lastValue: V): V;
-    set?(host: E & HTMLElement, value: any, lastValue: V): V;
+    get?(host: E & HTMLElement, lastValue: V | undefined): V;
+    set?(host: E & HTMLElement, value: any, lastValue: V | undefined): V;
     connect?(
       host: E & HTMLElement & { [property in K]: V },
       key: K,
@@ -209,10 +209,7 @@ declare namespace hybrids {
     type UrlParams = Record<string, string | number | boolean>;
 
     function url<V>(view: V, params?: UrlParams): string;
-    function backUrl(
-      params?: UrlParams | null,
-      options?: { nested?: boolean },
-    ): string;
+    function backUrl(options?: { nested?: boolean }): string;
     function guardUrl(params?: UrlParams): string;
 
     function active(
