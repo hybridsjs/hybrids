@@ -13,6 +13,8 @@ import { dispatch, pascalToDash } from "./utils.js";
 const connect = Symbol("router.connect");
 const routers = new WeakMap();
 const configs = new WeakMap();
+const stacks = new WeakMap();
+
 const routerSettings = new WeakMap();
 let rootRouter = null;
 
@@ -609,7 +611,8 @@ function deepEach(stack, cb, parent, set = new WeakSet()) {
     });
 }
 
-function resolveStack(state, settings) {
+function resolveStack(host, state) {
+  let stack = stacks.get(host);
   const reducedState = state.reduce((acc, entry, index) => {
     if (
       index === 0 ||
@@ -620,15 +623,15 @@ function resolveStack(state, settings) {
     }
     return acc;
   }, []);
-  const offset = settings.stack.length - reducedState.length;
-  const lastStackView = settings.stack[0];
+  const offset = stack.length - reducedState.length;
+  const lastStackView = stack[0];
 
-  if (offset <= 0 && settings.stack.length) {
-    saveLayout(settings.stack[0]);
+  if (offset <= 0 && stack.length) {
+    saveLayout(stack[0]);
   }
 
-  settings.stack = reducedState.map(({ id }, index) => {
-    const prevView = settings.stack[index + offset];
+  stack = reducedState.map(({ id }, index) => {
+    const prevView = stack[index + offset];
     const config = getConfigById(id);
     let nextView;
 
@@ -651,14 +654,17 @@ function resolveStack(state, settings) {
     return nextView;
   });
 
-  if (settings.stack[0] === lastStackView) {
+  if (stack[0] === lastStackView) {
     restoreLayout(lastStackView, true);
   }
 
-  Object.assign(settings.stack[0], state[0].params);
+  Object.assign(stack[0], state[0].params);
+  stacks.set(host, stack);
 
-  const nestedFlush = routers.get(settings.stack[0]);
-  if (nestedFlush) nestedFlush();
+  const flush = routers.get(stack[0]);
+  if (flush) {
+    flush();
+  }
 }
 
 function findSameEntryIndex(state, entry) {
@@ -687,7 +693,7 @@ function findSameEntryIndex(state, entry) {
 
 function connectRootRouter(host, invalidate, settings) {
   function flush() {
-    resolveStack(window.history.state, settings);
+    resolveStack(host, window.history.state);
     invalidate();
   }
 
@@ -760,7 +766,8 @@ function connectRootRouter(host, invalidate, settings) {
       nextUrl = nextConfig.url(nextEntry.params);
     }
 
-    cache.suspend(settings.stack[0]);
+    const stack = stacks.get(host);
+    cache.suspend(stack[0]);
 
     if (nextEntry.id === currentEntry.id) {
       const offset = findSameEntryIndex(state, nextEntry);
@@ -829,12 +836,13 @@ function connectRootRouter(host, invalidate, settings) {
     window.history.replaceState([entry], "", settings.url);
     flush();
   } else {
+    const stack = stacks.get(host);
     const state = window.history.state;
     let i;
     for (i = state.length - 1; i >= 0; i -= 1) {
       const entry = state[i];
       const config = getConfigById(entry.id);
-      if (!config || (config.dialog && settings.stack.length === 0)) {
+      if (!config || (config.dialog && stack.length === 0)) {
         if (state.length > 1) {
           window.history.go(-(state.length - i - 1));
         } else {
@@ -886,10 +894,11 @@ function connectNestedRouter(host, invalidate, settings) {
   }
 
   function flush() {
-    resolveStack(getNestedState(), settings);
+    resolveStack(host, getNestedState());
     invalidate();
   }
 
+  // TODO: ???
   if (!getNestedState()[0]) {
     window.history.replaceState(
       [settings.roots[0].getEntry(), ...window.history.state.slice(1)],
@@ -905,13 +914,11 @@ function connectNestedRouter(host, invalidate, settings) {
   };
 }
 
-const stackMap = new WeakMap();
 function router(views, settings = {}) {
   settings = {
     url: settings.url || "/",
     params: settings.params || [],
     roots: setupViews(views, settings.prefix),
-    stack: [],
     entryPoints: [],
   };
 
@@ -923,32 +930,23 @@ function router(views, settings = {}) {
 
   const desc = {
     get: host => {
-      const stack = settings.stack
-        .slice(0, settings.stack.findIndex(el => !configs.get(el).dialog) + 1)
+      const stack = stacks.get(host);
+      return stack
+        .slice(0, stack.findIndex(el => !configs.get(el).dialog) + 1)
         .reverse();
-
-      const el = stack[stack.length - 1];
-      settings.params.forEach(key => {
-        el[key] = host[key];
-      });
-
-      return stack;
     },
     connect: (host, key, invalidate) => {
-      settings.stack = stackMap.get(host) || settings.stack;
+      if (!stacks.has(host)) stacks.set(host, []);
 
       const disconnect = configs.get(host)
         ? connectNestedRouter(host, invalidate, settings)
         : connectRootRouter(host, invalidate, settings);
 
       return () => {
-        stackMap.set(host, settings.stack);
-        settings.stack = [];
-
         disconnect();
 
         Promise.resolve().then(() => {
-          stackMap.delete(host);
+          stacks.delete(host);
         });
       };
     },
