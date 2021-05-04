@@ -181,7 +181,6 @@ declare namespace hybrids {
   interface RouterOptions<E> {
     url?: string;
     prefix?: string;
-    params?: Array<keyof E>;
   }
 
   type View<E> = Hybrids<E> & {

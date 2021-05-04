@@ -917,7 +917,6 @@ function connectNestedRouter(host, invalidate, settings) {
 function router(views, settings = {}) {
   settings = {
     url: settings.url || "/",
-    params: settings.params || [],
     roots: setupViews(views, settings.prefix),
     entryPoints: [],
   };
