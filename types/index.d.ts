@@ -161,18 +161,18 @@ declare namespace hybrids {
     function resolve<M>(model: M): Promise<M>;
     function ref<M>(fn: () => M): M;
 
-    interface ValidateFunction<M> {
-      (value: string | number, key: string, model: M): string | boolean | void;
+    interface ValidateFunction<M, T> {
+      (value: T, key: string, model: M): string | boolean | void;
     }
 
     function value<M>(
       defaultValue: string,
-      validate?: ValidateFunction<M> | RegExp,
+      validate?: ValidateFunction<M, string> | RegExp,
       errorMessage?: string,
     ): string;
     function value<M>(
       defaultValue: number,
-      validate?: ValidateFunction<M> | RegExp,
+      validate?: ValidateFunction<M, number> | RegExp,
       errorMessage?: string,
     ): number;
   }
