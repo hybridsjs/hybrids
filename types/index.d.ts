@@ -205,11 +205,13 @@ declare namespace hybrids {
   namespace router {
     const connect = "__router__connect__";
 
-    type UrlParams = Record<string, string | number | boolean>;
+    type UrlParams<V> = {
+      [property in keyof V]?: any;
+    };
 
-    function url<V>(view: V, params?: UrlParams): string;
+    function url<V>(view: V, params?: UrlParams<V>): string;
     function backUrl(options?: { nested?: boolean }): string;
-    function guardUrl(params?: UrlParams): string;
+    function guardUrl(params?: UrlParams<any>): string;
 
     function active(
       views: View<any> | View<any>[],

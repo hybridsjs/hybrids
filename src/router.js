@@ -11,12 +11,14 @@ import { dispatch, pascalToDash } from "./utils.js";
 */
 
 const connect = Symbol("router.connect");
-const routers = new WeakMap();
 const configs = new WeakMap();
-const stacks = new WeakMap();
 
-const routerSettings = new WeakMap();
+const flushes = new WeakMap();
+const stacks = new WeakMap();
+const routers = new WeakMap();
+
 let rootRouter = null;
+let entryPoints = [];
 
 function mapDeepElements(target, cb) {
   cb(target);
@@ -190,9 +192,30 @@ function hasInStack(config, target) {
   });
 }
 
-function getNestedRouterSettings(name, view, options) {
+function setupViews(views, options, parent = null, nestedParent = null) {
+  if (typeof views === "function") views = views();
+
+  const result = Object.entries(views).map(([name, view]) => {
+    // eslint-disable-next-line no-use-before-define
+    const config = setupView(view, name, options, parent, nestedParent);
+
+    if (parent && hasInStack(config, parent)) {
+      throw Error(
+        `${parent.name} cannot be in the stack of ${config.name} - ${config.name} already connected to ${parent.name}`,
+      );
+    }
+
+    if (config.browserUrl) entryPoints.push(config);
+
+    return config;
+  });
+
+  return result;
+}
+
+function getNestedRouterOptions(view, name, config) {
   const nestedRouters = Object.values(view)
-    .map(desc => routerSettings.get(desc))
+    .map(desc => routers.get(desc))
     .filter(d => d);
 
   if (nestedRouters.length) {
@@ -202,42 +225,25 @@ function getNestedRouterSettings(name, view, options) {
       );
     }
 
-    if (options.dialog) {
+    if (config.dialog) {
       throw TypeError(
         `Nested routers are not supported in dialogs. Remove the router factory from '${name}' view`,
       );
     }
 
-    if (options.url) {
+    if (config.browserUrl) {
       throw TypeError(
-        `Views with nested routers must not have the url option. Remove either the router factory or the url option from '${name}' view`,
+        `A view with nested router must not have the url option. Remove the url option from '${name}' view`,
       );
     }
   }
   return nestedRouters[0];
 }
 
-function setupViews(views, prefix = "view", parent = null) {
-  if (typeof views === "function") views = views();
-
-  const result = Object.entries(views).map(([name, view]) => {
-    // eslint-disable-next-line no-use-before-define
-    const config = setupView(name, view, prefix, parent);
-
-    if (parent && hasInStack(config, parent)) {
-      throw Error(
-        `${parent.name} cannot be in the stack of ${config.name} - ${config.name} already connected to ${parent.name}`,
-      );
-    }
-
-    return config;
-  });
-
-  return result;
-}
-
-function setupView(name, view, prefix, parent) {
-  const id = `${pascalToDash(prefix)}-${pascalToDash(name)}`;
+function setupView(view, name, routerOptions, parent, nestedParent) {
+  const id = `${pascalToDash(routerOptions.prefix || "view")}-${pascalToDash(
+    name,
+  )}`;
 
   if (!view || typeof view !== "object") {
     throw TypeError(
@@ -249,10 +255,17 @@ function setupView(name, view, prefix, parent) {
 
   let config = configs.get(view);
 
-  if (config && config.name !== name) {
-    throw Error(
-      `View definition for ${name} in ${parent.name} already connected to the router as ${config.name}`,
-    );
+  if (config) {
+    if (config.name !== name) {
+      throw Error(
+        `View definition for ${name} in ${parent.name} already connected to the router as ${config.name}`,
+      );
+    }
+
+    if (config.id !== id) {
+      configs.delete(customElements.get(config.id));
+      config = null;
+    }
   }
 
   if (!config) {
@@ -274,8 +287,6 @@ function setupView(name, view, prefix, parent) {
       const desc = Object.getOwnPropertyDescriptor(Constructor.prototype, key);
       if (desc.set) writableParams.add(key);
     });
-
-    const nestedRouterSettings = getNestedRouterSettings(name, view, options);
 
     if (options.dialog) {
       callbacksMap.get(Constructor).push(host => {
@@ -316,7 +327,7 @@ function setupView(name, view, prefix, parent) {
 
             if (entry.id === configs.get(host).id) {
               entry.params = browserUrl.paramsKeys.reduce((acc, key) => {
-                acc[key] = String(host[key]);
+                acc[key] = String(host[key] || "");
                 return acc;
               }, {});
 
@@ -361,23 +372,26 @@ function setupView(name, view, prefix, parent) {
       replace: options.replace,
       guard,
       parent: undefined,
+      nestedParent: undefined,
+      nestedRoots: undefined,
       parentsWithGuards: undefined,
       stack: [],
-      nestedParent: undefined,
-      nested: nestedRouterSettings ? nestedRouterSettings.roots : null,
       ...(browserUrl || {
-        url(params) {
-          const url = new URL(`@${id}`, window.location.origin);
+        url(params, suppressErrors) {
+          const url = new URL("", window.location.origin);
 
           Object.keys(params).forEach(key => {
             if (writableParams.has(key)) {
               url.searchParams.append(key, params[key] || "");
-            } else {
+            } else if (!suppressErrors) {
               throw TypeError(`The '${key}' parameter is not supported`);
             }
           });
 
-          return url;
+          return new URL(
+            `${routerOptions.url}#@${id}${url.search}`,
+            window.location.origin,
+          );
         },
         match(url) {
           const params = {};
@@ -426,12 +440,30 @@ function setupView(name, view, prefix, parent) {
           `The 'stack' option is not supported for dialogs - remove it from '${name}'`,
         );
       }
-      config.stack = setupViews(options.stack, prefix, config);
+      config.stack = setupViews(options.stack, routerOptions, config);
     }
+  }
 
-    if (nestedRouterSettings) {
-      config.stack = config.stack.concat(nestedRouterSettings.roots);
-    }
+  config.parent = parent;
+  config.nestedParent = nestedParent;
+
+  config.parentsWithGuards = [];
+  while (parent) {
+    if (parent.guard) config.parentsWithGuards.unshift(parent);
+    parent = parent.parent;
+  }
+
+  const nestedRouterOptions = getNestedRouterOptions(view, name, config);
+
+  if (nestedRouterOptions) {
+    config.nestedRoots = setupViews(
+      nestedRouterOptions.views,
+      { ...routerOptions, ...nestedRouterOptions },
+      config,
+      config,
+    );
+
+    config.stack = config.stack.concat(config.nestedRoots);
   }
 
   return config;
@@ -491,7 +523,7 @@ function getBackUrl({ nested = false } = {}) {
     }
 
     if (config) {
-      return config.url({});
+      return config.url(state[0].params, true);
     }
   }
 
@@ -565,7 +597,7 @@ function handleNavigate(event) {
       return;
   }
 
-  if (url && url.origin === window.location.origin) {
+  if (rootRouter && url && url.origin === window.location.origin) {
     dispatch(rootRouter, "navigate", { detail: { url, event } });
   }
 }
@@ -594,21 +626,6 @@ function resolveEvent(event, promise) {
       activePromise = null;
     }
   });
-}
-
-function deepEach(stack, cb, parent, set = new WeakSet()) {
-  stack
-    .filter(c => {
-      if (set.has(c)) return false;
-
-      set.add(c);
-      cb(c, parent);
-
-      return c.stack.length;
-    })
-    .forEach(c => {
-      deepEach(c.stack, cb, c, set);
-    });
 }
 
 function resolveStack(host, state) {
@@ -662,9 +679,29 @@ function resolveStack(host, state) {
   stacks.set(host, stack);
 
   const flush = routers.get(stack[0]);
-  if (flush) {
-    flush();
+  if (flush) flush();
+}
+
+function getEntryFromURL(url) {
+  let config;
+
+  const [pathname, search] = url.hash.split("?");
+  if (pathname) {
+    config = getConfigById(pathname.split("@")[1]);
+    url = new URL(`?${search}`, window.location.origin);
   }
+
+  if (!config) {
+    for (let i = 0; i < entryPoints.length; i += 1) {
+      const entryPoint = entryPoints[i];
+      const params = entryPoint.match(url);
+      if (params) return entryPoint.getEntry(params);
+    }
+
+    return null;
+  }
+
+  return config.getEntry(config.match(url));
 }
 
 function findSameEntryIndex(state, entry) {
@@ -691,7 +728,7 @@ function findSameEntryIndex(state, entry) {
   });
 }
 
-function connectRootRouter(host, invalidate, settings) {
+function connectRootRouter(host, invalidate, options) {
   function flush() {
     resolveStack(host, window.history.state);
     invalidate();
@@ -731,22 +768,6 @@ function connectRootRouter(host, invalidate, settings) {
     }
   }
 
-  function getEntryFromURL(url) {
-    const config = getConfigById(url.pathname.substr(2));
-
-    if (!config) {
-      for (let i = 0; i < settings.entryPoints.length; i += 1) {
-        const entryPoint = settings.entryPoints[i];
-        const params = entryPoint.match(url);
-        if (params) return entryPoint.getEntry(params);
-      }
-
-      return null;
-    }
-
-    return config.getEntry(config.match(url));
-  }
-
   function navigate(event) {
     const nextEntry = getEntryFromURL(event.detail.url);
     if (!nextEntry) return;
@@ -772,7 +793,7 @@ function connectRootRouter(host, invalidate, settings) {
     if (nextEntry.id === currentEntry.id) {
       const offset = findSameEntryIndex(state, nextEntry);
       if (offset > -1) {
-        navigateBack(offset, nextEntry, nextUrl || settings.url);
+        navigateBack(offset, nextEntry, nextUrl || options.url);
       } else {
         window.history.pushState([nextEntry, ...state], "", nextUrl);
         flush();
@@ -780,7 +801,7 @@ function connectRootRouter(host, invalidate, settings) {
     } else {
       let offset = state.findIndex(({ id }) => nextEntry.id === id);
       if (offset > -1) {
-        navigateBack(offset, nextEntry, nextUrl || settings.url);
+        navigateBack(offset, nextEntry, nextUrl || options.url);
       } else {
         const currentConfig = getConfigById(currentEntry.id);
         if (
@@ -797,66 +818,53 @@ function connectRootRouter(host, invalidate, settings) {
           navigateBack(
             offset > -1 ? offset : state.length - 1,
             nextEntry,
-            nextUrl || settings.url,
+            nextUrl || options.url,
           );
         }
       }
     }
   }
 
-  deepEach(settings.roots, (c, parent) => {
-    c.parent = parent;
+  entryPoints = [];
+  const roots = setupViews(options.views, options);
 
-    if (parent) {
-      c.nestedParent =
-        parent.nested && parent.nested.includes(c)
-          ? parent
-          : parent.nestedParent;
-    }
-
-    let tempParent = parent;
-    c.parentsWithGuards = [];
-    while (tempParent) {
-      if (tempParent.guard) c.parentsWithGuards.unshift(tempParent);
-      tempParent = tempParent.parent;
-    }
-
-    if (c.browserUrl) settings.entryPoints.push(c);
-  });
-
-  routers.set(host, flush);
+  flushes.set(host, flush);
   rootRouter = host;
+
+  window.history.scrollRestoration = "manual";
 
   if (!window.history.state) {
     const entry =
-      getEntryFromURL(new URL(window.location.href)) ||
-      settings.roots[0].getEntry();
-
-    window.history.scrollRestoration = "manual";
-    window.history.replaceState([entry], "", settings.url);
+      getEntryFromURL(new URL(window.location.href)) || roots[0].getEntry();
+    window.history.replaceState([entry], "", options.url);
     flush();
   } else {
     const stack = stacks.get(host);
     const state = window.history.state;
+
     let i;
     for (i = state.length - 1; i >= 0; i -= 1) {
-      const entry = state[i];
-      const config = getConfigById(entry.id);
-      if (!config || (config.dialog && stack.length === 0)) {
-        if (state.length > 1) {
-          window.history.go(-(state.length - i - 1));
-        } else {
-          window.history.replaceState(
-            [settings.roots[0].getEntry()],
-            "",
-            settings.url,
-          );
-          flush();
+      let entry = state[i];
+      while (entry) {
+        const config = getConfigById(entry.id);
+        if (!config || (config.dialog && stack.length === 0)) {
+          break;
         }
-        break;
+        entry = entry.nested;
       }
+      if (entry) break;
     }
-    if (i < 0) flush();
+
+    if (i > -1) {
+      const lastValidEntry = state[i + 1];
+      navigateBack(
+        state.length - i - 1,
+        lastValidEntry || roots[0].getEntry(state[0].params),
+        options.url,
+      );
+    } else {
+      flush();
+    }
   }
 
   window.addEventListener("popstate", flush);
@@ -872,20 +880,18 @@ function connectRootRouter(host, invalidate, settings) {
     host.removeEventListener("submit", handleNavigate);
     host.removeEventListener("navigate", navigate);
 
-    routers.delete(host);
     rootRouter = null;
   };
 }
 
-function connectNestedRouter(host, invalidate, settings) {
-  const viewConfig = configs.get(host);
-  if (!viewConfig) return false;
+function connectNestedRouter(host, invalidate) {
+  const config = configs.get(host);
 
   function getNestedState() {
     return window.history.state
       .map(entry => {
         while (entry) {
-          if (entry.id === viewConfig.id) return entry.nested;
+          if (entry.id === config.id) return entry.nested;
           entry = entry.nested;
         }
         return entry;
@@ -898,38 +904,26 @@ function connectNestedRouter(host, invalidate, settings) {
     invalidate();
   }
 
-  // TODO: ???
   if (!getNestedState()[0]) {
+    const state = window.history.state;
     window.history.replaceState(
-      [settings.roots[0].getEntry(), ...window.history.state.slice(1)],
+      [config.nestedRoots[0].getEntry(state[0].params), ...state.slice(1)],
       "",
     );
   }
-
-  routers.set(host, flush);
-  flush();
-
-  return () => {
-    routers.delete(host);
-  };
+  if (!flushes.has(host)) flush();
+  flushes.set(host, flush);
 }
 
-function router(views, settings = {}) {
-  settings = {
-    url: settings.url || "/",
-    roots: setupViews(views, settings.prefix),
-    entryPoints: [],
+function router(views, options = {}) {
+  options = {
+    ...options,
+    views,
   };
-
-  if (!settings.roots.length) {
-    throw TypeError(
-      `The first argument must be a non-empty map of views: ${views}`,
-    );
-  }
 
   const desc = {
     get: host => {
-      const stack = stacks.get(host);
+      const stack = stacks.get(host) || [];
       return stack
         .slice(0, stack.findIndex(el => !configs.get(el).dialog) + 1)
         .reverse();
@@ -937,22 +931,15 @@ function router(views, settings = {}) {
     connect: (host, key, invalidate) => {
       if (!stacks.has(host)) stacks.set(host, []);
 
-      const disconnect = configs.get(host)
-        ? connectNestedRouter(host, invalidate, settings)
-        : connectRootRouter(host, invalidate, settings);
+      if (configs.has(host)) {
+        return connectNestedRouter(host, invalidate);
+      }
 
-      return () => {
-        disconnect();
-
-        Promise.resolve().then(() => {
-          stacks.delete(host);
-        });
-      };
+      return connectRootRouter(host, invalidate, options);
     },
   };
 
-  routerSettings.set(desc, settings);
-
+  routers.set(desc, options);
   return desc;
 }
 
