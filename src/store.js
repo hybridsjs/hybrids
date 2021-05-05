@@ -245,9 +245,15 @@ function setupModel(Model, nested) {
     if (typeof storage === "object") Object.freeze(storage);
 
     let invalidatePromise;
-    const placeholder = {};
     const enumerable = hasOwnProperty.call(Model, "id");
     const checks = new Map();
+
+    const proto = {
+      toString() {
+        return this.id || undefined;
+      },
+    };
+    const placeholder = Object.create(proto);
 
     config = {
       model: Model,
@@ -477,7 +483,7 @@ function setupModel(Model, nested) {
       const model = transform.reduce((acc, fn) => {
         fn(acc, data, lastModel);
         return acc;
-      }, {});
+      }, Object.create(proto));
 
       definitions.set(model, config);
       storePointer.set(model, store);
@@ -1229,7 +1235,7 @@ function store(Model, options = {}) {
       }
 
       const id =
-        options.draft && lastValue
+        (options.draft || options.id === undefined) && lastValue
           ? lastValue.id
           : options.id && options.id(host);
 
@@ -1241,17 +1247,6 @@ function store(Model, options = {}) {
 
       return nextValue;
     },
-    set: config.list
-      ? undefined
-      : (host, values, lastValue) => {
-          if (!lastValue || !ready(lastValue)) lastValue = desc.get(host);
-
-          store
-            .set(lastValue, values)
-            .catch(/* istanbul ignore next */ () => {});
-
-          return lastValue;
-        },
     connect: options.draft
       ? (host, key) => () => {
           cache.invalidate(host, key, true);
@@ -1259,6 +1254,25 @@ function store(Model, options = {}) {
         }
       : undefined,
   };
+
+  if (!options.id && !options.draft && (config.enumerable || config.list)) {
+    desc.set = (host, values) => {
+      const valueConfig = definitions.get(values);
+      if (valueConfig) {
+        if (valueConfig === config) return values;
+        throw TypeError("Model instance must match the definition");
+      }
+      return store.get(Model, values);
+    };
+  } else if (!config.list) {
+    desc.set = (host, values, lastValue) => {
+      if (!lastValue || !ready(lastValue)) lastValue = desc.get(host);
+
+      store.set(lastValue, values).catch(/* istanbul ignore next */ () => {});
+
+      return lastValue;
+    };
+  }
 
   return desc;
 }
