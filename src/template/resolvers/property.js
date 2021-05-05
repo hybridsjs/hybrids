@@ -13,16 +13,14 @@ export default function resolveProperty(attrName, propertyName, isSVG) {
       return resolveClassList;
     case "style":
       return resolveStyleList;
-    default:
+    default: {
+      let isProp = false;
       return (host, target, value) => {
-        if (
-          !isSVG &&
-          !(target instanceof SVGElement) &&
-          propertyName in target
-        ) {
-          if (target[propertyName] !== value) {
-            target[propertyName] = value;
-          }
+        isProp =
+          isProp ||
+          (!isSVG && !(target instanceof SVGElement) && propertyName in target);
+        if (isProp) {
+          target[propertyName] = value;
         } else if (value === false || value === undefined || value === null) {
           target.removeAttribute(attrName);
         } else {
@@ -30,5 +28,6 @@ export default function resolveProperty(attrName, propertyName, isSVG) {
           target.setAttribute(attrName, attrValue);
         }
       };
+    }
   }
 }
