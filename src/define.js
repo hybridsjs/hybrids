@@ -96,14 +96,18 @@ function update(Hybrid, lastHybrids) {
     deferred.then(() => {
       walkInShadow(document.body, node => {
         if (updateQueue.has(node.constructor)) {
-          const hybrids = updateQueue.get(node.constructor);
+          const prevHybrids = updateQueue.get(node.constructor);
+          const hybrids = node.constructor.hybrids;
           node.disconnectedCallback();
 
-          Object.keys(node.constructor.hybrids).forEach(key => {
+          Object.keys(hybrids).forEach(key => {
+            const type = typeof hybrids[key];
             cache.invalidate(
               node,
               key,
-              node.constructor.hybrids[key] !== hybrids[key],
+              type !== "object" &&
+                type !== "function" &&
+                hybrids[key] !== prevHybrids[key],
             );
           });
 

@@ -1207,6 +1207,27 @@ describe("store:", () => {
       });
     });
 
+    describe("for enumerable model without id", () => {
+      it("set method returns model by id", () => {
+        const desc = store(Model);
+        const model = desc.set({}, "1");
+        expect(model.id).toBe("1");
+      });
+
+      it("set method returns model by reference", () => {
+        const model = store.get(Model, "1");
+        const desc = store(Model);
+        const returnedModel = desc.set({}, model);
+        expect(returnedModel).toBe(model);
+      });
+
+      it("throws when set model by reference from different definition", () => {
+        const model = store.get({ id: true }, "1");
+        const desc = store(Model);
+        expect(() => desc.set({}, model)).toThrow();
+      });
+    });
+
     describe("for enumerable model in draft mode without id", () => {
       let desc;
 
@@ -1355,8 +1376,12 @@ describe("store:", () => {
     });
 
     describe("for listing model", () => {
-      it("does not have set method", () => {
-        expect(store([Model]).set).toBe(undefined);
+      it("have set method for change when no id is set", () => {
+        expect(store([Model]).set).toBeInstanceOf(Function);
+      });
+
+      it("does not have set method when id is set", () => {
+        expect(store([Model], { id: "query" }).set).toBe(undefined);
       });
 
       it("throws for the draft mode", () => {

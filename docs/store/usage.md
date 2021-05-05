@@ -137,12 +137,12 @@ store(Model: object, options?: id | { id?: string | (host) => any, draft?: boole
 * **returns**:
   * a hybrid property descriptor, which resolves to a store model instance
 
-If the model definition storage supports set action, the defined property will be writable using the `store.set()` method internally. However, direct usage of the method is not required. Instead, use the assertion.
+If the model definition storage supports set action, the defined property will be writable using the `store.set()` method internally. Still, the preferred way is to use `store.set()` method directly for updating model instance.
 
 ```javascript
 function setDarkTheme(host, event) {
   // updates `admin` property of the user model instance by the assertion
-  host.user = { admin: true };
+  store.set(host.user, { admin: true });
 }
 
 const MyElement = {
@@ -157,7 +157,7 @@ const MyElement = {
 
 ### Singleton
 
-If the model definition is a singleton, the `id` field is not required, so you can define property without options.
+If the model definition is a singleton, you can setup the property just with the definition.
 
 ```javascript
 import { Settings } from "./models.js";
@@ -171,7 +171,7 @@ const MyElement = {
 
 ### Enumerable
 
-For the enumerable model definition, the `id` must be set (except the draft mode) by the property name or a function.
+For the enumerable model definition, the `id` can be set to the property name or a function, or can be not defined, so the model instance is set by the property.
 
 ```javascript
 import { User, SearchResult }  from "./models.js";
@@ -181,13 +181,16 @@ const MyElement = {
   userId: "1",
   user: store(User, "userId"), // using shorter syntax, equals to { id: "userId" }
 
-
   // Id from the host properties
   order: "asc",
   query: "",
   searchResult: store(SearchResult, ({ order, query }) => {
     return { order, query };
   }),
+
+  // Id not set - assertion to host.user sets the model instance
+  // like: `el.user = "1"`, or `el.user = userModel`;
+  user: store(User),
 };
 ```
 
