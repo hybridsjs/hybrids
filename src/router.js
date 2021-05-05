@@ -440,7 +440,12 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
           `The 'stack' option is not supported for dialogs - remove it from '${name}'`,
         );
       }
-      config.stack = setupViews(options.stack, routerOptions, config);
+      config.stack = setupViews(
+        options.stack,
+        routerOptions,
+        config,
+        nestedParent,
+      );
     }
   }
 
@@ -458,7 +463,11 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
   if (nestedRouterOptions) {
     config.nestedRoots = setupViews(
       nestedRouterOptions.views,
-      { ...routerOptions, ...nestedRouterOptions },
+      {
+        ...routerOptions,
+        prefix: `${routerOptions.prefix}-${pascalToDash(name)}`,
+        ...nestedRouterOptions,
+      },
       config,
       config,
     );
@@ -678,7 +687,7 @@ function resolveStack(host, state) {
   Object.assign(stack[0], state[0].params);
   stacks.set(host, stack);
 
-  const flush = routers.get(stack[0]);
+  const flush = flushes.get(stack[0]);
   if (flush) flush();
 }
 
