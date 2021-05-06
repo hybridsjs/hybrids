@@ -10,15 +10,14 @@ export default function render(fn, customOptions = {}) {
     Object.assign(shadowRootInit, options.shadowRoot);
   }
 
+  const getTarget = options.shadowRoot
+    ? host => host.shadowRoot || host.attachShadow(shadowRootInit)
+    : host => host;
+
   return {
     get(host) {
       const update = fn(host);
-      let target = host;
-
-      if (options.shadowRoot) {
-        if (!host.shadowRoot) host.attachShadow(shadowRootInit);
-        target = host.shadowRoot;
-      }
+      const target = getTarget(host);
 
       return function flush() {
         update(host, target);
