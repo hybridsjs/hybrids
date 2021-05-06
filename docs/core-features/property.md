@@ -82,19 +82,28 @@ const MyElement = {
 
 ## Attribute Fallback
 
-The property factory for all types except `object` and `undefined` creates fallback connection to attribute by the dashed version of the property key. The value from existing attribute is used **only once when an element connects for the first time to the document**. 
+The property factory for all types except `object` and `undefined` creates fallback connection to attribute by the dashed version of the property key. The value from existing attribute is used for setting the value **only once when an element connects for the first time to the document**. However, the primitive values (strings, numbers and booleans) are set back to the corresponding attribute when property changes. It means, that for those types, the attribute is in sync with the property (but not the opposite) - it allows using property values as host styling selectors.
+
+Still, if you want to update property value you must assert new value to the property:
 
 ```javascript
 const MyElement = {
   someValue: 0,
+  render: () => html`
+    <slot></slot>
+  `.css`
+    :host([some-value="100"]) { color: red }
+  `,
 };
 ```
+
+Attributes should be used only for setting static values in HTML templates:
 
 ```html
 <my-element some-value="100"></my-element>
 ```
 
-Attributes should be used to set static values in HTML templates:
+Use property assertion to dynamically change the value:
 
 ```javascript
 // WRONG - it won't change property value
@@ -102,6 +111,9 @@ myElement.setAttribute('some-value', 1000);
 
 // CORRECT - it will change property value
 myElement.someValue = 1000;
+
+// after next RAF (by the observe() API) for primitive types
+myElement.getAttribute("some-value") === 1000 // returns true
 ```
 
 ### Booleans
