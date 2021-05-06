@@ -254,7 +254,7 @@ declare namespace hybrids {
     ): EventHandler<E>;
 
     function resolve<E>(
-      promise: Promise<UpdateFunction<E>>,
+      promise: Promise<any>,
       placeholder?: UpdateFunction<E>,
       delay?: number,
     ): UpdateFunction<E>;

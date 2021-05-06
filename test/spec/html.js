@@ -1066,6 +1066,19 @@ describe("html:", () => {
         done();
       });
     });
+
+    it("supports passing values", done => {
+      const promise = Promise.resolve(["a", "b"]);
+      // prettier-ignore
+      const flush = html`${html.resolve(promise)}`;
+
+      flush(fragment);
+
+      Promise.resolve().then(() => {
+        expect(fragment.innerHTML).toBe("ab");
+        done();
+      });
+    });
   });
 
   describe("style method", () => {
