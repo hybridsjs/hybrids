@@ -1,4 +1,5 @@
 import { storePointer } from "../utils.js";
+import resolveTemplateValue from "./resolvers/value.js";
 
 function resolveValue({ target }, setter) {
   let value;
@@ -118,11 +119,11 @@ export function resolve(promise, placeholder, delay = 200) {
 
     promiseMap.set(target, promise);
 
-    promise.then(template => {
+    promise.then(value => {
       if (timeout) clearTimeout(timeout);
 
       if (promiseMap.get(target) === promise) {
-        template(host, target);
+        resolveTemplateValue(host, target, value);
         promiseMap.set(target, null);
       }
     });
