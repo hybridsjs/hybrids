@@ -10,6 +10,7 @@ const objectTransform = value => {
 };
 
 export default function property(value, connect) {
+  const attrs = new WeakMap();
   const type = typeof value;
   let transform = defaultTransform;
 
@@ -37,12 +38,13 @@ export default function property(value, connect) {
 
   return {
     get: (host, val = value) => val,
-    set: (host, val, oldValue) => transform(val, oldValue),
+    set: (host, val, oldValue = value) => transform(val, oldValue),
     connect:
       type !== "object" && type !== "undefined"
         ? (host, key, invalidate) => {
-            if (host[key] === value) {
+            if (!attrs.has(host)) {
               const attrName = camelToDash(key);
+              attrs.set(host, attrName);
 
               if (host.hasAttribute(attrName)) {
                 const attrValue = host.getAttribute(attrName);
@@ -54,5 +56,22 @@ export default function property(value, connect) {
             return connect && connect(host, key, invalidate);
           }
         : connect,
+    observe:
+      type !== "object" &&
+      type !== "undefined" &&
+      ((host, val) => {
+        const attrName = attrs.get(host);
+
+        const attrValue = host.getAttribute(attrName);
+        const nextValue = val === true ? "" : val;
+
+        if (nextValue === attrValue) return;
+
+        if (!val) {
+          host.removeAttribute(attrName);
+        } else {
+          host.setAttribute(attrName, nextValue);
+        }
+      }),
   };
 }

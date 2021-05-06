@@ -1,4 +1,4 @@
-import { test } from "../helpers.js";
+import { test, resolveRaf } from "../helpers.js";
 import define from "../../src/define.js";
 import property from "../../src/property.js";
 
@@ -84,6 +84,19 @@ describe("property:", () => {
         expect(el.value).toBe("5");
       }),
     );
+
+    it("updates attribute value from primitive types", () =>
+      empty(el => {
+        el.stringProp = "test";
+        el.boolProp = true;
+        el.numberProp = 0;
+        return resolveRaf(() => {
+          expect(el.getAttribute("string-prop")).toBe("test");
+          expect(el.hasAttribute("bool-prop")).toBe(true);
+          expect(el.getAttribute("bool-prop")).toBe("");
+          expect(el.getAttribute("number-prop")).toBe("0");
+        });
+      }));
   });
 
   describe("string type", () => {
