@@ -269,6 +269,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
 
               results.forEach((placeholder, index) => {
                 const [, id] = placeholder.match(PLACEHOLDER_REGEXP_EQUAL);
+                let isProp = false;
                 parts[id] = [
                   compileIndex,
                   (host, target, attrValue) => {
@@ -279,7 +280,16 @@ export function compileTemplate(rawParts, isSVG, styles) {
                     );
 
                     if (results.length === 1 || index + 1 === results.length) {
-                      target.setAttribute(name, data[partialName]);
+                      isProp =
+                        isProp ||
+                        (!isSVG &&
+                          !(target instanceof SVGElement) &&
+                          name in target);
+                      if (isProp) {
+                        target[name] = data[partialName];
+                      } else {
+                        target.setAttribute(name, data[partialName]);
+                      }
                       data[partialName] = undefined;
                     }
                   },
