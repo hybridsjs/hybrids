@@ -1,6 +1,6 @@
 import { dispatch, router } from "../../src/index.js";
 
-fdescribe("router:", () => {
+describe("router:", () => {
   let el;
   let spy;
   let prop;
@@ -47,15 +47,6 @@ fdescribe("router:", () => {
     describe("connected root router", () => {
       beforeEach(() => {
         prop = router(views);
-      });
-
-      it("throws for wrong first argument", () => {
-        expect(() => {
-          router();
-        }).toThrow();
-        expect(() => {
-          router({});
-        }).toThrow();
       });
 
       it("returns a default view", () => {
