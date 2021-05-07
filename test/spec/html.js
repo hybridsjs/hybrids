@@ -132,6 +132,18 @@ describe("html:", () => {
       );
     });
 
+    it("sets property", () => {
+      define("test-html-computed-property", {
+        value: "",
+      });
+      html`
+        <test-html-computed-property
+          value="asd-${"test"}-${"other"}"
+        ></test-html-computed-property>
+      `({}, fragment);
+      expect(fragment.children[0].value).toBe("asd-test-other");
+    });
+
     it("does not set undefined value", () => {
       render()({}, fragment);
       expect(fragment.children[0].getAttribute("class")).toBe("class-one  ");
