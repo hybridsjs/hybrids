@@ -160,7 +160,7 @@ export function defineElement(tagName, hybrids) {
 
       for (let index = 0; index < props.length; index += 1) {
         const key = props[index];
-        if (Object.prototype.hasOwnProperty.call(this, key)) {
+        if (hasOwnProperty.call(this, key)) {
           const value = this[key];
           delete this[key];
           this[key] = value;
