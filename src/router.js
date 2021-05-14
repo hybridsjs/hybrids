@@ -6,6 +6,7 @@ import { dispatch, pascalToDash } from "./utils.js";
 
 # TODO LIST
 
+* Check gourd feature after navigate refactor (guard condition)
 * Transition effect
 
 */
@@ -713,28 +714,63 @@ function getEntryFromURL(url) {
   return config.getEntry(config.match(url));
 }
 
-function findSameEntryIndex(state, entry) {
-  return state.findIndex(e => {
-    let temp = entry;
+function getEntryOffset(entry) {
+  const state = window.history.state.reduce((acc, e, index) => {
+    let i = 0;
+
     while (e) {
-      if (e.id !== temp.id) return false;
+      acc[i] = acc[i] || [];
+      acc[i][index] = e;
+      e = e.nested;
+      i += 1;
+    }
 
-      const config = getConfigById(e.id);
-      if (!config.multiple && !entry.nested) return true;
+    return acc;
+  }, []);
 
-      if (
-        !Object.entries(e.params).every(
-          ([key, value]) => entry.params[key] === value,
-        )
-      ) {
-        return false;
+  let offset = 0;
+  let i = 0;
+  while (entry) {
+    const config = getConfigById(entry.id);
+    const currentEntry = state[i][offset];
+
+    if (currentEntry.id !== entry.id) {
+      if (config.dialog) return -1;
+
+      let j = offset;
+      for (; j < state[i].length; j += 1) {
+        const e = state[i][j];
+        if (!e || e.id === entry.id) {
+          offset = j;
+          break;
+        }
+
+        const c = getConfigById(e.id);
+        if (hasInStack(c, config)) {
+          offset = j - 1;
+          break;
+        }
       }
 
-      e = e.nested;
-      temp = entry.nested;
+      if (j === state[i].length) {
+        offset = state[i].length - 1;
+      }
+    } else if (config.multiple) {
+      // Push from offset if params not the same
+      if (
+        !Object.entries(entry.params).every(
+          ([key, value]) => currentEntry.params[key] === value,
+        )
+      ) {
+        return offset - 1;
+      }
     }
-    return true;
-  });
+
+    entry = entry.nested;
+    i += 1;
+  }
+
+  return offset;
 }
 
 function connectRootRouter(host, invalidate, options) {
@@ -789,48 +825,25 @@ function connectRootRouter(host, invalidate, options) {
 
     const state = window.history.state;
     const nextConfig = getConfigById(nextEntry.id);
-    const currentEntry = state[0];
 
-    let nextUrl = "";
+    let url = options.url;
     if (nextConfig.browserUrl) {
-      nextUrl = nextConfig.url(nextEntry.params);
+      url = nextConfig.url(nextEntry.params);
     }
 
-    const stack = stacks.get(host);
-    cache.suspend(stack[0]);
+    let stack = stacks.get(host);
+    while (stack) {
+      cache.suspend(stack[0]);
+      stack = stacks.get(stack[0]);
+    }
 
-    if (nextEntry.id === currentEntry.id) {
-      const offset = findSameEntryIndex(state, nextEntry);
-      if (offset > -1) {
-        navigateBack(offset, nextEntry, nextUrl || options.url);
-      } else {
-        window.history.pushState([nextEntry, ...state], "", nextUrl);
-        flush();
-      }
+    const offset = getEntryOffset(nextEntry);
+
+    if (offset > -1) {
+      navigateBack(offset, nextEntry, url);
     } else {
-      let offset = state.findIndex(({ id }) => nextEntry.id === id);
-      if (offset > -1) {
-        navigateBack(offset, nextEntry, nextUrl || options.url);
-      } else {
-        const currentConfig = getConfigById(currentEntry.id);
-        if (
-          nextConfig.dialog ||
-          (hasInStack(currentConfig, nextConfig) && !currentConfig.guard)
-        ) {
-          window.history.pushState([nextEntry, ...state], "", nextUrl);
-          flush();
-        } else {
-          offset = state
-            .slice(1)
-            .findIndex(({ id }) => hasInStack(getConfigById(id), nextConfig));
-
-          navigateBack(
-            offset > -1 ? offset : state.length - 1,
-            nextEntry,
-            nextUrl || options.url,
-          );
-        }
-      }
+      window.history.pushState([nextEntry, ...state], "", url);
+      flush();
     }
   }
 

@@ -137,8 +137,8 @@ describe("router:", () => {
 
   describe("[router.connect] -", () => {
     describe("'dialog'", () => {
-      it("pushes new state for dialog view");
-      it("pushes new state for dialog not from the stack ???");
+      it("pushes new entry for dialog view");
+      it("pushes new entry for dialog not from the stack ???");
     });
 
     describe("'url'", () => {});
@@ -146,9 +146,9 @@ describe("router:", () => {
     describe("'multiple'", () => {
       describe("when 'true'", () => {
         it(
-          "navigate pushes new state for the same id when other params with multiple option is set",
+          "navigate pushes new entry for the same id when other params with multiple option is set",
         );
-        it("navigate moves back to state where params are equal");
+        it("navigate moves back to entry where params are equal");
       });
       describe("when 'false'", () => {
         it("replaces state for the same view");
@@ -162,7 +162,7 @@ describe("router:", () => {
 
     describe("'stack'", () => {
       describe("for view from own stack", () => {
-        it("pushes new state for view from stack");
+        it("pushes new entry for view from stack");
         it("moves back to the view from stack");
       });
 
