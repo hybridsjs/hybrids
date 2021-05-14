@@ -1005,6 +1005,17 @@ describe("html:", () => {
       expect(host.value).toBe(undefined);
     });
 
+    it("uses value from event detail.value", () => {
+      const render = html`
+        <div oncustomevent=${html.set("value")} />
+      `;
+      render(host, fragment);
+      const div = fragment.children[0];
+      dispatch(div, "customevent", { detail: { value: "test" } });
+
+      expect(host.value).toBe("test");
+    });
+
     it("saves callback in the cache", () => {
       expect(html.set("value")).toBe(html.set("value"));
       expect(html.set("value")).not.toBe(html.set("otherValue"));

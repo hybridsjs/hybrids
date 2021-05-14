@@ -92,17 +92,24 @@ html.set(propertyName: string, value?: any): Function
 * **returns**:
   * a callback function compatible with template engine event listener
 
-The `html.set()` supports unique behavior of the form elements. For `<input type="radio">` and `<input type="checkbox">` the value is related to its `checked` value. For `<input type="file">`  the `event.target.files` is used instead of the `event.target.value`.
+The `html.set()` supports generic elements and unique behavior of the form elements:
+
+* for `<input type="radio">` and `<input type="checkbox">` the value is related to its `checked` value
+* For `<input type="file">`  the `event.target.files` is used instead of the `event.target.value`
+* For the rest elements, it uses `event.detail.value` if defined, or eventually `target.value` as default
 
 ```javascript
 const MyElement = {
   option: false,
   date: null,
   render: ({ option, date }) => html`
-    <input type="checkbox" checked="${option}" onchange="${html.set('option')}" />
+    <input type="checkbox" checked="${option}" onchange="${html.set("option")}" />
 
     <!-- updates "host.date" with "value" property from the element -->
-    <my-date-picker value="${date}" onchange="${html.set('date')}"></my-date-picker>
+    <my-date-picker value="${date}" onchange="${html.set("date")}"></my-date-picker>
+
+    <!-- updates "host.option" with "event.detail.value" from the element -->
+    <paper-toggle-button onchecked-changed="${html.set("option")}"></paper-toggle-button>
   `,
 };
 ```
