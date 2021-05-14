@@ -85,7 +85,8 @@ describe("property:", () => {
       }),
     );
 
-    it("updates attribute value from primitive types", () =>
+    it(
+      "updates attribute value from primitive types",
       empty(el => {
         el.stringProp = "test";
         el.boolProp = true;
@@ -96,7 +97,8 @@ describe("property:", () => {
           expect(el.getAttribute("bool-prop")).toBe("");
           expect(el.getAttribute("number-prop")).toBe("0");
         });
-      }));
+      }),
+    );
   });
 
   describe("string type", () => {
