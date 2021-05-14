@@ -67,7 +67,7 @@ export default function property(value, connect) {
 
         if (nextValue === attrValue) return;
 
-        if (!val) {
+        if (val !== 0 && !val) {
           host.removeAttribute(attrName);
         } else {
           host.setAttribute(attrName, nextValue);
