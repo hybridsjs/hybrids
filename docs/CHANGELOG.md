@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.3.0](https://github.com/hybridsjs/hybrids/compare/v5.2.2...v5.3.0) (2021-05-14)
+
+
+### Features
+
+* **html:** extend resolve helper support to all content values ([0ede2e8](https://github.com/hybridsjs/hybrids/commit/0ede2e8bdbc4794c86a32a372e507910c65b065e))
+* **property:** sync attribute value for primitive types ([4337203](https://github.com/hybridsjs/hybrids/commit/43372033d25ddec29401867d043de4148c4826ed))
+* **store:** writable factory for enumerables with undefined id ([c62d5df](https://github.com/hybridsjs/hybrids/commit/c62d5dfca41dee9e5c128b19a1fc2a1eae397a09))
+
+
+### Bug Fixes
+
+* **define:** keep lastValue for HMR update ([bdff4c0](https://github.com/hybridsjs/hybrids/commit/bdff4c0672504bad43a219397677604d2ba48ea6))
+* **html:** avoid get property before set, memoize property type ([bb863c7](https://github.com/hybridsjs/hybrids/commit/bb863c76cbb8d957fa4060aa63902344d3de2011))
+* **html:** use property where possible for combined expressions ([baf5ead](https://github.com/hybridsjs/hybrids/commit/baf5ead02cfea10f2dae6fa9af56299b359d0d63))
+* **render:** optimize performance of shadowRoot generation ([564d875](https://github.com/hybridsjs/hybrids/commit/564d87562ebf4086eff6c4d00173a6a0c47d9202))
+* **store:** clear lastValue for draft mode ([c155fed](https://github.com/hybridsjs/hybrids/commit/c155fedcd47f4908d371731d74dc36d03efc7713))
+
 ### [5.2.2](https://github.com/hybridsjs/hybrids/compare/v5.2.1...v5.2.2) (2021-04-09)
 
 
