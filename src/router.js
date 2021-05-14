@@ -435,6 +435,9 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
     configs.set(view, config);
     configs.set(Constructor, config);
 
+    config.parent = parent;
+    config.nestedParent = nestedParent;
+
     if (options.stack) {
       if (options.dialog) {
         throw Error(
@@ -448,10 +451,10 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
         nestedParent,
       );
     }
+  } else {
+    config.parent = parent;
+    config.nestedParent = nestedParent;
   }
-
-  config.parent = parent;
-  config.nestedParent = nestedParent;
 
   config.parentsWithGuards = [];
   while (parent) {
@@ -747,14 +750,20 @@ function getEntryOffset(entry) {
 
         const c = getConfigById(e.id);
         if (hasInStack(c, config)) {
-          offset = j - 1;
-          break;
+          if (j > 0) {
+            offset = j - 1;
+            break;
+          } else {
+            return c.guard ? 0 : -1;
+          }
         }
       }
 
       if (j === state[i].length) {
         offset = state[i].length - 1;
       }
+
+      if (offset === -1) return offset;
     } else if (config.multiple) {
       // Push from offset if params not the same
       if (
@@ -937,11 +946,8 @@ function connectNestedRouter(host, invalidate) {
   flushes.set(host, flush);
 }
 
-function router(views, options = {}) {
-  options = {
-    ...options,
-    views,
-  };
+function router(views, options) {
+  options = { ...options, views };
 
   const desc = {
     get: host => {
