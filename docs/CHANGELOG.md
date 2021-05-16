@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.3.1](https://github.com/hybridsjs/hybrids/compare/v5.3.0...v5.3.1) (2021-05-16)
+
+
+### Bug Fixes
+
+* **html:** html.set uses detail.value for general element support ([7e0c397](https://github.com/hybridsjs/hybrids/commit/7e0c3976d96e1f2b8afa651cf602801858e6e61a))
+* **property:** reflect zero number type in attribute ([8b98c72](https://github.com/hybridsjs/hybrids/commit/8b98c7277338f2a3966ed1f0c8f9f36c3139d5be))
+* **types:** clear & strict major types ([9fb97f7](https://github.com/hybridsjs/hybrids/commit/9fb97f7ce72f770104703dd199c07496b61aa9de))
+
 ## [5.3.0](https://github.com/hybridsjs/hybrids/compare/v5.2.2...v5.3.0) (2021-05-14)
 
 
