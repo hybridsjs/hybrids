@@ -3,29 +3,26 @@ export = hybrids;
 export as namespace hybrids;
 
 declare namespace hybrids {
-  interface Descriptor<E, K extends string, V> {
+  interface Descriptor<E, V> {
     get?(host: E & HTMLElement, lastValue: V | undefined): V;
     set?(host: E & HTMLElement, value: any, lastValue: V | undefined): V;
     connect?(
-      host: E & HTMLElement & { [property in K]: V },
-      key: K,
+      host: E & HTMLElement & { [property in keyof E]: V },
+      key: keyof E,
       invalidate: Function,
     ): Function | void;
     observe?(host: E & HTMLElement, value: V, lastValue: V): void;
   }
 
   type DescriptorValue<D> = D extends (...args: any) => any
-    ? ReturnType<D> extends Descriptor<infer E, infer K, infer V>
+    ? ReturnType<D> extends Descriptor<any, infer V>
       ? V
       : never
-    : D extends Descriptor<infer E, infer K, infer V>
+    : D extends Descriptor<any, infer V>
     ? V
     : never;
 
-  type Property<E, K extends string, V> =
-    | V
-    | Descriptor<E, K, V>
-    | Descriptor<E, K, V>["get"];
+  type Property<E, V> = V | Descriptor<E, V> | Descriptor<E, V>["get"];
 
   interface UpdateFunction<E> {
     (host: E & HTMLElement, target: ShadowRoot | Text | E): void;
@@ -40,8 +37,8 @@ declare namespace hybrids {
       keyof Omit<E, keyof HTMLElement>,
       string
     >]: property extends "render" | "content"
-      ? RenderFunction<E> | Property<E, property, E[property]>
-      : Property<E, property, E[property]>;
+      ? RenderFunction<E> | Property<E, E[property]>
+      : Property<E, E[property]>;
   } & {
     render?: RenderFunction<E>;
     content?: RenderFunction<E>;
@@ -72,24 +69,24 @@ declare namespace hybrids {
 
   /* Factories */
 
-  function property<E, K extends string, V>(
+  function property<E, V>(
     value: V | null | undefined | ((value: any) => V),
-    connect?: Descriptor<E, K, V>["connect"],
-  ): Descriptor<E, K, V>;
+    connect?: Descriptor<E, V>["connect"],
+  ): Descriptor<E, V>;
 
-  function parent<E, K extends string, V>(
+  function parent<E, V>(
     hybridsOrFn: Hybrids<V> | ((hybrids: Hybrids<E>) => boolean),
-  ): Descriptor<E, K, V>;
+  ): Descriptor<E, V>;
 
-  function children<E, K extends string, V>(
+  function children<E, V>(
     hybridsOrFn: Hybrids<V> | ((hybrids: Hybrids<E>) => boolean),
     options?: { deep?: boolean; nested?: boolean },
-  ): Descriptor<E, K, V>;
+  ): Descriptor<E, V>;
 
-  function render<E, K extends string>(
+  function render<E>(
     fn: RenderFunction<E>,
     customOptions?: { shadowRoot?: boolean | object },
-  ): Descriptor<E, K, () => HTMLElement>;
+  ): Descriptor<E, () => HTMLElement>;
 
   /* Store */
 
@@ -98,7 +95,7 @@ declare namespace hybrids {
       infer T
     >
       ? [Model<T>] | ((model: M) => T[])
-      : Required<M>[property] extends Object
+      : Required<M>[property] extends object
       ? Model<Required<M>[property]> | ((model: M) => M[property])
       : Required<M>[property] | ((model: M) => M[property]);
   } & {
@@ -108,13 +105,11 @@ declare namespace hybrids {
 
   type ModelIdentifier =
     | string
-    | undefined
-    | {
-        [property: string]: string | boolean | number | null;
-      };
+    | Record<string, string | boolean | number | null>
+    | undefined;
 
   type ModelValues<M> = {
-    [property in keyof M]?: M[property] extends Object
+    [property in keyof M]?: M[property] extends object
       ? ModelValues<M[property]>
       : M[property];
   };
@@ -135,12 +130,12 @@ declare namespace hybrids {
   type StoreOptions<E> =
     | keyof E
     | ((host: E) => ModelIdentifier)
-    | { id?: keyof E; draft: boolean };
+    | { id?: keyof E; draft?: boolean };
 
-  function store<E, K extends string, M>(
+  function store<E, M>(
     Model: Model<M>,
     options?: StoreOptions<E>,
-  ): Descriptor<E, K, M>;
+  ): Descriptor<E, M>;
 
   namespace store {
     const connect = "__store__connect__";
@@ -200,7 +195,7 @@ declare namespace hybrids {
   function router<E, K extends string, V>(
     views: MapOfViews,
     options?: RouterOptions<E>,
-  ): Descriptor<E, K, HTMLElement[]>;
+  ): Descriptor<E, HTMLElement[]>;
 
   namespace router {
     const connect = "__router__connect__";
@@ -273,7 +268,7 @@ declare namespace hybrids {
     ): EventHandler<E>;
 
     function resolve<E>(
-      promise: Promise<UpdateFunction<E>>,
+      promise: Promise<any>,
       placeholder?: UpdateFunction<E>,
       delay?: number,
     ): UpdateFunction<E>;
