@@ -1,7 +1,7 @@
 import { storePointer } from "../utils.js";
 import resolveTemplateValue from "./resolvers/value.js";
 
-function resolveValue({ target }, setter) {
+function resolveValue({ target, detail }, setter) {
   let value;
 
   switch (target.type) {
@@ -13,7 +13,10 @@ function resolveValue({ target }, setter) {
       value = target.files;
       break;
     default:
-      value = target.value;
+      value =
+        detail && hasOwnProperty.call(detail, "value")
+          ? detail.value
+          : target.value;
   }
 
   setter(value);
