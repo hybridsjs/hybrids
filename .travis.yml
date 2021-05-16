@@ -11,8 +11,8 @@ notifications:
 
 branches:
   only:
-  - master
+    - master
 
-script: 
+script:
   - npm run test
-  - npm run coveralls
+  - npm run coveralls || true
