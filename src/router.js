@@ -98,7 +98,7 @@ function restoreLayout(target, clear) {
 }
 
 const placeholder = Date.now();
-function setupBrowserUrl(browserUrl) {
+function setupBrowserUrl(browserUrl, name) {
   if (!browserUrl) return null;
 
   const [pathname, search = ""] = browserUrl.split("?");
@@ -127,7 +127,7 @@ function setupBrowserUrl(browserUrl) {
           const key = pathnameParams[index - 1];
 
           if (!hasOwnProperty.call(params, key) && !suppressErrors) {
-            throw Error(`The '${key}' parameter must be defined`);
+            throw Error(`The '${key}' parameter must be defined in '${name}'`);
           }
 
           return `${acc}${params[key]}${part}`;
@@ -242,9 +242,8 @@ function getNestedRouterOptions(view, name, config) {
 }
 
 function setupView(view, name, routerOptions, parent, nestedParent) {
-  const id = `${pascalToDash(routerOptions.prefix || "view")}-${pascalToDash(
-    name,
-  )}`;
+  const prefix = routerOptions.prefix || "view";
+  const id = `${pascalToDash(prefix)}-${pascalToDash(name)}`;
 
   if (!view || typeof view !== "object") {
     throw TypeError(
@@ -315,7 +314,7 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
           `The 'url' option in '${name}' must be a string: ${typeof options.url}`,
         );
       }
-      browserUrl = setupBrowserUrl(options.url);
+      browserUrl = setupBrowserUrl(options.url, name);
 
       callbacksMap.get(Constructor).unshift(_ =>
         cache.observe(
@@ -345,7 +344,7 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
         );
         if (!desc || !desc.set) {
           throw Error(
-            `'${key}' parameter in the url is not supported by the '${name}'`,
+            `'${key}' parameter in the url is not supported in '${name}'`,
           );
         }
       });
@@ -385,12 +384,14 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
             if (writableParams.has(key)) {
               url.searchParams.append(key, params[key] || "");
             } else if (!suppressErrors) {
-              throw TypeError(`The '${key}' parameter is not supported`);
+              throw TypeError(
+                `The '${key}' parameter for '${name}' is not supported`,
+              );
             }
           });
 
           return new URL(
-            `${routerOptions.url}#@${id}${url.search}`,
+            `${routerOptions.url || ""}#@${id}${url.search}`,
             window.location.origin,
           );
         },
@@ -469,7 +470,7 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
       nestedRouterOptions.views,
       {
         ...routerOptions,
-        prefix: `${routerOptions.prefix}-${pascalToDash(name)}`,
+        prefix: `${prefix}-${pascalToDash(name)}`,
         ...nestedRouterOptions,
       },
       config,
@@ -556,6 +557,16 @@ function getGuardUrl(params = {}) {
 
   const config = getConfigById(entry.id);
   return config.stack[0] ? config.stack[0].url(params) : "";
+}
+
+function getCurrentUrl() {
+  const state = window.history.state;
+  if (!state) return "";
+
+  const entry = state[0];
+  const config = getConfigById(entry.id);
+
+  return config.url(entry.params);
 }
 
 function active(views, { stack = false } = {}) {
@@ -835,7 +846,7 @@ function connectRootRouter(host, invalidate, options) {
     const state = window.history.state;
     const nextConfig = getConfigById(nextEntry.id);
 
-    let url = options.url;
+    let url = options.url || "";
     if (nextConfig.browserUrl) {
       url = nextConfig.url(nextEntry.params);
     }
@@ -974,8 +985,9 @@ function router(views, options) {
 export default Object.assign(router, {
   connect,
   url: getUrl,
+  resolve: resolveEvent,
   backUrl: getBackUrl,
   guardUrl: getGuardUrl,
+  currentUrl: getCurrentUrl,
   active,
-  resolve: resolveEvent,
 });
