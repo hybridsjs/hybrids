@@ -4,21 +4,21 @@ export as namespace hybrids;
 
 declare namespace hybrids {
   interface Descriptor<E, V> {
-    get?(host: E & HTMLElement, lastValue: V): V;
-    set?(host: E & HTMLElement, value: any, lastValue: V): V;
-    connect?<K extends keyof E>(
-      host: E & HTMLElement & { [property in K]: V },
-      key: K,
+    get?(host: E & HTMLElement, lastValue: V | undefined): V;
+    set?(host: E & HTMLElement, value: any, lastValue: V | undefined): V;
+    connect?(
+      host: E & HTMLElement & { [property in keyof E]: V },
+      key: keyof E,
       invalidate: Function,
     ): Function | void;
     observe?(host: E & HTMLElement, value: V, lastValue: V): void;
   }
 
   type DescriptorValue<D> = D extends (...args: any) => any
-    ? ReturnType<D> extends Descriptor<infer E, infer V>
+    ? ReturnType<D> extends Descriptor<any, infer V>
       ? V
       : never
-    : D extends Descriptor<infer E, infer V>
+    : D extends Descriptor<any, infer V>
     ? V
     : never;
 
@@ -33,12 +33,15 @@ declare namespace hybrids {
   }
 
   type Hybrids<E> = {
-    render?: E extends { render: infer V } ? Property<E, V> : RenderFunction<E>;
-    content?: E extends { render: infer V }
-      ? Property<E, V>
-      : RenderFunction<E>;
+    [property in Extract<
+      keyof Omit<E, keyof HTMLElement>,
+      string
+    >]: property extends "render" | "content"
+      ? RenderFunction<E> | Property<E, E[property]>
+      : Property<E, E[property]>;
   } & {
-    [property in keyof Omit<E, keyof HTMLElement>]: Property<E, E[property]>;
+    render?: RenderFunction<E>;
+    content?: RenderFunction<E>;
   };
 
   interface MapOfHybrids {
@@ -70,17 +73,20 @@ declare namespace hybrids {
     value: V | null | undefined | ((value: any) => V),
     connect?: Descriptor<E, V>["connect"],
   ): Descriptor<E, V>;
-  function parent<E, T>(
-    hybridsOrFn: Hybrids<T> | ((hybrids: Hybrids<E>) => boolean),
-  ): Descriptor<E, T>;
-  function children<E, T>(
-    hybridsOrFn: Hybrids<T> | ((hybrids: Hybrids<E>) => boolean),
+
+  function parent<E, V>(
+    hybridsOrFn: Hybrids<V> | ((hybrids: Hybrids<E>) => boolean),
+  ): Descriptor<E, V>;
+
+  function children<E, V>(
+    hybridsOrFn: Hybrids<V> | ((hybrids: Hybrids<E>) => boolean),
     options?: { deep?: boolean; nested?: boolean },
-  ): Descriptor<E, T>;
+  ): Descriptor<E, V>;
+
   function render<E>(
     fn: RenderFunction<E>,
     customOptions?: { shadowRoot?: boolean | object },
-  ): Descriptor<E, Function>;
+  ): Descriptor<E, () => HTMLElement>;
 
   /* Store */
 
@@ -89,7 +95,7 @@ declare namespace hybrids {
       infer T
     >
       ? [Model<T>] | ((model: M) => T[])
-      : Required<M>[property] extends Object
+      : Required<M>[property] extends object
       ? Model<Required<M>[property]> | ((model: M) => M[property])
       : Required<M>[property] | ((model: M) => M[property]);
   } & {
@@ -99,13 +105,11 @@ declare namespace hybrids {
 
   type ModelIdentifier =
     | string
-    | undefined
-    | {
-        [property: string]: string | boolean | number | null;
-      };
+    | Record<string, string | boolean | number | null>
+    | undefined;
 
   type ModelValues<M> = {
-    [property in keyof M]?: M[property] extends Object
+    [property in keyof M]?: M[property] extends object
       ? ModelValues<M[property]>
       : M[property];
   };
@@ -125,8 +129,8 @@ declare namespace hybrids {
 
   type StoreOptions<E> =
     | keyof E
-    | ((host: E) => string)
-    | { id?: keyof E; draft: boolean };
+    | ((host: E) => ModelIdentifier)
+    | { id?: keyof E; draft?: boolean };
 
   function store<E, M>(
     Model: Model<M>,
@@ -152,18 +156,18 @@ declare namespace hybrids {
     function resolve<M>(model: M): Promise<M>;
     function ref<M>(fn: () => M): M;
 
-    interface ValidateFunction<M> {
-      (value: string | number, key: string, model: M): string | boolean | void;
+    interface ValidateFunction<M, T> {
+      (value: T, key: string, model: M): string | boolean | void;
     }
 
     function value<M>(
       defaultValue: string,
-      validate?: ValidateFunction<M> | RegExp,
+      validate?: ValidateFunction<M, string> | RegExp,
       errorMessage?: string,
     ): string;
     function value<M>(
       defaultValue: number,
-      validate?: ValidateFunction<M> | RegExp,
+      validate?: ValidateFunction<M, number> | RegExp,
       errorMessage?: string,
     ): number;
   }
@@ -221,7 +225,7 @@ declare namespace hybrids {
     ): EventHandler<E>;
 
     function resolve<E>(
-      promise: Promise<UpdateFunction<E>>,
+      promise: Promise<any>,
       placeholder?: UpdateFunction<E>,
       delay?: number,
     ): UpdateFunction<E>;
