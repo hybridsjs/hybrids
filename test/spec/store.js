@@ -993,6 +993,7 @@ describe("store:", () => {
       expect(store.pending()).toBe(false);
       expect(store.error()).toBe(false);
       expect(store.ready()).toBe(false);
+      expect(store.ready(123)).toBe(false);
     });
 
     it("ready() returns truth for ready model instance", done => {
@@ -1001,6 +1002,37 @@ describe("store:", () => {
         .set(Model)
         .then(model => {
           expect(store.ready(model)).toBe(true);
+        })
+        .then(done);
+    });
+
+    it("ready() returns false if one of the argument is not resolved model instance", done => {
+      Model = { id: true };
+      store
+        .set(Model)
+        .then(model => {
+          expect(store.ready(model, null)).toBe(false);
+        })
+        .then(done);
+    });
+
+    it("pending() returns a promise for a list of pending models", done => {
+      Model = {
+        id: true,
+        value: "",
+        [store.connect]: id => Promise.resolve({ id, value: "test" }),
+      };
+
+      store
+        .pending(store.get(Model, "1"), store.get(Model, "2"))
+        .then(([a, b]) => {
+          expect(a).toEqual({ id: "1", value: "test" });
+          expect(b).toEqual({ id: "2", value: "test" });
+
+          return store.pending(a, store.get(Model, "3")).then(([c, d]) => {
+            expect(c).toBe(a);
+            expect(d).toEqual({ id: "3", value: "test" });
+          });
         })
         .then(done);
     });

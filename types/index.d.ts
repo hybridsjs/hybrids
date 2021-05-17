@@ -149,8 +149,12 @@ declare namespace hybrids {
     function clear<M>(model: Model<M> | M, clearValue?: boolean): void;
 
     function pending<M>(model: M): false | Promise<M>;
+    function pending(...models: Array<object>): false | Promise<typeof models>;
+
     function error<M>(model: M, propertyName?: keyof M): false | Error | any;
+
     function ready<M>(model: M): boolean;
+    function ready(...models: Array<object>): boolean;
 
     function submit<M>(draft: M, values?: ModelValues<M>): Promise<M>;
     function resolve<M>(model: M): Promise<M>;
