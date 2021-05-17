@@ -306,17 +306,17 @@ The store provides three guard methods, which indicate the current state of the 
 ### Ready
 
 ```typescript
-store.ready(model: Model): boolean
+store.ready(model, ...): boolean
 ```
 
 * **arguments**:
   * `model` - a model instance
 * **returns**:
-  * `true` for a valid model instance, `false` otherwise
+  * `true` for valid model instances, `false` otherwise
 
-The ready guard protects access to the models for async storage before they are fetched for the first time. You can also use it with sync storage, but if you are aware of the connection type, you can omit the guard.
+The ready guard protects access to the models with async storage before they are fetched for the first time. You can also use it with sync storage, but if you are aware of the connection type, you can omit the guard.
 
-The guard returns `true` only for a valid model instance. If the model has changed, the previous state of the model is not valid anymore, so for that object, it will return `false`.
+The function supports passing one or more model instances. The guard returns `true` only for all resolved model instances (`AND` condition). If one of the models has changed, the previous state of the model is not valid anymore, so for that object, it will return `false`.
 
 When the model instance is going to be updated (by setting a new value, or by cache invalidation), the store returns the last valid state of the model until a new version is ready. In that situation `store.ready()` still returns `true`. It is up to you if you want to display a dirty state or not by combining ready and pending guards. It works the same if the update fails (then `store.error()` will be truthy as well). In simple words, the `store.ready()` always return `true` if the model was resolved at least once.
 
@@ -341,19 +341,19 @@ const MyElement = {
 ### Pending
 
 ```typescript
-store.pending(model: Model): boolean | Promise
+store.pending(model, ...): boolean | Promise
 ```
 
 * **arguments**:
   * `model` - a model instance
 * **returns**:
-  * In pending state a promise instance resolving with the next model value, `false` otherwise
+  * In pending state a promise instance resolving with the next model value or a list of values, `false` otherwise
 
-The pending guard returns a promise when a model instance is fetched from async storages, or when the instance is set (`store.set()` method always use Promise API). If the model instance is returned (it is in a stable state), the guard returns `false`.
+The function supports passing one or more model instances. It returns a promise when at least one of the model instances (`OR` condition) is being fetched from async storage, or when the instance is set (`store.set()` method always use Promise API). If the model instance is resolved (it is in a stable state), the guard returns `false`.
 
-Both pending and ready guards can be truthy if the already resolved model instance updates.
+Both pending and ready guards can be truthy if the already resolved model instance is being updated.
 
-#### Resolve Helper
+### Resolve
 
 You can use `store.resolve()` helper method to simplify access to pending model instances, which can be updated at the moment. The function returns a promise resolving into the current model instance, regardless of pending state. It also supports multiple chain of set methods, so the result will always be the latest instance.
 

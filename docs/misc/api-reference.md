@@ -146,22 +146,22 @@ store.submit(model: Model): Promise<Model>
 ### guards
 
 ```typescript
-store.ready(model: object): boolean
+store.ready(model, ...): boolean
 ```
 
 * **arguments**:
   * `model: object` - a model instance
 * **returns**:
-  * `true` for a valid model instance, `false` otherwise
+  * `true` for valid model instances, `false` otherwise
 
 ```typescript
-store.pending(model: object): boolean | Promise
+store.pending(model, ...): boolean | Promise
 ```
 
 * **arguments**:
   * `model: object` - a model instance
 * **returns**:
-  * In pending state a promise instance resolving with the next model value, `false` otherwise
+  * In pending state a promise instance resolving with the next model value or a list of values, `false` otherwise
 
 ```typescript
 store.error(model: object, propertyName?: string): boolean | Error | any

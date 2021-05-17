@@ -1044,10 +1044,21 @@ function clear(model, clearValue = true) {
   }
 }
 
-function pending(model) {
-  if (model === null || typeof model !== "object") return false;
-  const { state, value } = getModelState(model);
-  return state === "pending" && value;
+function pending(...models) {
+  let isPending = false;
+  const result = models.map(model => {
+    try {
+      const { state, value } = getModelState(model);
+      if (state === "pending") {
+        isPending = true;
+        return value;
+      }
+    } catch (e) {} // eslint-disable-line no-empty
+
+    return Promise.resolve(model);
+  });
+
+  return isPending && (models.length > 1 ? Promise.all(result) : result[0]);
 }
 
 function resolveToLatest(model) {
@@ -1075,10 +1086,14 @@ function error(model, property) {
   return result;
 }
 
-function ready(model) {
-  if (model === null || typeof model !== "object") return false;
-  const config = definitions.get(model);
-  return !!(config && config.isInstance(model));
+function ready(...models) {
+  return (
+    models.length > 0 &&
+    models.every(model => {
+      const config = definitions.get(model);
+      return !!(config && config.isInstance(model));
+    })
+  );
 }
 
 function mapValueWithState(lastValue, nextValue) {
