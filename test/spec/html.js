@@ -1146,7 +1146,7 @@ describe("html:", () => {
       expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
     });
 
-    it("adds styles to the shadowRoot by adoptedStyleSheets or style tags", () => {
+    it("adds styles to the shadowRoot by adoptedStyleSheets or style tags", done => {
       const container = fragment.attachShadow({ mode: "open" });
       render().style("div { color: red }")({}, container);
 
@@ -1154,19 +1154,22 @@ describe("html:", () => {
         expect(container.children.length).toBe(2);
       }
 
-      expect(getComputedStyle(container.children[0]).color).toBe(
-        "rgb(255, 0, 0)",
-      );
+      resolveTimeout(() => {
+        expect(getComputedStyle(container.children[0]).color).toBe(
+          "rgb(255, 0, 0)",
+        );
 
-      html`
-        <div>content</div>
-      `({}, container);
+        html`
+          <div>content</div>
+        `({}, container);
+        return resolveTimeout(() => {
+          expect(getComputedStyle(container.children[0]).color).toBe(
+            "rgb(0, 0, 0)",
+          );
 
-      expect(getComputedStyle(container.children[0]).color).toBe(
-        "rgb(0, 0, 0)",
-      );
-
-      expect(container.children.length).toBe(1);
+          expect(container.children.length).toBe(1);
+        });
+      }).then(done);
     });
 
     it("adds async styles by style tags to the shadowRoot", done => {
