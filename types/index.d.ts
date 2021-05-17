@@ -148,15 +148,13 @@ declare namespace hybrids {
     function sync<M>(model: Model<M> | M, values: ModelValues<M> | null): M;
     function clear<M>(model: Model<M> | M, clearValue?: boolean): void;
 
-    function pending(model: Model<any>): false | Promise<typeof model>;
-    function pending(
-      ...models: Array<Model<any>>
-    ): false | Promise<typeof models>;
+    function pending<M>(model: M): false | Promise<M>;
+    function pending(...models: Array<object>): false | Promise<typeof models>;
 
     function error<M>(model: M, propertyName?: keyof M): false | Error | any;
 
-    function ready(model: Model<any>): boolean;
-    function ready(...models: Array<Model<any>>): boolean;
+    function ready<M>(model: M): boolean;
+    function ready(...models: Array<object>): boolean;
 
     function submit<M>(draft: M, values?: ModelValues<M>): Promise<M>;
     function resolve<M>(model: M): Promise<M>;
