@@ -49,12 +49,14 @@ declare namespace hybrids {
   }
 
   type MapOfConstructors<T> = {
-    [tagName in keyof T]: typeof HTMLElement;
+    [tagName in keyof T]: T[tagName] extends Hybrids<infer E>
+      ? HybridElement<E>
+      : typeof HTMLElement;
   };
 
   interface HybridElement<E> {
-    new (): E;
-    prototype: E;
+    new (): E & HTMLElement;
+    prototype: E & HTMLElement;
   }
 
   /* Define */
@@ -62,7 +64,8 @@ declare namespace hybrids {
   function define<E>(
     tagName: string | null,
     hybrids: Hybrids<E>,
-  ): HybridElement<E & HTMLElement>;
+  ): HybridElement<E>;
+
   function define(
     mapOfHybrids: MapOfHybrids,
   ): MapOfConstructors<typeof mapOfHybrids>;
