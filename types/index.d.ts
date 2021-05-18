@@ -65,6 +65,7 @@ declare namespace hybrids {
     tagName: string | null,
     hybrids: Hybrids<E>,
   ): HybridElement<E>;
+
   function define(
     mapOfHybrids: MapOfHybrids,
   ): MapOfConstructors<typeof mapOfHybrids>;
