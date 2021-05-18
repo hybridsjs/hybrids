@@ -49,12 +49,14 @@ declare namespace hybrids {
   }
 
   type MapOfConstructors<T> = {
-    [tagName in keyof T]: typeof HTMLElement;
+    [tagName in keyof T]: T[tagName] extends Hybrids<infer E>
+      ? HybridElement<E>
+      : typeof HTMLElement;
   };
 
-  interface HybridElement<E> {
-    new (): E;
-    prototype: E;
+  interface HybridElement<E> extends HTMLElement {
+    new (): E & HTMLElement;
+    prototype: E & HTMLElement;
   }
 
   /* Define */
@@ -62,7 +64,7 @@ declare namespace hybrids {
   function define<E>(
     tagName: string | null,
     hybrids: Hybrids<E>,
-  ): HybridElement<E & HTMLElement>;
+  ): HybridElement<E>;
   function define(
     mapOfHybrids: MapOfHybrids,
   ): MapOfConstructors<typeof mapOfHybrids>;
@@ -182,6 +184,10 @@ declare namespace hybrids {
     prefix?: string;
   }
 
+  interface MapOfViews {
+    [tagName: string]: View<any>;
+  }
+
   type View<E> = Hybrids<E> & {
     __router__connect__?: {
       url?: string;
@@ -192,10 +198,6 @@ declare namespace hybrids {
     };
   };
 
-  interface MapOfViews {
-    [tagName: string]: View<any>;
-  }
-
   function router<E, K extends string, V>(
     views: MapOfViews,
     options?: RouterOptions<E>,
@@ -205,12 +207,13 @@ declare namespace hybrids {
     const connect = "__router__connect__";
 
     type UrlParams<V> = {
-      [property in keyof V]?: any;
+      [property in keyof V]?: DescriptorValue<V[property]>;
     };
 
     function url<V>(view: V, params?: UrlParams<V>): string;
     function backUrl(options?: { nested?: boolean }): string;
     function guardUrl(params?: UrlParams<any>): string;
+    function currentUrl(): string;
 
     function active(
       views: View<any> | View<any>[],
