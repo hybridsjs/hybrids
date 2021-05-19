@@ -186,12 +186,12 @@ declare namespace hybrids {
       multiple?: boolean;
       replace?: boolean;
       guard?: (host: E) => any;
-      stack?: HybridElement<any>[];
+      stack?: typeof HTMLElement[];
     };
   };
 
   function router<E, V>(
-    views: HybridElement<any>[],
+    views: typeof HTMLElement[],
     options?: {
       url?: string;
     },

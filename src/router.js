@@ -270,11 +270,11 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
     const hybrids = Constructor.hybrids;
     if (hybrids) {
       options = { ...options, ...hybrids[connect] };
-
-      callbacksMap.get(Constructor).push(restoreLayout);
+      const callbacks = callbacksMap.get(Constructor);
+      callbacks.push(restoreLayout);
 
       if (options.dialog) {
-        callbacksMap.get(Constructor).push(host => {
+        callbacks.push(host => {
           const cb = event => {
             if (event.key === "Escape") {
               event.stopPropagation();

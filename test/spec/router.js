@@ -1,6 +1,6 @@
 import { define, dispatch, router } from "../../src/index.js";
 
-fdescribe("router:", () => {
+describe("router:", () => {
   let el;
   let spy;
   let prop;
