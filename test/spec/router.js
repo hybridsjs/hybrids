@@ -1,6 +1,6 @@
-import { dispatch, router } from "../../src/index.js";
+import { define, dispatch, router } from "../../src/index.js";
 
-describe("router:", () => {
+fdescribe("router:", () => {
   let el;
   let spy;
   let prop;
@@ -28,109 +28,101 @@ describe("router:", () => {
     window.history.replaceState(null, "", href);
   });
 
-  describe("for root router", () => {
-    const views = {
-      Home: {},
-      One: {
-        [router.connect]: {
-          url: "/one",
-        },
+  describe("root router", () => {
+    const Home = define("test-router-home", {});
+    const One = define("test-router-one", {
+      [router.connect]: {
+        url: "/one",
       },
-      Two: {},
-      Dialog: {
-        [router.connect]: {
-          dialog: true,
-        },
+    });
+    const Two = define("test-router-two", {});
+    const Dialog = define("test-router-dialog", {
+      [router.connect]: {
+        dialog: true,
       },
-    };
+    });
+    const views = [Home, One, Two, Dialog];
 
-    describe("connected root router", () => {
-      beforeEach(() => {
-        prop = router(views);
-      });
+    beforeEach(() => {
+      prop = router(views);
+    });
 
-      it("returns a default view", () => {
-        disconnect = prop.connect(el, "", spy);
+    it("returns a default view", () => {
+      disconnect = prop.connect(el, "", spy);
 
+      const list = prop.get(el);
+
+      expect(list).toBeInstanceOf(Array);
+      expect(list[0]).toBeInstanceOf(Home);
+    });
+
+    it("returns a view by matching URL", () => {
+      window.history.replaceState(null, "", "/one");
+
+      disconnect = prop.connect(el, "", spy);
+      const list = prop.get(el);
+
+      expect(list).toBeInstanceOf(Array);
+      expect(list[0]).toBeInstanceOf(One);
+    });
+
+    it("sets a view to window history", () => {
+      disconnect = prop.connect(el, "", spy);
+      expect(window.history.state).toBeInstanceOf(Array);
+      expect(window.history.state.length).toBe(1);
+    });
+
+    it("returns a view saved in window history", () => {
+      window.history.replaceState([{ id: "test-router-two", params: {} }], "");
+      disconnect = prop.connect(el, "", spy);
+      const list = prop.get(el);
+
+      expect(list).toBeInstanceOf(Array);
+      expect(list[0]).toBeInstanceOf(Two);
+    });
+
+    it("returns a default view when saved view is not found", () => {
+      window.history.replaceState(
+        [{ id: "test-router-some-other", params: {} }],
+        "",
+      );
+      disconnect = prop.connect(el, "", spy);
+      const list = prop.get(el);
+
+      expect(list).toBeInstanceOf(Array);
+      expect(list[0]).toBeInstanceOf(Home);
+    });
+
+    it("goes back when dialog element is on the top of the stack", done => {
+      window.history.replaceState([{ id: "test-router-two", params: {} }], "");
+      window.history.pushState(
+        [
+          { id: "test-router-dialog", params: {} },
+          { id: "test-router-two", params: {} },
+        ],
+        "",
+      );
+
+      disconnect = prop.connect(el, "", () => {
         const list = prop.get(el);
 
         expect(list).toBeInstanceOf(Array);
-        expect(list[0]).toBeInstanceOf(Element);
-        expect(list[0].constructor.hybrids).toBe(views.Home);
+        expect(list[0]).toBeInstanceOf(Two);
+        done();
       });
+    });
 
-      it("returns a view by matching URL", () => {
-        window.history.replaceState(null, "", "/one");
+    it("does not go back for dialog view when reconnecting (HMR)", done => {
+      disconnect = prop.connect(el, "", spy);
+      navigate(router.url(Dialog));
 
-        disconnect = prop.connect(el, "", spy);
+      disconnect();
+
+      disconnect = prop.connect(el, "", () => {
         const list = prop.get(el);
-
-        expect(list).toBeInstanceOf(Array);
-        expect(list[0]).toBeInstanceOf(Element);
-        expect(list[0].constructor.hybrids).toBe(views.One);
-      });
-
-      it("sets a view to window history", () => {
-        disconnect = prop.connect(el, "", spy);
-        expect(window.history.state).toBeInstanceOf(Array);
-        expect(window.history.state.length).toBe(1);
-      });
-
-      it("returns a view saved in window history", () => {
-        window.history.replaceState([{ id: "view-two", params: {} }], "");
-        disconnect = prop.connect(el, "", spy);
-        const list = prop.get(el);
-
-        expect(list).toBeInstanceOf(Array);
-        expect(list[0]).toBeInstanceOf(Element);
-        expect(list[0].constructor.hybrids).toBe(views.Two);
-      });
-
-      it("returns a default view when saved view is not found", () => {
-        window.history.replaceState(
-          [{ id: "view-some-other", params: {} }],
-          "",
-        );
-        disconnect = prop.connect(el, "", spy);
-        const list = prop.get(el);
-
-        expect(list).toBeInstanceOf(Array);
-        expect(list[0]).toBeInstanceOf(Element);
-        expect(list[0].constructor.hybrids).toBe(views.Home);
-      });
-
-      it("goes back when dialog element is on the top of the stack", done => {
-        window.history.replaceState([{ id: "view-two", params: {} }], "");
-        window.history.pushState(
-          [
-            { id: "view-dialog", params: {} },
-            { id: "view-two", params: {} },
-          ],
-          "",
-        );
-
-        disconnect = prop.connect(el, "", () => {
-          const list = prop.get(el);
-
-          expect(list).toBeInstanceOf(Array);
-          expect(list[0]).toBeInstanceOf(Element);
-          expect(list[0].constructor.hybrids).toBe(views.Two);
-          done();
-        });
-      });
-
-      it("does not go back for dialog view when reconnecting (HMR)", done => {
-        disconnect = prop.connect(el, "", spy);
-        navigate(router.url(views.Dialog));
-
-        disconnect();
-
-        disconnect = prop.connect(el, "", () => {
-          const list = prop.get(el);
-          expect(list[1]).toBeInstanceOf(Element);
-          expect(list[1].constructor.hybrids).toBe(views.Dialog);
-          done();
-        });
+        expect(list[1]).toBeInstanceOf(Element);
+        expect(list[1]).toBeInstanceOf(Dialog);
+        done();
       });
     });
   });

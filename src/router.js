@@ -1,6 +1,6 @@
-import { defineElement, callbacksMap } from "./define.js";
+import { callbacksMap } from "./define.js";
 import * as cache from "./cache.js";
-import { dispatch, pascalToDash } from "./utils.js";
+import { dispatch } from "./utils.js";
 
 /*
 
@@ -98,7 +98,7 @@ function restoreLayout(target, clear) {
 }
 
 const placeholder = Date.now();
-function setupBrowserUrl(browserUrl, name) {
+function setupBrowserUrl(browserUrl, id) {
   if (!browserUrl) return null;
 
   const [pathname, search = ""] = browserUrl.split("?");
@@ -127,7 +127,7 @@ function setupBrowserUrl(browserUrl, name) {
           const key = pathnameParams[index - 1];
 
           if (!hasOwnProperty.call(params, key) && !suppressErrors) {
-            throw Error(`The '${key}' parameter must be defined in '${name}'`);
+            throw Error(`The '${key}' parameter must be defined for <${id}>`);
           }
 
           return `${acc}${params[key]}${part}`;
@@ -147,7 +147,9 @@ function setupBrowserUrl(browserUrl, name) {
           if (searchParams.includes(key)) {
             url.searchParams.append(key, params[key] || "");
           } else {
-            throw TypeError(`The '${key}' parameter is not supported`);
+            throw TypeError(
+              `The '${key}' parameter is not supported for <${id}>`,
+            );
           }
         });
       }
@@ -165,7 +167,10 @@ function setupBrowserUrl(browserUrl, name) {
 
           temp = temp.substr(1);
 
-          if (temp.substr(0, parts[i].length) !== parts[i]) return null;
+          if (!parts[i] || temp.substr(0, parts[i].length) !== parts[i]) {
+            return null;
+          }
+
           temp = temp
             .substr(parts[i].length)
             .replace(/^([^/]+)/, (_, value) => {
@@ -196,13 +201,13 @@ function hasInStack(config, target) {
 function setupViews(views, options, parent = null, nestedParent = null) {
   if (typeof views === "function") views = views();
 
-  const result = Object.entries(views).map(([name, view]) => {
+  const result = views.map(Constructor => {
     // eslint-disable-next-line no-use-before-define
-    const config = setupView(view, name, options, parent, nestedParent);
+    const config = setupView(Constructor, options, parent, nestedParent);
 
     if (parent && hasInStack(config, parent)) {
       throw Error(
-        `${parent.name} cannot be in the stack of ${config.name} - ${config.name} already connected to ${parent.name}`,
+        `<${parent.id}> cannot be in the stack of <${config.id}> - it is already in stack of <${parent.id}>`,
       );
     }
 
@@ -214,55 +219,39 @@ function setupViews(views, options, parent = null, nestedParent = null) {
   return result;
 }
 
-function getNestedRouterOptions(view, name, config) {
-  const nestedRouters = Object.values(view)
+function getNestedRouterOptions(hybrids, id, config) {
+  const nestedRouters = Object.values(hybrids)
     .map(desc => routers.get(desc))
     .filter(d => d);
 
   if (nestedRouters.length) {
     if (nestedRouters.length > 1) {
       throw TypeError(
-        `'${name}' view must contain at most one nested router: ${nestedRouters.length}`,
+        `<${id}> must contain at most one nested router: ${nestedRouters.length}`,
       );
     }
 
     if (config.dialog) {
       throw TypeError(
-        `Nested routers are not supported in dialogs. Remove the router factory from '${name}' view`,
+        `Nested routers are not supported in dialogs. Remove the router property definition from <${id}>`,
       );
     }
 
     if (config.browserUrl) {
       throw TypeError(
-        `A view with nested router must not have the url option. Remove the url option from '${name}' view`,
+        `A view with nested router must not have the url option. Remove the url option from <${id}>`,
       );
     }
   }
   return nestedRouters[0];
 }
 
-function setupView(view, name, routerOptions, parent, nestedParent) {
-  const prefix = routerOptions.prefix || "view";
-  const id = `${pascalToDash(prefix)}-${pascalToDash(name)}`;
-
-  if (!view || typeof view !== "object") {
-    throw TypeError(
-      `${name} in the stack of ${
-        parent.name
-      } must be an object instance: ${typeof view} - for import/export cycle, wrap stack option in a function`,
-    );
-  }
-
-  let config = configs.get(view);
+function setupView(Constructor, routerOptions, parent, nestedParent) {
+  const id = new Constructor().tagName.toLowerCase();
+  let config = configs.get(Constructor);
 
   if (config) {
-    if (config.name !== name) {
-      throw Error(
-        `View definition for ${name} in ${parent.name} already connected to the router as ${config.name}`,
-      );
-    }
-
-    if (config.id !== id) {
+    if (config.hybrids !== Constructor.hybrids) {
       configs.delete(customElements.get(config.id));
       config = null;
     }
@@ -271,16 +260,34 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
   if (!config) {
     let browserUrl = null;
 
-    const options = {
+    let options = {
       dialog: false,
       guard: false,
       multiple: false,
       replace: false,
-      ...view[connect],
     };
 
-    const Constructor = defineElement(id, view);
-    callbacksMap.get(Constructor).push(restoreLayout);
+    const hybrids = Constructor.hybrids;
+    if (hybrids) {
+      options = { ...options, ...hybrids[connect] };
+
+      callbacksMap.get(Constructor).push(restoreLayout);
+
+      if (options.dialog) {
+        callbacksMap.get(Constructor).push(host => {
+          const cb = event => {
+            if (event.key === "Escape") {
+              event.stopPropagation();
+              window.history.go(-1);
+            }
+          };
+          host.addEventListener("keydown", cb);
+          return () => {
+            host.removeEventListener("keydown", cb);
+          };
+        });
+      }
+    }
 
     const writableParams = new Set();
     Object.keys(Constructor.prototype).forEach(key => {
@@ -288,33 +295,18 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
       if (desc.set) writableParams.add(key);
     });
 
-    if (options.dialog) {
-      callbacksMap.get(Constructor).push(host => {
-        const cb = event => {
-          if (event.key === "Escape") {
-            event.stopPropagation();
-            window.history.go(-1);
-          }
-        };
-        host.addEventListener("keydown", cb);
-        return () => {
-          host.removeEventListener("keydown", cb);
-        };
-      });
-    }
-
     if (options.url) {
       if (options.dialog) {
         throw Error(
-          `The 'url' option is not supported for dialogs - remove it from '${name}'`,
+          `The 'url' option is not supported for dialogs - remove it from <${id}>`,
         );
       }
       if (typeof options.url !== "string") {
         throw TypeError(
-          `The 'url' option in '${name}' must be a string: ${typeof options.url}`,
+          `The 'url' option in <${id}> must be a string: ${typeof options.url}`,
         );
       }
-      browserUrl = setupBrowserUrl(options.url, name);
+      browserUrl = setupBrowserUrl(options.url, id);
 
       callbacksMap.get(Constructor).unshift(_ =>
         cache.observe(
@@ -344,7 +336,7 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
         );
         if (!desc || !desc.set) {
           throw Error(
-            `'${key}' parameter in the url is not supported in '${name}'`,
+            `'${key}' parameter in the url is not supported for <${id}>`,
           );
         }
       });
@@ -365,8 +357,7 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
 
     config = {
       id,
-      name,
-      view,
+      hybrids,
       dialog: options.dialog,
       multiple: options.multiple,
       replace: options.replace,
@@ -385,13 +376,13 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
               url.searchParams.append(key, params[key] || "");
             } else if (!suppressErrors) {
               throw TypeError(
-                `The '${key}' parameter for '${name}' is not supported`,
+                `The '${key}' parameter is not supported for <${id}>`,
               );
             }
           });
 
           return new URL(
-            `${routerOptions.url || ""}#@${id}${url.search}`,
+            `${routerOptions.url}#@${id}${url.search}`,
             window.location.origin,
           );
         },
@@ -433,7 +424,6 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
       },
     };
 
-    configs.set(view, config);
     configs.set(Constructor, config);
 
     config.parent = parent;
@@ -442,7 +432,7 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
     if (options.stack) {
       if (options.dialog) {
         throw Error(
-          `The 'stack' option is not supported for dialogs - remove it from '${name}'`,
+          `The 'stack' option is not supported for dialogs - remove it from <${id}>`,
         );
       }
       config.stack = setupViews(
@@ -463,16 +453,13 @@ function setupView(view, name, routerOptions, parent, nestedParent) {
     parent = parent.parent;
   }
 
-  const nestedRouterOptions = getNestedRouterOptions(view, name, config);
+  const nestedRouterOptions =
+    config.hybrids && getNestedRouterOptions(config.hybrids, id, config);
 
   if (nestedRouterOptions) {
     config.nestedRoots = setupViews(
       nestedRouterOptions.views,
-      {
-        ...routerOptions,
-        prefix: `${prefix}-${pascalToDash(name)}`,
-        ...nestedRouterOptions,
-      },
+      { ...routerOptions, ...nestedRouterOptions },
       config,
       config,
     );
@@ -491,7 +478,7 @@ function getConfigById(id) {
 function getUrl(view, params = {}) {
   const config = configs.get(view);
   if (!config) {
-    throw Error(`Provided view is not connected to the router`);
+    throw Error(`Provided view is not connected to the router: ${view}`);
   }
 
   return config.url(params);
@@ -559,14 +546,14 @@ function getGuardUrl(params = {}) {
   return config.stack[0] ? config.stack[0].url(params) : "";
 }
 
-function getCurrentUrl() {
+function getCurrentUrl(params) {
   const state = window.history.state;
   if (!state) return "";
 
   const entry = state[0];
   const config = getConfigById(entry.id);
 
-  return config.url(entry.params);
+  return config.url({ ...entry.params, ...params });
 }
 
 function active(views, { stack = false } = {}) {
@@ -578,7 +565,7 @@ function active(views, { stack = false } = {}) {
   return views.some(view => {
     const config = configs.get(view);
     if (!config) {
-      throw TypeError("The first argument must be connected view definition");
+      throw TypeError(`Provided view is not connected to the router: ${view}`);
     }
 
     let entry = state[0];
@@ -958,7 +945,11 @@ function connectNestedRouter(host, invalidate) {
 }
 
 function router(views, options) {
-  options = { ...options, views };
+  options = {
+    url: window.location.pathname,
+    ...options,
+    views,
+  };
 
   const desc = {
     get: host => {

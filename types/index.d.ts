@@ -54,7 +54,7 @@ declare namespace hybrids {
       : typeof HTMLElement;
   };
 
-  interface HybridElement<E> extends HTMLElement {
+  interface HybridElement<E> {
     new (): E & HTMLElement;
     prototype: E & HTMLElement;
   }
@@ -180,46 +180,41 @@ declare namespace hybrids {
   }
 
   /* Router */
-  interface RouterOptions<E> {
-    url?: string;
-    prefix?: string;
-  }
-
-  interface MapOfViews {
-    [tagName: string]: View<any>;
-  }
-
   type View<E> = Hybrids<E> & {
     __router__connect__?: {
       url?: string;
       multiple?: boolean;
       replace?: boolean;
       guard?: (host: E) => any;
-      stack?: MapOfViews;
+      stack?: HybridElement<any>[];
     };
   };
 
-  function router<E, K extends string, V>(
-    views: MapOfViews,
-    options?: RouterOptions<E>,
+  function router<E, V>(
+    views: HybridElement<any>[],
+    options?: {
+      url?: string;
+    },
   ): Descriptor<E, HTMLElement[]>;
 
   namespace router {
     const connect = "__router__connect__";
 
     type UrlParams<V> = {
-      [property in keyof V]?: DescriptorValue<V[property]>;
+      [property in keyof V]?: V[property];
     };
 
-    function url<V>(view: V, params?: UrlParams<V>): string;
+    function url<V>(view: HybridElement<V>, params?: UrlParams<V>): string;
+
     function backUrl(options?: { nested?: boolean }): string;
     function guardUrl(params?: UrlParams<any>): string;
-    function currentUrl(): string;
+    function currentUrl<V>(params?: UrlParams<V>): string;
 
     function active(
-      views: View<any> | View<any>[],
+      views: HybridElement<any> | HybridElement<any>[],
       options?: { stack?: boolean },
     ): boolean;
+
     function resolve(event: Event, promise: Promise<any>): void;
   }
 
