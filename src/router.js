@@ -2,15 +2,6 @@ import { callbacksMap } from "./define.js";
 import * as cache from "./cache.js";
 import { dispatch } from "./utils.js";
 
-/*
-
-# TODO LIST
-
-* Check gourd feature after navigate refactor (guard condition)
-* Transition effect
-
-*/
-
 const connect = Symbol("router.connect");
 const configs = new WeakMap();
 
@@ -48,6 +39,7 @@ const focusMap = new WeakMap();
 function saveLayout(target) {
   const focusEl = document.activeElement;
   focusMap.set(target, target.contains(focusEl) ? focusEl : target);
+
   const map = new Map();
 
   if (!configs.get(target).nestedParent) {
@@ -64,18 +56,15 @@ function saveLayout(target) {
   scrollMap.set(target, map);
 }
 
-// let focusTarget;
 function restoreLayout(target, clear) {
-  // const focusEl = focusMap.get(target) || target;
-
-  // if (!focusTarget) {
-  //   requestAnimationFrame(() => {
-  //     focusTarget.focus({ preventScroll: true });
-  //     focusTarget = null;
-  //   });
-  // }
-
-  // focusTarget = focusEl;
+  const focusTarget = focusMap.get(target);
+  if (focusTarget) {
+    focusTarget.setAttribute("tabindex", "0");
+    focusTarget.focus({ preventScroll: true });
+    focusTarget.removeAttribute("tabindex");
+  } else {
+    target.focus({ preventScroll: true });
+  }
 
   const map = scrollMap.get(target);
 
