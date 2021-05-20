@@ -809,7 +809,35 @@ function connectRootRouter(host, invalidate, options) {
     }
   }
 
-  function navigate(event) {
+  function navigate(entry) {
+    const state = window.history.state;
+
+    let nestedEntry = entry;
+    while (nestedEntry.nested) nestedEntry = nestedEntry.nested;
+    const nestedConfig = getConfigById(nestedEntry.id);
+
+    let url = options.url || "";
+    if (nestedConfig.browserUrl) {
+      url = nestedConfig.url(entry.params);
+    }
+
+    let stack = stacks.get(host);
+    while (stack && stack[0]) {
+      cache.suspend(stack[0]);
+      stack = stacks.get(stack[0]);
+    }
+
+    const offset = getEntryOffset(entry);
+
+    if (offset > -1) {
+      navigateBack(offset, entry, url);
+    } else {
+      window.history.pushState([entry, ...state], "", url);
+      flush();
+    }
+  }
+
+  function onNavigate(event) {
     const nextEntry = getEntryFromURL(event.detail.url);
     if (!nextEntry) return;
 
@@ -819,28 +847,7 @@ function connectRootRouter(host, invalidate, options) {
       event.detail.event.preventDefault();
     }
 
-    const state = window.history.state;
-    const nextConfig = getConfigById(nextEntry.id);
-
-    let url = options.url || "";
-    if (nextConfig.browserUrl) {
-      url = nextConfig.url(nextEntry.params);
-    }
-
-    let stack = stacks.get(host);
-    while (stack) {
-      cache.suspend(stack[0]);
-      stack = stacks.get(stack[0]);
-    }
-
-    const offset = getEntryOffset(nextEntry);
-
-    if (offset > -1) {
-      navigateBack(offset, nextEntry, url);
-    } else {
-      window.history.pushState([nextEntry, ...state], "", url);
-      flush();
-    }
+    navigate(nextEntry);
   }
 
   entryPoints = [];
@@ -881,7 +888,12 @@ function connectRootRouter(host, invalidate, options) {
         options.url,
       );
     } else {
-      flush();
+      let entry = state[0];
+      while (entry.nested) entry = entry.nested;
+
+      const nestedConfig = getConfigById(entry.id);
+      const resultEntry = nestedConfig.getEntry(entry.params);
+      navigate(resultEntry);
     }
   }
 
@@ -889,14 +901,14 @@ function connectRootRouter(host, invalidate, options) {
 
   host.addEventListener("click", handleNavigate);
   host.addEventListener("submit", handleNavigate);
-  host.addEventListener("navigate", navigate);
+  host.addEventListener("navigate", onNavigate);
 
   return () => {
     window.removeEventListener("popstate", flush);
 
     host.removeEventListener("click", handleNavigate);
     host.removeEventListener("submit", handleNavigate);
-    host.removeEventListener("navigate", navigate);
+    host.removeEventListener("navigate", onNavigate);
 
     rootRouter = null;
   };
