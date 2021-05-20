@@ -37,11 +37,13 @@ declare namespace hybrids {
       keyof Omit<E, keyof HTMLElement>,
       string
     >]: property extends "render" | "content"
-      ? RenderFunction<E> | Property<E, E[property]>
+      ? E[property] extends () => HTMLElement
+        ? RenderFunction<E>
+        : Property<E, E[property]>
       : Property<E, E[property]>;
   } & {
-    render?: RenderFunction<E>;
-    content?: RenderFunction<E>;
+    render?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
+    content?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
   };
 
   interface MapOfHybrids {
