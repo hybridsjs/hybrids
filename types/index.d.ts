@@ -40,8 +40,8 @@ declare namespace hybrids {
       ? RenderFunction<E> | Property<E, E[property]>
       : Property<E, E[property]>;
   } & {
-    render?: RenderFunction<E>;
-    content?: RenderFunction<E>;
+    render?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
+    content?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
   };
 
   interface MapOfHybrids {
