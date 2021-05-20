@@ -38,7 +38,7 @@ const scrollMap = new WeakMap();
 const focusMap = new WeakMap();
 function saveLayout(target) {
   const focusEl = document.activeElement;
-  focusMap.set(target, target.contains(focusEl) ? focusEl : target);
+  focusMap.set(target, target.contains(focusEl) && focusEl);
 
   const map = new Map();
 
