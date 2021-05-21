@@ -608,7 +608,7 @@ function handleNavigate(event) {
   }
 
   if (rootRouter && url && url.origin === window.location.origin) {
-    dispatch(rootRouter, "navigate", { detail: { url, event } });
+    dispatch(rootRouter, "navigate", { bubbles: true, detail: { url, event } });
   }
 }
 
