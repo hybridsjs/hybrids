@@ -56,15 +56,25 @@ function saveLayout(target) {
   scrollMap.set(target, map);
 }
 
+let focusTarget = null;
 function restoreLayout(target, clear) {
-  const focusTarget = focusMap.get(target);
-  if (focusTarget) {
-    focusTarget.setAttribute("tabindex", "0");
-    focusTarget.focus({ preventScroll: true });
-    focusTarget.removeAttribute("tabindex");
-  } else {
-    target.focus({ preventScroll: true });
+  if (!focusTarget) {
+    Promise.resolve().then(() => {
+      const el = focusTarget;
+      focusTarget = null;
+
+      if (!el.hasAttribute("tabindex")) {
+        el.setAttribute("tabindex", "0");
+        Promise.resolve().then(() => {
+          el.removeAttribute("tabindex");
+        });
+      }
+
+      el.focus({ preventScroll: true });
+    });
   }
+
+  focusTarget = focusMap.get(target) || target;
 
   const map = scrollMap.get(target);
 
