@@ -59,22 +59,23 @@ function saveLayout(target) {
 let focusTarget = null;
 function restoreLayout(target, clear) {
   if (!focusTarget) {
-    Promise.resolve().then(() => {
-      const el = focusTarget;
-      focusTarget = null;
-
-      if (!el.hasAttribute("tabindex")) {
-        el.setAttribute("tabindex", "0");
-        Promise.resolve().then(() => {
-          el.removeAttribute("tabindex");
-        });
+    requestAnimationFrame(() => {
+      const activeEl = document.activeElement;
+      if (!focusTarget.contains(activeEl)) {
+        const el = scrollMap.get(focusTarget) || focusTarget;
+        if (!el.hasAttribute("tabindex")) {
+          el.setAttribute("tabindex", "0");
+          Promise.resolve().then(() => {
+            el.removeAttribute("tabindex");
+          });
+        }
+        el.focus({ preventScroll: true });
       }
-
-      el.focus({ preventScroll: true });
+      focusTarget = null;
     });
   }
 
-  focusTarget = focusMap.get(target) || target;
+  focusTarget = target;
 
   const map = scrollMap.get(target);
 
@@ -397,9 +398,6 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
       create() {
         const el = new Constructor();
         configs.set(el, config);
-
-        el.style.outline = "none";
-        el.tabIndex = 0;
 
         return el;
       },
