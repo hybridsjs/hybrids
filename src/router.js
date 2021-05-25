@@ -474,11 +474,7 @@ function getConfigById(id) {
 
 function getUrl(view, params = {}) {
   const config = configs.get(view);
-  if (!config) {
-    throw Error(`Provided view is not connected to the router: ${view}`);
-  }
-
-  return config.url(params);
+  return config ? config.url(params) : "";
 }
 
 function getBackUrl({ nested = false } = {}) {
@@ -578,6 +574,28 @@ function active(views, { stack = false } = {}) {
   });
 }
 
+function getEntryFromURL(url) {
+  let config;
+
+  const [pathname, search] = url.hash.split("?");
+  if (pathname) {
+    config = getConfigById(pathname.split("@")[1]);
+    url = new URL(`?${search}`, window.location.origin);
+  }
+
+  if (!config) {
+    for (let i = 0; i < entryPoints.length; i += 1) {
+      const entryPoint = entryPoints[i];
+      const params = entryPoint.match(url);
+      if (params) return entryPoint.getEntry(params);
+    }
+
+    return null;
+  }
+
+  return config.getEntry(config.match(url));
+}
+
 function handleNavigate(event) {
   if (event.defaultPrevented) return;
 
@@ -606,7 +624,15 @@ function handleNavigate(event) {
   }
 
   if (rootRouter && url && url.origin === window.location.origin) {
-    dispatch(rootRouter, "navigate", { bubbles: true, detail: { url, event } });
+    const entry = getEntryFromURL(url);
+    if (entry) {
+      event.preventDefault();
+
+      dispatch(rootRouter, "navigate", {
+        bubbles: true,
+        detail: { entry, url },
+      });
+    }
   }
 }
 
@@ -688,28 +714,6 @@ function resolveStack(host, state) {
 
   const flush = flushes.get(stack[0]);
   if (flush) flush();
-}
-
-function getEntryFromURL(url) {
-  let config;
-
-  const [pathname, search] = url.hash.split("?");
-  if (pathname) {
-    config = getConfigById(pathname.split("@")[1]);
-    url = new URL(`?${search}`, window.location.origin);
-  }
-
-  if (!config) {
-    for (let i = 0; i < entryPoints.length; i += 1) {
-      const entryPoint = entryPoints[i];
-      const params = entryPoint.match(url);
-      if (params) return entryPoint.getEntry(params);
-    }
-
-    return null;
-  }
-
-  return config.getEntry(config.match(url));
 }
 
 function getEntryOffset(entry) {
@@ -845,17 +849,8 @@ function connectRootRouter(host, invalidate, options) {
     }
   }
 
-  function onNavigate(event) {
-    const nextEntry = getEntryFromURL(event.detail.url);
-    if (!nextEntry) return;
-
-    event.stopPropagation();
-
-    if (event.detail.event) {
-      event.detail.event.preventDefault();
-    }
-
-    navigate(nextEntry);
+  function executeNavigate(event) {
+    navigate(event.detail.entry);
   }
 
   entryPoints = [];
@@ -880,7 +875,11 @@ function connectRootRouter(host, invalidate, options) {
       let entry = state[i];
       while (entry) {
         const config = getConfigById(entry.id);
-        if (!config || (config.dialog && stack.length === 0)) {
+        if (
+          !config ||
+          (config.dialog && stack.length === 0) ||
+          (!roots.includes(config) && !roots.some(c => hasInStack(c, config)))
+        ) {
           break;
         }
         entry = entry.nested;
@@ -909,14 +908,14 @@ function connectRootRouter(host, invalidate, options) {
 
   host.addEventListener("click", handleNavigate);
   host.addEventListener("submit", handleNavigate);
-  host.addEventListener("navigate", onNavigate);
+  host.addEventListener("navigate", executeNavigate);
 
   return () => {
     window.removeEventListener("popstate", flush);
 
     host.removeEventListener("click", handleNavigate);
     host.removeEventListener("submit", handleNavigate);
-    host.removeEventListener("navigate", onNavigate);
+    host.removeEventListener("navigate", executeNavigate);
 
     rootRouter = null;
   };
@@ -949,16 +948,13 @@ function connectNestedRouter(host, invalidate) {
       "",
     );
   }
-  if (!flushes.has(host)) flush();
+
+  flush();
   flushes.set(host, flush);
 }
 
 function router(views, options) {
-  options = {
-    url: window.location.pathname,
-    ...options,
-    views,
-  };
+  options = { ...options, views };
 
   const desc = {
     get: host => {

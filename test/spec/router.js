@@ -1,171 +1,168 @@
-import { define, dispatch, router } from "../../src/index.js";
+import { define, router, html } from "../../src/index.js";
+import { resolveRaf } from "../helpers.js";
 
 describe("router:", () => {
-  let el;
-  let spy;
-  let prop;
-  let disconnect;
-  let href;
-
-  function navigate(url) {
-    dispatch(el, "navigate", { detail: { url } });
-  }
+  let Nested;
+  let Child;
+  let OtherChild;
+  let Home;
+  let App;
+  let host;
 
   beforeEach(() => {
-    el = document.createElement("div");
-    spy = jasmine.createSpy();
+    OtherChild = define("test-router-child", {
+      content: () => html`
+        <a href="${router.backUrl()}">Back</a>
+      `,
+    });
 
-    href = window.location.href;
+    Nested = define("test-router-child-nested", {});
+
+    Child = define("test-router-child", {
+      nested: router([Nested]),
+      content: ({ nested }) => html`
+        <a href="${router.backUrl()}">Back</a>
+        <a href="${router.url(OtherChild)}">OtherChild</a>
+        ${nested}
+      `,
+    });
+
+    Home = define("test-router-home", {
+      [router.connect]: { stack: [Child, OtherChild] },
+      content: () => html`
+        <a href="${router.url(Child)}">Child</a>
+        <a href="${router.url(OtherChild)}">Child</a>
+      `,
+    });
+
+    App = define("test-router-app", {
+      views: router([Home]),
+      content: ({ views }) => html`${views}` // prettier-ignore
+    });
+
     window.history.replaceState(null, "");
+    host = new App();
+    document.body.appendChild(host);
   });
 
   afterEach(() => {
-    if (disconnect) {
-      disconnect();
-      disconnect = null;
-    }
-
-    window.history.replaceState(null, "", href);
+    host.parentElement.removeChild(host);
   });
 
-  describe("root router", () => {
-    const Home = define("test-router-home", {});
-    const One = define("test-router-one", {
-      [router.connect]: {
-        url: "/one",
-      },
-    });
-    const Two = define("test-router-two", {});
-    const Dialog = define("test-router-dialog", {
-      [router.connect]: {
-        dialog: true,
-      },
-    });
-    const views = [Home, One, Two, Dialog];
-
-    beforeEach(() => {
-      prop = router(views);
+  describe("connect root router -", () => {
+    it("displays root view", done => {
+      resolveRaf(() => {
+        expect(host.views[0]).toBeInstanceOf(Home);
+        expect(host.children[0]).toBeInstanceOf(Home);
+      }).then(done);
     });
 
-    it("returns a default view", () => {
-      disconnect = prop.connect(el, "", spy);
-
-      const list = prop.get(el);
-
-      expect(list).toBeInstanceOf(Array);
-      expect(list[0]).toBeInstanceOf(Home);
+    it("uses view from the history state", done => {
+      resolveRaf(() => {
+        const el = host.children[0].children[0];
+        el.click();
+        return resolveRaf(() => {
+          host.parentElement.removeChild(host);
+          host = new App();
+          document.body.appendChild(host);
+          return resolveRaf(() => {
+            expect(host.children[0]).toBeInstanceOf(Child);
+          });
+        });
+      }).then(done);
     });
 
-    it("returns a view by matching URL", () => {
-      window.history.replaceState(null, "", "/one");
-
-      disconnect = prop.connect(el, "", spy);
-      const list = prop.get(el);
-
-      expect(list).toBeInstanceOf(Array);
-      expect(list[0]).toBeInstanceOf(One);
+    it("resets state to default root view", done => {
+      resolveRaf(() => {
+        const el = host.children[0].children[0];
+        el.click();
+        return resolveRaf(() => {
+          host.parentElement.removeChild(host);
+          const Another = define("test-router-another", {});
+          App = define("test-router-app", {
+            views: router([Another]),
+            content: ({ views }) => html`${views}` // prettier-ignore
+          });
+          host = new App();
+          document.body.appendChild(host);
+          return resolveRaf(() => {
+            expect(host.children[0]).toBeInstanceOf(Another);
+          });
+        });
+      }).then(done);
     });
 
-    it("sets a view to window history", () => {
-      disconnect = prop.connect(el, "", spy);
-      expect(window.history.state).toBeInstanceOf(Array);
-      expect(window.history.state.length).toBe(1);
-    });
-
-    it("returns a view saved in window history", () => {
-      window.history.replaceState([{ id: "test-router-two", params: {} }], "");
-      disconnect = prop.connect(el, "", spy);
-      const list = prop.get(el);
-
-      expect(list).toBeInstanceOf(Array);
-      expect(list[0]).toBeInstanceOf(Two);
-    });
-
-    it("returns a default view when saved view is not found", () => {
-      window.history.replaceState(
-        [{ id: "test-router-some-other", params: {} }],
-        "",
-      );
-      disconnect = prop.connect(el, "", spy);
-      const list = prop.get(el);
-
-      expect(list).toBeInstanceOf(Array);
-      expect(list[0]).toBeInstanceOf(Home);
-    });
-
-    it("goes back when dialog element is on the top of the stack", done => {
-      window.history.replaceState([{ id: "test-router-two", params: {} }], "");
-      window.history.pushState(
-        [
-          { id: "test-router-dialog", params: {} },
-          { id: "test-router-two", params: {} },
-        ],
-        "",
-      );
-
-      disconnect = prop.connect(el, "", () => {
-        const list = prop.get(el);
-
-        expect(list).toBeInstanceOf(Array);
-        expect(list[0]).toBeInstanceOf(Two);
-        done();
-      });
-    });
-
-    it("does not go back for dialog view when reconnecting (HMR)", done => {
-      disconnect = prop.connect(el, "", spy);
-      navigate(router.url(Dialog));
-
-      disconnect();
-
-      disconnect = prop.connect(el, "", () => {
-        const list = prop.get(el);
-        expect(list[1]).toBeInstanceOf(Element);
-        expect(list[1]).toBeInstanceOf(Dialog);
-        done();
-      });
+    it("resets state to previously connected view", done => {
+      resolveRaf(() => {
+        const el = host.children[0].children[0];
+        el.click();
+        return resolveRaf(() => {
+          host.parentElement.removeChild(host);
+          Home = define("test-router-home", {});
+          App = define("test-router-app", {
+            views: router([Home]),
+            content: ({ views }) => html`${views}` // prettier-ignore
+          });
+          host = new App();
+          document.body.appendChild(host);
+          return resolveRaf(() => {
+            expect(host.children[0]).toBeInstanceOf(Home);
+          });
+        });
+      }).then(done);
     });
   });
 
-  describe("[router.connect] -", () => {
-    describe("'dialog'", () => {
-      it("pushes new entry for dialog view");
-      it("pushes new entry for dialog not from the stack ???");
+  describe("navigate -", () => {
+    it("navigates to Child and go back to Home", done => {
+      resolveRaf(() => {
+        let el = host.children[0].children[0];
+        el.click();
+        return resolveRaf(() => {
+          expect(host.views[0]).toBeInstanceOf(Child);
+          expect(host.children[0]).toBeInstanceOf(Child);
+          expect(window.history.state.length).toBe(2);
+
+          el = host.children[0].children[0];
+          el.click();
+
+          return resolveRaf(() => {
+            expect(host.views[0]).toBeInstanceOf(Home);
+            expect(host.children[0]).toBeInstanceOf(Home);
+            expect(window.history.state.length).toBe(1);
+          });
+        });
+      }).then(done);
     });
 
-    describe("'url'", () => {});
+    it("navigates to Child and replace state with OtherChild", done => {
+      resolveRaf(() => {
+        let el = host.children[0].children[0];
+        el.click();
+        return resolveRaf(() => {
+          el = host.children[0].children[1];
+          el.click();
 
-    describe("'multiple'", () => {
-      describe("when 'true'", () => {
-        it(
-          "navigate pushes new entry for the same id when other params with multiple option is set",
-        );
-        it("navigate moves back to entry where params are equal");
-      });
-      describe("when 'false'", () => {
-        it("replaces state for the same view");
-      });
-    });
-
-    describe("'guard'", () => {
-      it("displays guard parent when condition is not met");
-      it("displays the first view from own stack when condition is met");
-    });
-
-    describe("'stack'", () => {
-      describe("for view from own stack", () => {
-        it("pushes new entry for view from stack");
-        it("moves back to the view from stack");
-      });
-
-      describe("for view not from own stack", () => {
-        it("finds a common parent, clears stack, and pushes new state");
-      });
+          return resolveRaf(() => {
+            expect(host.views[0]).toBeInstanceOf(OtherChild);
+            expect(host.children[0]).toBeInstanceOf(OtherChild);
+            expect(window.history.state.length).toBe(2);
+          });
+        });
+      }).then(done);
     });
   });
 
-  describe("view layout", () => {
-    it("saves scroll positions");
-    it("saves the latest focused element");
+  describe("url() -", () => {
+    it("returns empty string for not connected view", () => {
+      const MyElement = define("test-router-my-element", {});
+      expect(router.url(MyElement)).toBe("");
+    });
   });
+
+  describe("resolve() -", () => {});
+  describe("backUrl() -", () => {});
+  describe("guardUrl() -", () => {});
+  describe("currentUrl() -", () => {});
+  describe("active() -", () => {});
 });
