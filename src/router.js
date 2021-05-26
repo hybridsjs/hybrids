@@ -381,7 +381,7 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
           });
 
           return new URL(
-            `${routerOptions.url || ""}#@${id}${url.search}`,
+            `${routerOptions.url}#@${id}${url.search}`,
             window.location.origin,
           );
         },
@@ -955,7 +955,7 @@ function connectNestedRouter(host, invalidate) {
 }
 
 function router(views, options) {
-  options = { ...options, views };
+  options = { url: window.location.pathname, ...options, views };
 
   const desc = {
     get: host => {
