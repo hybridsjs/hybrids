@@ -16,9 +16,13 @@ export function getEntry(target, key) {
     entry = {
       target,
       key,
+      getter: undefined,
+      validate: undefined,
       value: undefined,
       contexts: new Set(),
       deps: new Set(),
+      state: 0,
+      depState: 0,
       resolved: false,
     };
     targetMap.set(key, entry);
@@ -60,12 +64,31 @@ export function get(target, key, getter, validate) {
     entry.contexts.add(context);
   }
 
-  if (
-    !suspense.has(target) &&
-    entry.resolved &&
-    ((validate && validate(entry.value)) || !validate)
-  ) {
-    return entry.value;
+  if (!suspense.has(target)) {
+    if (entry.resolved && (!validate || (validate && validate(entry.value)))) {
+      return entry.value;
+    }
+
+    if (entry.depState > entry.state && !validate) {
+      let depState = entry.state;
+
+      for (const depEntry of entry.deps) {
+        // eslint-disable-next-line no-unused-expressions
+        depEntry.target[depEntry.key];
+
+        if (!depEntry.resolved) {
+          depState = false;
+          break;
+        }
+
+        depState += depEntry.state;
+      }
+
+      if (depState && depState === entry.depState) {
+        entry.resolved = true;
+        return entry.value;
+      }
+    }
   }
 
   try {
@@ -80,9 +103,17 @@ export function get(target, key, getter, validate) {
 
     if (nextValue !== entry.value) {
       entry.value = nextValue;
+      entry.state += 1;
+
       dispatchDeep(entry);
     }
 
+    let depState = entry.state;
+    entry.deps.forEach(depEntry => {
+      depState += depEntry.state;
+    });
+
+    entry.depState = depState;
     entry.resolved = !suspense.has(target);
 
     contexts.shift();
@@ -108,6 +139,8 @@ export function set(target, key, setter, value) {
 
   if (newValue !== entry.value) {
     entry.value = newValue;
+    entry.state += 1;
+
     dispatchDeep(entry);
   }
 }
@@ -134,6 +167,8 @@ function deleteEntry(entry) {
 }
 
 function invalidateEntry(entry, clearValue, deleteValue) {
+  entry.depState = 0;
+
   dispatchDeep(entry);
 
   if (clearValue) {

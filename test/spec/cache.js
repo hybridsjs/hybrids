@@ -58,7 +58,13 @@ describe("cache:", () => {
     });
 
     it("runs getter only once if dependencies do not change", () => {
-      get(target, "key", () => get(target, "otherKey", () => "value"));
+      Object.defineProperty(target, "otherKey", {
+        get: () => get(target, "otherKey", () => "value"),
+      });
+
+      get(target, "key", () => target.otherKey);
+      invalidate(target, "otherKey");
+
       get(target, "key", spy);
 
       expect(spy).not.toHaveBeenCalled();
