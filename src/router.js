@@ -381,7 +381,7 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
           });
 
           return new URL(
-            `${routerOptions.url}#@${id}${url.search}`,
+            `${routerOptions.url || ""}#@${id}${url.search}`,
             window.location.origin,
           );
         },
