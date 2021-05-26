@@ -57,17 +57,16 @@ function saveLayout(target) {
 }
 
 let focusTarget = null;
+const deffer = Promise.resolve();
 function restoreLayout(target, clear) {
   if (!focusTarget) {
-    requestAnimationFrame(() => {
+    deffer.then(() => {
       const activeEl = document.activeElement;
       if (!focusTarget.contains(activeEl)) {
         const el = scrollMap.get(focusTarget) || focusTarget;
-        if (!el.hasAttribute("tabindex")) {
-          el.setAttribute("tabindex", "0");
-          Promise.resolve().then(() => {
-            el.removeAttribute("tabindex");
-          });
+        if (el.tabIndex === -1) {
+          el.tabIndex = 0;
+          deffer.then(() => el.removeAttribute("tabindex"));
         }
         el.focus({ preventScroll: true });
       }
@@ -80,7 +79,7 @@ function restoreLayout(target, clear) {
   const map = scrollMap.get(target);
 
   if (map) {
-    Promise.resolve().then(() => {
+    deffer.then(() => {
       map.forEach((pos, el) => {
         el.scrollLeft = clear ? 0 : pos.left;
         el.scrollTop = clear ? 0 : pos.top;
@@ -90,7 +89,7 @@ function restoreLayout(target, clear) {
     scrollMap.delete(target);
   } else if (!configs.get(target).nestedParent) {
     const el = document.scrollingElement;
-    Promise.resolve().then(() => {
+    deffer.then(() => {
       el.scrollLeft = 0;
       el.scrollTop = 0;
     });
@@ -398,6 +397,8 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
       create() {
         const el = new Constructor();
         configs.set(el, config);
+
+        el.style.outline = "none";
 
         return el;
       },
