@@ -9,6 +9,7 @@
     "no-param-reassign": 0,
     "no-new-func": 0,
     "no-loop-func": 0,
+    "no-restricted-syntax": 0,
     "new-cap": 0,
     "prefer-destructuring": 0,
     "block-scoped-var": 0,
