@@ -2,6 +2,7 @@ import * as emitter from "./emitter.js";
 
 const entries = new WeakMap();
 const suspense = new WeakSet();
+const values = new WeakMap();
 
 export function getEntry(target, key) {
   let targetMap = entries.get(target);
@@ -24,6 +25,14 @@ export function getEntry(target, key) {
       resolved: false,
     };
     targetMap.set(key, entry);
+  } else if (entry.contexts.size) {
+    entry.contexts.forEach(contextEntry => {
+      if (suspense.has(contextEntry.target)) {
+        entry.contexts.delete(contextEntry);
+        contextEntry.depState = 0;
+        contextEntry.resolved = false;
+      }
+    });
   }
 
   return entry;
@@ -43,7 +52,10 @@ export function getEntries(target) {
 function dispatchDeep(entry) {
   entry.resolved = false;
 
-  emitter.dispatch(entry);
+  if (!suspense.has(entry.target)) {
+    emitter.dispatch(entry);
+  }
+
   entry.contexts.forEach(dispatchDeep);
 }
 
@@ -51,10 +63,6 @@ let context = null;
 const contexts = new Set();
 export function get(target, key, getter, validate) {
   const entry = getEntry(target, key);
-
-  if (contexts.has(entry)) {
-    throw Error(`Circular get invocation is forbidden: '${key}'`);
-  }
 
   if (context && !suspense.has(context.target)) {
     context.deps.add(entry);
@@ -86,6 +94,10 @@ export function get(target, key, getter, validate) {
         return entry.value;
       }
     }
+  }
+
+  if (contexts.has(entry)) {
+    throw Error(`Circular get invocation is forbidden: '${key}'`);
   }
 
   const lastContext = context;
@@ -143,6 +155,7 @@ export function set(target, key, setter, value) {
   if (newValue !== entry.value) {
     entry.value = newValue;
     entry.state += 1;
+    entry.depState = 0;
 
     dispatchDeep(entry);
   }
@@ -209,47 +222,18 @@ export function invalidateAll(target, clearValue, deleteValue) {
   }
 }
 
-const values = new WeakMap();
 export function observe(target, key, getter, fn) {
   const entry = getEntry(target, key);
 
   return emitter.subscribe(entry, () => {
-    if (!suspense.has(target)) {
-      const lastValue = values.get(entry);
-      const value = get(target, key, getter);
+    const lastValue = values.get(entry);
+    const value = get(target, key, getter);
 
-      if (value !== lastValue) {
-        fn(target, value, lastValue);
-        values.set(entry, value);
-      }
+    if (value !== lastValue) {
+      fn(target, value, lastValue);
+      values.set(entry, value);
     }
   });
-}
-
-const clearTargets = new Set();
-export function clear(target) {
-  if (clearTargets.size === 0) {
-    requestAnimationFrame(() => {
-      clearTargets.forEach(t => {
-        const targetMap = entries.get(t);
-        if (targetMap) {
-          targetMap.forEach(entry => {
-            entry.resolved = false;
-
-            entry.deps.forEach(depEntry => {
-              depEntry.contexts.delete(entry);
-            });
-
-            entry.deps.clear();
-            entry.contexts.clear();
-          });
-        }
-      });
-
-      clearTargets.clear();
-    });
-  }
-  clearTargets.add(target);
 }
 
 export function suspend(target) {
@@ -258,5 +242,4 @@ export function suspend(target) {
 
 export function unsuspend(target) {
   suspense.delete(target);
-  clearTargets.delete(target);
 }

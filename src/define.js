@@ -191,7 +191,6 @@ export function defineElement(tagName, hybrids) {
       }
 
       cache.suspend(this);
-      cache.clear(this);
     }
   }
 
