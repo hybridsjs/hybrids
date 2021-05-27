@@ -16,8 +16,6 @@ export function getEntry(target, key) {
     entry = {
       target,
       key,
-      getter: undefined,
-      validate: undefined,
       value: undefined,
       contexts: new Set(),
       deps: new Set(),
@@ -49,15 +47,14 @@ function dispatchDeep(entry) {
   entry.contexts.forEach(dispatchDeep);
 }
 
-const contexts = [];
+let context = null;
+const contexts = new Set();
 export function get(target, key, getter, validate) {
   const entry = getEntry(target, key);
 
-  if (contexts.includes(entry)) {
+  if (contexts.has(entry)) {
     throw Error(`Circular get invocation is forbidden: '${key}'`);
   }
-
-  const context = contexts[0];
 
   if (context && !suspense.has(context.target)) {
     context.deps.add(entry);
@@ -91,15 +88,20 @@ export function get(target, key, getter, validate) {
     }
   }
 
-  try {
-    contexts.unshift(entry);
+  const lastContext = context;
 
+  try {
     entry.deps.forEach(depEntry => {
       depEntry.contexts.delete(entry);
     });
+
     entry.deps.clear();
+    context = entry;
+    contexts.add(entry);
 
     const nextValue = getter(target, entry.value);
+
+    context = lastContext;
 
     if (nextValue !== entry.value) {
       entry.value = nextValue;
@@ -116,9 +118,10 @@ export function get(target, key, getter, validate) {
     entry.depState = depState;
     entry.resolved = !suspense.has(target);
 
-    contexts.shift();
+    contexts.delete(entry);
   } catch (e) {
-    contexts.shift();
+    context = lastContext;
+    contexts.delete(entry);
 
     entry.resolved = false;
 
@@ -181,7 +184,7 @@ function invalidateEntry(entry, clearValue, deleteValue) {
 }
 
 export function invalidate(target, key, clearValue, deleteValue) {
-  if (contexts.length) {
+  if (contexts.size) {
     throw Error(
       `Invalidating property in chain of get calls is forbidden: '${key}'`,
     );
@@ -192,7 +195,7 @@ export function invalidate(target, key, clearValue, deleteValue) {
 }
 
 export function invalidateAll(target, clearValue, deleteValue) {
-  if (contexts.length) {
+  if (contexts.size) {
     throw Error(
       "Invalidating all properties in chain of get calls is forbidden",
     );
