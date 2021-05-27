@@ -209,16 +209,18 @@ export function invalidateAll(target, clearValue, deleteValue) {
   }
 }
 
+const values = new WeakMap();
 export function observe(target, key, getter, fn) {
   const entry = getEntry(target, key);
-  let lastValue;
 
   return emitter.subscribe(entry, () => {
     if (!suspense.has(target)) {
+      const lastValue = values.get(entry);
       const value = get(target, key, getter);
+
       if (value !== lastValue) {
         fn(target, value, lastValue);
-        lastValue = value;
+        values.set(entry, value);
       }
     }
   });
