@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.3.2](https://github.com/hybridsjs/hybrids/compare/v5.3.1...v5.3.2) (2021-05-28)
+
+
+### Bug Fixes
+
+* **cache:** avoid recaluclation when deps did not change ([fa3544e](https://github.com/hybridsjs/hybrids/commit/fa3544ec8c0631146033a86cc38fb061486553e6))
+* **cache:** clear entries references with greater precision ([159ae44](https://github.com/hybridsjs/hybrids/commit/159ae44ec993761ff21f37d59df54356677a1865))
+* **cache:** memonize last value of the property for reconnected elements ([9fb45ec](https://github.com/hybridsjs/hybrids/commit/9fb45ecb324688fe631837673b51a3a1d4458707))
+* **cache:** optimize performance of context control ([d18d855](https://github.com/hybridsjs/hybrids/commit/d18d85511c1c2ac62a469e02f888edf6db4a7f26))
+* **html:** replace elements only if does not equal to last value ([4160352](https://github.com/hybridsjs/hybrids/commit/416035250289f14f6959c94288b80689e214d92d))
+* **store:** support a list of models in ready & promise guards ([9c295d4](https://github.com/hybridsjs/hybrids/commit/9c295d41ff8e9364f292c265601e52024e0c29e9))
+* **types:** better result type of define function ([50160c2](https://github.com/hybridsjs/hybrids/commit/50160c2491d5eeeee8a0bb67c20401bba7f41387))
+* **types:** render & content type for direct factory usage ([0ed5156](https://github.com/hybridsjs/hybrids/commit/0ed5156a2990eced8d5016c20c2aabb0aeff797d))
+
 ### [5.3.1](https://github.com/hybridsjs/hybrids/compare/v5.3.0...v5.3.1) (2021-05-16)
 
 

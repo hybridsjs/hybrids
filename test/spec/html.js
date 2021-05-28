@@ -1163,9 +1163,11 @@ describe("html:", () => {
           <div>content</div>
         `({}, container);
         return resolveTimeout(() => {
-          expect(getComputedStyle(container.children[0]).color).toBe(
-            "rgb(0, 0, 0)",
-          );
+          if (document.adoptedStyleSheets) {
+            expect(getComputedStyle(container.children[0]).color).toBe(
+              "rgb(0, 0, 0)",
+            );
+          }
 
           expect(container.children.length).toBe(1);
         });
