@@ -8,7 +8,6 @@ import {
   suspend,
   unsuspend,
   getEntry,
-  clear,
 } from "../../src/cache.js";
 
 describe("cache:", () => {
@@ -339,34 +338,6 @@ describe("cache:", () => {
     });
   });
 
-  describe("clear()", () => {
-    it("removes references from deps", done => {
-      const dep = {};
-      get(target, "key", () => get(dep, "value", () => "value"));
-      const hasTarget = () =>
-        [...getEntry(dep, "value").contexts].some(
-          entry => entry.target === target,
-        );
-      expect(hasTarget()).toBe(true);
-
-      clear(target);
-
-      requestAnimationFrame(() => {
-        expect(hasTarget()).toBe(false);
-        done();
-      });
-    });
-
-    it("skip when already added", done => {
-      clear(target);
-      clear(target);
-
-      requestAnimationFrame(() => {
-        done();
-      });
-    });
-  });
-
   describe("suspend()", () => {
     it("disables cache hits", () => {
       get(target, "key", spy);
@@ -395,7 +366,30 @@ describe("cache:", () => {
       observe(target, "key", (_, v) => v, spy);
 
       requestAnimationFrame(() => {
-        expect(spy).not.toHaveBeenCalled();
+        expect(spy).toHaveBeenCalledTimes(1);
+
+        set(target, "key", () => "new value");
+        requestAnimationFrame(() => {
+          expect(spy).toHaveBeenCalledTimes(1);
+          done();
+        });
+      });
+    });
+
+    it("removes references from deps when dep is called", done => {
+      const dep = {};
+      get(target, "key", () => get(dep, "value", () => "value"));
+      const hasTarget = () =>
+        [...getEntry(dep, "value").contexts].some(
+          entry => entry.target === target,
+        );
+      expect(hasTarget()).toBe(true);
+
+      suspend(target);
+      get(dep, "value", () => "value");
+
+      requestAnimationFrame(() => {
+        expect(hasTarget()).toBe(false);
         done();
       });
     });
