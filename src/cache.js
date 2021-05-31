@@ -4,6 +4,16 @@ const entries = new WeakMap();
 const suspense = new WeakSet();
 const values = new WeakMap();
 
+function dispatchDeep(entry) {
+  entry.resolved = false;
+
+  if (!suspense.has(entry.target)) {
+    emitter.dispatch(entry);
+  }
+
+  entry.contexts.forEach(dispatchDeep);
+}
+
 export function getEntry(target, key) {
   let targetMap = entries.get(target);
   if (!targetMap) {
@@ -29,8 +39,9 @@ export function getEntry(target, key) {
     entry.contexts.forEach(contextEntry => {
       if (suspense.has(contextEntry.target)) {
         entry.contexts.delete(contextEntry);
+
         contextEntry.depState = 0;
-        contextEntry.resolved = false;
+        dispatchDeep(contextEntry);
       }
     });
   }
@@ -47,16 +58,6 @@ export function getEntries(target) {
     });
   }
   return result;
-}
-
-function dispatchDeep(entry) {
-  entry.resolved = false;
-
-  if (!suspense.has(entry.target)) {
-    emitter.dispatch(entry);
-  }
-
-  entry.contexts.forEach(dispatchDeep);
 }
 
 let context = null;
