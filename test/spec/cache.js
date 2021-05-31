@@ -376,7 +376,7 @@ describe("cache:", () => {
       });
     });
 
-    it("removes references from deps when dep is called", done => {
+    it("removes references from deps when dep is set", done => {
       const dep = {};
       get(target, "key", () => get(dep, "value", () => "value"));
       const hasTarget = () =>
@@ -386,7 +386,7 @@ describe("cache:", () => {
       expect(hasTarget()).toBe(true);
 
       suspend(target);
-      get(dep, "value", () => "value");
+      set(dep, "value", () => "new value");
 
       requestAnimationFrame(() => {
         expect(hasTarget()).toBe(false);
