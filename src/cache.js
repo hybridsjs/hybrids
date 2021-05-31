@@ -4,16 +4,6 @@ const entries = new WeakMap();
 const suspense = new WeakSet();
 const values = new WeakMap();
 
-function dispatchDeep(entry) {
-  entry.resolved = false;
-
-  if (!suspense.has(entry.target)) {
-    emitter.dispatch(entry);
-  }
-
-  entry.contexts.forEach(dispatchDeep);
-}
-
 export function getEntry(target, key) {
   let targetMap = entries.get(target);
   if (!targetMap) {
@@ -35,15 +25,6 @@ export function getEntry(target, key) {
       resolved: false,
     };
     targetMap.set(key, entry);
-  } else if (entry.contexts.size) {
-    entry.contexts.forEach(contextEntry => {
-      if (suspense.has(contextEntry.target)) {
-        entry.contexts.delete(contextEntry);
-
-        contextEntry.depState = 0;
-        dispatchDeep(contextEntry);
-      }
-    });
   }
 
   return entry;
@@ -60,6 +41,31 @@ export function getEntries(target) {
   return result;
 }
 
+function cleanContexts(entry) {
+  entry.contexts.forEach(contextEntry => {
+    if (suspense.has(contextEntry.target)) {
+      contextEntry.depState = 0;
+      contextEntry.resolved = false;
+      contextEntry.value = undefined;
+
+      values.delete(contextEntry);
+
+      entry.contexts.delete(contextEntry);
+    }
+  });
+}
+
+function dispatchDeep(entry) {
+  entry.resolved = false;
+
+  if (!suspense.has(entry.target)) {
+    emitter.dispatch(entry);
+  }
+
+  cleanContexts(entry);
+  entry.contexts.forEach(dispatchDeep);
+}
+
 let context = null;
 const contexts = new Set();
 export function get(target, key, getter, validate) {
@@ -71,6 +77,8 @@ export function get(target, key, getter, validate) {
   }
 
   if (!suspense.has(target)) {
+    cleanContexts(entry);
+
     if (entry.resolved && (!validate || (validate && validate(entry.value)))) {
       return entry.value;
     }
@@ -97,13 +105,13 @@ export function get(target, key, getter, validate) {
     }
   }
 
-  if (contexts.has(entry)) {
-    throw Error(`Circular get invocation is forbidden: '${key}'`);
-  }
-
   const lastContext = context;
 
   try {
+    if (contexts.has(entry)) {
+      throw Error(`Circular get invocation is forbidden: '${key}'`);
+    }
+
     entry.deps.forEach(depEntry => {
       depEntry.contexts.delete(entry);
     });
@@ -119,8 +127,6 @@ export function get(target, key, getter, validate) {
     if (nextValue !== entry.value) {
       entry.value = nextValue;
       entry.state += 1;
-
-      dispatchDeep(entry);
     }
 
     let depState = entry.state;
@@ -185,11 +191,11 @@ function deleteEntry(entry) {
 
 function invalidateEntry(entry, clearValue, deleteValue) {
   entry.depState = 0;
-
   dispatchDeep(entry);
 
   if (clearValue) {
     entry.value = undefined;
+    values.delete(entry);
   }
 
   if (deleteValue) {
