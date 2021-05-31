@@ -697,9 +697,7 @@ function resolveStack(host, state) {
       nextView = config.create();
     }
 
-    if (index !== 0) {
-      cache.suspend(nextView);
-    } else if (nextView === prevView) {
+    if (index === 0 && nextView === prevView) {
       cache.unsuspend(nextView);
     }
 
@@ -834,17 +832,17 @@ function connectRootRouter(host, invalidate, options) {
       url = nestedConfig.url(entry.params);
     }
 
-    let stack = stacks.get(host);
-    while (stack && stack[0]) {
-      cache.suspend(stack[0]);
-      stack = stacks.get(stack[0]);
-    }
-
     const offset = getEntryOffset(entry);
 
     if (offset > -1) {
       navigateBack(offset, entry, url);
     } else {
+      let stack = stacks.get(host);
+      while (stack && stack[0]) {
+        cache.suspend(stack[0]);
+        stack = stacks.get(stack[0]);
+      }
+
       window.history.pushState([entry, ...state], "", url);
       flush();
     }
