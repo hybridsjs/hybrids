@@ -4,8 +4,6 @@ export as namespace hybrids;
 
 declare namespace hybrids {
   interface InvalidateOptions {
-    clearValue?: boolean;
-    deleteEntry?: boolean;
     force?: boolean;
   }
 

@@ -189,12 +189,11 @@ function deleteEntry(entry) {
   gcList.add(entry);
 }
 
-function invalidateEntry(entry, options = {}) {
+function invalidateEntry(entry, options) {
   entry.depState = 0;
   dispatchDeep(entry);
 
   if (options.clearValue) {
-    entry.value = undefined;
     values.delete(entry);
   }
 
@@ -207,7 +206,7 @@ function invalidateEntry(entry, options = {}) {
   }
 }
 
-export function invalidate(target, key, options) {
+export function invalidate(target, key, options = {}) {
   if (contexts.size) {
     throw Error(
       `Invalidating property in chain of get calls is forbidden: '${key}'`,
@@ -218,7 +217,7 @@ export function invalidate(target, key, options) {
   invalidateEntry(entry, options);
 }
 
-export function invalidateAll(target, clearValue, deleteValue) {
+export function invalidateAll(target, options = {}) {
   if (contexts.size) {
     throw Error(
       "Invalidating all properties in chain of get calls is forbidden",
@@ -228,7 +227,7 @@ export function invalidateAll(target, clearValue, deleteValue) {
   const targetMap = entries.get(target);
   if (targetMap) {
     targetMap.forEach(entry => {
-      invalidateEntry(entry, { clearValue, deleteEntry: deleteValue });
+      invalidateEntry(entry, options);
     });
   }
 }

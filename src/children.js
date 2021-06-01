@@ -27,7 +27,7 @@ export default function children(
       return walk(host, fn, options);
     },
     connect(host, key, invalidate) {
-      const observer = new MutationObserver(() => invalidate());
+      const observer = new MutationObserver(invalidate);
 
       observer.observe(host, {
         childList: true,

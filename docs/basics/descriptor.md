@@ -65,11 +65,11 @@ get: (host: Element, lastValue: any) => {
 }
 ```
 
-* **arguments**:
-  * `host` - an element instance
-  * `lastValue` - last cached value of the property
-* **returns (required)**:
-  * `nextValue` - a value of the current state of the property
+- **arguments**:
+  - `host` - an element instance
+  - `lastValue` - last cached value of the property
+- **returns (required)**:
+  - `nextValue` - a value of the current state of the property
 
 `get` calculates the current property value. The returned value is always cached. The cache mechanism works between properties defined by the library (even between different elements). If your `get` method does not use other properties, it won't be called again (then, the only way to update the value is to assert new value or call `invalidate` from `connect` method).
 
@@ -79,8 +79,8 @@ In the following example, the `get` method of the `name` property is called agai
 
 ```javascript
 const MyElement = {
-  firstName: 'John',
-  lastName: 'Smith',
+  firstName: "John",
+  lastName: "Smith",
   name: {
     get: ({ firstName, lastName }) => `${firstName} ${lastName}`,
   },
@@ -102,12 +102,12 @@ set: (host: Element, value: any, lastValue: any) => {
 }
 ```
 
-* **arguments**:
-  * `host` - an element instance
-  * `value` - a value passed to assertion (ex., `el.myProperty = 'new value'`)
-  * `lastValue` - last cached value of the property
-* **returns (required)**:
-  * `nextValue` - a value of the property, which replaces cached value
+- **arguments**:
+  - `host` - an element instance
+  - `value` - a value passed to assertion (ex., `el.myProperty = 'new value'`)
+  - `lastValue` - last cached value of the property
+- **returns (required)**:
+  - `nextValue` - a value of the property, which replaces cached value
 
 Every assertion of the property calls `set` method (like `myElement.property = 'new value'`). If returned `nextValue` is not equal to `lastValue`, cache of the property invalidates. However, `set` method does not trigger `get` method automatically. Only the next access to the property (like `const value = myElement.property`) calls `get` method. Then `get` takes `nextValue` from `set` as the `lastValue` argument, calculates `value` and returns it.
 
@@ -118,7 +118,7 @@ const MyElement = {
   power: {
     set: (host, value) => value ** value,
   },
-}
+};
 
 myElement.power = 10; // calls 'set' method and set cache to 100
 console.log(myElement.power); // Cache returns 100
@@ -142,12 +142,12 @@ connect: (host: Element, key: string, invalidate: Function) => {
 }
 ```
 
-* **arguments**:
-  * `host` - an element instance
-  * `key` - a property key name
-  * `invalidate` - a callback function, which invalidates cached value
-* **returns (not required):**
-  * `disconnect` - a function (without arguments)
+- **arguments**:
+  - `host` - an element instance
+  - `key` - a property key name
+  - `invalidate` - a callback function, which invalidates cached value
+- **returns (not required):**
+  - `disconnect` - a function (without arguments)
 
 When you insert, remove or relocate an element in the DOM tree, `connect` or `disconnect` is called synchronously (in the `connectedCallback` and `disconnectedCallback` callbacks of the Custom Elements API).
 
@@ -156,21 +156,21 @@ You can use `connect` to attach event listeners, initialize property value (usin
 If the third party code is responsible for the property value, you can use `invalidate` callback to notify that value should be recalculated (within next access). For example, it can be used to connect to async web APIs or external libraries:
 
 ```javascript
-import reduxStore from './store';
+import reduxStore from "./store";
 
 const MyElement = {
   name: {
     get: () => reduxStore.getState().name,
-    connect: (host, key, invalidate) => reduxStore.subscribe(() => invalidate()),
+    connect: (host, key, invalidate) => reduxStore.subscribe(invalidate),
   },
 };
 ```
 
 `invalidate` can take an options object argument.
 
-| Option | Type | Default | Description |
-| ------ | ---- | ------- | ----------- |
-| force  | `boolean` | false | When true, the invalidate call will always trigger a rerender, even if the property's identity has not changed. |
+| Option | Type      | Default | Description                                                                                                     |
+| ------ | --------- | ------- | --------------------------------------------------------------------------------------------------------------- |
+| force  | `boolean` | false   | When true, the invalidate call will always trigger a rerender, even if the property's identity has not changed. |
 
 > Click and play with [redux](redux.js.org) library integration example:
 >
@@ -187,10 +187,10 @@ observe: (host: Element, value: any, lastValue: any) => {
 }
 ```
 
-* **arguments**:
-  * `host` - an element instance
-  * `value` - current value of the property
-  * `lastValue` - last cached value of the property
+- **arguments**:
+  - `host` - an element instance
+  - `value` - current value of the property
+  - `lastValue` - last cached value of the property
 
 When property cache invalidates (directly by the assertion or when one of the dependency invalidates) and `observe` method is set, the change detection mechanism adds the property to the internal queue. Within the next animation frame (using `requestAnimationFrame`) properties from the queue are checked if they have changed, and if they did, `observe` method of the property is called. It means, that `observe` method is asynchronous by default, and it is only called for properties, which value is different in the time of execution of the queue (in the `requestAnimationFrame` call).
 

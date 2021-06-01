@@ -1047,7 +1047,7 @@ function clear(model, clearValue = true) {
         "Model definition must be used before - passed argument is probably not a model definition",
       );
     }
-    cache.invalidateAll(bootstrap(model), clearValue, true);
+    cache.invalidateAll(bootstrap(model), { clearValue, deleteEntry: true });
   }
 }
 

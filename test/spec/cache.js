@@ -185,7 +185,7 @@ describe("cache:", () => {
 
       expect(getEntries(target).length).toBe(1);
 
-      invalidateAll(target, true);
+      invalidateAll(target, { clearValue: true });
       expect(getEntries(target)).toEqual([
         jasmine.objectContaining({
           value: undefined,

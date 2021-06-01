@@ -357,7 +357,7 @@ describe("define:", () => {
           one: "text",
           two: {
             get: () => "test",
-            observe: () => spy(),
+            observe: spy,
           },
         };
 
@@ -377,18 +377,18 @@ describe("define:", () => {
 
     it("updates elements in shadowRoot", done => {
       test("<div></div>")(el => {
-        const connectSpy = jasmine.createSpy();
+        const connect = jasmine.createSpy();
 
         el.attachShadow({ mode: "open" });
         const child = document.createElement("test-define-multiple");
         el.shadowRoot.appendChild(child);
 
         define("test-define-multiple", {
-          one: { get: () => "text", connect: () => connectSpy() },
+          one: { get: () => "text", connect },
         });
 
         return Promise.resolve().then(() => {
-          expect(connectSpy).toHaveBeenCalledTimes(1);
+          expect(connect).toHaveBeenCalledTimes(1);
           expect(child.one).toBe("text");
         });
       })(done);

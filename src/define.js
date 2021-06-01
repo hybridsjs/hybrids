@@ -73,7 +73,9 @@ function compile(Hybrid, descriptors) {
     if (config.connect) {
       callbacks.push(host =>
         config.connect(host, key, options => {
-          cache.invalidate(host, key, options);
+          cache.invalidate(host, key, {
+            force: options && options.force === true,
+          });
         }),
       );
     }
