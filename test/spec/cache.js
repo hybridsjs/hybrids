@@ -69,6 +69,19 @@ describe("cache:", () => {
       expect(spy).not.toHaveBeenCalled();
     });
 
+    it("runs getter again if force option is true", () => {
+      Object.defineProperty(target, "otherKey", {
+        get: () => get(target, "otherKey", () => "value"),
+      });
+
+      get(target, "key", () => target.otherKey);
+      invalidate(target, "otherKey", false, false, { force: true });
+
+      get(target, "key", spy);
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
     it("forces getter to be called if validation fails", () => {
       get(target, "key", () => get(target, "otherKey", () => "value"));
       get(target, "key", spy, () => false);
