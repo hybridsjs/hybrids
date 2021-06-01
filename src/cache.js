@@ -189,7 +189,7 @@ function deleteEntry(entry) {
   gcList.add(entry);
 }
 
-function invalidateEntry(entry, clearValue, deleteValue) {
+function invalidateEntry(entry, clearValue, deleteValue, opts) {
   entry.depState = 0;
   dispatchDeep(entry);
 
@@ -201,9 +201,13 @@ function invalidateEntry(entry, clearValue, deleteValue) {
   if (deleteValue) {
     deleteEntry(entry);
   }
+
+  if (opts && opts.force) {
+    entry.state += 1;
+  }
 }
 
-export function invalidate(target, key, clearValue, deleteValue) {
+export function invalidate(target, key, clearValue, deleteValue, opts) {
   if (contexts.size) {
     throw Error(
       `Invalidating property in chain of get calls is forbidden: '${key}'`,
@@ -211,7 +215,7 @@ export function invalidate(target, key, clearValue, deleteValue) {
   }
 
   const entry = getEntry(target, key);
-  invalidateEntry(entry, clearValue, deleteValue);
+  invalidateEntry(entry, clearValue, deleteValue, opts);
 }
 
 export function invalidateAll(target, clearValue, deleteValue) {
