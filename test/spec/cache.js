@@ -75,7 +75,7 @@ describe("cache:", () => {
       });
 
       get(target, "key", () => target.otherKey);
-      invalidate(target, "otherKey", false, false, { force: true });
+      invalidate(target, "otherKey", { force: true });
 
       get(target, "key", spy);
 
@@ -153,7 +153,7 @@ describe("cache:", () => {
 
     it("clears cached value", () => {
       get(target, "key", () => "value");
-      invalidate(target, "key", true);
+      invalidate(target, "key", { clearValue: true });
 
       get(target, "key", spy);
       expect(spy).toHaveBeenCalledWith(target, undefined);

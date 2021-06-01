@@ -72,8 +72,8 @@ function compile(Hybrid, descriptors) {
 
     if (config.connect) {
       callbacks.push(host =>
-        config.connect(host, key, opts => {
-          cache.invalidate(host, key, false, false, opts);
+        config.connect(host, key, options => {
+          cache.invalidate(host, key, options);
         }),
       );
     }
@@ -102,13 +102,11 @@ function update(Hybrid, lastHybrids) {
 
           Object.keys(hybrids).forEach(key => {
             const type = typeof hybrids[key];
-            cache.invalidate(
-              node,
-              key,
+            const clearValue =
               type !== "object" &&
-                type !== "function" &&
-                hybrids[key] !== prevHybrids[key],
-            );
+              type !== "function" &&
+              hybrids[key] !== prevHybrids[key];
+            cache.invalidate(node, key, { clearValue });
           });
 
           node.connectedCallback();

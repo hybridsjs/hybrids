@@ -26,7 +26,7 @@ export default function parent(hybridsOrFn) {
     connect(host, key, invalidate) {
       const target = host[key];
       if (target) {
-        return invalidate;
+        return () => invalidate();
       }
       return false;
     },

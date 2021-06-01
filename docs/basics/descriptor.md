@@ -106,7 +106,7 @@ set: (host: Element, value: any, lastValue: any) => {
   * `host` - an element instance
   * `value` - a value passed to assertion (ex., `el.myProperty = 'new value'`)
   * `lastValue` - last cached value of the property
-* **returns (required)**: 
+* **returns (required)**:
   * `nextValue` - a value of the property, which replaces cached value
 
 Every assertion of the property calls `set` method (like `myElement.property = 'new value'`). If returned `nextValue` is not equal to `lastValue`, cache of the property invalidates. However, `set` method does not trigger `get` method automatically. Only the next access to the property (like `const value = myElement.property`) calls `get` method. Then `get` takes `nextValue` from `set` as the `lastValue` argument, calculates `value` and returns it.
@@ -161,10 +161,16 @@ import reduxStore from './store';
 const MyElement = {
   name: {
     get: () => reduxStore.getState().name,
-    connect: (host, key, invalidate) => reduxStore.subscribe(invalidate),
+    connect: (host, key, invalidate) => reduxStore.subscribe(() => invalidate()),
   },
 };
 ```
+
+`invalidate` can take an options object argument.
+
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| force  | `boolean` | false | When true, the invalidate call will always trigger a rerender, even if the property's identity has not changed. |
 
 > Click and play with [redux](redux.js.org) library integration example:
 >
