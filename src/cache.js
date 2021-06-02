@@ -194,6 +194,7 @@ function invalidateEntry(entry, options) {
   dispatchDeep(entry);
 
   if (options.clearValue) {
+    entry.value = undefined;
     values.delete(entry);
   }
 
