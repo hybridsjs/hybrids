@@ -3,13 +3,17 @@ export = hybrids;
 export as namespace hybrids;
 
 declare namespace hybrids {
+  interface InvalidateOptions {
+    force?: boolean;
+  }
+
   interface Descriptor<E, V> {
     get?(host: E & HTMLElement, lastValue: V | undefined): V;
     set?(host: E & HTMLElement, value: any, lastValue: V | undefined): V;
     connect?(
       host: E & HTMLElement & { [property in keyof E]: V },
       key: keyof E,
-      invalidate: Function,
+      invalidate: (options?: InvalidateOptions) => void,
     ): Function | void;
     observe?(host: E & HTMLElement, value: V, lastValue: V): void;
   }
