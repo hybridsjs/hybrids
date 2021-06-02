@@ -69,6 +69,19 @@ describe("cache:", () => {
       expect(spy).not.toHaveBeenCalled();
     });
 
+    it("runs getter again if force option is true", () => {
+      Object.defineProperty(target, "otherKey", {
+        get: () => get(target, "otherKey", () => "value"),
+      });
+
+      get(target, "key", () => target.otherKey);
+      invalidate(target, "otherKey", { force: true });
+
+      get(target, "key", spy);
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
     it("forces getter to be called if validation fails", () => {
       get(target, "key", () => get(target, "otherKey", () => "value"));
       get(target, "key", spy, () => false);
@@ -140,7 +153,7 @@ describe("cache:", () => {
 
     it("clears cached value", () => {
       get(target, "key", () => "value");
-      invalidate(target, "key", true);
+      invalidate(target, "key", { clearValue: true });
 
       get(target, "key", spy);
       expect(spy).toHaveBeenCalledWith(target, undefined);
@@ -172,7 +185,7 @@ describe("cache:", () => {
 
       expect(getEntries(target).length).toBe(1);
 
-      invalidateAll(target, true);
+      invalidateAll(target, { clearValue: true });
       expect(getEntries(target)).toEqual([
         jasmine.objectContaining({
           value: undefined,

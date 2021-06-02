@@ -272,7 +272,7 @@ function setupModel(Model, nested) {
       invalidate: () => {
         if (!invalidatePromise) {
           invalidatePromise = resolvedPromise.then(() => {
-            cache.invalidate(config, config, true);
+            cache.invalidate(config, config, { clearValue: true });
             invalidatePromise = null;
           });
         }
@@ -1040,14 +1040,14 @@ function clear(model, clearValue = true) {
   }
 
   if (config) {
-    cache.invalidate(config, model.id, clearValue, true);
+    cache.invalidate(config, model.id, { clearValue, deleteEntry: true });
   } else {
     if (!configs.get(model) && !lists.get(model[0])) {
       throw Error(
         "Model definition must be used before - passed argument is probably not a model definition",
       );
     }
-    cache.invalidateAll(bootstrap(model), clearValue, true);
+    cache.invalidateAll(bootstrap(model), { clearValue, deleteEntry: true });
   }
 }
 
@@ -1271,7 +1271,7 @@ function store(Model, options = {}) {
     },
     connect: options.draft
       ? (host, key) => () => {
-          cache.invalidate(host, key, true);
+          cache.invalidate(host, key, { clearValue: true });
           clear(Model, false);
         }
       : undefined,
