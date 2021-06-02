@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.3.3](https://github.com/hybridsjs/hybrids/compare/v5.3.2...v5.3.3) (2021-06-02)
+
+
+### Bug Fixes
+
+* **cache:** add force option to invalidate callback ([#167](https://github.com/hybridsjs/hybrids/issues/167)) ([91d6ea8](https://github.com/hybridsjs/hybrids/commit/91d6ea82e8963bd4118c3d2b57ad8e84c0cbef64))
+* **cache:** clean contexts on get and set ([26854cb](https://github.com/hybridsjs/hybrids/commit/26854cb3bba2e6fd2c4a654f8c3ed60fe6b10947))
+* **cache:** unresolve deep contexts of suspened target ([b4bb898](https://github.com/hybridsjs/hybrids/commit/b4bb89873bdbf6731358a10f6d6f1d069d7d624b))
+* **store:** computed property saves value in-place ([1a7ab52](https://github.com/hybridsjs/hybrids/commit/1a7ab52395e8a86b60bd0660fec4456534135b6e))
+
 ### [5.3.2](https://github.com/hybridsjs/hybrids/compare/v5.3.1...v5.3.2) (2021-05-28)
 
 
