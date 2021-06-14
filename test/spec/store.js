@@ -114,6 +114,23 @@ describe("store:", () => {
       expect(store.error(model)).toBeInstanceOf(Error);
     });
 
+    it("calls computed property function only once", () => {
+      const spy = jasmine.createSpy();
+      Model = {
+        computed: model => {
+          spy(model);
+          return "value";
+        },
+      };
+
+      const model = store.get(Model);
+      expect(spy).toHaveBeenCalledTimes(0);
+      expect(model.computed).toBe("value");
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(model.computed).toBe("value");
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
     describe("for singleton", () => {
       beforeEach(() => {
         Model = {
