@@ -11,8 +11,8 @@ declare namespace hybrids {
     get?(host: E & HTMLElement, lastValue: V | undefined): V;
     set?(host: E & HTMLElement, value: any, lastValue: V | undefined): V;
     connect?(
-      host: E & HTMLElement & { [property in keyof E]: V },
-      key: keyof E,
+      host: E & HTMLElement & { __property_key__: V },
+      key: "__property_key__",
       invalidate: (options?: InvalidateOptions) => void,
     ): Function | void;
     observe?(host: E & HTMLElement, value: V, lastValue: V): void;
