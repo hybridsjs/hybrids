@@ -139,7 +139,7 @@ declare namespace hybrids {
   type StoreOptions<E> =
     | keyof E
     | ((host: E) => ModelIdentifier)
-    | { id?: keyof E; draft?: boolean };
+    | { id?: keyof E | ((host: E) => ModelIdentifier); draft?: boolean };
 
   function store<E, M>(
     Model: Model<M>,
