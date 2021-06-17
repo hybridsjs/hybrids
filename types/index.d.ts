@@ -151,12 +151,17 @@ declare namespace hybrids {
     const connect = "__store__connect__";
 
     function get<M>(Model: Model<M>, id?: ModelIdentifier): M;
+    function get<M>(Model: [Model<M>], id?: ModelIdentifier): M[];
+
     function set<M>(
       model: Model<M> | M,
       values: ModelValues<M> | null,
     ): Promise<M>;
     function sync<M>(model: Model<M> | M, values: ModelValues<M> | null): M;
-    function clear<M>(model: Model<M> | M, clearValue?: boolean): void;
+    function clear<M>(
+      model: Model<M> | [Model<M>] | M,
+      clearValue?: boolean,
+    ): void;
 
     function pending<M>(model: M): false | Promise<M>;
     function pending(...models: Array<object>): false | Promise<typeof models>;
