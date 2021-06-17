@@ -126,7 +126,6 @@ declare namespace hybrids {
   type StorageResult<M> = M | null | Promise<M | null>;
 
   type Storage<M> = {
-    cache?: boolean | number;
     get?: (id: ModelIdentifier) => StorageResult<M>;
     set?: (
       id: ModelIdentifier,
@@ -134,12 +133,14 @@ declare namespace hybrids {
       keys: [keyof M],
     ) => StorageResult<M>;
     list?: (id: ModelIdentifier) => StorageResult<Array<M>>;
+    cache?: boolean | number;
+    loose?: boolean;
   };
 
   type StoreOptions<E> =
     | keyof E
     | ((host: E) => ModelIdentifier)
-    | { id?: keyof E; draft?: boolean };
+    | { id?: keyof E | ((host: E) => ModelIdentifier); draft?: boolean };
 
   function store<E, M>(
     Model: Model<M>,

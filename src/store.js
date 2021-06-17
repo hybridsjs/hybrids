@@ -82,7 +82,7 @@ function setTimestamp(model) {
 function setupStorage(storage) {
   if (typeof storage === "function") storage = { get: storage };
 
-  const result = { cache: true, ...storage };
+  const result = { cache: true, loose: true, ...storage };
 
   if (result.cache === false || result.cache === 0) {
     result.validate = cachedModel =>
@@ -541,7 +541,7 @@ function setupListModel(Model, nested) {
     const modelConfig = setupModel(Model);
 
     const contexts = new Set();
-    contexts.add(modelConfig);
+    if (modelConfig.storage.loose) contexts.add(modelConfig);
 
     if (!nested) {
       if (!modelConfig.enumerable) {
