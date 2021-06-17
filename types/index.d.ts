@@ -151,6 +151,8 @@ declare namespace hybrids {
     const connect = "__store__connect__";
 
     function get<M>(Model: Model<M>, id?: ModelIdentifier): M;
+    function get<M>(Model: [Model<M>], id?: ModelIdentifier): M[];
+
     function set<M>(
       model: Model<M> | M,
       values: ModelValues<M> | null,
