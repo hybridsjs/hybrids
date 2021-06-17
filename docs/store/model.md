@@ -63,7 +63,7 @@ store.set(Model, { value: "test" }).then(model => {
 
 ### Listing Enumerables
 
-The model definition must be a plain object by the design. However, the store supports a special type, which returns an array with a list of model instances. This type is represented by the enumerable model wrapped in the array - `[Model]`. It creates own space for the data, and it can have multiple instances identified by a `string` or an `object` record just like other model definitions. For memory-based models it always returns all instances of the definition, but it can be used for models with external storage where the result depends on `list` action (more information you can find in [Storage](./storage.md) section).
+The model definition must be a plain object by the design. However, the store supports a special type, which returns an array with a list of model instances. This type is represented by the enumerable model wrapped in the array - `[Model]`. It creates own space for the data, and it can have multiple instances identified by a `string` or an `object` record just like other model definitions. For memory-based models it always returns all instances of the definition, but it can be also used for models with external storage where the result depends on `list` action (read more in [Storage](./storage.md) section).
 
 Wrapped definition creates the reference, so the listing does not have to be defined before usage. It will always reference the same definition:
 
@@ -97,18 +97,20 @@ const MyElement = {
 };
 ```
 
-If the listing requires additional metadata (like pagination, offset, etc.), you should create a separate model definition with a nested array of required models.
+The listing type respects `cache` and `loose` options of the storage. By default the `loose` option is turn on, which means that the user's change to the model instance will invalidate the cache, and the next call for the list will fetch data again (read more in [Storage](./storage.md) section).
+
+#### Metadata
+
+If the listing requires additional metadata (like pagination, offset, etc.), you should create a separate model definition with a nested array of required models. It's likely that you should set `loose` option for the relation to the base model, as a change of the model instance might invalidate order or appearance in the result list.
 
 ```javascript
 const TodoList = {
-  items: [Todo],
+  items: [Todo, { loose: true }],
   offset: 0,
   limit: 0,
   [store.connect]: { ... },
 };
 ```
-
-The listing type respects the `cache` option of the storage, but the `loose` option is always turned on (it is the same feature as explained in the cache invalidation section for nested array). It means that the user's change to the model will invalidate the cache, and the next call for the list will fetch data again.
 
 ## Structure
 

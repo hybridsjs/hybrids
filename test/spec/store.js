@@ -258,6 +258,28 @@ describe("store:", () => {
             expect(list).toEqual([jasmine.objectContaining({ value: "two" })]);
           })
           .then(done));
+
+      it("returns the same array when loose option is set to false", done => {
+        Model = {
+          id: true,
+          value: "",
+          [store.connect]: {
+            loose: false,
+            set: (id, values) => values,
+            list: () => [{ id: 1, value: "test" }],
+          },
+        };
+
+        const list = store.get([Model]);
+        store
+          .set(list[0], { value: "other" })
+          .then(() => {
+            const newList = store.get([Model]);
+            expect(list).toBe(newList);
+            expect(newList[0]).toEqual({ id: "1", value: "other" });
+          })
+          .then(done);
+      });
     });
   });
 
