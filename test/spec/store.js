@@ -1,6 +1,6 @@
 import { store } from "../../src/index.js";
 import * as cache from "../../src/cache.js";
-import { resolveTimeout } from "../helpers.js";
+import { resolveRaf, resolveTimeout } from "../helpers.js";
 
 describe("store:", () => {
   let Model;
@@ -801,30 +801,51 @@ describe("store:", () => {
     });
 
     it("only invalidates with clearValue option set to false", done => {
-      promise.then(model => {
-        const spy = jasmine.createSpy();
-        const unobserve = cache.observe(
-          {},
-          "key",
-          () => {
+      const spy = jasmine.createSpy();
+      Model = {
+        id: true,
+        value: "",
+        [store.connect]: {
+          cache: 1000 * 60,
+          get: () => {
             spy();
-            return store.get(Model, model.id);
+            return Promise.resolve().then(() => ({ value: "test" }));
           },
-          () => {},
-        );
+          list: () => [{ id: 1, value: "test" }],
+        },
+      };
 
-        requestAnimationFrame(() => {
-          expect(spy).toHaveBeenCalledTimes(1);
-          store.clear(model, false);
+      const model = store.get(Model, 1);
+      expect(spy).toHaveBeenCalledTimes(1);
 
-          requestAnimationFrame(() => {
-            expect(spy).toHaveBeenCalledTimes(2);
-            expect(store.get(Model, model.id)).toBe(model);
+      store
+        .pending(model)
+        .then(resolvedModel => {
+          store.clear(resolvedModel, false);
+          const pendingModel = store.get(Model, 1);
+          expect(spy).toHaveBeenCalledTimes(2);
+          expect(pendingModel).toBe(resolvedModel);
+        })
+        .then(done);
+    });
 
-            unobserve();
-            done();
-          });
-        });
+    it("only invalidates with clearValue option set to false", () => {
+      Model = {
+        id: true,
+        value: "",
+        [store.connect]: {
+          cache: 1000 * 60 * 5,
+          list: () => [{ id: 1, value: "test" }],
+        },
+      };
+
+      const list = store.get([Model]);
+
+      return resolveRaf(() => {
+        store.clear([Model], false);
+        const clearList = store.get([Model]);
+        expect(list).not.toBe(clearList);
+        expect(clearList.length).toBe(1);
       });
     });
   });

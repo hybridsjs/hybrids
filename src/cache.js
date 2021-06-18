@@ -68,7 +68,7 @@ function dispatchDeep(entry) {
 
 let context = null;
 const contexts = new Set();
-export function get(target, key, getter, validate) {
+export function get(target, key, getter) {
   const entry = getEntry(target, key);
 
   if (context && !suspense.has(context.target)) {
@@ -79,11 +79,11 @@ export function get(target, key, getter, validate) {
   if (!suspense.has(target)) {
     cleanContexts(entry);
 
-    if (entry.resolved && (!validate || (validate && validate(entry.value)))) {
+    if (entry.resolved) {
       return entry.value;
     }
 
-    if (entry.depState > entry.state && !validate) {
+    if (entry.depState > entry.state) {
       let depState = entry.state;
 
       for (const depEntry of entry.deps) {

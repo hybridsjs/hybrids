@@ -79,6 +79,11 @@ function setTimestamp(model) {
   return model;
 }
 
+function invalidateTimestamp(model) {
+  timestamps.set(model, 1);
+  return model;
+}
+
 function setupStorage(storage) {
   if (typeof storage === "function") storage = { get: storage };
 
@@ -690,97 +695,101 @@ function get(Model, id) {
     );
   }
 
-  return cache.get(
-    config,
-    stringId,
-    (h, cachedModel) => {
-      if (cachedModel && pending(cachedModel)) return cachedModel;
+  const validate = config.storage.validate;
+  if (validate) {
+    const entry = cache.getEntry(config, stringId);
+    if (entry.value && !validate(entry.value)) {
+      entry.resolved = false;
+      entry.depState = 0;
+    }
+  }
 
-      let validContexts = true;
-      if (config.contexts) {
-        config.contexts.forEach(context => {
-          if (
-            cache.get(context, context, resolveTimestamp) ===
-            getCurrentTimestamp()
-          ) {
-            validContexts = false;
-          }
-        });
-      }
+  return cache.get(config, stringId, (h, cachedModel) => {
+    if (cachedModel && pending(cachedModel)) return cachedModel;
 
-      if (
-        validContexts &&
-        cachedModel &&
-        (config.storage.cache === true || config.storage.validate(cachedModel))
-      ) {
-        return cachedModel;
-      }
-
-      try {
-        let result = config.storage.get(id);
-
-        if (typeof result !== "object" || result === null) {
-          throw Error(
-            stringifyModel(
-              Model,
-              `Model instance ${
-                stringId !== undefined ? `with '${stringId}' id ` : ""
-              }does not exist`,
-            ),
-          );
+    let validContexts = true;
+    if (config.contexts) {
+      config.contexts.forEach(context => {
+        if (
+          cache.get(context, context, resolveTimestamp) ===
+          getCurrentTimestamp()
+        ) {
+          validContexts = false;
         }
+      });
+    }
 
-        if (result instanceof Promise) {
-          result = result
-            .then(data => {
-              if (typeof data !== "object" || data === null) {
-                throw Error(
-                  stringifyModel(
-                    Model,
-                    `Model instance ${
-                      stringId !== undefined ? ` with '${stringId}' id ` : ""
-                    }does not exist`,
-                  ),
-                );
-              }
+    if (
+      validContexts &&
+      cachedModel &&
+      (config.storage.cache === true || config.storage.validate(cachedModel))
+    ) {
+      return cachedModel;
+    }
 
-              return syncCache(
-                config,
-                stringId,
-                config.create(
-                  !config.list && stringId ? { ...data, id: stringId } : data,
-                ),
-              );
-            })
-            .catch(e =>
-              syncCache(
-                config,
-                stringId,
-                mapError(cachedModel || config.placeholder(stringId), e),
-              ),
-            );
+    try {
+      let result = config.storage.get(id);
 
-          return setModelState(
-            cachedModel || config.placeholder(stringId),
-            "pending",
-            result,
-          );
-        }
-
-        if (cachedModel) definitions.set(cachedModel, null);
-        return setTimestamp(
-          config.create(
-            !config.list && stringId ? { ...result, id: stringId } : result,
+      if (typeof result !== "object" || result === null) {
+        throw Error(
+          stringifyModel(
+            Model,
+            `Model instance ${
+              stringId !== undefined ? `with '${stringId}' id ` : ""
+            }does not exist`,
           ),
         );
-      } catch (e) {
-        return setTimestamp(
-          mapError(cachedModel || config.placeholder(stringId), e),
+      }
+
+      if (result instanceof Promise) {
+        result = result
+          .then(data => {
+            if (typeof data !== "object" || data === null) {
+              throw Error(
+                stringifyModel(
+                  Model,
+                  `Model instance ${
+                    stringId !== undefined ? ` with '${stringId}' id ` : ""
+                  }does not exist`,
+                ),
+              );
+            }
+
+            return syncCache(
+              config,
+              stringId,
+              config.create(
+                !config.list && stringId ? { ...data, id: stringId } : data,
+              ),
+            );
+          })
+          .catch(e =>
+            syncCache(
+              config,
+              stringId,
+              mapError(cachedModel || config.placeholder(stringId), e),
+            ),
+          );
+
+        return setModelState(
+          cachedModel || config.placeholder(stringId),
+          "pending",
+          result,
         );
       }
-    },
-    config.storage.validate,
-  );
+
+      if (cachedModel) definitions.set(cachedModel, null);
+      return setTimestamp(
+        config.create(
+          !config.list && stringId ? { ...result, id: stringId } : result,
+        ),
+      );
+    } catch (e) {
+      return setTimestamp(
+        mapError(cachedModel || config.placeholder(stringId), e),
+      );
+    }
+  });
 }
 
 const draftMap = new WeakMap();
@@ -1031,7 +1040,7 @@ function clear(model, clearValue = true) {
     );
   }
 
-  const config = definitions.get(model);
+  let config = definitions.get(model);
 
   if (config === null) {
     throw Error(
@@ -1040,6 +1049,7 @@ function clear(model, clearValue = true) {
   }
 
   if (config) {
+    invalidateTimestamp(model);
     cache.invalidate(config, model.id, { clearValue, deleteEntry: true });
   } else {
     if (!configs.get(model) && !lists.get(model[0])) {
@@ -1047,7 +1057,11 @@ function clear(model, clearValue = true) {
         "Model definition must be used before - passed argument is probably not a model definition",
       );
     }
-    cache.invalidateAll(bootstrap(model), { clearValue, deleteEntry: true });
+    config = bootstrap(model);
+    cache.getEntries(config).forEach(entry => {
+      if (entry.value) invalidateTimestamp(entry.value);
+    });
+    cache.invalidateAll(config, { clearValue, deleteEntry: true });
   }
 }
 

@@ -81,13 +81,6 @@ describe("cache:", () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
     });
-
-    it("forces getter to be called if validation fails", () => {
-      get(target, "key", () => get(target, "otherKey", () => "value"));
-      get(target, "key", spy, () => false);
-
-      expect(spy).toHaveBeenCalledTimes(1);
-    });
   });
 
   describe("set()", () => {
