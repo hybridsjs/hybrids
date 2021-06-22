@@ -1,8 +1,4 @@
-// tslint:disable-next-line:export-just-namespace
-export = hybrids;
-export as namespace hybrids;
-
-declare namespace hybrids {
+declare module 'hybrids' {
   interface InvalidateOptions {
     force?: boolean;
   }
