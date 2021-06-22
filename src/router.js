@@ -830,7 +830,7 @@ function connectRootRouter(host, invalidate, options) {
 
     let url = options.url || "";
     if (nestedConfig.browserUrl) {
-      url = nestedConfig.url(entry.params);
+      url = nestedConfig.url(entry.params, true);
     }
 
     const offset = getEntryOffset(entry);
