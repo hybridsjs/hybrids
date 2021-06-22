@@ -40,13 +40,7 @@ function resolveWithInvalidate(config, model, lastModel) {
 }
 
 function syncCache(config, id, model, invalidate = true) {
-  cache.set(
-    config,
-    id,
-    invalidate ? resolveWithInvalidate : resolve,
-    model,
-    true,
-  );
+  cache.set(config, id, invalidate ? resolveWithInvalidate : resolve, model);
   return model;
 }
 
@@ -151,13 +145,24 @@ function getTypeConstructor(type, key) {
   }
 }
 
-const stateSetter = (h, v) => v;
+const stateSetter = (_, value, lastValue) => {
+  if (value.state === "error") {
+    return { state: "error", error: value.value };
+  }
+
+  value.error = !!lastValue && lastValue.error;
+
+  return value;
+};
 function setModelState(model, state, value = model) {
-  cache.set(model, "state", stateSetter, { state, value }, true);
+  cache.set(model, "state", stateSetter, { state, value });
   return model;
 }
 
-const stateGetter = (model, v = { state: "ready", value: model }) => v;
+const stateGetter = (
+  model,
+  v = { state: "ready", value: model, error: false },
+) => v;
 function getModelState(model) {
   return cache.get(model, "state", stateGetter);
 }
@@ -1097,14 +1102,17 @@ function resolveToLatest(model) {
 
 function error(model, property) {
   if (model === null || typeof model !== "object") return false;
-  const { state, value } = getModelState(model);
-  const result = state === "error" && value;
+  const state = getModelState(model);
 
-  if (result && property !== undefined) {
-    return result.errors && result.errors[property];
+  if (
+    property !== undefined &&
+    typeof state.error === "object" &&
+    state.error
+  ) {
+    return state.error.errors && state.error.errors[property];
   }
 
-  return result;
+  return state.error;
 }
 
 function ready(...models) {
@@ -1129,9 +1137,9 @@ function mapValueWithState(lastValue, nextValue) {
   );
 
   definitions.set(result, definitions.get(lastValue));
+  cache.set(result, "state", () => getModelState(nextValue));
 
-  const { state, value } = getModelState(nextValue);
-  return setModelState(result, state, value);
+  return result;
 }
 
 function getValuesFromModel(model, values) {
