@@ -1115,6 +1115,32 @@ describe("store:", () => {
         .then(done);
     });
 
+    it("error() is truthy for pending model after error", () => {
+      Model = {
+        value: "",
+        [store.connect]: {
+          get: () => {
+            throw Error("Some error");
+          },
+          set: (id, values) => values,
+        },
+      };
+
+      const model = store.get(Model);
+      expect(store.error(model)).toBeInstanceOf(Error);
+      store.set(Model, {});
+      const pendingModel = store.get(Model);
+
+      expect(store.pending(pendingModel)).toBeInstanceOf(Promise);
+      expect(store.error(pendingModel)).toBeInstanceOf(Error);
+
+      return store.pending(pendingModel).then(newModel => {
+        expect(store.pending(newModel)).toBe(false);
+        expect(store.error(newModel)).toBe(false);
+        expect(store.ready(newModel)).toBe(true);
+      });
+    });
+
     it("resolve() returns the latest model instance", done => {
       store
         .set(Model)
