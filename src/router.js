@@ -10,7 +10,7 @@ const stacks = new WeakMap();
 const routers = new WeakMap();
 
 let rootRouter = null;
-let entryPoints = [];
+const entryPoints = new Set();
 
 function mapDeepElements(target, cb) {
   cb(target);
@@ -209,8 +209,6 @@ function setupViews(views, options, parent = null, nestedParent = null) {
         `<${parent.id}> cannot be in the stack of <${config.id}> - it is already in stack of <${parent.id}>`,
       );
     }
-
-    if (config.browserUrl) entryPoints.push(config);
 
     return config;
   });
@@ -445,6 +443,10 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
     config.nestedParent = nestedParent;
   }
 
+  if (config.browserUrl) {
+    entryPoints.add(config);
+  }
+
   config.parentsWithGuards = [];
   while (parent) {
     if (parent.guard) config.parentsWithGuards.unshift(parent);
@@ -585,8 +587,7 @@ function getEntryFromURL(url) {
   }
 
   if (!config) {
-    for (let i = 0; i < entryPoints.length; i += 1) {
-      const entryPoint = entryPoints[i];
+    for (const entryPoint of entryPoints) {
       const params = entryPoint.match(url);
       if (params) return entryPoint.getEntry(params);
     }
@@ -852,22 +853,22 @@ function connectRootRouter(host, invalidate, options) {
     navigate(event.detail.entry);
   }
 
-  entryPoints = [];
+  entryPoints.clear();
   const roots = setupViews(options.views, options);
 
   flushes.set(host, flush);
   rootRouter = host;
 
   window.history.scrollRestoration = "manual";
+  const state = window.history.state;
 
-  if (!window.history.state) {
+  if (!state) {
     const entry =
       getEntryFromURL(new URL(window.location.href)) || roots[0].getEntry();
     window.history.replaceState([entry], "", options.url);
     flush();
   } else {
     const stack = stacks.get(host);
-    const state = window.history.state;
 
     let i;
     for (i = state.length - 1; i >= 0; i -= 1) {
