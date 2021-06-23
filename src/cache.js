@@ -2,7 +2,6 @@ import * as emitter from "./emitter.js";
 
 const entries = new WeakMap();
 const suspense = new WeakSet();
-const values = new WeakMap();
 
 export function getEntry(target, key) {
   let targetMap = entries.get(target);
@@ -18,6 +17,7 @@ export function getEntry(target, key) {
       target,
       key,
       value: undefined,
+      lastValue: undefined,
       contexts: new Set(),
       deps: new Set(),
       state: 0,
@@ -44,13 +44,16 @@ export function getEntries(target) {
 function cleanContexts(entry) {
   entry.contexts.forEach(contextEntry => {
     if (suspense.has(contextEntry.target)) {
-      contextEntry.depState = 0;
-      contextEntry.resolved = false;
-      contextEntry.value = undefined;
-
-      values.delete(contextEntry);
+      Object.assign(contextEntry, {
+        value: undefined,
+        lastValue: undefined,
+        depState: 0,
+        resolved: false,
+      });
 
       entry.contexts.delete(contextEntry);
+
+      cleanContexts(contextEntry);
     }
   });
 }
@@ -195,7 +198,7 @@ function invalidateEntry(entry, options) {
 
   if (options.clearValue) {
     entry.value = undefined;
-    values.delete(entry);
+    entry.lastValue = undefined;
   }
 
   if (options.deleteEntry) {
@@ -237,12 +240,11 @@ export function observe(target, key, getter, fn) {
   const entry = getEntry(target, key);
 
   return emitter.subscribe(entry, () => {
-    const lastValue = values.get(entry);
     const value = get(target, key, getter);
 
-    if (value !== lastValue) {
-      fn(target, value, lastValue);
-      values.set(entry, value);
+    if (value !== entry.lastValue) {
+      fn(target, value, entry.lastValue);
+      entry.lastValue = value;
     }
   });
 }
