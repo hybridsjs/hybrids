@@ -116,6 +116,7 @@ function setupBrowserUrl(browserUrl, id) {
 
   return {
     browserUrl,
+    pathnameParams,
     paramsKeys: [...searchParams, ...pathnameParams],
     url(params, suppressErrors) {
       let temp = normalizedPathname;
@@ -734,44 +735,60 @@ function getEntryOffset(entry) {
   let i = 0;
   while (entry) {
     const config = getConfigById(entry.id);
-    const currentEntry = state[i][offset];
+    let j = offset;
 
-    if (currentEntry.id !== entry.id) {
-      if (config.dialog) return -1;
+    for (; j < state[i].length; j += 1) {
+      const e = state[i][j];
 
-      let j = offset;
-      for (; j < state[i].length; j += 1) {
-        const e = state[i][j];
-        if (!e || e.id === entry.id) {
+      // if (!e) {
+      //   offset = j;
+      //   break;
+      // }
+
+      if (config.dialog) {
+        return e.id !== entry.id ? -1 : offset;
+      }
+
+      if (e.id === entry.id) {
+        if (config.multiple) {
+          if (
+            (config.pathnameParams &&
+              config.pathnameParams.every(
+                key => entry.params[key] === e.params[key],
+              )) ||
+            Object.entries(entry.params).every(
+              ([key, value]) => e.params[key] === value,
+            )
+          ) {
+            offset = j;
+            break;
+          }
+        } else {
           offset = j;
           break;
         }
+      }
 
-        const c = getConfigById(e.id);
-        if (hasInStack(c, config)) {
-          if (j > 0) {
-            offset = j - 1;
+      const c = getConfigById(e.id);
+      if (hasInStack(c, config)) {
+        if (config.multiple) {
+          if (state[i][0].id === entry.id) {
+            offset = c.guard ? offset : offset - 1;
             break;
-          } else {
-            return c.guard ? 0 : -1;
           }
         }
-      }
 
-      if (j === state[i].length) {
-        offset = state[i].length - 1;
+        if (j > 0) {
+          offset = j - 1;
+          break;
+        } else {
+          return c.guard ? 0 : -1;
+        }
       }
+    }
 
-      if (offset === -1) return offset;
-    } else if (config.multiple) {
-      // Push from offset if params not the same
-      if (
-        !Object.entries(entry.params).every(
-          ([key, value]) => currentEntry.params[key] === value,
-        )
-      ) {
-        return offset - 1;
-      }
+    if (j === state[i].length) {
+      offset = state[i].length - 1;
     }
 
     entry = entry.nested;
