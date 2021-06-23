@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.4.0](https://github.com/hybridsjs/hybrids/compare/v5.3.3...v5.4.0) (2021-06-23)
+
+
+### Features
+
+* **store:** loose option in the store storage for listing enumerables ([883c720](https://github.com/hybridsjs/hybrids/commit/883c7209714b8757564d9567c07c970f922850f0))
+
+
+### Bug Fixes
+
+* **cache:** clean deep suspended contexts ([0d08645](https://github.com/hybridsjs/hybrids/commit/0d08645f28b9ea68e1ac4759ef4b1206306d1d56))
+* **store:** disable global invalidate for draft models ([50e31bb](https://github.com/hybridsjs/hybrids/commit/50e31bbb988a81477cf9765805882e89f6805681))
+* **store:** force fetching model when clear with option se to false ([43e55ec](https://github.com/hybridsjs/hybrids/commit/43e55ecb7fe18f9aa90e5e7b7c35c1f625e5573c))
+* **store:** keep error state when model updates ([93b5838](https://github.com/hybridsjs/hybrids/commit/93b5838037c487d519ab77b49261fe3c4c4c45fd))
+* **types:** overload store methods for listing enumerables ([794e6fb](https://github.com/hybridsjs/hybrids/commit/794e6fb359bb8828927fb7811a2b44f9fc70e114))
+* **types:** proper connect host key value ([63f9648](https://github.com/hybridsjs/hybrids/commit/63f9648058f26d35fea72d6de911e61cce2319dd))
+* **types:** store id option as a function ([7f1893d](https://github.com/hybridsjs/hybrids/commit/7f1893d62d4a66a30c921c44be0e1a05edfd67a0))
+* **types:** use declare module instead of namespace for better import support ([a45477c](https://github.com/hybridsjs/hybrids/commit/a45477c99607494941cef7a88622526357e60ec5))
+
 ### [5.3.3](https://github.com/hybridsjs/hybrids/compare/v5.3.2...v5.3.3) (2021-06-02)
 
 
