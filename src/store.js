@@ -1274,7 +1274,7 @@ function store(Model, options = {}) {
     get: (host, lastValue) => {
       if (createMode && !lastValue) {
         const nextValue = options.draft.create({});
-        syncCache(options.draft, nextValue.id, nextValue);
+        syncCache(options.draft, nextValue.id, nextValue, false);
         return get(Model, nextValue.id);
       }
 
