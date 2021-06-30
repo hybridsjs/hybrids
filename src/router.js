@@ -98,8 +98,6 @@ function restoreLayout(target, clear) {
 
 const placeholder = Date.now();
 function setupBrowserUrl(browserUrl, id) {
-  if (!browserUrl) return null;
-
   const [pathname, search = ""] = browserUrl.split("?");
 
   const searchParams = search ? search.split(",") : [];
@@ -123,7 +121,6 @@ function setupBrowserUrl(browserUrl, id) {
 
       if (pathnameParams.length) {
         temp = temp.split(placeholder).reduce((acc, part, index) => {
-          if (index === 0) return part;
           const key = pathnameParams[index - 1];
 
           if (!hasOwnProperty.call(params, key) && !suppressErrors) {
@@ -136,23 +133,17 @@ function setupBrowserUrl(browserUrl, id) {
 
       const url = new URL(temp, window.location.origin);
 
-      if (suppressErrors) {
-        searchParams.forEach(key => {
-          url.searchParams.append(key, String(params[key]));
-        });
-      } else {
-        Object.keys(params).forEach(key => {
-          if (pathnameParams.includes(key)) return;
+      Object.keys(params).forEach(key => {
+        if (pathnameParams.includes(key)) return;
 
-          if (searchParams.includes(key)) {
-            url.searchParams.append(key, params[key] || "");
-          } else {
-            throw TypeError(
-              `The '${key}' parameter is not supported for <${id}>`,
-            );
-          }
-        });
-      }
+        if (searchParams.includes(key)) {
+          url.searchParams.append(key, params[key] || "");
+        } else if (!suppressErrors) {
+          throw TypeError(
+            `The '${key}' parameter is not supported for <${id}>`,
+          );
+        }
+      });
 
       return url;
     },
@@ -198,17 +189,34 @@ function hasInStack(config, target) {
   });
 }
 
+function addEntryPoint(config) {
+  if (config.browserUrl) {
+    entryPoints.add(config);
+  }
+  if (config.stack) {
+    config.stack.forEach(addEntryPoint);
+  }
+}
+
 function setupViews(views, options, parent = null, nestedParent = null) {
   if (typeof views === "function") views = views();
+
+  if (!Array.isArray(views) || !views.length) {
+    throw TypeError(`Router requires non-empty array of view constructors`);
+  }
 
   const result = views.map(Constructor => {
     // eslint-disable-next-line no-use-before-define
     const config = setupView(Constructor, options, parent, nestedParent);
 
-    if (parent && hasInStack(config, parent)) {
-      throw Error(
-        `<${parent.id}> cannot be in the stack of <${config.id}> - it is already in stack of <${parent.id}>`,
-      );
+    if (parent) {
+      if (hasInStack(config, parent)) {
+        throw Error(
+          `<${parent.id}> cannot be in the stack of <${config.id}> - it is already in stack of <${parent.id}>`,
+        );
+      }
+    } else {
+      addEntryPoint(config);
     }
 
     return config;
@@ -313,16 +321,19 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
           host => browserUrl.url(host, true),
           (host, url) => {
             const state = window.history.state;
-            const entry = state[0];
+            let entry = state[0];
+            while (entry && entry.id !== config.id) {
+              entry = entry.nested;
+            }
 
-            if (entry.id === configs.get(host).id) {
+            if (entry) {
               entry.params = browserUrl.paramsKeys.reduce((acc, key) => {
                 acc[key] = String(host[key] || "");
                 return acc;
               }, {});
-
-              window.history.replaceState(state, "", url);
             }
+
+            window.history.replaceState(state, "", url);
           },
         ),
       );
@@ -334,7 +345,9 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
         );
         if (!desc || !desc.set) {
           throw Error(
-            `'${key}' parameter in the url is not supported for <${id}>`,
+            `'${key}' parameter from the url is not ${
+              desc ? "writable" : "defined"
+            } in <${id}>`,
           );
         }
       });
@@ -442,10 +455,6 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
   } else {
     config.parent = parent;
     config.nestedParent = nestedParent;
-  }
-
-  if (config.browserUrl) {
-    entryPoints.add(config);
   }
 
   config.parentsWithGuards = [];
@@ -870,11 +879,25 @@ function connectRootRouter(host, invalidate, options) {
     navigate(event.detail.entry);
   }
 
-  entryPoints.clear();
-  const roots = setupViews(options.views, options);
+  if (rootRouter) {
+    throw Error(
+      `An element with root router already connected to the document: ${rootRouter}`,
+    );
+  }
 
-  flushes.set(host, flush);
   rootRouter = host;
+  flushes.set(host, flush);
+
+  let roots;
+  try {
+    roots = setupViews(options.views, options);
+  } catch (e) {
+    console.error(
+      `Error while connecting router in <${host.tagName.toLowerCase()}>:`,
+    );
+    rootRouter = null;
+    throw e;
+  }
 
   window.history.scrollRestoration = "manual";
   const state = window.history.state;
@@ -934,6 +957,7 @@ function connectRootRouter(host, invalidate, options) {
     host.removeEventListener("submit", handleNavigate);
     host.removeEventListener("navigate", executeNavigate);
 
+    entryPoints.clear();
     rootRouter = null;
   };
 }

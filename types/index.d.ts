@@ -1,4 +1,4 @@
-declare module 'hybrids' {
+declare module "hybrids" {
   interface InvalidateOptions {
     force?: boolean;
   }
@@ -212,7 +212,10 @@ declare module 'hybrids' {
       [property in keyof V]?: V[property];
     };
 
-    function url<V>(view: HybridElement<V>, params?: UrlParams<V>): string;
+    function url<V>(
+      view: HybridElement<V>,
+      params?: UrlParams<V>,
+    ): URL | string;
 
     function backUrl(options?: { nested?: boolean }): string;
     function guardUrl(params?: UrlParams<any>): string;
