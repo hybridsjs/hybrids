@@ -499,11 +499,7 @@ function getBackUrl({ nested = false } = {}) {
         prevEntry = prevEntry.nested;
       }
     } else
-      while (
-        entry.id === prevEntry.id &&
-        prevEntry.nested &&
-        i < state.length - 1
-      ) {
+      while (entry.id === prevEntry.id && i < state.length - 1) {
         i += 1;
         prevEntry = state[i];
       }
