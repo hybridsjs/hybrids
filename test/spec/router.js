@@ -1,5 +1,5 @@
 import { define, router, html } from "../../src/index.js";
-import { resolveRaf } from "../helpers.js";
+import { resolveRaf, resolveTimeout } from "../helpers.js";
 
 const browserUrl = window.location.pathname;
 
@@ -26,11 +26,28 @@ describe("router:", () => {
       `,
     });
 
-    NestedOne = define("test-router-child-nested-one", {});
+    NestedOne = define("test-router-child-nested-one", {
+      render: () => html`
+        <div
+          class="overflow"
+          style="height: 100px; overflow: scroll"
+          tabindex="0"
+        >
+          <div style="height: 300px"></div>
+        </div>
+      `,
+    });
     NestedTwo = define("test-router-child-nested-two", {});
 
     Child = define("test-router-child", {
+      [router.connect]: {
+        stack: [OtherChild],
+      },
       nested: router([NestedOne, NestedTwo]),
+      render: () =>
+        html`
+          <slot></slot>
+        `,
       content: ({ nested }) => html`
         <a href="${router.backUrl()}">Back</a>
         <a href="${router.url(OtherChild, { otherId: "1" })}">OtherChild</a>
@@ -57,6 +74,13 @@ describe("router:", () => {
       content: () => html`
         <a href="${router.url(Child)}">Child</a>
         <a href="${router.url(OtherChild, { otherId: "1" })}">Child</a>
+        <div
+          class="overflow"
+          style="height: 100px; overflow: scroll"
+          tabindex="0"
+        >
+          <div style="height: 300px"></div>
+        </div>
       `,
     });
 
@@ -82,6 +106,11 @@ describe("router:", () => {
   });
 
   describe("connect root router -", () => {
+    it("returns empty array for not connected host", () => {
+      const el = new App();
+      expect(el.views).toEqual([]);
+    });
+
     it("displays root view", done => {
       resolveRaf(() => {
         expect(host.views[0]).toBeInstanceOf(Home);
@@ -180,7 +209,7 @@ describe("router:", () => {
         });
       }));
 
-    it("navigates to Child and replace state with OtherChild", () =>
+    it("navigates to Child and push state with OtherChild", () =>
       resolveRaf(() => {
         let el = host.children[0].children[0];
         el.click();
@@ -191,7 +220,7 @@ describe("router:", () => {
           return resolveRaf(() => {
             expect(host.views[0]).toBeInstanceOf(OtherChild);
             expect(host.children[0]).toBeInstanceOf(OtherChild);
-            expect(window.history.state.length).toBe(2);
+            expect(window.history.state.length).toBe(3);
           });
         });
       }));
@@ -210,6 +239,60 @@ describe("router:", () => {
 
             expect(host.views[0].nested[0]).toBeInstanceOf(NestedTwo);
             expect(window.history.state.length).toBe(2);
+          });
+        });
+      }));
+
+    it("saves and restores scroll position and focus element", () =>
+      resolveRaf(() => {
+        const div = host.querySelector(".overflow");
+        expect(div.scrollTop).toBe(0);
+        div.scrollTop = 150;
+
+        div.focus();
+
+        // Go to "Child"
+        let el = host.children[0].children[0];
+        el.click();
+
+        return resolveRaf(() => {
+          const nestedDiv = host
+            .querySelector("test-router-child-nested-one")
+            .render()
+            .querySelector(".overflow");
+
+          expect(nestedDiv.scrollTop).toBe(0);
+          nestedDiv.scrollTop = 150;
+
+          // Go to "Other Child"
+          el = host.children[0].children[1];
+          el.click();
+
+          return resolveRaf(() => {
+            // Back to Child
+            el = host.children[0].children[0];
+            el.click();
+
+            return resolveTimeout(() => {
+              expect(
+                host
+                  .querySelector("test-router-child-nested-one")
+                  .render()
+                  .querySelector(".overflow"),
+              ).toBe(nestedDiv);
+
+              expect(nestedDiv.scrollTop).toBe(150);
+
+              // Back to Home
+              el = host.children[0].children[0];
+              el.click();
+
+              return resolveTimeout(() => {
+                expect(host.querySelector(".overflow")).toBe(div);
+                expect(div.scrollTop).toBe(150);
+                expect(document.activeElement).toBe(div);
+              });
+            });
           });
         });
       }));

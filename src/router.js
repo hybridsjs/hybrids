@@ -13,15 +13,18 @@ let rootRouter = null;
 const entryPoints = new Set();
 
 function mapDeepElements(target, cb) {
-  cb(target);
+  if (target.nodeType === Node.ELEMENT_NODE) {
+    cb(target);
+  }
+
+  if (target.shadowRoot) {
+    mapDeepElements(target.shadowRoot, cb);
+  }
 
   const walker = document.createTreeWalker(
     target,
     NodeFilter.SHOW_ELEMENT,
-    {
-      acceptNode: node =>
-        configs.get(node) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
-    },
+    null,
     false,
   );
 
@@ -42,10 +45,8 @@ function saveLayout(target) {
 
   const map = new Map();
 
-  if (!configs.get(target).nestedParent) {
-    const el = document.scrollingElement;
-    map.set(el, { left: el.scrollLeft, top: el.scrollTop });
-  }
+  const rootEl = document.scrollingElement;
+  map.set(rootEl, { left: rootEl.scrollLeft, top: rootEl.scrollTop });
 
   mapDeepElements(target, el => {
     if (el.scrollLeft || el.scrollTop) {
@@ -56,25 +57,17 @@ function saveLayout(target) {
   scrollMap.set(target, map);
 }
 
-let focusTarget = null;
 const deffer = Promise.resolve();
 function restoreLayout(target, clear) {
-  if (!focusTarget) {
-    deffer.then(() => {
-      const activeEl = document.activeElement;
-      if (!focusTarget.contains(activeEl)) {
-        const el = scrollMap.get(focusTarget) || focusTarget;
-        if (el.tabIndex === -1) {
-          el.tabIndex = 0;
-          deffer.then(() => el.removeAttribute("tabindex"));
-        }
-        el.focus({ preventScroll: true });
-      }
-      focusTarget = null;
-    });
+  const activeEl = document.activeElement;
+  if (!target.contains(activeEl)) {
+    const el = focusMap.get(target) || target;
+    if (el.tabIndex === -1) {
+      el.tabIndex = 0;
+      deffer.then(() => el.removeAttribute("tabindex"));
+    }
+    el.focus({ preventScroll: true });
   }
-
-  focusTarget = target;
 
   const map = scrollMap.get(target);
 
@@ -193,9 +186,7 @@ function addEntryPoint(config) {
   if (config.browserUrl) {
     entryPoints.add(config);
   }
-  if (config.stack) {
-    config.stack.forEach(addEntryPoint);
-  }
+  config.stack.forEach(addEntryPoint);
 }
 
 function setupViews(views, options, parent = null, nestedParent = null) {
@@ -277,7 +268,10 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
     if (hybrids) {
       options = { ...options, ...hybrids[connect] };
       const callbacks = callbacksMap.get(Constructor);
-      callbacks.push(restoreLayout);
+
+      if (!nestedParent) {
+        callbacks.push(restoreLayout);
+      }
 
       if (options.dialog) {
         callbacks.push(host => {
@@ -497,6 +491,7 @@ function getBackUrl({ nested = false } = {}) {
   let config;
 
   if (state.length > 1) {
+    const entry = state[0];
     let i = 1;
     let prevEntry = state[i];
     if (nested) {
@@ -504,7 +499,11 @@ function getBackUrl({ nested = false } = {}) {
         prevEntry = prevEntry.nested;
       }
     } else
-      while (prevEntry.nested && i < state.length - 1) {
+      while (
+        entry.id === prevEntry.id &&
+        prevEntry.nested &&
+        i < state.length - 1
+      ) {
         i += 1;
         prevEntry = state[i];
       }
@@ -689,10 +688,6 @@ function resolveStack(host, state) {
   const offset = stack.length - reducedState.length;
   const lastStackView = stack[0];
 
-  if (offset <= 0 && stack.length) {
-    saveLayout(stack[0]);
-  }
-
   stack = reducedState.map(({ id }, index) => {
     const prevView = stack[index + offset];
     const config = getConfigById(id);
@@ -715,7 +710,7 @@ function resolveStack(host, state) {
     return nextView;
   });
 
-  if (stack[0] === lastStackView) {
+  if (rootRouter === host && stack[0] === lastStackView) {
     restoreLayout(lastStackView, true);
   }
 
@@ -854,17 +849,17 @@ function connectRootRouter(host, invalidate, options) {
     while (nestedEntry.nested) nestedEntry = nestedEntry.nested;
     const nestedConfig = getConfigById(nestedEntry.id);
 
-    let url = options.url || "";
-    if (nestedConfig.browserUrl) {
-      url = nestedConfig.url(entry.params, true);
-    }
-
+    const url = nestedConfig.browserUrl
+      ? nestedConfig.url(entry.params, true)
+      : options.url;
     const offset = getEntryOffset(entry);
 
     if (offset > -1) {
       navigateBack(offset, entry, url);
     } else {
       let stack = stacks.get(host);
+      saveLayout(stack[0]);
+
       while (stack && stack[0]) {
         cache.suspend(stack[0]);
         stack = stacks.get(stack[0]);
