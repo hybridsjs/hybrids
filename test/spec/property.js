@@ -286,4 +286,32 @@ describe("property:", () => {
       )(done);
     });
   });
+
+  describe("observe option", () => {
+    it("is called for primitive default value", done => {
+      const spy = jasmine.createSpy("observe");
+      define("test-property-connect", {
+        prop: property(0, null, spy),
+      });
+
+      test("<test-property-connect></test-property-connect>")(() =>
+        resolveRaf(() => {
+          expect(spy).toHaveBeenCalledTimes(1);
+        }),
+      )(done);
+    });
+
+    it("is called for object default value", done => {
+      const spy = jasmine.createSpy("observe");
+      define("test-property-connect", {
+        prop: property({}, null, spy),
+      });
+
+      test("<test-property-connect></test-property-connect>")(() =>
+        resolveRaf(() => {
+          expect(spy).toHaveBeenCalledTimes(1);
+        }),
+      )(done);
+    });
+  });
 });

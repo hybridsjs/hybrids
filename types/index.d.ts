@@ -77,6 +77,7 @@ declare module "hybrids" {
   function property<E, V>(
     value: V | null | undefined | ((value: any) => V),
     connect?: Descriptor<E, V>["connect"],
+    observe?: Descriptor<E, V>["observe"],
   ): Descriptor<E, V>;
 
   function parent<E, V>(

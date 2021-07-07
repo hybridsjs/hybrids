@@ -9,12 +9,13 @@ Property factory provides the most basic feature - it holds the property value. 
 ## Usage
 
 ```typescript
-property(defaultValue: any, [connect: Function]): Object
+property(defaultValue: any, connect: Function, observe: Function): Object
 ```
 
 * **arguments**:
   * `defaultValue` - any value
   * `connect` - a connect callback function of the property descriptor
+  * `observe` - an observe callback function of the property descriptor
 * **returns**:
   * a property descriptor, which resolves to value
 
