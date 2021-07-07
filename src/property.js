@@ -9,7 +9,7 @@ const objectTransform = value => {
   return value && Object.freeze(value);
 };
 
-export default function property(value, connect) {
+export default function property(value, connect, observe) {
   const attrs = new WeakMap();
   const type = typeof value;
   let transform = defaultTransform;
@@ -38,7 +38,7 @@ export default function property(value, connect) {
 
   return {
     get: (host, val = value) => val,
-    set: (host, val, oldValue = value) => transform(val, oldValue),
+    set: (host, val, lastValue = value) => transform(val, lastValue),
     connect:
       type !== "object" && type !== "undefined"
         ? (host, key, invalidate) => {
@@ -57,21 +57,23 @@ export default function property(value, connect) {
           }
         : connect,
     observe:
-      type !== "object" &&
-      type !== "undefined" &&
-      ((host, val) => {
-        const attrName = attrs.get(host);
+      type !== "object" && type !== "undefined"
+        ? (host, val, lastValue) => {
+            const attrName = attrs.get(host);
 
-        const attrValue = host.getAttribute(attrName);
-        const nextValue = val === true ? "" : val;
+            const attrValue = host.getAttribute(attrName);
+            const nextValue = val === true ? "" : val;
 
-        if (nextValue === attrValue) return;
+            if (nextValue === attrValue) return;
 
-        if (val !== 0 && !val) {
-          host.removeAttribute(attrName);
-        } else {
-          host.setAttribute(attrName, nextValue);
-        }
-      }),
+            if (val !== 0 && !val) {
+              host.removeAttribute(attrName);
+            } else {
+              host.setAttribute(attrName, nextValue);
+            }
+
+            if (observe) observe(host, val, lastValue);
+          }
+        : observe,
   };
 }
