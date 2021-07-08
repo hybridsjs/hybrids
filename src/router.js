@@ -89,7 +89,9 @@ function restoreLayout(target, clear) {
   }
 }
 
+const metaParams = ["scrollToTop"];
 const placeholder = Date.now();
+
 function setupBrowserUrl(browserUrl, id) {
   const [pathname, search = ""] = browserUrl.split("?");
 
@@ -129,12 +131,13 @@ function setupBrowserUrl(browserUrl, id) {
       Object.keys(params).forEach(key => {
         if (pathnameParams.includes(key)) return;
 
-        if (searchParams.includes(key)) {
+        if (
+          searchParams.includes(key) ||
+          (!suppressErrors && metaParams.includes(key))
+        ) {
           url.searchParams.append(key, params[key] || "");
-        } else if (!suppressErrors) {
-          throw TypeError(
-            `The '${key}' parameter is not supported for <${id}>`,
-          );
+        } else if (!suppressErrors && !metaParams.includes(key)) {
+          throw TypeError(`The '${key}' parameter is not supported by <${id}>`);
         }
       });
 
@@ -167,7 +170,8 @@ function setupBrowserUrl(browserUrl, id) {
       }
 
       url.searchParams.forEach((value, key) => {
-        if (searchParams.includes(key)) params[key] = value;
+        if (searchParams.includes(key) || metaParams.includes(key))
+          params[key] = value;
       });
 
       return params;
@@ -377,11 +381,14 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
           const url = new URL("", window.location.origin);
 
           Object.keys(params).forEach(key => {
-            if (writableParams.has(key)) {
+            if (
+              writableParams.has(key) ||
+              (!suppressErrors && metaParams.includes(key))
+            ) {
               url.searchParams.append(key, params[key] || "");
-            } else if (!suppressErrors) {
+            } else if (!suppressErrors && !metaParams.includes(key)) {
               throw TypeError(
-                `The '${key}' parameter is not supported for <${id}>`,
+                `The '${key}' parameter is not supported by <${id}>`,
               );
             }
           });
@@ -394,7 +401,8 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
         match(url) {
           const params = {};
           url.searchParams.forEach((value, key) => {
-            if (writableParams.has(key)) params[key] = value;
+            if (writableParams.has(key) || metaParams.includes(key))
+              params[key] = value;
           });
 
           return params;
@@ -484,7 +492,7 @@ function getUrl(view, params = {}) {
   return config ? config.url(params) : "";
 }
 
-function getBackUrl({ nested = false } = {}) {
+function getBackUrl({ nested = false, scrollToTop = false } = {}) {
   const state = window.history.state;
   if (!state) return "";
 
@@ -507,7 +515,15 @@ function getBackUrl({ nested = false } = {}) {
     config = getConfigById(prevEntry.id);
 
     if (!config.guard) {
-      return config.url(prevEntry.params);
+      const params = { ...prevEntry.params };
+
+      if (scrollToTop) {
+        params.scrollToTop = true;
+      } else {
+        delete params.scrollToTop;
+      }
+
+      return config.url(params);
     }
   } else {
     const currentConfig = getConfigById(state[0].id);
@@ -682,11 +698,10 @@ function resolveStack(host, state) {
     return acc;
   }, []);
   const offset = stack.length - reducedState.length;
-  const lastStackView = stack[0];
 
-  stack = reducedState.map(({ id }, index) => {
+  stack = reducedState.map((entry, index) => {
     const prevView = stack[index + offset];
-    const config = getConfigById(id);
+    const config = getConfigById(entry.id);
     let nextView;
 
     if (prevView) {
@@ -699,16 +714,18 @@ function resolveStack(host, state) {
       nextView = config.create();
     }
 
-    if (index === 0 && nextView === prevView) {
-      cache.unsuspend(nextView);
+    if (index === 0) {
+      if (nextView === prevView) {
+        cache.unsuspend(nextView);
+      }
+
+      if (rootRouter === host && entry.params.scrollToTop) {
+        restoreLayout(nextView, true);
+      }
     }
 
     return nextView;
   });
-
-  if (rootRouter === host && stack[0] === lastStackView) {
-    restoreLayout(lastStackView, true);
-  }
 
   Object.assign(stack[0], state[0].params);
   stacks.set(host, stack);

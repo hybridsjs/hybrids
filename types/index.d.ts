@@ -213,14 +213,18 @@ declare module "hybrids" {
       [property in keyof V]?: V[property];
     };
 
+    type UrlOptions = {
+      scrollToTop?: boolean;
+    };
+
     function url<V>(
       view: HybridElement<V>,
-      params?: UrlParams<V>,
+      params?: UrlParams<V> & UrlOptions,
     ): URL | string;
 
-    function backUrl(options?: { nested?: boolean }): string;
-    function guardUrl(params?: UrlParams<any>): string;
-    function currentUrl<V>(params?: UrlParams<V>): string;
+    function backUrl(options?: { nested?: boolean } & UrlOptions): string;
+    function guardUrl(params?: UrlParams<any> & UrlOptions): string;
+    function currentUrl<V>(params?: UrlParams<V> & UrlOptions): string;
 
     function active(
       views: HybridElement<any> | HybridElement<any>[],
