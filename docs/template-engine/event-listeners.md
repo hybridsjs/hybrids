@@ -10,7 +10,8 @@ function send(host, event) {
   sendData('api.com/create', { value: host.value });
 }
 
-const MyElement = {
+define({
+  tag: "my-element",
   value: 42,
   render: () => html`
     <form onsubmit="${send}">
@@ -69,13 +70,14 @@ function updateName(host, event) {
   host.name = event.target.value;
 }
 
-const MyElement = {
+define({
+  tag: "my-element",
   name: '',
   render: ({ name }) => html`
     <input type="text" defaultValue="${name}" oninput="${updateName}" />
     ...
   `,
-};
+});
 ```
 
 Using the above pattern may become verbose if your template contains many values to bind. The engine provides `html.set()` helper method, which generates callback function for setting host property from value of the element, or set store model property value.
@@ -99,7 +101,8 @@ The `html.set()` supports generic elements and unique behavior of the form eleme
 * For the rest elements, it uses `event.detail.value` if defined, or eventually `target.value` as default
 
 ```javascript
-const MyElement = {
+define({
+  tag: "my-element",
   option: false,
   date: null,
   render: ({ option, date }) => html`
@@ -111,7 +114,7 @@ const MyElement = {
     <!-- updates "host.option" with "event.detail.value" from the element -->
     <paper-toggle-button onchecked-changed="${html.set("option")}"></paper-toggle-button>
   `,
-};
+});
 ```
 
 #### Custom Value
@@ -119,7 +122,8 @@ const MyElement = {
 You can overwrite the default behavior and pass a custom value as a second parameter (`event.target.value` is not used):
 
 ```javascript
-const MyElement = {
+define({
+  tag: "my-element",
   items: [{ value: 1 }, { value: 2}],
   selected: null,
   render: ({ items }) => html`
@@ -132,7 +136,7 @@ const MyElement = {
       `)}
     </ul>
   `,
-}
+});
 ```
 
 In the above example, when a user clicks on the item button, the `selected` property is set to `item` from the loop.
@@ -155,7 +159,8 @@ html.set(model: object, propertyPath: string | null): Function
 import { store } from "hybrids";
 import User from "./models.js";
 
-const MyElement = {
+define({
+  tag: "my-element",
   user: store(User, { id: "userId", draft: true }),
   render: ({ user }) => html`
     <input
@@ -171,5 +176,5 @@ const MyElement = {
 
     <button onclick="${html.set(user, null)}">Delete user</button>
   `,
-};
+});
 ```

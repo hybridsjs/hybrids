@@ -139,7 +139,8 @@ const Movie = {
   },
 };
 
-const MovieList = {
+define({
+  tag: "movie-list",
   query: '',
   year: 2020,
   movies: store([Movie], (host) => ({ query: host.query, year: host.year })),
@@ -150,7 +151,7 @@ const MovieList = {
       ${store.ready(movies) && movies.map(movie => html`<li>...</li>`)}
     </ul>
   `,
-}
+});
 ```
 
 In the above example, the `list` method uses the search feature of the API. Using the listing type, we can display a result page with movies filtered by query and year. However, the result of the listing mode cannot contain additional metadata. For such a case, create a separate definition with a nested array of models.
@@ -201,14 +202,15 @@ function refresh(host) {
   store.clear(host.emails, false);
 }
 
-const MyElement = {
+define({
+  tag: "my-element",
   emails: store([Email]),
   render: ({ emails }) => html`
     <button onclick="${refresh}">Refresh</button>
 
     ${store.ready(emails) && ...}
   `,
-}
+});
 ```
 
 #### Garbage Collector
@@ -270,7 +272,8 @@ const Model = {
   },
 };
 
-const MyElement = {
+define({
+  tag: "my-element",
   model: store(Model),
   socket: (host) => {
     const socket = io();
@@ -279,7 +282,7 @@ const MyElement = {
       store.sync(host.model, values);
     });
   },
-};
+});
 ```
 
 In the above example, even though the `Model` is connected to the external storage, when websocket emits an event, the values of the model updates without calling `[store.connect].set()`, as we expect. It is an update triggered by the server, so we don't want to send new values to the server again.

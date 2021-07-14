@@ -30,14 +30,16 @@ In the following example, `label` uses a `count` property of the `AppStore`. The
 ```javascript
 import { parent } from 'hybrids';
 
-const AppStore = {
+const AppStore = define({
+  tag: "app-store",
   count: 0,
-};
+});
 
-const MyElement = {
+define({
+  tag: "my-element",
   store: parent(AppStore),
   label: ({ store }) => `store count: ${store.count}`,
-}
+});
 ```
 
 ```html
@@ -70,17 +72,19 @@ deeper children. `nested` option allows adding nested children of that element i
 ```javascript
 import { children } from 'hybrids';
 
-const TabItem = {
+const TabItem = define({
+  tag: "tab-item",
   name: '',
   active: false,
   ...
-};
+});
 
-const TabGroup = {
+define({
+  tag: "tab-group",
   tabs: children(TabItem),
   active: ({ tabs }) => tabs.find((tab) => tab.active),
   ...
-};
+});
 ```
 
 ```html
@@ -97,13 +101,14 @@ const TabGroup = {
 ## Complex Conditions
 
 ```javascript
-const MyElement = {
+const MyElement = define({
+  tag: "my-element"
   // reference self - useful for tree-like structures
   parent: parent(hybrids => hybrids === MyElement),
   
   // any children, that has `value` property
   items: children(hybrids => hybrids.hasOwnProperty("value")),
-};
+});
 ```
 
 Use a `function` as an argument for complex conditions. For example, you can check if a part of the component definition contains specific property, or you can use it for self-reference.

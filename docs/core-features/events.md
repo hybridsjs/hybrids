@@ -36,12 +36,13 @@ function increaseCount(host) {
   dispatch(host, 'custom-change', { detail: host.value });
 }
 
-const MyElement = {
+define({
+  tag: "my-element",
   value: 0,
   render: ({ value }) => html`
     <button onclick="${increaseCount}">You clicked me ${value} times!</button>
   `,
-};
+});
 ```
 
 When using `<my-element>` elsewhere you can listen to `custom-change` event:
@@ -52,11 +53,12 @@ function notify(host, event) {
   console.log(event.detail);
 }
 
-const OtherElement = {
+define({
+  tag: "ohter-element",
   render: () =>  html`
     <my-element oncustom-change="${notify}"></my-element>
   `,
-};
+});
 ```
 
 Also, you can use `addEventListener` API just like for built-in elements:

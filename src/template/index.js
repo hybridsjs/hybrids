@@ -11,8 +11,8 @@ const templatesMap = new Map();
 const stylesMap = new WeakMap();
 
 const methods = {
-  define(elements) {
-    defineElements(elements);
+  define(...elements) {
+    defineElements(...elements);
     return this;
   },
   key(id) {

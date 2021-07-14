@@ -12,7 +12,7 @@ A counter component example can be written in TS with the following code:
 ```typescript
 // simple-counter.ts
 
-import { define, html, Hybrids } from 'hybrids';
+import { define, html } from 'hybrids';
 
 interface SimpleCounter {
   count: number;
@@ -22,7 +22,7 @@ export function increaseCount(host: SimpleCounter) {
   host.count += 1;
 }
 
-export const SimpleCounter: Hybrids<SimpleCounter> = {
+export default define<SimpleCounter>({
   count: 0,
   render: ({ count }) => html`
     <button onclick="${increaseCount}">
@@ -30,8 +30,6 @@ export const SimpleCounter: Hybrids<SimpleCounter> = {
     </button>
   `,
 };
-
-define('simple-counter', SimpleCounter);
 ```
 
 The `Hybrids<E>` type has built-in support for the [descriptors structure](../core-concepts/descriptors.md) and all of the [translation](../core-concepts/translation.md) rules. It also prevents defining properties not declared in the interface. All hybrids public APIs support generic type `<E>` for providing the additional information from the defined interface, for example, `html<E>` or `define<E>(...)`. However, in most of the cases, it is not necessary to pass the generic type explicitly - TS calculates it from the `Hybrids<E>` main type.

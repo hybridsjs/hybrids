@@ -74,7 +74,7 @@ store.get([Model]) === store.get([Model])
 The listing type fits best for the models, which can be represented as an array (like memory-based models):
 
 ```javascript
-import { store, html } from 'hybrids';
+import { define, store, html } from 'hybrids';
 
 const Todo = {
   id: true,
@@ -82,7 +82,8 @@ const Todo = {
   checked: false,
 };
 
-const MyElement = {
+define({
+  tag: "my-element",
   todoList: store([Todo]),
   render: ({ todoList }) => html`
     <ul>
@@ -94,7 +95,7 @@ const MyElement = {
       `)}
     </ul>
   `,
-};
+});
 ```
 
 The listing type respects `cache` and `loose` options of the storage. By default the `loose` option is turn on, which means that the user's change to the model instance will invalidate the cache, and the next call for the list will fetch data again (read more in [Storage](./storage.md) section).
