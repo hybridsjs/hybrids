@@ -81,7 +81,7 @@ function invalidateTimestamp(model) {
 function setupStorage(storage) {
   if (typeof storage === "function") storage = { get: storage };
 
-  const result = { cache: true, loose: true, ...storage };
+  const result = { cache: true, loose: false, ...storage };
 
   if (result.cache === false || result.cache === 0) {
     result.validate = cachedModel =>
@@ -120,6 +120,7 @@ function memoryStorage(config) {
           return acc;
         }, []);
       },
+    loose: true,
   };
 }
 
