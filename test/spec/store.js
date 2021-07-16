@@ -1635,6 +1635,7 @@ describe("store:", () => {
             return null;
           },
           list: () => Object.keys(storage).map(key => storage[key]),
+          loose: true,
         },
       };
     });
@@ -1817,6 +1818,7 @@ describe("store:", () => {
             return storage[id];
           },
           list: () => Object.keys(storage).map(key => storage[key]),
+          loose: true,
         },
       };
 
@@ -2170,6 +2172,7 @@ describe("store:", () => {
             }),
           set: (id, values) => Promise.resolve(values),
           list: () => Promise.resolve(["1"]),
+          loose: true,
         },
       };
 
@@ -2195,6 +2198,7 @@ describe("store:", () => {
           cache: 1000 * 30,
           get: () => {},
           list: () => Promise.resolve([{ id: "1", value: "test" }]),
+          loose: true,
         },
       };
 

@@ -5,24 +5,32 @@ The following functions are a public API of the hybrids library available as nam
 ## define
 
 ```typescript
+define(descriptors: Object & { tag: string }): descriptors;
+```
+
+* **arguments**:
+  * `descriptors` - a map of hybrid property descriptors with string `tag` property in pascal case or camel case
+* **returns**:
+  * `descriptors` - passed argument to `define()` function
+
+```typescript
+define(...descriptors: Object[]): typeof descriptors;
+```
+
+* **arguments**:
+  * `descriptors` - a number of arguments of descriptors with string `tag` property in pascal case or camel case
+* **returns**:
+  * an array of `descriptors` objects
+
+```typescript
 define(tagName: string, descriptors: Object): Wrapper
 ```
 
 * **arguments**:
-  * `tagName` - a custom element tag name,
+  * `tagName` - a custom element tag name or `null`,
   * `descriptors` - an object with a map of hybrid property descriptors
 * **returns**:
   * `Wrapper` - custom element constructor (extends `HTMLElement`)
-
-```typescript
-define({ tagName: descriptors, ... }): { tagName: Wrapper, ... }
-```
-
-* **arguments**:
-  * `tagName` - a custom element tag name in pascal case or camel case,
-  * `descriptors` - an object with a map of hybrid property descriptors
-* **returns**:
-  * `{ tagName: Wrapper, ...}` - a map of custom element constructors (extends `HTMLElement`)
 
 ## property
 

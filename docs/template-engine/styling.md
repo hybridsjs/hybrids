@@ -7,14 +7,15 @@ To style your custom element, you can create `<style>` elements directly in the 
 Create `<style>` element inside of the main template passed to `render` factory:
 
 ```javascript
-const MyElement = {
+define({
+  tag: "my-element",
   render: () => html`
     <div>...</div>
     <style>
       div { color: red }
     </style>
   `,
-};
+});
 ```
 
 Styles are scoped and apply only to the elements in the `shadowRoot` for default render property configuration.
@@ -60,7 +61,8 @@ const commonStyles = html`
   </style>
 `;
 
-const MyElement = {
+define({
+  tag: "my-element",
   render: () => html`
     <div>...</div>
     ${commonStyles}
@@ -68,7 +70,7 @@ const MyElement = {
       div { color: red }
     </style>
   `,
-};
+});
 ```
 
 ## CSS Stylesheet
@@ -106,20 +108,22 @@ const inlineStyles = `
   div { color: red }
 `;
 
-const MyElement = {
+define({
+  tag: "my-element",
   render: () => html`
     <div>...</div>
   `.style(globals, styles, inlineStyles),
-};
+});
 
 // using css helper
-const OtherElement = {
+define({
+  tag: "other-element",
   render: () => html`
     <div>...</div>
   `.css`
     div { color: red }
   `,
-};
+});
 ```
 
 The style helper supports passing `CSSStyleSheet` instance, but it will work only for the mode described below. Do not use it if you target multiple environments, where it might not be yet supported.

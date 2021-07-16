@@ -78,13 +78,14 @@ Cache mechanism uses equality check to compare values (`nextValue !== lastValue`
 In the following example, the `get` method of the `name` property is called again only if `firstName` or `lastName` has changed:
 
 ```javascript
-const MyElement = {
+define({
+  tag: "my-element",
   firstName: "John",
   lastName: "Smith",
   name: {
     get: ({ firstName, lastName }) => `${firstName} ${lastName}`,
   },
-};
+});
 
 console.log(myElement.name); // calls 'get' and returns 'John Smith'
 console.log(myElement.name); // Cache returns 'John Smith'
@@ -114,11 +115,12 @@ Every assertion of the property calls `set` method (like `myElement.property = '
 The following example shows the `power` property, which uses the default `get`, defines the `set` method, and calculates the power of the number passed to the property:
 
 ```javascript
-const MyElement = {
+define({
+  tag: "my-element",
   power: {
     set: (host, value) => value ** value,
   },
-};
+});
 
 myElement.power = 10; // calls 'set' method and set cache to 100
 console.log(myElement.power); // Cache returns 100
@@ -158,12 +160,13 @@ If the third party code is responsible for the property value, you can use `inva
 ```javascript
 import reduxStore from "./store";
 
-const MyElement = {
+define({
+  tag: "my-element",
   name: {
     get: () => reduxStore.getState().name,
     connect: (host, key, invalidate) => reduxStore.subscribe(invalidate),
   },
-};
+});
 ```
 
 `invalidate` can take an options object argument.

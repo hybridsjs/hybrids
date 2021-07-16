@@ -41,10 +41,11 @@ declare module "hybrids" {
         ? RenderFunction<E>
         : Property<E, E[property]>
       : Property<E, E[property]>;
-  } & {
-    render?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
-    content?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
-  };
+  } &
+    (E extends { tag: any } ? {} : { tag?: string }) & {
+      render?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
+      content?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
+    };
 
   interface MapOfHybrids {
     [tagName: string]: Hybrids<any>;
@@ -68,9 +69,8 @@ declare module "hybrids" {
     hybrids: Hybrids<E>,
   ): HybridElement<E>;
 
-  function define(
-    mapOfHybrids: MapOfHybrids,
-  ): MapOfConstructors<typeof mapOfHybrids>;
+  function define<E>(hybrids: Hybrids<E>): typeof hybrids;
+  function define(listOfHybrids: Hybrids<any>[]): typeof listOfHybrids;
 
   /* Factories */
 

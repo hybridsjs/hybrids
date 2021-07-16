@@ -33,7 +33,7 @@ store.set(Globals, null).then(() => {
 
 ### Enumerable
 
-For the enumerables, the memory storage returns models, which were created before. It also supports listing all models.
+For the enumerables, the memory storage returns models, which were created by the client. It supports the list action, which always returns all existing models. The storage `loose` option is turned on to invalidate the list state when one of the models updates.
 
 ```javascript
 const Todo = {
@@ -58,7 +58,7 @@ const Model = {
     set?: (id, values, keys) => {...},
     list?: (id) => {...},
     cache?: boolean | number [ms] = true,
-    loose?: boolean = true,
+    loose?: boolean = false,
   },
 };
 ```
@@ -139,7 +139,8 @@ const Movie = {
   },
 };
 
-const MovieList = {
+define({
+  tag: "movie-list",
   query: '',
   year: 2020,
   movies: store([Movie], (host) => ({ query: host.query, year: host.year })),
@@ -150,7 +151,7 @@ const MovieList = {
       ${store.ready(movies) && movies.map(movie => html`<li>...</li>`)}
     </ul>
   `,
-}
+});
 ```
 
 In the above example, the `list` method uses the search feature of the API. Using the listing type, we can display a result page with movies filtered by query and year. However, the result of the listing mode cannot contain additional metadata. For such a case, create a separate definition with a nested array of models.
@@ -201,14 +202,15 @@ function refresh(host) {
   store.clear(host.emails, false);
 }
 
-const MyElement = {
+define({
+  tag: "my-element",
   emails: store([Email]),
   render: ({ emails }) => html`
     <button onclick="${refresh}">Refresh</button>
 
     ${store.ready(emails) && ...}
   `,
-}
+});
 ```
 
 #### Garbage Collector
@@ -218,30 +220,14 @@ The `store.clear()` method works as a garbage collector for unused model instanc
 ### loose
 
 ```typescript
-loose: boolean = true
+loose: boolean = false
 ```
 
-The `loose` option of the model only affects listing enumerable models cache invalidation (the `loose` option of the nested array is still respected). By default, it is set to `true`, which means, that any change to model instance invalidates result of list action. The typical use case for that value would be when you have paginated list, and updating or creating a model instance might affect order or content of the list.
+The `loose` option of the model only affects cache invalidation of the listing enumerable models (the `loose` option of the nested array in the model definition is still respected). 
 
-If the result of list action should not be invalidated when model instance changes, set this option to `false`. Using that value you can avoid unnecessary calls to external storage, when the list result does not depend on the model instance values.
+By default, it is set to `false`, so updating model instances will not change items order or placement in the array. The typical use case to turn it on is when you have a paginated list, and updating or creating a model instance might affect order or content of the list. 
 
-```javascript
-const Notification = {
-  id: true,
-  content: "",
-  read: "",
-  createdAt: "",
-  [store.connect]: {
-    set: (id, values) => api.put('/notifications', id, values),
-    list: ({ page }) => api.get('/notifications', { page }),
-    loose: false,
-  },
-};
-```
-
-In the above example, the list returns paginated notifications ordered by the creation time. When you want to set notification as read, you don't need to fetch list again, as the model instance updates itself and the list does not change.
-
-Keep in mind, that setting `loose` option to `false` blocks invalidation also when new model instances are created. This option should only be set to `false` for models not fully controlled by the user.
+If the user does not have control over the model, it is recommended to keep that option off. You can avoid unnecessary calls to external storage, when the list result does not depend on the model instance values.
 
 ## Observables
 
@@ -270,7 +256,8 @@ const Model = {
   },
 };
 
-const MyElement = {
+define({
+  tag: "my-element",
   model: store(Model),
   socket: (host) => {
     const socket = io();
@@ -279,7 +266,7 @@ const MyElement = {
       store.sync(host.model, values);
     });
   },
-};
+});
 ```
 
 In the above example, even though the `Model` is connected to the external storage, when websocket emits an event, the values of the model updates without calling `[store.connect].set()`, as we expect. It is an update triggered by the server, so we don't want to send new values to the server again.

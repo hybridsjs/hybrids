@@ -28,10 +28,11 @@ export default Settings;
 Then, in the component definition use `store` factory to access values by the model definition:
 
 ```javascript
-import { store } from "hybrids";
+import { define, store } from "hybrids";
 import Settings, { setDarkTheme } from "./settings.js";
 
-const MyButton = {
+define({
+  tag: "my-button",
   settings: store(Settings),
   render: ({ settings }) => html`
     <style>
@@ -42,7 +43,7 @@ const MyButton = {
 
     <button onclick=${setDarkTheme}>Set dark theme</button>
   `,
-};
+});
 ```
 
 In the above example, the `setDarkTheme` function can be run outside of the component as well. It does not depend on the `host` element. Nevertheless, the component will re-render when `Settings` model instance changes.
@@ -68,10 +69,11 @@ The above `User` model definition creates a structure for each user instance wit
 Even though the source is external, interaction with the model is the same as with models from memory - there is no explicit call to the async storage:
 
 ```javascript
-import { store, html } from 'hybrids';
+import { define, store, html } from 'hybrids';
 import { User } from './models.js';
 
-const UserDetails = {
+define({
+  tag: "user-details",
   userId: '1',
   user: store(User, 'userId'),
   render: ({ user }) => html`
@@ -84,7 +86,7 @@ const UserDetails = {
       `}
     </div>
   `,
-}
+});
 ```
 
 > Click and play with `<store-user>` example:

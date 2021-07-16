@@ -225,10 +225,12 @@ describe("children:", () => {
 
   describe("dynamic children", () => {
     const TestDynamicChild = {
+      tag: "TestDynamicChild",
       name: "",
     };
 
     const TestDynamicParent = {
+      tag: "TestDynamicParent",
       items: children(TestDynamicChild),
       render: ({ items }) => html`
         <div>
@@ -254,7 +256,7 @@ describe("children:", () => {
               `.key(name),
             )}
           </test-dynamic-parent>
-        `.define({ TestDynamicParent, TestDynamicChild }),
+        `.define(TestDynamicParent, TestDynamicChild),
     });
 
     const tree = test(`

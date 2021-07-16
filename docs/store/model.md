@@ -23,7 +23,7 @@ const Model = {
 }
 ```
 
-The `id` property indicates if the model has multiple instances, or it is a singleton. The only valid value for the `id` field is `true`. Otherwise, it should not be defined at all. For example, you may need only one instance of the `Profile` model of the current logged in user, but it can reference an enumerable `User` model.
+The `id` property indicates if the model has multiple instances, or it is a singleton. The only valid value for the `id` field is `true`. Otherwise, it should not be defined. For example, you may need only one instance of the `Profile` model of the current logged in user, but it can reference an enumerable `User` model.
 
 ```javascript
 const User = {
@@ -74,7 +74,7 @@ store.get([Model]) === store.get([Model])
 The listing type fits best for the models, which can be represented as an array (like memory-based models):
 
 ```javascript
-import { store, html } from 'hybrids';
+import { define, store, html } from 'hybrids';
 
 const Todo = {
   id: true,
@@ -82,7 +82,8 @@ const Todo = {
   checked: false,
 };
 
-const MyElement = {
+define({
+  tag: "my-element",
   todoList: store([Todo]),
   render: ({ todoList }) => html`
     <ul>
@@ -94,10 +95,10 @@ const MyElement = {
       `)}
     </ul>
   `,
-};
+});
 ```
 
-The listing type respects `cache` and `loose` options of the storage. By default the `loose` option is turn on, which means that the user's change to the model instance will invalidate the cache, and the next call for the list will fetch data again (read more in [Storage](./storage.md) section).
+The listing type respects `cache` and `loose` options of the storage. By default the `loose` option is turn off for external storages (read more in [Storage](./storage.md) section).
 
 #### Metadata
 
@@ -242,11 +243,38 @@ If the first item of the array is a primitive or an internal object instance (ac
 import OtherModel from './otherModel.js';
 
 const Model = {
-  items: [OtherModel],
+  items: [OtherModel, { loose: false | true = false }],
 };
 ```
 
-If the first item of the array is an enumerable model definition, the property represents a list of external model instances mapped by their ids. The parent model's storage may provide a list of data for model instances or a list of identifiers. The update process and binding between models work the same as for a single external nested object.
+If the first item of the array is an enumerable model definition, the property represents a list of external model instances mapped by their ids. The second item is an optional options object with `loose` option.
+
+The parent model's storage may provide a list of data for model instances or a list of identifiers. The update process and binding between models work the same as for a single external nested object.
+
+### Cache Invalidation
+
+By default, the store does not invalidate the cached value of the model instance when nested in the array external model changes. Because of the nature of the binding between models, when the nested model updates its state, the change will be reflected without a need to update the parent model's state.
+
+However, the list value might be related to the current state of nested models. For example, the model definition representing a paginated structure ordered by name must update when one of the nested model changes. After the change, the result pages might have a different content. To support that case, you can pass a second object to the nested array definition with `loose` option:
+
+```javascript
+import { store } from 'hybrids';
+import User from './user.js';
+
+const UserList = {
+  id: true,
+  users: [User, { loose: true }],
+  ...,
+  [store.connect]: (params) => api.get('/users/search', params),
+};
+
+const pageOne = store.get(UserList, { page: 1, query: '' });
+
+// Updates some user and invalidates cached value of the `pageOne` model instance
+store.set(pageOne.users[0], { name: 'New name' });
+```
+
+To prevent an endless loop of fetching data, the cached value of the parent model instance only invalidates if the `store.set` method is used. Updating the state of the nested model definition by fetching new values with `store.get` action won't invalidate the parent model. Get action still respects the `cache` option of the parent storage. If you need a high rate of accuracy of the external data, you should set a very low value of the `cache` option in the storage, or even set it to `false`.
 
 ### Self Reference & Import Cycles
 
@@ -270,28 +298,3 @@ const Model = {
 ```
 
 In the above example, the `Model` defines a connected list structure, where each instance can reference to the same definition.
-
-### Cache Invalidation
-
-By default, the store does not invalidate the cached value of the parent model instance when nested external model changes. Because of the nature of the binding between models, when the nested model updates its state, the change will be reflected without a need to update the parent model's state.
-
-However, the list might be related to the current state of nested models. For example, the model definition representing a paginated structure ordered by name must update when one of the nested model changes. After the change, the result pages might have a different content. To support that case, you can pass a second object to the nested array definition with `loose` option:
-
-```javascript
-import { store } from 'hybrids';
-import User from './user.js';
-
-const UserList = {
-  id: true,
-  users: [User, { loose: true }],
-  ...,
-  [store.connect]: (params) => api.get('/users/search', params),
-};
-
-const pageOne = store.get(UserList, { page: 1, query: '' });
-
-// Updates some user and invalidates cached value of the `pageOne` model instance
-store.set(pageOne.users[0], { name: 'New name' });
-```
-
-To prevent an endless loop of fetching data, the cached value of the parent model instance only invalidates if the `store.set` method is used. Updating the state of the nested model definition by fetching new values with `store.get` action won't invalidate the parent model. Get action still respects the `cache` option of the parent storage. If you need a high rate of accuracy of the external data, you should set a very low value of the `cache` option in the storage, or even set it to `false`.
