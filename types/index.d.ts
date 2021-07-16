@@ -41,8 +41,16 @@ declare module "hybrids" {
         ? RenderFunction<E>
         : Property<E, E[property]>
       : Property<E, E[property]>;
-  } &
-    (E extends { tag: any } ? {} : { tag?: string }) & {
+  } & {
+    __router__connect__?: {
+      url?: string;
+      multiple?: boolean;
+      dialog?: boolean;
+      replace?: boolean;
+      guard?: (host: E) => any;
+      stack?: Hybrids<any>[];
+    };
+  } & (E extends { tag: any } ? {} : { tag?: string }) & {
       render?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
       content?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
     };
@@ -189,18 +197,8 @@ declare module "hybrids" {
   }
 
   /* Router */
-  type View<E> = Hybrids<E> & {
-    __router__connect__?: {
-      url?: string;
-      multiple?: boolean;
-      replace?: boolean;
-      guard?: (host: E) => any;
-      stack?: typeof HTMLElement[];
-    };
-  };
-
   function router<E, V>(
-    views: typeof HTMLElement[],
+    views: Hybrids<any>[],
     options?: {
       url?: string;
     },
@@ -209,25 +207,25 @@ declare module "hybrids" {
   namespace router {
     const connect = "__router__connect__";
 
-    type UrlParams<V> = {
-      [property in keyof V]?: V[property];
+    type UrlParams<E> = {
+      [property in keyof E]?: E[property];
     };
 
     type UrlOptions = {
       scrollToTop?: boolean;
     };
 
-    function url<V>(
-      view: HybridElement<V>,
-      params?: UrlParams<V> & UrlOptions,
+    function url<E>(
+      view: Hybrids<E>,
+      params?: UrlParams<E> & UrlOptions,
     ): URL | string;
 
     function backUrl(options?: { nested?: boolean } & UrlOptions): string;
     function guardUrl(params?: UrlParams<any> & UrlOptions): string;
-    function currentUrl<V>(params?: UrlParams<V> & UrlOptions): string;
+    function currentUrl<E>(params?: UrlParams<E> & UrlOptions): string;
 
     function active(
-      views: HybridElement<any> | HybridElement<any>[],
+      views: Hybrids<any> | Hybrids<any>[],
       options?: { stack?: boolean },
     ): boolean;
 

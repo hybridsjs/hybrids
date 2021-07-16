@@ -10,14 +10,14 @@ describe("router:", () => {
   let OtherChild;
   let OtherURLChild;
   let Home;
-  let App;
   let host;
 
   beforeEach(done => {
-    OtherChild = define("test-router-other-child", {
+    OtherChild = define({
       [router.connect]: {
         url: "/other_child/:otherId/test?param",
       },
+      tag: "test-router-other-child",
       otherId: "",
       param: false,
       otherParam: "",
@@ -26,7 +26,8 @@ describe("router:", () => {
       `,
     });
 
-    NestedOne = define("test-router-child-nested-one", {
+    NestedOne = define({
+      tag: "test-router-child-nested-one",
       render: () => html`
         <div
           class="overflow"
@@ -37,12 +38,13 @@ describe("router:", () => {
         </div>
       `,
     });
-    NestedTwo = define("test-router-child-nested-two", {});
+    NestedTwo = define({ tag: "test-router-child-nested-two" });
 
-    Child = define("test-router-child", {
+    Child = define({
       [router.connect]: {
         stack: [OtherChild],
       },
+      tag: "test-router-child",
       nested: router([NestedOne, NestedTwo]),
       render: () =>
         html`
@@ -56,10 +58,11 @@ describe("router:", () => {
       `,
     });
 
-    OtherURLChild = define("test-router-other-url-child", {
+    OtherURLChild = define({
       [router.connect]: {
         url: "/other_url_child",
       },
+      tag: "test-router-other-url-child",
       param: "",
       otherParam: "",
       content: () => html`
@@ -67,10 +70,11 @@ describe("router:", () => {
       `,
     });
 
-    Home = define("test-router-home", {
+    Home = define({
       [router.connect]: {
         stack: [Child, OtherURLChild, OtherChild],
       },
+      tag: "test-router-home",
       content: () => html`
         <a href="${router.url(Child)}">Child</a>
         <a href="${router.url(OtherChild, { otherId: "1" })}">Child</a>
@@ -84,14 +88,15 @@ describe("router:", () => {
       `,
     });
 
-    App = define("test-router-app", {
+    define({
+      tag: "test-router-app",
       views: router([Home]),
       content: ({ views }) => html`${views}` // prettier-ignore
     });
 
     window.history.replaceState(null, "", browserUrl);
     resolveRaf(() => {
-      host = new App();
+      host = document.createElement("test-router-app");
       document.body.appendChild(host);
       done();
     });
@@ -107,14 +112,14 @@ describe("router:", () => {
 
   describe("connect root router -", () => {
     it("returns empty array for not connected host", () => {
-      const el = new App();
+      const el = document.createElement("test-router-app");
       expect(el.views).toEqual([]);
     });
 
     it("displays root view", done => {
       resolveRaf(() => {
-        expect(host.views[0]).toBeInstanceOf(Home);
-        expect(host.children[0]).toBeInstanceOf(Home);
+        expect(host.views[0].constructor.hybrids).toBe(Home);
+        expect(host.children[0].constructor.hybrids).toBe(Home);
       }).then(done);
     });
 
@@ -126,8 +131,8 @@ describe("router:", () => {
 
         return resolveRaf(() => {
           expect(window.location.pathname).toBe(browserUrl);
-          expect(host.views[0]).toBeInstanceOf(Home);
-          expect(host.children[0]).toBeInstanceOf(Home);
+          expect(host.views[0].constructor.hybrids).toBe(Home);
+          expect(host.children[0].constructor.hybrids).toBe(Home);
         });
       });
     });
@@ -138,10 +143,10 @@ describe("router:", () => {
         el.click();
         return resolveRaf(() => {
           host.parentElement.removeChild(host);
-          host = new App();
+          host = document.createElement("test-router-app");
           document.body.appendChild(host);
           return resolveRaf(() => {
-            expect(host.children[0]).toBeInstanceOf(Child);
+            expect(host.children[0].constructor.hybrids).toBe(Child);
           });
         });
       }).then(done);
@@ -153,15 +158,16 @@ describe("router:", () => {
         el.click();
         return resolveRaf(() => {
           host.parentElement.removeChild(host);
-          const Another = define("test-router-another", {});
-          App = define("test-router-app", {
+          const Another = define({ tag: "test-router-another" });
+          define({
+            tag: "test-router-app",
             views: router([Another]),
             content: ({ views }) => html`${views}` // prettier-ignore
           });
-          host = new App();
+          host = document.createElement("test-router-app");
           document.body.appendChild(host);
           return resolveRaf(() => {
-            expect(host.children[0]).toBeInstanceOf(Another);
+            expect(host.children[0].constructor.hybrids).toBe(Another);
           });
         });
       }).then(done);
@@ -173,15 +179,16 @@ describe("router:", () => {
         el.click();
         return resolveRaf(() => {
           host.parentElement.removeChild(host);
-          Home = define("test-router-home", {});
-          App = define("test-router-app", {
+          Home = define({ tag: "test-router-home" });
+          define({
+            tag: "test-router-app",
             views: router([Home]),
             content: ({ views }) => html`${views}` // prettier-ignore
           });
-          host = new App();
+          host = document.createElement("test-router-app");
           document.body.appendChild(host);
           return resolveRaf(() => {
-            expect(host.children[0]).toBeInstanceOf(Home);
+            expect(host.children[0].constructor.hybrids).toBe(Home);
           });
         });
       }).then(done);
@@ -194,16 +201,16 @@ describe("router:", () => {
         let el = host.children[0].children[0];
         el.click();
         return resolveRaf(() => {
-          expect(host.views[0]).toBeInstanceOf(Child);
-          expect(host.children[0]).toBeInstanceOf(Child);
+          expect(host.views[0].constructor.hybrids).toBe(Child);
+          expect(host.children[0].constructor.hybrids).toBe(Child);
           expect(window.history.state.length).toBe(2);
 
           el = host.children[0].children[0];
           el.click();
 
           return resolveRaf(() => {
-            expect(host.views[0]).toBeInstanceOf(Home);
-            expect(host.children[0]).toBeInstanceOf(Home);
+            expect(host.views[0].constructor.hybrids).toBe(Home);
+            expect(host.children[0].constructor.hybrids).toBe(Home);
             expect(window.history.state.length).toBe(1);
           });
         });
@@ -218,8 +225,8 @@ describe("router:", () => {
           el.click();
 
           return resolveRaf(() => {
-            expect(host.views[0]).toBeInstanceOf(OtherChild);
-            expect(host.children[0]).toBeInstanceOf(OtherChild);
+            expect(host.views[0].constructor.hybrids).toBe(OtherChild);
+            expect(host.children[0].constructor.hybrids).toBe(OtherChild);
             expect(window.history.state.length).toBe(3);
           });
         });
@@ -234,10 +241,10 @@ describe("router:", () => {
           el.click();
 
           return resolveRaf(() => {
-            expect(host.views[0]).toBeInstanceOf(Child);
-            expect(host.children[0]).toBeInstanceOf(Child);
+            expect(host.views[0].constructor.hybrids).toBe(Child);
+            expect(host.children[0].constructor.hybrids).toBe(Child);
 
-            expect(host.views[0].nested[0]).toBeInstanceOf(NestedTwo);
+            expect(host.views[0].nested[0].constructor.hybrids).toBe(NestedTwo);
             expect(window.history.state.length).toBe(2);
           });
         });
@@ -300,7 +307,7 @@ describe("router:", () => {
 
   describe("url() -", () => {
     it("returns empty string for not connected view", () => {
-      const MyElement = define("test-router-my-element", {});
+      const MyElement = define({ tag: "test-router-my-element" });
       expect(router.url(MyElement)).toBe("");
     });
 

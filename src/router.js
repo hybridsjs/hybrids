@@ -1,6 +1,6 @@
 import { callbacksMap } from "./define.js";
 import * as cache from "./cache.js";
-import { dispatch } from "./utils.js";
+import { dispatch, pascalToDash } from "./utils.js";
 
 const connect = Symbol("router.connect");
 const configs = new WeakMap();
@@ -247,50 +247,52 @@ function getNestedRouterOptions(hybrids, id, config) {
   return nestedRouters[0];
 }
 
-function setupView(Constructor, routerOptions, parent, nestedParent) {
-  const id = new Constructor().tagName.toLowerCase();
-  let config = configs.get(Constructor);
+function setupView(hybrids, routerOptions, parent, nestedParent) {
+  let config = configs.get(hybrids);
+  const id = pascalToDash(hybrids.tag);
 
-  if (config) {
-    if (config.hybrids !== Constructor.hybrids) {
-      configs.delete(customElements.get(config.id));
-      config = null;
-    }
+  if (config && config.hybrids !== hybrids) {
+    config = null;
   }
 
   if (!config) {
     let browserUrl = null;
 
-    let options = {
+    const Constructor = customElements.get(id);
+
+    if (!Constructor) {
+      throw TypeError(
+        `The view must be a already defined tagged component definition with 'tag' property: ${hybrids.tag}`,
+      );
+    }
+
+    const options = {
       dialog: false,
       guard: false,
       multiple: false,
       replace: false,
+      ...hybrids[connect],
     };
 
-    const hybrids = Constructor.hybrids;
-    if (hybrids) {
-      options = { ...options, ...hybrids[connect] };
-      const callbacks = callbacksMap.get(Constructor);
+    const callbacks = callbacksMap.get(Constructor);
 
-      if (!nestedParent) {
-        callbacks.push(restoreLayout);
-      }
+    if (!nestedParent) {
+      callbacks.push(restoreLayout);
+    }
 
-      if (options.dialog) {
-        callbacks.push(host => {
-          const cb = event => {
-            if (event.key === "Escape") {
-              event.stopPropagation();
-              window.history.go(-1);
-            }
-          };
-          host.addEventListener("keydown", cb);
-          return () => {
-            host.removeEventListener("keydown", cb);
-          };
-        });
-      }
+    if (options.dialog) {
+      callbacks.push(host => {
+        const cb = event => {
+          if (event.key === "Escape") {
+            event.stopPropagation();
+            window.history.go(-1);
+          }
+        };
+        host.addEventListener("keydown", cb);
+        return () => {
+          host.removeEventListener("keydown", cb);
+        };
+      });
     }
 
     const writableParams = new Set();
@@ -436,6 +438,7 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
       },
     };
 
+    configs.set(hybrids, config);
     configs.set(Constructor, config);
 
     config.parent = parent;
@@ -465,8 +468,7 @@ function setupView(Constructor, routerOptions, parent, nestedParent) {
     parent = parent.parent;
   }
 
-  const nestedRouterOptions =
-    config.hybrids && getNestedRouterOptions(config.hybrids, id, config);
+  const nestedRouterOptions = getNestedRouterOptions(hybrids, id, config);
 
   if (nestedRouterOptions) {
     config.nestedRoots = setupViews(
@@ -756,11 +758,6 @@ function getEntryOffset(entry) {
 
     for (; j < state[i].length; j += 1) {
       const e = state[i][j];
-
-      // if (!e) {
-      //   offset = j;
-      //   break;
-      // }
 
       if (config.dialog) {
         return e.id !== entry.id ? -1 : offset;
