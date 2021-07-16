@@ -11,16 +11,15 @@ function increaseCount(host) {
   host.count += 1;
 }
 
-const SimpleCounter = {
+define({
+  tag: "simple-counter",
   count: 0,
   render: ({ count }) => html`
     <button onclick="${increaseCount}">
       Count: ${count}
     </button>
   `,
-};
-
-define('simple-counter', SimpleCounter);
+});
 ```
 
 > Click and play with `<simple-counter>` example:
@@ -44,9 +43,12 @@ customElements.define('my-element', MyElement);
 However, the class syntax is only a sugar on top of the constructors and prototypes. Because of that, it is possible to switch from class syntax to plain object with map of properties applied to the prototype of the custom element constructor.
 
 ```javascript
-const MyElement = {
+{
   property: {
-    get: ..., set: ..., connect: ..., observe: ...,
+    get() {...},
+    set() {...},
+    connect() {...},
+    observe() {...},
   },
   ...
 };
@@ -81,16 +83,18 @@ function connect(store, mapState) {
 
 ```javascript
 // Each instance is connected to `state.count` value
-const MyCountElement = {
+define({
+  tag: "my-count-element",
   count: connect(myReduxStore, (state) => state.count),
   render: ({ count }) => html`...`,
-};
+});
 
 // Each instance is connected to `state.other` value
-const MyOtherStateElement = {
+define({
+  tag: "my-other-state-element",
   other: connect(myReduxStore, (state) => state.other),
   render: ({ other }) => html`...`,
-}
+})
 ```
 
 > Click and play with [redux](redux.js.org) library integration example:
@@ -112,9 +116,10 @@ The translation feature uses set of rules for property definitions, which does n
 Instead of explicit usage of the `property` and `render` factories like this:
 
 ```javascript
-import { property, render, html } from 'hybrids';
+import { define, property, render, html } from 'hybrids';
 
-export const MyElement = {
+export default define({
+  tag: "my-element",
   count: property(0),
   render: render(({ count }) => html`
     <button>${count}</button>
@@ -125,9 +130,10 @@ export const MyElement = {
 You can write component definition using translation rules:
 
 ```javascript
-import { html } from 'hybrids';
+import { define, html } from 'hybrids';
 
-export const MyElement = {
+export default define({
+  tag: "my-element",
   count: 0,
   render: ({ count }) => html`
     <button>${count}</button>
@@ -135,7 +141,7 @@ export const MyElement = {
 }
 ```
 
-The process is done in the following order:
+The translation process is done in the following order:
 
 1. **`render` key descriptor with value as a function** translates to [`render`](../core-features/render.md) factory:
 

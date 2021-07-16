@@ -31,12 +31,15 @@ describe("define:", () => {
     expect(el.value).toBe("test");
   });
 
-  describe("for map argument", () => {
-    it("defines hybrids", done => {
-      const testHtmlDefine = { value: "test" };
-      const TestPascal = { value: "value-test-pascal" };
-      const HTMLDefine = { value: "value-html-define" };
-      define({ testHtmlDefine, TestPascal, HTMLDefine });
+  describe("for objects", () => {
+    it("defines tagged components", done => {
+      const testHtmlDefine = { tag: "testHtmlDefine", value: "test" };
+      const TestPascal = { tag: "TestPascal", value: "value-test-pascal" };
+      const HTMLDefine = { tag: "HTMLDefine", value: "value-html-define" };
+      const result = define(testHtmlDefine, TestPascal, HTMLDefine);
+
+      expect(result).toEqual([testHtmlDefine, TestPascal, HTMLDefine]);
+      expect(define(HTMLDefine)).toBe(HTMLDefine);
 
       requestAnimationFrame(() => {
         const testHtmlDefineEl = document.createElement("test-html-define");
@@ -51,9 +54,12 @@ describe("define:", () => {
       });
     });
 
-    it("throws for invalid value", () => {
+    it("throws for element without 'tag' string property", () => {
       expect(() => {
-        define({ testHtmlDefineExternalD: "value" });
+        define({ value: "test" });
+      }).toThrow();
+      expect(() => {
+        define({ tag: 0, value: "test" });
       }).toThrow();
     });
   });

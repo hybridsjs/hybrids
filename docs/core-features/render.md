@@ -24,13 +24,14 @@ render(fn: Function, options: Object = { shadowRoot: true }): Object
 ```javascript
 import { render } from 'hybrids';
 
-export const MyElement = {
+define({
+  tag: "my-element",
   someProp: render((host) => {
     return (host, target) => {
       // update DOM here
     }
   }, { shadowRoot: ... })
-};
+});
 ```
 
 > Click and play with render factory example using [React](http://reactjs.org/) library:
@@ -52,13 +53,14 @@ The factory by default uses [Shadow DOM](https://developer.mozilla.org/docs/Web/
 ```javascript
 import { html, render } from 'hybrids';
 
-const MyElement = {
+define({
+  tag: "my-element",
   value: 1,
   render: render(
     ({ value }) => html`<div>${value}</div>`,
     { shadowRoot: false },
   ),
-};
+});
 ```
 
 ### Translation
@@ -70,11 +72,12 @@ You can omit explicit usage of the render factory by two of the [translation](..
     ```javascript
     import { html } from 'hybrids';
 
-    const MyElement = {
+    define({
+      tag: "my-element",
       value: 1,
       // Equals to render: render(({ value }) => html...
       render: ({ value }) => html`<div>${value}</div>`,
-    };
+    });
     ```
 
 2. If the `content` property definition is a function, the render factory renders to the host element content
@@ -82,11 +85,12 @@ You can omit explicit usage of the render factory by two of the [translation](..
     ```javascript
     import { html } from 'hybrids';
 
-    const MyElement = {
+    define({
+      tag: "my-element",
       value: 1,
       // Equals to content: render(({ value }) => ..., { shadowRoot: false }),
       content: ({ value }) => html`<div>${value}</div>`,
-    };
+    });
     ```
 
 ### Multiple Usage
@@ -100,7 +104,8 @@ const Data = {
   value: "My data",
 };
 
-const MyElement = {
+define({
+  tag: "my-element",
   data: store(Data),
   title: "",
   render: ({ title }) => html`
@@ -110,7 +115,7 @@ const MyElement = {
   content: ({ data }) => html`
     ${store.ready(data) && html`<p>${data.value}</p>`}
   `,
-}
+});
 ```
 
 In the result, in the Light DOM instance of the above element will look like this:
@@ -123,16 +128,17 @@ In the result, in the Light DOM instance of the above element will look like thi
 
 Notice that the `<p>` element will be putted inside of the `<div>` element of the host `shadowRoot`.
 
-If the layout structure repeats often, you define it outside of the component definition:
+If the layout structure repeats often, you define it outside of the component definition, as a factory resolving to the value accepted by the `render` property:
 
 ```javascript
-import ColumnLayout from "./layouts/column.js";
+import columnLayout from "./factories/layout.js";
 
-const MyElement = {
-  ...ColumnLayout,
+define({
+  tag: "my-element",
   data: store(Data),
+  render: layout("column"),
   content: ({ data }) => ...,
-};
+});
 ```
 
 ### Manual Update
@@ -154,7 +160,8 @@ console.log(target);
 If your element should expose internal parts of the content as a public API, you can use `render` property to define an internal DOM element from the rendered content as another property. Using `render` in the getter of the defined property ensures that render process is called and it adds it to the dependencies of the property. The result of the call gives us a `target` element, so you don't have to relay on the render configuration (it might be the `shadowRoot` as well as the `host` element - but both has `querySelector` API):
 
 ```javascript
-const MyCanvasElement = {
+define({
+  tag: "my-canvas-element",
   canvas: ({ render }) => {
     const target = render();
     return target.querySelector('canvas');
@@ -167,7 +174,7 @@ const MyCanvasElement = {
     </style>
     <canvas style="${{ width, height }}"></canvas>
   `,
-}
+});
 ```
 
 The `canvas` property from the above example will always reference the proper element from the shadowRoot. Even though the render process is asynchronous, if the user gets `canvas` before the first scheduled render, it will return the element interface because of calling `render()` manually. Moreover, the cache mechanism ensures that the `canvas` property result is cached. It is recalculated only when dependencies of the render property change. This allows creating dynamic selectors, which returns different results depends on the render dependencies.
@@ -186,7 +193,8 @@ function ref(query) {
   };
 }
 
-const MyElement = {
+define({
+  tag: "my-element",
   canvas: ref('canvas'),
   wrapper: ref('div#wrapper'),
   render: ({ ... }) => html`
@@ -195,7 +203,7 @@ const MyElement = {
       ...
     </div>
   `,
-}
+});
 ```
 
 ## Unit Testing
@@ -207,12 +215,13 @@ The render key is usually a function, which returns the update function. It can 
 ```javascript
 import { html } from 'hybrids';
 
-const MyElement = {
+const MyElement = define({
+  tag: "my-element",
   value: 1,
   render: ({ value }) => html`
     <div>${value}</div>
   `,
-};
+});
 
 it('should render value "1"', () => {
   const div = document.createElement('div');
@@ -237,10 +246,11 @@ import { html, render } from 'hybrids';
 // Take out template definition
 const renderTemplate = ({ value }) => html`<div>${value}</div>`;
 
-const MyElement = {
+const MyElement = define({
+  tag: "my-element",
   value: 1,
   render: render(renderTemplate, { shadowRoot: false }),
-};
+});
 
 it('should render value "1"', () => {
   const div = document.createElement('div');

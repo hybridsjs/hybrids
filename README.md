@@ -31,22 +31,21 @@
 
 ```html
 <script type="module">
-  import { html, define } from 'https://unpkg.com/hybrids@^5';
+  import { html, define } from 'https://unpkg.com/hybrids@^6';
   
   function increaseCount(host) {
     host.count += 1;
   }
 
-  const SimpleCounter = {
+  define({
+    tag: "simple-counter",
     count: 0,
     render: ({ count }) => html`
       <button onclick="${increaseCount}">
         Count: ${count}
       </button>
     `,
-  };
-
-  define('simple-counter', SimpleCounter);
+  });
 </script>
 
 <simple-counter count="10"></simple-counter>

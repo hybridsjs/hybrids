@@ -1296,6 +1296,7 @@ describe("html:", () => {
 
   describe("ShadyCSS custom property scope", () => {
     const TestShadyChild = {
+      tag: "test-shady-child",
       value: 0,
       render: ({ value }) => html`
         <span>${value}</span>
@@ -1308,6 +1309,7 @@ describe("html:", () => {
     };
 
     const TestShadyParent = {
+      tag: "test-shady-parent",
       active: false,
       render: ({ active }) =>
         html`
@@ -1320,10 +1322,10 @@ describe("html:", () => {
               --custom-color: blue;
             }
           </style>
-        `.define({ TestShadyChild }),
+        `,
     };
 
-    define("test-shady-parent", TestShadyParent);
+    define(TestShadyParent, TestShadyChild);
 
     const shadyTree = test(`
       <test-shady-parent></test-shady-parent>

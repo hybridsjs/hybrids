@@ -22,9 +22,10 @@ property(defaultValue: any, connect: Function, observe: Function): Object
 ```javascript
 import { property } from 'hybrids';
 
-const MyElement = {
+define({
+  tag: "my-element",
   value: property('text'),
-};
+});
 ```
 
 ### Translation
@@ -32,7 +33,7 @@ const MyElement = {
 You can omit explicit usage of the property factory by one of the [translation](../getting-started/concepts.md#translation) rules. If the property definition is a primitive or an array instance, the property factory will be used implicitly:
 
 ```javascript
-const MyElement = {
+{
   noTransform: undefined,
   object: null,
   number: 0,
@@ -69,12 +70,13 @@ The below example uses `moment` library as a function for `defaultValue` to tran
 import { property, html } from 'hybrids';
 import moment from 'moment';
 
-const MyElement = {
+define({
+  tag: "my-element",
   date: property(moment),
   render: ({ date }) => html`
     <p>${date.format("ddd, hA")}</p>
   `,
-};
+});
 ```
 
 ```html
@@ -88,14 +90,15 @@ The property factory for all types except `object` and `undefined` creates fallb
 Still, if you want to update property value you must assert new value to the property:
 
 ```javascript
-const MyElement = {
+define({
+  tag: "my-element",
   someValue: 0,
   render: () => html`
     <slot></slot>
   `.css`
     :host([some-value="100"]) { color: red }
   `,
-};
+});
 ```
 
 Attributes should be used only for setting static values in HTML templates:
