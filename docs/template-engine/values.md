@@ -20,7 +20,8 @@ An expression with a function resolves to [nested template](./nested-templates.m
 If the expression returns a Node instance, it is attached to the corresponding place in the DOM. It can be useful for web components, which requires a reference to inner DOM elements:
 
 ```javascript
-const MyElement = {
+define({
+  tag: "my-element",
   // it will be called only once, as it has no deps
   canvas: () => { 
     const el = document.createElement("canvas");
@@ -38,5 +39,5 @@ const MyElement = {
       ${canvas}
     </div>
   `,
-};
+});
 ```

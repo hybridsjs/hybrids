@@ -39,17 +39,17 @@ function translate(key, desc) {
   return config;
 }
 
-function compile(Hybrid, descriptors) {
-  Hybrid.hybrids = descriptors;
+function compile(Hybrid, hybrids, omitProps = []) {
+  Hybrid.hybrids = hybrids;
 
   const callbacks = [];
-  const props = Object.keys(descriptors);
+  const props = Object.keys(hybrids).filter(key => !omitProps.includes(key));
 
   callbacksMap.set(Hybrid, callbacks);
   propsMap.set(Hybrid, props);
 
   props.forEach(key => {
-    const config = translate(key, descriptors[key]);
+    const config = translate(key, hybrids[key]);
 
     Object.defineProperty(Hybrid.prototype, key, {
       get: function get() {
@@ -122,7 +122,7 @@ function update(Hybrid, lastHybrids) {
 
 const disconnects = new WeakMap();
 
-export function defineElement(tagName, hybrids) {
+export function defineElement(tagName, hybrids, omitProps) {
   const type = typeof hybrids;
   if (!hybrids || type !== "object") {
     throw TypeError(`Second argument must be an object: ${type}`);
@@ -194,7 +194,7 @@ export function defineElement(tagName, hybrids) {
     }
   }
 
-  compile(Hybrid, hybrids);
+  compile(Hybrid, hybrids, omitProps);
 
   if (tagName !== null) {
     Object.defineProperty(Hybrid, "name", {
@@ -206,18 +206,21 @@ export function defineElement(tagName, hybrids) {
   return Hybrid;
 }
 
-function defineMap(elements) {
-  return Object.keys(elements).reduce((acc, key) => {
-    const tagName = pascalToDash(key);
-    acc[key] = defineElement(tagName, elements[key]);
+function defineTagged(elements) {
+  elements.forEach(hybrids => {
+    if (typeof hybrids.tag !== "string") {
+      throw TypeError(`Tagged element must have a string tag: ${hybrids.tag}`);
+    }
 
-    return acc;
+    defineElement(pascalToDash(hybrids.tag), hybrids, ["tag"]);
   }, {});
+
+  return elements.length === 1 ? elements[0] : elements;
 }
 
 export default function define(...args) {
   if (typeof args[0] === "object" && args[0] !== null) {
-    return defineMap(args[0]);
+    return defineTagged(args);
   }
 
   return defineElement(...args);

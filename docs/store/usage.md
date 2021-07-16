@@ -43,12 +43,13 @@ function incCount(host) {
   store.set(GlobalState, { count: host.count + 1 });
 }
 
-const MyElement = {
+define({
+  tag: "my-element",
   count: () => store.get(GlobalState).count,
   render: ({ count }) => html`
     <button onclick=${incCount}>${count}</button>
   `,
-}
+});
 ```
 
 The above example uses a singleton memory-based model, so the data is available instantly. The `count` property can be returned directly inside of the host property definition. Even the `count` property of the host does not rely on other properties, the `render` property will be notified when the current value of the `GlobalState` changes (keep in mind that this approach creates a global state object, which is shared between all of the component instances).
@@ -145,14 +146,15 @@ function setDarkTheme(host, event) {
   store.set(host.user, { admin: true });
 }
 
-const MyElement = {
+define({
+  tag: "my-element",
   userId: "1",
   user: store(User, { id: "userId" }),
   render: ({ user }) => html`
     ...
     <button onclick="${setAdminRights}">Set admin rights</button>
   `,
-};
+});
 ```
 
 ### Singleton
@@ -162,11 +164,12 @@ If the model definition is a singleton, you can setup the property just with the
 ```javascript
 import { Settings } from "./models.js";
 
-const MyElement = {
+define({
+  tag: "my-element",
   settings: store(Settings),
   color: ({ settings }) => settings.darkTheme ? "white" : "black",
   ...
-};
+});
 ```
 
 ### Enumerable
@@ -176,7 +179,8 @@ For the enumerable model definition, the `id` can be set to the property name or
 ```javascript
 import { User, SearchResult }  from "./models.js";
 
-const MyElement = {
+define({
+  tag: "my-element",
   // Id from the host property (can be changed)
   userId: "1",
   user: store(User, "userId"), // using shorter syntax, equals to { id: "userId" }
@@ -191,7 +195,7 @@ const MyElement = {
   // Id not set - assertion to host.user sets the model instance
   // like: `el.user = "1"`, or `el.user = userModel`;
   user: store(User),
-};
+});
 ```
 
 #### Cache
@@ -205,7 +209,8 @@ function setNextPage(host) {
   host.page += 1;
 }
 
-const MyElement = {
+define({
+  tag: "my-element",
   page: 1,
   userList: store([User], "page"),
   render: ({ userList, page }) => html`
@@ -221,7 +226,7 @@ const MyElement = {
 
     <button onclick=${setNextPage}>Go to: ${page + 1}</button>
   `,
-};
+});
 ```
 
 In above example when the `page` changes, the `userList` property still returns the last page with the pending state from the next instance. Because of that, you can avoid a situation when the user sees an empty screen with loading indicator - the old data are displayed until the new one is ready to be displayed. However, you have an option to hide data immediately - use the `store.pending()` guard.
@@ -275,7 +280,8 @@ const CreateUserForm = {
 Combine `store.value()` in the definition for validation, and the `html.set(model, propertyPath)` helper from the template engine to update values without custom side effects (read more about the `html.set` for the store in the [`Event Listeners`](../template-engine/event-listeners.md#form-elements) section of the template engine documentation).
 
 ```javascript
-const MyInput = {
+define({
+  tag: "my-input",
   model: null,
   name: "",
   error: ({ model }) => store.error(model, name),
@@ -285,9 +291,10 @@ const MyInput = {
       ${error && html`<p class="error-message">${error}</p>`}
     </div>
   `,
-}
+});
 
-const MyUserForm = {
+define({
+  tag: "my-user-form",
   userId: "",
   user: store(User, { id: "userId", draft: true }),
   render: ({ user }) => html`
@@ -296,7 +303,7 @@ const MyUserForm = {
 
     <button onclick="${submit}>Save changes</button>
   `.define({ MyInput }),
-}
+});
 ```
 
 ## Guards
@@ -323,7 +330,8 @@ When the model instance is going to be updated (by setting a new value, or by ca
 ```javascript
 import { User } from "./models.js";
 
-const MyElement = {
+define({
+  tag: "my-element",
   userId: "1",
   user: store(User),
   render: ({ user }) => html`
@@ -335,7 +343,7 @@ const MyElement = {
       <p>Hide this message when new user is fetched</p>
     `}
   `,
-}
+});
 ```
 
 ### Pending
@@ -379,13 +387,14 @@ async function sendValue(host) {
   // do something with response
 }
 
-const MyElement = {
+define({
+  tag: "my-element",
   state: store(State),
   render: ({ state }) => html`
     <my-async-data-source onupdate="${html.set(state, "value")}"></my-async-data-source>
     <button onclick="${sendValue}">Send</button>
   `,
-};
+});
 ```
 
 ### Error
@@ -412,7 +421,8 @@ const User = {
   name: store.value("", /^[a-z]+$/),
 };
 
-const MyElement = {
+define({
+  tag: "my-element",
   user: store(User, { draft: true }),
   render: ({ user }) => html`
     <input value="${user.name}" oninput="${html.set(user, "name")} />
@@ -420,5 +430,5 @@ const MyElement = {
       ${store.error(user, "name")}
     </div>
   `,
-};
+});
 ```
