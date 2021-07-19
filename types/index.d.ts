@@ -41,16 +41,8 @@ declare module "hybrids" {
         ? RenderFunction<E>
         : Property<E, E[property]>
       : Property<E, E[property]>;
-  } & {
-    __router__connect__?: {
-      url?: string;
-      multiple?: boolean;
-      dialog?: boolean;
-      replace?: boolean;
-      guard?: (host: E) => any;
-      stack?: Hybrids<any>[];
-    };
-  } & (E extends { tag: any } ? {} : { tag?: string }) & {
+  } &
+    (E extends { tag: any } ? {} : { tag?: string }) & {
       render?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
       content?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
     };
@@ -199,8 +191,19 @@ declare module "hybrids" {
   }
 
   /* Router */
+  type View<E> = TaggedHybrids<E> & {
+    __router__connect__?: {
+      url?: string;
+      multiple?: boolean;
+      dialog?: boolean;
+      replace?: boolean;
+      guard?: (host: E) => any;
+      stack?: View<any>[];
+    };
+  };
+
   function router<E, V>(
-    views: Hybrids<any>[],
+    views: View<any>[],
     options?: {
       url?: string;
     },

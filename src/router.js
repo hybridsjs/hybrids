@@ -1,4 +1,4 @@
-import { callbacksMap } from "./define.js";
+import define, { callbacksMap } from "./define.js";
 import * as cache from "./cache.js";
 import { dispatch, pascalToDash } from "./utils.js";
 
@@ -220,7 +220,7 @@ function setupViews(views, options, parent = null, nestedParent = null) {
   return result;
 }
 
-function getNestedRouterOptions(hybrids, id, config) {
+function getNestedRouterOptions(hybrids, config) {
   const nestedRouters = Object.values(hybrids)
     .map(desc => routers.get(desc))
     .filter(d => d);
@@ -228,19 +228,19 @@ function getNestedRouterOptions(hybrids, id, config) {
   if (nestedRouters.length) {
     if (nestedRouters.length > 1) {
       throw TypeError(
-        `<${id}> must contain at most one nested router: ${nestedRouters.length}`,
+        `<${config.id}> must contain at most one nested router: ${nestedRouters.length}`,
       );
     }
 
     if (config.dialog) {
       throw TypeError(
-        `Nested routers are not supported in dialogs. Remove the router property definition from <${id}>`,
+        `Nested routers are not supported in dialogs. Remove the router property definition from <${config.id}>`,
       );
     }
 
     if (config.browserUrl) {
       throw TypeError(
-        `A view with nested router must not have the url option. Remove the url option from <${id}>`,
+        `A view with nested router must not have the url option. Remove the url option from <${config.id}>`,
       );
     }
   }
@@ -249,7 +249,6 @@ function getNestedRouterOptions(hybrids, id, config) {
 
 function setupView(hybrids, routerOptions, parent, nestedParent) {
   let config = configs.get(hybrids);
-  const id = pascalToDash(hybrids.tag);
 
   if (config && config.hybrids !== hybrids) {
     config = null;
@@ -258,13 +257,10 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
   if (!config) {
     let browserUrl = null;
 
-    const Constructor = customElements.get(id);
+    define(hybrids);
 
-    if (!Constructor) {
-      throw TypeError(
-        `The view must be a already defined tagged component definition with 'tag' property: ${hybrids.tag}`,
-      );
-    }
+    const id = pascalToDash(hybrids.tag);
+    const Constructor = customElements.get(id);
 
     const options = {
       dialog: false,
@@ -468,7 +464,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
     parent = parent.parent;
   }
 
-  const nestedRouterOptions = getNestedRouterOptions(hybrids, id, config);
+  const nestedRouterOptions = getNestedRouterOptions(hybrids, config);
 
   if (nestedRouterOptions) {
     config.nestedRoots = setupViews(
