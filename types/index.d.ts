@@ -77,8 +77,10 @@ declare module "hybrids" {
     hybrids: Hybrids<E>,
   ): HybridElement<E>;
 
-  function define<E>(hybrids: Hybrids<E>): typeof hybrids;
-  function define(listOfHybrids: Hybrids<any>[]): typeof listOfHybrids;
+  type TaggedHybrids<E> = Hybrids<E> & { tag: string };
+
+  function define<E>(hybrids: TaggedHybrids<E>): typeof hybrids;
+  function define(listOfHybrids: TaggedHybrids<any>[]): typeof listOfHybrids;
 
   /* Factories */
 

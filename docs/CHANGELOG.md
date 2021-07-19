@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.0.0](https://github.com/hybridsjs/hybrids/compare/v5.4.0...v6.0.0) (2021-07-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **store:** From now, for external storage, the result of the list action will not invalidate when the model instance is changed. The items within the list are still updated, but deletion or creating a model instance won't update the list unless you set the storage `loose` option to `true`.
+  
+  However, the default value change only applies to listing enumerable models with external storage, which can be changed by the user. For most of the cases, you should ok, without additional change in the code.
+* **define:** Passing a map of components to the `define()` function is no longer supported. Object argument will be interpreted as a tagged component definition. A preferred way to refactor old code is to extend the definition of the component with the `tag` property, and pass definitions to the `define()` function as a list of arguments. If your definition contains `tag` property with another purpose, you can still use the `define(tagName, descriptors)` version.
+
+  From:
+  ```js
+  const MyElement = { ... };
+  const MyOtherElement = { ... };
+
+  define({ MyElement, MyOtherElement });
+  ```
+  
+  To:
+
+  ```js
+  const MyElement = { tag: "my-element", .. };
+  const MyOtherElement = { tag: "my-other-element", ... };
+
+  define(MyElement, MyOtherElement);
+  ```
+
+### Features
+
+* **define:** replace call for a map of components to tagged component definitions ([#170](https://github.com/hybridsjs/hybrids/issues/170)) ([5bffc98](https://github.com/hybridsjs/hybrids/commit/5bffc9841e112713c20196e7508479981eae8bb4))
+
+
+### Bug Fixes
+
+* **property:** add missing support for observe method ([1cfd983](https://github.com/hybridsjs/hybrids/commit/1cfd9834ab0a1ec8556263ec387c4182ab563f3b))
+* **store:** set loose option default value to false ([#172](https://github.com/hybridsjs/hybrids/issues/172)) ([ae7e1c5](https://github.com/hybridsjs/hybrids/commit/ae7e1c5a65d8e8860fd4598ffb7e5ad83d2167f8))
+
 ## [5.4.0](https://github.com/hybridsjs/hybrids/compare/v5.3.3...v5.4.0) (2021-06-23)
 
 
