@@ -134,6 +134,7 @@ declare module "hybrids" {
     list?: (id: ModelIdentifier) => StorageResult<Array<M>>;
     cache?: boolean | number;
     loose?: boolean;
+    offline?: boolean | number;
   };
 
   type StoreOptions<E> =

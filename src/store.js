@@ -2,7 +2,7 @@
 import * as cache from "./cache.js";
 import { storePointer } from "./utils.js";
 
-export const connect = `__store__connect__${Date.now()}__`;
+export const connect = Symbol("store.connect");
 
 const definitions = new WeakMap();
 const stales = new WeakMap();
@@ -78,10 +78,50 @@ function invalidateTimestamp(model) {
   return model;
 }
 
-function setupStorage(storage) {
-  if (typeof storage === "function") storage = { get: storage };
+function hashCode(str) {
+  return window.btoa(
+    Array.from(str).reduce(
+      // eslint-disable-next-line no-bitwise
+      (s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0,
+      0,
+    ),
+  );
+}
 
-  const result = { cache: true, loose: false, ...storage };
+const offlinePrefix = hashCode("hybrids:store");
+
+const offlineKeys = {};
+let clearTimeout;
+function setupOfflineKey(config, threshold) {
+  const key = hashCode(JSON.stringify(config.model));
+
+  if (!clearTimeout) {
+    clearTimeout = setTimeout(() => {
+      const previousKeys =
+        JSON.parse(window.localStorage.getItem(offlinePrefix)) || {};
+
+      Object.keys(previousKeys).forEach(k => {
+        if (previousKeys[k] < getCurrentTimestamp() && !offlineKeys[k]) {
+          window.localStorage.removeItem(`${offlinePrefix}${k}`);
+        } else {
+          offlineKeys[k] = previousKeys[k];
+        }
+      });
+
+      window.localStorage.setItem(offlinePrefix, JSON.stringify(offlineKeys));
+      clearTimeout = null;
+    }, 1);
+  }
+
+  offlineKeys[key] = getCurrentTimestamp() + threshold;
+
+  return `${offlinePrefix}${key}`;
+}
+
+function setupStorage(config, options) {
+  if (typeof options === "function") options = { get: options };
+
+  const result = { cache: true, loose: false, ...options };
 
   if (result.cache === false || result.cache === 0) {
     result.validate = cachedModel =>
@@ -97,6 +137,73 @@ function setupStorage(storage) {
   }
 
   if (!result.get) result.get = () => {};
+
+  if (result.offline) {
+    try {
+      const threshold =
+        typeof result.offline === "number"
+          ? result.offline
+          : 1000 * 60 * 60 * 24; /* 24 hours */
+      const offlineKey = setupOfflineKey(config, threshold);
+      const items = JSON.parse(window.localStorage.getItem(offlineKey)) || {};
+
+      let flush;
+
+      result.offline = Object.freeze({
+        get(id) {
+          if (hasOwnProperty.call(items, id)) {
+            return JSON.parse(items[id][1]);
+          }
+          return null;
+        },
+        set(id, values) {
+          if (values) {
+            items[id] = [
+              getCurrentTimestamp(),
+              JSON.stringify(values, function replacer(key, value) {
+                if (value === this[""]) return value;
+
+                if (value && typeof value === "object") {
+                  const valueConfig = definitions.get(value);
+                  const offline = valueConfig && valueConfig.storage.offline;
+                  if (offline) {
+                    if (valueConfig.list) {
+                      return value.map(model => {
+                        valueConfig.storage.offline.set(model.id, model);
+                        return `${model}`;
+                      });
+                    }
+
+                    valueConfig.storage.offline.set(value.id, value);
+                    return `${value}`;
+                  }
+                }
+
+                return value;
+              }),
+            ];
+          } else {
+            delete items[id];
+          }
+
+          if (!flush) {
+            flush = setTimeout(() => {
+              Object.keys(items).forEach(key => {
+                if (items[key][0] + threshold < getCurrentTimestamp()) {
+                  delete items[key];
+                }
+              });
+              window.localStorage.setItem(offlineKey, JSON.stringify(items));
+              flush = null;
+            }, 1);
+          }
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      result.offline = false;
+    }
+  }
 
   return Object.freeze(result);
 }
@@ -293,111 +400,73 @@ function setupModel(Model, nested) {
 
     configs.set(Model, config);
 
-    config.storage = setupStorage(storage || memoryStorage(config, Model));
+    const transform = Object.keys(Object.freeze(Model)).map(key => {
+      if (key !== "id") {
+        Object.defineProperty(placeholder, key, {
+          get() {
+            throw Error(
+              `Model instance in ${
+                getModelState(this).state
+              } state - use store.pending(), store.error(), or store.ready() guards`,
+            );
+          },
+          enumerable: true,
+        });
+      }
 
-    const transform = Object.keys(Object.freeze(Model))
-      .filter(key => key !== connect)
-      .map(key => {
-        if (key !== "id") {
-          Object.defineProperty(placeholder, key, {
-            get() {
-              throw Error(
-                `Model instance in ${
-                  getModelState(this).state
-                } state - use store.pending(), store.error(), or store.ready() guards`,
-              );
-            },
-            enumerable: true,
-          });
+      if (key === "id") {
+        if (Model[key] !== true) {
+          throw TypeError(
+            "The 'id' property in model definition must be set to 'true' or not be defined",
+          );
         }
+        return (model, data, lastModel) => {
+          let id;
+          if (hasOwnProperty.call(data, "id")) {
+            id = stringifyId(data.id);
+          } else if (lastModel) {
+            id = lastModel.id;
+          } else {
+            id = uuid();
+          }
 
-        if (key === "id") {
-          if (Model[key] !== true) {
+          Object.defineProperty(model, "id", { value: id, enumerable: true });
+        };
+      }
+
+      const { defaultValue, type } = resolveKey(Model, key, config);
+
+      switch (type) {
+        case "function":
+          return model => {
+            let resolved;
+            let value;
+
+            Object.defineProperty(model, key, {
+              get() {
+                if (!resolved) {
+                  value = defaultValue(this);
+                  resolved = true;
+                }
+                return value;
+              },
+            });
+          };
+        case "object": {
+          if (defaultValue === null) {
             throw TypeError(
-              "The 'id' property in model definition must be set to 'true' or not be defined",
+              `The value for the '${key}' must be an object instance: ${defaultValue}`,
             );
           }
-          return (model, data, lastModel) => {
-            let id;
-            if (hasOwnProperty.call(data, "id")) {
-              id = stringifyId(data.id);
-            } else if (lastModel) {
-              id = lastModel.id;
-            } else {
-              id = uuid();
-            }
 
-            Object.defineProperty(model, "id", { value: id, enumerable: true });
-          };
-        }
+          const isArray = Array.isArray(defaultValue);
 
-        const { defaultValue, type } = resolveKey(Model, key, config);
+          if (isArray) {
+            const nestedType = typeof defaultValue[0];
 
-        switch (type) {
-          case "function":
-            return model => {
-              let resolved;
-              let value;
-
-              Object.defineProperty(model, key, {
-                get() {
-                  if (!resolved) {
-                    value = defaultValue(this);
-                    resolved = true;
-                  }
-                  return value;
-                },
-              });
-            };
-          case "object": {
-            if (defaultValue === null) {
-              throw TypeError(
-                `The value for the '${key}' must be an object instance: ${defaultValue}`,
-              );
-            }
-
-            const isArray = Array.isArray(defaultValue);
-
-            if (isArray) {
-              const nestedType = typeof defaultValue[0];
-
-              if (nestedType !== "object") {
-                const Constructor = getTypeConstructor(nestedType, key);
-                const defaultArray = Object.freeze(
-                  defaultValue.map(Constructor),
-                );
-                return (model, data, lastModel) => {
-                  if (hasOwnProperty.call(data, key)) {
-                    if (!Array.isArray(data[key])) {
-                      throw TypeError(
-                        `The value for '${key}' property must be an array: ${typeof data[
-                          key
-                        ]}`,
-                      );
-                    }
-                    model[key] = Object.freeze(data[key].map(Constructor));
-                  } else if (lastModel && hasOwnProperty.call(lastModel, key)) {
-                    model[key] = lastModel[key];
-                  } else {
-                    model[key] = defaultArray;
-                  }
-                };
-              }
-
-              const localConfig = bootstrap(defaultValue, true);
-
-              if (localConfig.enumerable && defaultValue[1]) {
-                const nestedOptions = defaultValue[1];
-                if (typeof nestedOptions !== "object") {
-                  throw TypeError(
-                    `Options for '${key}' array property must be an object instance: ${typeof nestedOptions}`,
-                  );
-                }
-                if (nestedOptions.loose) {
-                  config.contexts = config.contexts || new Set();
-                  config.contexts.add(bootstrap(defaultValue[0]));
-                }
-              }
+            if (nestedType !== "object") {
+              const Constructor = getTypeConstructor(nestedType, key);
+              const defaultArray = Object.freeze(defaultValue.map(Constructor));
               return (model, data, lastModel) => {
                 if (hasOwnProperty.call(data, key)) {
                   if (!Array.isArray(data[key])) {
@@ -407,89 +476,119 @@ function setupModel(Model, nested) {
                       ]}`,
                     );
                   }
-                  model[key] = localConfig.create(data[key], true);
+                  model[key] = Object.freeze(data[key].map(Constructor));
+                } else if (lastModel && hasOwnProperty.call(lastModel, key)) {
+                  model[key] = lastModel[key];
                 } else {
-                  model[key] =
-                    (lastModel && lastModel[key]) ||
-                    (!localConfig.enumerable &&
-                      localConfig.create(defaultValue)) ||
-                    [];
+                  model[key] = defaultArray;
                 }
               };
             }
 
-            const nestedConfig = bootstrap(defaultValue, true);
-            if (nestedConfig.enumerable || nestedConfig.external) {
-              return (model, data, lastModel) => {
-                let resultModel;
+            const localConfig = bootstrap(defaultValue, true);
 
-                if (hasOwnProperty.call(data, key)) {
-                  const nestedData = data[key];
+            if (localConfig.enumerable && defaultValue[1]) {
+              const nestedOptions = defaultValue[1];
+              if (typeof nestedOptions !== "object") {
+                throw TypeError(
+                  `Options for '${key}' array property must be an object instance: ${typeof nestedOptions}`,
+                );
+              }
+              if (nestedOptions.loose) {
+                config.contexts = config.contexts || new Set();
+                config.contexts.add(bootstrap(defaultValue[0]));
+              }
+            }
+            return (model, data, lastModel) => {
+              if (hasOwnProperty.call(data, key)) {
+                if (!Array.isArray(data[key])) {
+                  throw TypeError(
+                    `The value for '${key}' property must be an array: ${typeof data[
+                      key
+                    ]}`,
+                  );
+                }
+                model[key] = localConfig.create(data[key], true);
+              } else {
+                model[key] =
+                  (lastModel && lastModel[key]) ||
+                  (!localConfig.enumerable &&
+                    localConfig.create(defaultValue)) ||
+                  [];
+              }
+            };
+          }
 
-                  if (typeof nestedData !== "object" || nestedData === null) {
-                    if (nestedData !== undefined && nestedData !== null) {
-                      resultModel = { id: nestedData };
-                    }
-                  } else {
-                    const dataConfig = definitions.get(nestedData);
-                    if (dataConfig) {
-                      if (dataConfig.model !== defaultValue) {
-                        throw TypeError(
-                          "Model instance must match the definition",
-                        );
-                      }
-                      resultModel = nestedData;
-                    } else {
-                      resultModel = nestedConfig.create(nestedData);
-                      syncCache(nestedConfig, resultModel.id, resultModel);
-                    }
+          const nestedConfig = bootstrap(defaultValue, true);
+          if (nestedConfig.enumerable || nestedConfig.external) {
+            return (model, data, lastModel) => {
+              let resultModel;
+
+              if (hasOwnProperty.call(data, key)) {
+                const nestedData = data[key];
+
+                if (typeof nestedData !== "object" || nestedData === null) {
+                  if (nestedData !== undefined && nestedData !== null) {
+                    resultModel = { id: nestedData };
                   }
                 } else {
-                  resultModel = lastModel && lastModel[key];
+                  const dataConfig = definitions.get(nestedData);
+                  if (dataConfig) {
+                    if (dataConfig.model !== defaultValue) {
+                      throw TypeError(
+                        "Model instance must match the definition",
+                      );
+                    }
+                    resultModel = nestedData;
+                  } else {
+                    resultModel = nestedConfig.create(nestedData);
+                    syncCache(nestedConfig, resultModel.id, resultModel);
+                  }
                 }
+              } else {
+                resultModel = lastModel && lastModel[key];
+              }
 
-                if (resultModel) {
-                  const id = resultModel.id;
-                  Object.defineProperty(model, key, {
-                    get() {
-                      return cache.get(this, key, () => get(defaultValue, id));
-                    },
-                    enumerable: true,
-                  });
-                } else {
-                  model[key] = undefined;
-                }
-              };
+              if (resultModel) {
+                const id = resultModel.id;
+                Object.defineProperty(model, key, {
+                  get() {
+                    return cache.get(this, key, () => get(defaultValue, id));
+                  },
+                  enumerable: true,
+                });
+              } else {
+                model[key] = undefined;
+              }
+            };
+          }
+
+          return (model, data, lastModel) => {
+            if (hasOwnProperty.call(data, key)) {
+              model[key] = nestedConfig.create(
+                data[key],
+                lastModel && lastModel[key],
+              );
+            } else {
+              model[key] = lastModel ? lastModel[key] : nestedConfig.create({});
             }
-
-            return (model, data, lastModel) => {
-              if (hasOwnProperty.call(data, key)) {
-                model[key] = nestedConfig.create(
-                  data[key],
-                  lastModel && lastModel[key],
-                );
-              } else {
-                model[key] = lastModel
-                  ? lastModel[key]
-                  : nestedConfig.create({});
-              }
-            };
-          }
-          // eslint-disable-next-line no-fallthrough
-          default: {
-            const Constructor = getTypeConstructor(type, key);
-            return (model, data, lastModel) => {
-              if (hasOwnProperty.call(data, key)) {
-                model[key] = Constructor(data[key]);
-              } else if (lastModel && hasOwnProperty.call(lastModel, key)) {
-                model[key] = lastModel[key];
-              } else {
-                model[key] = defaultValue;
-              }
-            };
-          }
+          };
         }
-      });
+        // eslint-disable-next-line no-fallthrough
+        default: {
+          const Constructor = getTypeConstructor(type, key);
+          return (model, data, lastModel) => {
+            if (hasOwnProperty.call(data, key)) {
+              model[key] = Constructor(data[key]);
+            } else if (lastModel && hasOwnProperty.call(lastModel, key)) {
+              model[key] = lastModel[key];
+            } else {
+              model[key] = defaultValue;
+            }
+          };
+        }
+      }
+    });
 
     config.create = function create(data, lastModel) {
       if (data === null) return null;
@@ -508,6 +607,8 @@ function setupModel(Model, nested) {
 
       return Object.freeze(model);
     };
+
+    config.storage = setupStorage(config, storage || memoryStorage(config));
 
     Object.freeze(placeholder);
     Object.freeze(config);
@@ -581,9 +682,29 @@ function setupListModel(Model, nested) {
       model: Model,
       contexts,
       enumerable: modelConfig.enumerable,
-      storage: setupStorage({
-        cache: modelConfig.storage.cache,
-        get: !nested && (id => modelConfig.storage.list(id)),
+      storage: Object.freeze({
+        ...setupStorage(config, {
+          cache: modelConfig.storage.cache,
+          get: !nested && (id => modelConfig.storage.list(id)),
+        }),
+        offline: !nested &&
+          modelConfig.storage.offline && {
+            get: id => {
+              const result = modelConfig.storage.offline.get(hashCode(id));
+              return result
+                ? result.map(item => modelConfig.storage.offline.get(item))
+                : null;
+            },
+            set: (id, values) => {
+              modelConfig.storage.offline.set(
+                hashCode(id),
+                values.map(item => {
+                  modelConfig.storage.offline.set(item.id, item);
+                  return item.id;
+                }),
+              );
+            },
+          },
       }),
       placeholder: () => {
         const model = Object.create(listPlaceholderPrototype);
@@ -594,6 +715,8 @@ function setupListModel(Model, nested) {
       isInstance: model =>
         Object.getPrototypeOf(model) !== listPlaceholderPrototype,
       create(items, invalidate = false) {
+        if (items === null) return null;
+
         const result = items.reduce((acc, data) => {
           let id = data;
           if (typeof data === "object" && data !== null) {
@@ -710,6 +833,8 @@ function get(Model, id) {
     }
   }
 
+  const offline = config.storage.offline;
+
   return cache.get(config, stringId, (h, cachedModel) => {
     if (cachedModel && pending(cachedModel)) return cachedModel;
 
@@ -733,10 +858,17 @@ function get(Model, id) {
       return cachedModel;
     }
 
+    const fallback = () =>
+      cachedModel ||
+      (offline && config.create(offline.get(stringId))) ||
+      config.placeholder(stringId);
+
     try {
       let result = config.storage.get(id);
 
       if (typeof result !== "object" || result === null) {
+        if (offline) offline.set(stringId, result);
+
         throw Error(
           stringifyModel(
             Model,
@@ -751,6 +883,8 @@ function get(Model, id) {
         result = result
           .then(data => {
             if (typeof data !== "object" || data === null) {
+              if (offline) offline.set(stringId, result);
+
               throw Error(
                 stringifyModel(
                   Model,
@@ -761,39 +895,29 @@ function get(Model, id) {
               );
             }
 
-            return syncCache(
-              config,
-              stringId,
-              config.create(
-                !config.list && stringId ? { ...data, id: stringId } : data,
-              ),
+            const model = config.create(
+              !config.list && stringId ? { ...data, id: stringId } : data,
             );
-          })
-          .catch(e =>
-            syncCache(
-              config,
-              stringId,
-              mapError(cachedModel || config.placeholder(stringId), e),
-            ),
-          );
 
-        return setModelState(
-          cachedModel || config.placeholder(stringId),
-          "pending",
-          result,
-        );
+            if (offline) offline.set(stringId, model);
+
+            return syncCache(config, stringId, model);
+          })
+          .catch(e => syncCache(config, stringId, mapError(fallback(), e)));
+
+        return setModelState(fallback(), "pending", result);
       }
 
       if (cachedModel) definitions.set(cachedModel, null);
-      return setTimestamp(
-        config.create(
-          !config.list && stringId ? { ...result, id: stringId } : result,
-        ),
+      const model = config.create(
+        !config.list && stringId ? { ...result, id: stringId } : result,
       );
+
+      if (offline) offline.set(stringId, model);
+
+      return setTimestamp(model);
     } catch (e) {
-      return setTimestamp(
-        mapError(cachedModel || config.placeholder(stringId), e),
-      );
+      return setTimestamp(mapError(fallback(), e));
     }
   });
 }
@@ -955,6 +1079,8 @@ function set(model, values = {}) {
           (!localModel || localModel.id !== model.id)
         ) {
           resultId = model.id;
+        } else if (config.storage.offline) {
+          config.storage.offline.set(resultId, resultModel);
         }
 
         return syncCache(
