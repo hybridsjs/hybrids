@@ -15,10 +15,9 @@ const entryPoints = new Set();
 function mapDeepElements(target, cb) {
   if (target.nodeType === Node.ELEMENT_NODE) {
     cb(target);
-  }
-
-  if (target.shadowRoot) {
-    mapDeepElements(target.shadowRoot, cb);
+    if (target.shadowRoot) {
+      mapDeepElements(target.shadowRoot, cb);
+    }
   }
 
   const walker = document.createTreeWalker(
@@ -72,19 +71,28 @@ function restoreLayout(target, clear) {
   const map = scrollMap.get(target);
 
   if (map) {
-    deffer.then(() => {
-      map.forEach((pos, el) => {
-        el.scrollLeft = clear ? 0 : pos.left;
-        el.scrollTop = clear ? 0 : pos.top;
+    if (clear) {
+      deffer.then(() => {
+        map.forEach((pos, el) => {
+          el.scrollLeft = 0;
+          el.scrollTop = 0;
+        });
       });
-    });
+    } else {
+      deffer.then(() => {
+        map.forEach((pos, el) => {
+          el.scrollLeft = pos.left;
+          el.scrollTop = pos.top;
+        });
+      });
+    }
 
     scrollMap.delete(target);
   } else if (!configs.get(target).nestedParent) {
     const el = document.scrollingElement;
     deffer.then(() => {
-      el.scrollLeft = 0;
-      el.scrollTop = 0;
+      if (el.scrollLeft) el.scrollLeft = 0;
+      if (el.scrollTop) el.scrollTop = 0;
     });
   }
 }
