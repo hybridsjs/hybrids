@@ -93,7 +93,13 @@ const offlinePrefix = hashCode("hybrids:store");
 const offlineKeys = {};
 let clearTimeout;
 function setupOfflineKey(config, threshold) {
-  const key = hashCode(JSON.stringify(config.model));
+  const key = `${offlinePrefix}${hashCode(JSON.stringify(config.model))}`;
+
+  if (offlineKeys[key]) {
+    throw Error(
+      "A model definition with the same structure already setup for the offline mode",
+    );
+  }
 
   if (!clearTimeout) {
     clearTimeout = setTimeout(() => {
@@ -102,7 +108,8 @@ function setupOfflineKey(config, threshold) {
 
       Object.keys(previousKeys).forEach(k => {
         if (previousKeys[k] < getCurrentTimestamp() && !offlineKeys[k]) {
-          window.localStorage.removeItem(`${offlinePrefix}${k}`);
+          /* istanbul ignore next */
+          window.localStorage.removeItem(k);
         } else {
           offlineKeys[k] = previousKeys[k];
         }
@@ -115,7 +122,7 @@ function setupOfflineKey(config, threshold) {
 
   offlineKeys[key] = getCurrentTimestamp() + threshold;
 
-  return `${offlinePrefix}${key}`;
+  return key;
 }
 
 function setupStorage(config, options) {
@@ -139,17 +146,19 @@ function setupStorage(config, options) {
   if (!result.get) result.get = () => {};
 
   if (result.offline) {
+    const threshold =
+      typeof result.offline === "number"
+        ? result.offline
+        : 1000 * 60 * 60 * 24; /* 24 hours */
+    const offlineKey = setupOfflineKey(config, threshold);
+
     try {
-      const threshold =
-        typeof result.offline === "number"
-          ? result.offline
-          : 1000 * 60 * 60 * 24; /* 24 hours */
-      const offlineKey = setupOfflineKey(config, threshold);
       const items = JSON.parse(window.localStorage.getItem(offlineKey)) || {};
 
       let flush;
 
       result.offline = Object.freeze({
+        key: offlineKey,
         get(id) {
           if (hasOwnProperty.call(items, id)) {
             return JSON.parse(items[id][1]);
@@ -169,7 +178,9 @@ function setupStorage(config, options) {
                   if (offline) {
                     if (valueConfig.list) {
                       return value.map(model => {
-                        valueConfig.storage.offline.set(model.id, model);
+                        configs
+                          .get(valueConfig.model)
+                          .storage.offline.set(model.id, model);
                         return `${model}`;
                       });
                     }
@@ -197,9 +208,11 @@ function setupStorage(config, options) {
               flush = null;
             }, 1);
           }
+
+          return values;
         },
       });
-    } catch (e) {
+    } catch (e) /* istanbul ignore next */ {
       console.error(e);
       result.offline = false;
     }
@@ -319,14 +332,7 @@ function resolveKey(Model, key, config) {
 }
 
 function stringifyModel(Model, msg) {
-  return `${msg}\n\nModel = ${JSON.stringify(
-    Model,
-    (key, value) => {
-      if (key === connect) return undefined;
-      return value;
-    },
-    2,
-  )}\n`;
+  return `${msg}\n\nModel = ${JSON.stringify(Model, null, 2)}\n`;
 }
 
 const resolvedPromise = Promise.resolve();
@@ -901,7 +907,7 @@ function get(Model, id) {
 
             if (offline) offline.set(stringId, model);
 
-            return syncCache(config, stringId, model);
+            return syncCache(config, stringId, setTimestamp(model));
           })
           .catch(e => syncCache(config, stringId, mapError(fallback(), e)));
 
@@ -1181,6 +1187,9 @@ function clear(model, clearValue = true) {
   }
 
   if (config) {
+    const offline = clearValue && config.storage.offline;
+    if (offline) offline.set(model.id, null);
+
     invalidateTimestamp(model);
     cache.invalidate(config, model.id, { clearValue, deleteEntry: true });
   } else {
@@ -1190,7 +1199,10 @@ function clear(model, clearValue = true) {
       );
     }
     config = bootstrap(model);
+    const offline = clearValue && config.storage.offline;
+
     cache.getEntries(config).forEach(entry => {
+      if (offline) offline.set(entry.key, null);
       if (entry.value) invalidateTimestamp(entry.value);
     });
     cache.invalidateAll(config, { clearValue, deleteEntry: true });

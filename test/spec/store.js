@@ -2377,4 +2377,141 @@ describe("store:", () => {
       });
     });
   });
+
+  describe("offline storage", () => {
+    window.localStorage.clear();
+    let isOffline;
+
+    beforeEach(() => {
+      isOffline = false;
+    });
+
+    it("throws for the same structure used twice", () => {
+      Model = {
+        id: true,
+        value: "throws",
+        [store.connect]: { offline: true, get: id => ({ id }) },
+      };
+
+      store.get(Model, "1");
+      expect(() =>
+        store.get({ ...Model, [store.connect]: Model[store.connect] }, "1"),
+      ).toThrow();
+    });
+
+    it("returns model from offline cache", () => {
+      Model = {
+        id: true,
+        value: "returns model",
+        [store.connect]: {
+          offline: true,
+          get: id => {
+            if (isOffline) throw Error("Offline");
+            return Promise.resolve().then(() => ({ id, value: "test" }));
+          },
+        },
+      };
+
+      return store.pending(store.get(Model, "1")).then(model => {
+        store.clear(model, false);
+        return resolveRaf(() => {
+          const cacheModel = store.get(Model, "1");
+          expect(cacheModel.value).toBe("test");
+
+          store.clear(model);
+          return resolveRaf(() => {
+            isOffline = true;
+            const offlineModel = store.get(Model, "1");
+            expect(offlineModel.value).toBe("test");
+            expect(store.error(offlineModel)).toBeInstanceOf(Error);
+          });
+        });
+      });
+    });
+
+    it("cleans up the localStorage from obsolete models", () => {
+      Model = {
+        id: true,
+        value: "cleans up",
+        [store.connect]: {
+          offline: 1,
+          cache: 1,
+          get: id => Promise.resolve().then(() => ({ id })),
+        },
+      };
+
+      return store.pending(store.get(Model, "1")).then(model =>
+        resolveTimeout(() => {
+          store.get(Model, "2");
+          store.clear(model);
+
+          return resolveTimeout(() => {
+            const pendingModel = store.get(Model, "1");
+            expect(() => pendingModel.value).toThrow();
+          });
+        }),
+      );
+    });
+
+    it("clears values when clear method is called", () => {
+      Model = {
+        id: true,
+        value: "clears values",
+        [store.connect]: {
+          offline: true,
+          get: id => Promise.resolve().then(() => ({ id })),
+        },
+      };
+
+      store.get(Model, "2");
+
+      return store.pending(store.get(Model, "1")).then(model => {
+        store.clear(model);
+        expect(() => store.get(Model, "1").value).toThrow();
+      });
+    });
+
+    it("stores nested objects and models", () => {
+      const OtherModel = {
+        id: true,
+        value: "other model",
+        [store.connect]: {
+          get: id => ({ id }),
+        },
+      };
+
+      const OtherOfflineModel = {
+        id: true,
+        value: "offline model",
+        [store.connect]: {
+          offline: true,
+          get: id => ({ id }),
+        },
+      };
+
+      Model = {
+        nested: {
+          value: "test",
+        },
+        model: OtherModel,
+        offlineModel: OtherOfflineModel,
+        listOfflineModel: [OtherOfflineModel],
+        [store.connect]: {
+          offline: true,
+          get: () => {
+            if (isOffline) throw Error("Offline");
+            return Promise.resolve().then(() => ({
+              model: "1",
+              offlineModel: "1",
+              listOfflineModel: ["1", "2"],
+            }));
+          },
+        },
+      };
+
+      return store.pending(store.get(Model)).then(model => {
+        expect(model.offlineModel.value).toBe("offline model");
+      });
+    });
+  });
 });
