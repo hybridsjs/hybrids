@@ -29,7 +29,7 @@ export default define<SimpleCounter>({
       Count: ${count}
     </button>
   `,
-};
+});
 ```
 
 The `Hybrids<E>` type has built-in support for the [descriptors structure](../core-concepts/descriptors.md) and all of the [translation](../core-concepts/translation.md) rules. It also prevents defining properties not declared in the interface. All hybrids public APIs support generic type `<E>` for providing the additional information from the defined interface, for example, `html<E>` or `define<E>(...)`. However, in most of the cases, it is not necessary to pass the generic type explicitly - TS calculates it from the `Hybrids<E>` main type.
