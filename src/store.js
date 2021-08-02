@@ -88,12 +88,12 @@ function hashCode(str) {
   );
 }
 
-const offlinePrefix = hashCode("hybrids:store");
+const offlinePrefix = "hybrids:store:cache";
 
 const offlineKeys = {};
 let clearTimeout;
 function setupOfflineKey(config, threshold) {
-  const key = `${offlinePrefix}${hashCode(JSON.stringify(config.model))}`;
+  const key = `${offlinePrefix}:${hashCode(JSON.stringify(config.model))}`;
 
   if (offlineKeys[key]) {
     throw Error(
@@ -149,7 +149,7 @@ function setupStorage(config, options) {
     const threshold =
       typeof result.offline === "number"
         ? result.offline
-        : 1000 * 60 * 60 * 24; /* 24 hours */
+        : 1000 * 60 * 60 * 24 * 7; /* 7 days */
     const offlineKey = setupOfflineKey(config, threshold);
 
     try {
