@@ -80,7 +80,6 @@ module.exports = config => {
     reporters,
     browsers: IS_SAUCE_LABS ? Object.keys(customLaunchers) : ["ChromeHeadless"],
     files: [
-      "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js",
       { pattern: "src/**/*.js", type: "module" },
       { pattern: "test/**/*.js", type: "module" },
     ],
