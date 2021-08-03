@@ -133,6 +133,7 @@ declare module "hybrids" {
     ) => StorageResult<M>;
     list?: (id: ModelIdentifier) => StorageResult<Array<M>>;
     cache?: boolean | number;
+    offline?: boolean | number;
     loose?: boolean;
   };
 
