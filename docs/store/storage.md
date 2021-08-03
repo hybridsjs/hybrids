@@ -4,7 +4,7 @@ Every model definition is connected to the storage. By default, the model defini
 
 ## Memory
 
-The `[store.connect]` property is not defined. It behaves like it would have the `cache` option is set to `true`.
+The `[store.connect]` property is not defined.
 
 ### Singleton
 
@@ -224,15 +224,19 @@ The `store.clear()` method works as a garbage collector for unused model instanc
 offline: boolean | number [ms] = false
 ```
 
-The `offline` option allows creating a persistent cache layer. Once the model instance is fetched from the source, it is stored in the local storage (and it is updated each time when the model changes). When the user visits the page next time and requires the same model instance, the offline cache layer is used to return the cached value while the main source is still fetching the data.
+The `offline` option allows creating a persistent cache layer for offline access. Once the model instance is fetched from the source, it is stored in the `localStorage` (and it is updated each time when the model changes). When the user visits the page next time and requires the same model instance, the offline cache layer is used to return the cached value while the main source is still fetched for the data.
 
-If the main source fails (for example, due to network problems), the value from the offline cache is used. The model still respects the states, so in that case, it will be in an `error` and `ready` state at once. It might be useful even for online users, as the last valid state of the model is returned synchronously while the main source is still called.
+If the main source fails (for example, due to network problems), the value from the offline cache is used. The model still respects the states, so in that case, it will be in an `error` and `ready` state at once. It might be useful also for online users, as the last valid state of the model is returned synchronously while the main source is still called.
 
-The keys for storing model instances are generated using the model definition structure. If the definition changes, the key changes as well. Nested models are stored inside of the parent instances if they don't set their own `offline` mode, or otherwise, they have their own place in the storage, while the parent model keeps the id reference.
+The keys for storing model instances are automatically generated using the model definition structure. If the definition changes, the key changes as well. Nested models are stored inside of the parent instances if they don't set their own `offline` mode, or otherwise, they have their own place in the storage, while the parent model keeps the id reference.
 
-The offline cache uses a self-cleaning strategy, which ensures that the cache is not growing indefinitely. If the `offline` option is set to `true`, it uses the default seven days expiration time. You can also set the expiration time to any number of milliseconds. After the threshold, the obsolete model instances are deleted from the cache. However, the cache is only cleared if the main source is available and returns values, so when the user is in offline mode, the cache stays even if the expiration time is reached.
+#### Invalidation
+
+The offline cache uses a self-cleaning strategy, which ensures that the cache is not growing indefinitely. If the `offline` option is set to `true`, it uses the default seven days expiration time. You can also set the expiration time to any number of milliseconds. After the threshold, the obsolete model instances are deleted from the cache. However, the cache is only automatically cleared if the main source is available and returns values (updates the cache values), so when the user is offline, the cache values stay even if the expiration time is reached.
 
 > When the user is offline, he cannot receive updates of the model structures (the new JS code). Because of that, the cache and model definitions are in sync, and the offline cache provides the latest structure with existing values
+
+Beside the automatic cleaning, you can manually clear offline cache, for example when the user logs out and private data must be removed. If the `offline` option is set to `true`, the `store.clear()` method also clears cache values in `localStorage` for the model instance or model definition (with `clearValue` option set to `true`). You can read more about how to use the method in the section above.
 
 ### loose
 

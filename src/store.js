@@ -2,7 +2,7 @@
 import * as cache from "./cache.js";
 import { storePointer } from "./utils.js";
 
-export const connect = Symbol("store.connect");
+const connect = Symbol("store.connect");
 
 const definitions = new WeakMap();
 const stales = new WeakMap();
@@ -107,8 +107,8 @@ function setupOfflineKey(config, threshold) {
         JSON.parse(window.localStorage.getItem(offlinePrefix)) || {};
 
       Object.keys(previousKeys).forEach(k => {
+        /* istanbul ignore next */
         if (previousKeys[k] < getCurrentTimestamp() && !offlineKeys[k]) {
-          /* istanbul ignore next */
           window.localStorage.removeItem(k);
         } else {
           offlineKeys[k] = previousKeys[k];
@@ -336,7 +336,7 @@ function stringifyModel(Model, msg) {
 }
 
 const resolvedPromise = Promise.resolve();
-const configs = new WeakMap();
+export const configs = new WeakMap();
 function setupModel(Model, nested) {
   if (typeof Model !== "object" || Model === null) {
     throw TypeError(`Model definition must be an object: ${typeof Model}`);
@@ -640,7 +640,7 @@ const listPlaceholderPrototype = Object.getOwnPropertyNames(
   return acc;
 }, []);
 
-const lists = new WeakMap();
+export const lists = new WeakMap();
 function setupListModel(Model, nested) {
   let config = lists.get(Model);
 
@@ -696,14 +696,16 @@ function setupListModel(Model, nested) {
         offline: !nested &&
           modelConfig.storage.offline && {
             get: id => {
-              const result = modelConfig.storage.offline.get(hashCode(id));
+              const result = modelConfig.storage.offline.get(
+                hashCode(String(stringifyId(id))),
+              );
               return result
                 ? result.map(item => modelConfig.storage.offline.get(item))
                 : null;
             },
             set: (id, values) => {
               modelConfig.storage.offline.set(
-                hashCode(id),
+                hashCode(String(stringifyId(id))),
                 values.map(item => {
                   modelConfig.storage.offline.set(item.id, item);
                   return item.id;

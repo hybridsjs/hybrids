@@ -1,4 +1,8 @@
 import { store } from "../../src/index.js";
+import {
+  configs as storeConfigs,
+  lists as storeLists,
+} from "../../src/store.js";
 import * as cache from "../../src/cache.js";
 import { resolveRaf, resolveTimeout } from "../helpers.js";
 
@@ -1708,6 +1712,16 @@ describe("store:", () => {
       expect(store.error(store.get(Model, 1))).toBeInstanceOf(Promise);
     });
 
+    it("returns a placeholder in error state when list returns null", () => {
+      Model = {
+        id: true,
+        [store.connect]: {
+          list: () => null,
+        },
+      };
+      expect(store.error(store.get([Model]))).toBeInstanceOf(Error);
+    });
+
     it("returns an error for not existing model", () => {
       expect(store.error(store.get(Model, 0))).toBeInstanceOf(Error);
     });
@@ -2404,29 +2418,47 @@ describe("store:", () => {
         id: true,
         value: "returns model",
         [store.connect]: {
+          cache: false,
           offline: true,
           get: id => {
             if (isOffline) throw Error("Offline");
             return Promise.resolve().then(() => ({ id, value: "test" }));
           },
+          list: () => {
+            if (isOffline) throw Error("Offline");
+            return Promise.resolve().then(() => ["1", "2"]);
+          },
         },
       };
 
-      return store.pending(store.get(Model, "1")).then(model => {
-        store.clear(model, false);
-        return resolveRaf(() => {
-          const cacheModel = store.get(Model, "1");
-          expect(cacheModel.value).toBe("test");
-
-          store.clear(model);
+      return store.pending(store.get(Model, "1")).then(() =>
+        store.pending(store.get([Model])).then(() => {
+          store.clear(Model, false);
           return resolveRaf(() => {
-            isOffline = true;
-            const offlineModel = store.get(Model, "1");
-            expect(offlineModel.value).toBe("test");
-            expect(store.error(offlineModel)).toBeInstanceOf(Error);
+            const cacheModel = store.get(Model, "1");
+            expect(cacheModel.value).toBe("test");
+
+            const cacheList = store.get([Model]);
+            expect(cacheList.length).toBe(2);
+
+            return resolveRaf(() => {
+              cache.invalidateAll(storeConfigs.get(Model), {
+                clearValue: true,
+              });
+              cache.invalidateAll(storeLists.get(Model), { clearValue: true });
+
+              isOffline = true;
+              const offlineModel = store.get(Model, "1");
+              expect(offlineModel.value).toBe("test");
+              expect(store.error(offlineModel)).toBeInstanceOf(Error);
+
+              const offlineList = store.get([Model]);
+              expect(offlineList.length).toBe(2);
+              expect(store.error(offlineList)).toBeInstanceOf(Error);
+            });
           });
-        });
-      });
+        }),
+      );
     });
 
     it("cleans up the localStorage from obsolete models", () => {
@@ -2453,10 +2485,10 @@ describe("store:", () => {
       );
     });
 
-    it("clears values when clear method is called", () => {
+    it("clears values when clear method is called for model instance", () => {
       Model = {
         id: true,
-        value: "clears values",
+        value: "clears values for instance",
         [store.connect]: {
           offline: true,
           get: id => Promise.resolve().then(() => ({ id })),
@@ -2467,6 +2499,24 @@ describe("store:", () => {
 
       return store.pending(store.get(Model, "1")).then(model => {
         store.clear(model);
+        expect(() => store.get(Model, "1").value).toThrow();
+      });
+    });
+
+    it("clears values when clear method is called for model definition", () => {
+      Model = {
+        id: true,
+        value: "clears values for definition",
+        [store.connect]: {
+          offline: true,
+          get: id => Promise.resolve().then(() => ({ id })),
+        },
+      };
+
+      store.get(Model, "2");
+
+      return store.pending(store.get(Model, "1")).then(() => {
+        store.clear(Model);
         expect(() => store.get(Model, "1").value).toThrow();
       });
     });
@@ -2511,6 +2561,59 @@ describe("store:", () => {
 
       return store.pending(store.get(Model)).then(model => {
         expect(model.offlineModel.value).toBe("offline model");
+      });
+    });
+
+    it("sets null for the offline cache with sync storage", () => {
+      Model = {
+        id: true,
+        value: "sets null sync",
+        [store.connect]: {
+          get: () => null,
+          offline: true,
+        },
+      };
+
+      const model = store.get(Model, 1);
+      expect(store.error(model)).toBeInstanceOf(Error);
+    });
+
+    it("sets null for the offline cache with async storage", () => {
+      Model = {
+        id: true,
+        value: "sets null async",
+        [store.connect]: {
+          get: () => Promise.resolve(null),
+          offline: true,
+        },
+      };
+
+      return store.pending(store.get(Model, 1)).then(model => {
+        expect(store.error(model)).toBeInstanceOf(Error);
+      });
+    });
+
+    it("updates cache value when model is updated", () => {
+      Model = {
+        id: true,
+        value: "updates cache",
+        [store.connect]: {
+          offline: true,
+          get: id => {
+            if (isOffline) throw Error("Offline");
+            return { id };
+          },
+          set: (id, values) => values,
+        },
+      };
+
+      const model = store.get(Model, 1);
+      return store.set(model, { value: "other value" }).then(() => {
+        isOffline = true;
+        cache.invalidateAll(storeConfigs.get(Model), { clearValue: true });
+
+        const newModel = store.get(Model, 1);
+        expect(newModel.value).toBe("other value");
       });
     });
   });
