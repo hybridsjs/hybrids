@@ -1,6 +1,6 @@
 # Storage
 
-Every model definition is connected to the storage. By default, the model definition uses memory attached to the persistent cache. You can define a custom storage by the `[store.connect]` property in the model definition. It can be synchronous (memory, localStorage, etc.), or asynchronous, like external APIs.
+Every model definition is connected to the storage. By default, the model definition uses memory attached to the cache layer. You can define a custom storage by the `[store.connect]` property in the model definition. It can be synchronous (memory, localStorage, etc.), or asynchronous, like external APIs.
 
 ## Memory
 
@@ -33,7 +33,7 @@ store.set(Globals, null).then(() => {
 
 ### Enumerable
 
-For the enumerables, the memory storage returns models, which were created by the client. It supports the list action, which always returns all existing models. The storage `loose` option is turned on to invalidate the list state when one of the models updates.
+For the enumerables, the memory storage returns models, which were created by the client. It supports the list action, which returns all existing models. The storage `loose` option is turned on to invalidate the list state when one of the models updates.
 
 ```javascript
 const Todo = {
@@ -48,7 +48,7 @@ console.log(store.get([Todo]));
 
 ## External
 
-To define custom storage set the `[store.connect]` property in the model definition:
+For using custom storage set the `[store.connect]` property in the model definition:
 
 ```javascript
 const Model = {
@@ -58,6 +58,7 @@ const Model = {
     set?: (id, values, keys) => {...},
     list?: (id) => {...},
     cache?: boolean | number [ms] = true,
+    offline?: boolean | number [ms] = false,
     loose?: boolean = false,
   },
 };
@@ -217,15 +218,35 @@ define({
 
 The `store.clear()` method works as a garbage collector for unused model instances. Those that are not a dependency of any component connected to the DOM will be deleted entirely from the cache registry (as they would never exist) protecting from the memory leaks. It means, that even if you set `clearValue` to `false`, those instances that are not currently attached to the components, will be permanently deleted when `store.clear()` method is invoked.
 
+### offline
+
+```typescript
+offline: boolean | number [ms] = false
+```
+
+The `offline` option allows creating a persistent cache layer for offline access. Once the model instance is fetched from the source, it is stored in the `localStorage` (and it is updated each time when the model changes). When the user visits the page next time and requires the same model instance, the offline cache layer is used to return the cached value while the main source is still fetched for the data.
+
+If the main source fails (for example, due to network problems), the value from the offline cache is used. The model still respects the states, so in that case, it will be in an `error` and `ready` state at once. It might be useful also for online users, as the last valid state of the model is returned synchronously while the main source is still called.
+
+The keys for storing model instances are automatically generated using the model definition structure. If the definition changes, the key changes as well. Nested models are stored inside of the parent instances if they don't set their own `offline` mode, or otherwise, they have their own place in the storage, while the parent model keeps the id reference.
+
+#### Invalidation
+
+The offline cache uses a self-cleaning strategy, which ensures that the cache is not growing indefinitely. If the `offline` option is set to `true`, it uses the default seven days expiration time. You can also set the expiration time to any number of milliseconds. After the threshold, the obsolete model instances are deleted from the cache. However, the cache is only automatically cleared if the main source is available and returns values (updates the cache values), so when the user is offline, the cache values stay even if the expiration time is reached.
+
+> When the user is offline, he cannot receive updates of the model structures (the new JS code). Because of that, the cache and model definitions are in sync, and the offline cache provides the latest structure with existing values
+
+Beside the automatic cleaning, you can manually clear offline cache, for example when the user logs out and private data must be removed. If the `offline` option is set to `true`, the `store.clear()` method also clears cache values in `localStorage` for the model instance or model definition (with `clearValue` option set to `true`). You can read more about how to use the method in the section above.
+
 ### loose
 
 ```typescript
 loose: boolean = false
 ```
 
-The `loose` option of the model only affects cache invalidation of the listing enumerable models (the `loose` option of the nested array in the model definition is still respected). 
+The `loose` option of the model only affects cache invalidation of the listing enumerable models (the `loose` option of the nested array in the model definition is still respected).
 
-By default, it is set to `false`, so updating model instances will not change items order or placement in the array. The typical use case to turn it on is when you have a paginated list, and updating or creating a model instance might affect order or content of the list. 
+By default, it is set to `false`, so updating model instances will not change items order or placement in the array. The typical use case to turn it on is when you have a paginated list, and updating or creating a model instance might affect order or content of the list.
 
 If the user does not have control over the model, it is recommended to keep that option off. You can avoid unnecessary calls to external storage, when the list result does not depend on the model instance values.
 
