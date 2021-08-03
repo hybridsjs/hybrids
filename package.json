@@ -34,34 +34,19 @@
     "release": "npm run test && standard-version -a"
   },
   "devDependencies": {
-    "@webcomponents/webcomponentsjs": "^2.5.0",
     "coveralls": "^3.1.0",
     "eslint": "^7.19.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^7.2.0",
     "eslint-plugin-import": "^2.22.1",
-    "husky": "^4.3.8",
     "jasmine-core": "^3.6.0",
     "karma": "^6.1.0",
     "karma-chrome-launcher": "^3.1.0",
     "karma-coverage": "^2.0.3",
     "karma-jasmine": "^4.0.1",
     "karma-sauce-launcher": "^4.3.5",
-    "lint-staged": "^10.5.3",
     "prettier": "^1.19.1",
     "standard-version": "^9.1.0"
-  },
-  "dependencies": {},
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.js": [
-      "eslint --cache --fix",
-      "prettier --write"
-    ]
   },
   "standard-version": {
     "scripts": {
