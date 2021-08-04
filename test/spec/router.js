@@ -13,7 +13,7 @@ describe("router:", () => {
   let host;
 
   beforeEach(done => {
-    OtherChild = define({
+    OtherChild = {
       [router.connect]: {
         url: "/other_child/:otherId/test?param",
       },
@@ -23,10 +23,11 @@ describe("router:", () => {
       otherParam: "",
       content: () => html`
         <a href="${router.backUrl()}">Back</a>
+        <a href="${router.url(Home, { scrollToTop: true })}">Home</a>
       `,
-    });
+    };
 
-    NestedOne = define({
+    NestedOne = {
       tag: "test-router-child-nested-one",
       render: () => html`
         <div
@@ -37,10 +38,10 @@ describe("router:", () => {
           <div style="height: 300px"></div>
         </div>
       `,
-    });
-    NestedTwo = define({ tag: "test-router-child-nested-two" });
+    };
+    NestedTwo = { tag: "test-router-child-nested-two" };
 
-    Child = define({
+    Child = {
       [router.connect]: {
         stack: [OtherChild],
       },
@@ -56,9 +57,9 @@ describe("router:", () => {
         <a id="nested-two-link" href="${router.url(NestedTwo)}">NestedTwo</a>
         ${nested}
       `,
-    });
+    };
 
-    OtherURLChild = define({
+    OtherURLChild = {
       [router.connect]: {
         url: "/other_url_child",
       },
@@ -68,9 +69,9 @@ describe("router:", () => {
       content: () => html`
         <a href="${router.backUrl()}">Back</a>
       `,
-    });
+    };
 
-    Home = define({
+    Home = {
       [router.connect]: {
         stack: [Child, OtherURLChild, OtherChild],
       },
@@ -85,8 +86,10 @@ describe("router:", () => {
         >
           <div style="height: 300px"></div>
         </div>
+        <input type="text" />
+        <a href="${router.currentUrl()}">Home</a>
       `,
-    });
+    };
 
     define({
       tag: "test-router-app",
@@ -98,7 +101,7 @@ describe("router:", () => {
     resolveRaf(() => {
       host = document.createElement("test-router-app");
       document.body.appendChild(host);
-      done();
+      resolveRaf(done);
     });
   });
 
@@ -111,6 +114,39 @@ describe("router:", () => {
   });
 
   describe("connect root router -", () => {
+    it("throws for wrong arguments", () => {
+      host.parentElement.removeChild(host);
+
+      const el = document.createElement("div");
+      expect(() => router().connect(el)).toThrow();
+      expect(() => router(() => "test").connect(el)).toThrow();
+    });
+
+    it("throws when connecting root router twice", () => {
+      expect(() => {
+        const anotherHost = document.createElement("test-router-app");
+        anotherHost.connectedCallback();
+      }).toThrow();
+    });
+
+    it("throws when views have circular reference", () => {
+      host.parentElement.removeChild(host);
+      let A;
+
+      const B = {
+        [router.connect]: { stack: () => [A] },
+        tag: "test-router-circular-b",
+      };
+
+      A = {
+        [router.connect]: { stack: [B] },
+        tag: "test-router-circular-a",
+      };
+
+      const el = document.createElement("div");
+      expect(() => router([A]).connect(el)).toThrow();
+    });
+
     it("returns empty array for not connected host", () => {
       const el = document.createElement("test-router-app");
       expect(el.views).toEqual([]);
@@ -158,7 +194,7 @@ describe("router:", () => {
         el.click();
         return resolveRaf(() => {
           host.parentElement.removeChild(host);
-          const Another = define({ tag: "test-router-another" });
+          const Another = { tag: "test-router-another" };
           define({
             tag: "test-router-app",
             views: router([Another]),
@@ -179,7 +215,7 @@ describe("router:", () => {
         el.click();
         return resolveRaf(() => {
           host.parentElement.removeChild(host);
-          Home = define({ tag: "test-router-home" });
+          Home = { tag: "test-router-home" };
           define({
             tag: "test-router-app",
             views: router([Home]),
@@ -192,6 +228,61 @@ describe("router:", () => {
           });
         });
       }).then(done);
+    });
+
+    it("saves and restores scroll position", () => {
+      host.style.height = "200vh";
+      host.style.width = "200vw";
+      host.style.display = "block";
+
+      document.scrollingElement.scrollTop = 200;
+      document.scrollingElement.scrollLeft = 200;
+
+      let el = host.children[0].children[0];
+      el.click();
+
+      return resolveRaf(() => {
+        expect(document.scrollingElement.scrollTop).toBe(0);
+        expect(document.scrollingElement.scrollLeft).toBe(0);
+
+        el = host.children[0].children[0];
+        el.click();
+
+        return resolveRaf(() => {
+          expect(document.scrollingElement.scrollTop).toBe(200);
+          expect(document.scrollingElement.scrollLeft).toBe(200);
+
+          el = host.children[0].children[1];
+          el.click();
+
+          return resolveRaf(() => {
+            el = host.children[0].children[1];
+            el.click();
+
+            return resolveRaf(() => {
+              expect(host.views[0].constructor.hybrids).toBe(Home);
+              expect(document.scrollingElement.scrollTop).toBe(0);
+              expect(document.scrollingElement.scrollLeft).toBe(0);
+            });
+          });
+        });
+      });
+    });
+
+    it("does not change focus element", () => {
+      const input = host.querySelector("input");
+      input.focus();
+      let el = host.children[0].children[0];
+      el.click();
+
+      return resolveRaf(() => {
+        el = host.children[0].children[0];
+        el.click();
+
+        return resolveRaf(() => {
+          expect(document.activeElement).toBe(input);
+        });
+      });
     });
   });
 
@@ -307,7 +398,7 @@ describe("router:", () => {
 
   describe("url() -", () => {
     it("returns empty string for not connected view", () => {
-      const MyElement = define({ tag: "test-router-my-element" });
+      const MyElement = { tag: "test-router-my-element" };
       expect(router.url(MyElement)).toBe("");
     });
 
@@ -326,9 +417,10 @@ describe("router:", () => {
     describe("with 'url' option", () => {
       it("throws for duplicated parameters in URL", () => {
         const desc = router([
-          define("test-router-url-error", {
+          {
             [router.connect]: { url: "/:test?test" },
-          }),
+            tag: "test-router-url-error",
+          },
         ]);
         host.parentElement.removeChild(host);
         expect(() =>

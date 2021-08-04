@@ -58,15 +58,12 @@ function saveLayout(target) {
 
 const deffer = Promise.resolve();
 function restoreLayout(target, clear) {
-  const activeEl = document.activeElement;
-  if (!target.contains(activeEl)) {
-    const el = focusMap.get(target) || target;
-    if (el.tabIndex === -1) {
-      el.tabIndex = 0;
-      deffer.then(() => el.removeAttribute("tabindex"));
-    }
-    el.focus({ preventScroll: true });
+  const el = focusMap.get(target) || rootRouter;
+  if (el.tabIndex === -1) {
+    el.tabIndex = 0;
+    deffer.then(() => el.removeAttribute("tabindex"));
   }
+  el.focus({ preventScroll: true });
 
   const map = scrollMap.get(target);
 
@@ -88,11 +85,11 @@ function restoreLayout(target, clear) {
     }
 
     scrollMap.delete(target);
-  } else if (!configs.get(target).nestedParent) {
-    const el = document.scrollingElement;
+  } else {
+    const rootEl = document.scrollingElement;
     deffer.then(() => {
-      if (el.scrollLeft) el.scrollLeft = 0;
-      if (el.scrollTop) el.scrollTop = 0;
+      if (rootEl.scrollLeft) rootEl.scrollLeft = 0;
+      if (rootEl.scrollTop) rootEl.scrollTop = 0;
     });
   }
 }
@@ -205,27 +202,23 @@ function setupViews(views, options, parent = null, nestedParent = null) {
   if (typeof views === "function") views = views();
 
   if (!Array.isArray(views) || !views.length) {
-    throw TypeError(`Router requires non-empty array of view constructors`);
+    throw TypeError(
+      `Router requires non-empty array of views (tagged component definitions)`,
+    );
   }
 
-  const result = views.map(Constructor => {
-    // eslint-disable-next-line no-use-before-define
-    const config = setupView(Constructor, options, parent, nestedParent);
+  return views.map(hybrids => {
+    const config = configs.get(hybrids);
 
-    if (parent) {
-      if (hasInStack(config, parent)) {
-        throw Error(
-          `<${parent.id}> cannot be in the stack of <${config.id}> - it is already in stack of <${parent.id}>`,
-        );
-      }
-    } else {
-      addEntryPoint(config);
+    if (config && hasInStack(config, parent)) {
+      throw Error(
+        `<${config.id}> cannot be in the stack of <${parent.id}>, as it is an ancestor in the stack tree`,
+      );
     }
 
-    return config;
+    // eslint-disable-next-line no-use-before-define
+    return setupView(hybrids, options, parent, nestedParent);
   });
-
-  return result;
 }
 
 function getNestedRouterOptions(hybrids, config) {
@@ -255,8 +248,13 @@ function getNestedRouterOptions(hybrids, config) {
   return nestedRouters[0];
 }
 
+function getConfigById(id) {
+  const Constructor = customElements.get(id);
+  return configs.get(Constructor);
+}
+
 function setupView(hybrids, routerOptions, parent, nestedParent) {
-  let config = configs.get(hybrids);
+  let config = getConfigById(pascalToDash(hybrids.tag));
 
   if (config && config.hybrids !== hybrids) {
     config = null;
@@ -377,8 +375,8 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       multiple: options.multiple,
       replace: options.replace,
       guard,
-      parent: undefined,
-      nestedParent: undefined,
+      parent,
+      nestedParent,
       nestedRoots: undefined,
       parentsWithGuards: undefined,
       stack: [],
@@ -445,8 +443,9 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
     configs.set(hybrids, config);
     configs.set(Constructor, config);
 
-    config.parent = parent;
-    config.nestedParent = nestedParent;
+    if (parent && !parent.stack.includes(config)) {
+      parent.stack.push(config);
+    }
 
     if (options.stack) {
       if (options.dialog) {
@@ -454,16 +453,15 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           `The 'stack' option is not supported for dialogs - remove it from <${id}>`,
         );
       }
-      config.stack = setupViews(
-        options.stack,
-        routerOptions,
-        config,
-        nestedParent,
-      );
+      setupViews(options.stack, routerOptions, config, nestedParent);
     }
   } else {
     config.parent = parent;
     config.nestedParent = nestedParent;
+  }
+
+  if (!parent) {
+    addEntryPoint(config);
   }
 
   config.parentsWithGuards = [];
@@ -486,11 +484,6 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
   }
 
   return config;
-}
-
-function getConfigById(id) {
-  const Constructor = customElements.get(id);
-  return configs.get(Constructor);
 }
 
 function getUrl(view, params = {}) {
@@ -725,7 +718,7 @@ function resolveStack(host, state) {
         cache.unsuspend(nextView);
       }
 
-      if (rootRouter === host && entry.params.scrollToTop) {
+      if (host === rootRouter && entry.params.scrollToTop) {
         restoreLayout(nextView, true);
       }
     }
