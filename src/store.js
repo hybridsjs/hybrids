@@ -110,12 +110,14 @@ function setupOfflineKey(config, threshold) {
         /* istanbul ignore next */
         if (previousKeys[k] < getCurrentTimestamp() && !offlineKeys[k]) {
           window.localStorage.removeItem(k);
-        } else {
-          offlineKeys[k] = previousKeys[k];
+          delete previousKeys[k];
         }
       });
 
-      window.localStorage.setItem(offlinePrefix, JSON.stringify(offlineKeys));
+      window.localStorage.setItem(
+        offlinePrefix,
+        JSON.stringify({ ...previousKeys, ...offlineKeys }),
+      );
       clearTimeout = null;
     }, 1);
   }
