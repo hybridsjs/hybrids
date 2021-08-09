@@ -58,12 +58,12 @@ function saveLayout(target) {
 
 const deffer = Promise.resolve();
 function restoreLayout(target, clear) {
-  const el = focusMap.get(target) || rootRouter;
-  if (el.tabIndex === -1) {
-    el.tabIndex = 0;
-    deffer.then(() => el.removeAttribute("tabindex"));
+  const focusEl = focusMap.get(target) || rootRouter;
+  if (focusEl.tabIndex === -1) {
+    focusEl.tabIndex = 0;
+    deffer.then(() => focusEl.removeAttribute("tabindex"));
   }
-  el.focus({ preventScroll: true });
+  focusEl.focus({ preventScroll: true });
 
   const map = scrollMap.get(target);
 
