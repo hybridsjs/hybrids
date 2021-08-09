@@ -40,7 +40,7 @@ const scrollMap = new WeakMap();
 const focusMap = new WeakMap();
 function saveLayout(target) {
   const focusEl = document.activeElement;
-  focusMap.set(target, target.contains(focusEl) && focusEl);
+  focusMap.set(target, rootRouter.contains(focusEl) && focusEl);
 
   const map = new Map();
 
@@ -56,41 +56,43 @@ function saveLayout(target) {
   scrollMap.set(target, map);
 }
 
-const deffer = Promise.resolve();
-function restoreLayout(target, clear) {
-  const focusEl = focusMap.get(target) || rootRouter;
+function restoreLayout(target) {
+  const activeEl = document.activeElement;
+  const focusEl = focusMap.get(target) || (rootRouter.contains(activeEl) ? activeEl : rootRouter);
+
   if (focusEl.tabIndex === -1) {
+    const outline = focusEl.style.outline;
     focusEl.tabIndex = 0;
-    deffer.then(() => focusEl.removeAttribute("tabindex"));
+    focusEl.style.outline = "none";
+    focusEl.addEventListener(
+      "blur",
+      () => {
+        focusEl.removeAttribute("tabindex");
+        focusEl.style.outline = outline;
+      },
+      { once: true },
+    );
   }
   focusEl.focus({ preventScroll: true });
 
   const map = scrollMap.get(target);
 
   if (map) {
-    if (clear) {
-      deffer.then(() => {
-        map.forEach((pos, el) => {
-          el.scrollLeft = 0;
-          el.scrollTop = 0;
-        });
-      });
-    } else {
-      deffer.then(() => {
-        map.forEach((pos, el) => {
-          el.scrollLeft = pos.left;
-          el.scrollTop = pos.top;
-        });
-      });
-    }
+    const config = configs.get(target);
+    const state = window.history.state;
+    const entry = state.find(e => e.id === config.id);
+    const clear = entry && entry.params.scrollToTop;
+
+    map.forEach((pos, el) => {
+      el.scrollLeft = clear ? 0 : pos.left;
+      el.scrollTop = clear ? 0 : pos.top;
+    });
 
     scrollMap.delete(target);
   } else {
     const rootEl = document.scrollingElement;
-    deffer.then(() => {
-      if (rootEl.scrollLeft) rootEl.scrollLeft = 0;
-      if (rootEl.scrollTop) rootEl.scrollTop = 0;
-    });
+    rootEl.scrollLeft = 0;
+    rootEl.scrollTop = 0;
   }
 }
 
@@ -716,10 +718,10 @@ function resolveStack(host, state) {
     if (index === 0) {
       if (nextView === prevView) {
         cache.unsuspend(nextView);
-      }
 
-      if (host === rootRouter && entry.params.scrollToTop) {
-        restoreLayout(nextView, true);
+        if (offset === 0 && host === rootRouter && entry.params.scrollToTop) {
+          restoreLayout(nextView);
+        }
       }
     }
 
