@@ -89,9 +89,10 @@ function hashCode(str) {
 }
 
 const offlinePrefix = "hybrids:store:cache";
-
 const offlineKeys = {};
-let clearTimeout;
+const deffer = Promise.resolve();
+
+let clearPromise;
 function setupOfflineKey(config, threshold) {
   const key = `${offlinePrefix}:${hashCode(JSON.stringify(config.model))}`;
 
@@ -101,8 +102,10 @@ function setupOfflineKey(config, threshold) {
     );
   }
 
-  if (!clearTimeout) {
-    clearTimeout = setTimeout(() => {
+  offlineKeys[key] = getCurrentTimestamp() + threshold;
+
+  if (!clearPromise) {
+    clearPromise = deffer.then(() => {
       const previousKeys =
         JSON.parse(window.localStorage.getItem(offlinePrefix)) || {};
 
@@ -118,11 +121,9 @@ function setupOfflineKey(config, threshold) {
         offlinePrefix,
         JSON.stringify({ ...previousKeys, ...offlineKeys }),
       );
-      clearTimeout = null;
-    }, 1);
+      clearPromise = null;
+    });
   }
-
-  offlineKeys[key] = getCurrentTimestamp() + threshold;
 
   return key;
 }
@@ -145,7 +146,11 @@ function setupStorage(config, options) {
     );
   }
 
-  if (!result.get) result.get = () => {};
+  if (!result.get) {
+    result.get = id => {
+      throw notFoundError(stringifyId(id));
+    };
+  }
 
   if (result.offline) {
     const threshold =
@@ -200,15 +205,18 @@ function setupStorage(config, options) {
           }
 
           if (!flush) {
-            flush = setTimeout(() => {
+            flush = deffer.then(() => {
+              const timestamp = getCurrentTimestamp();
+
               Object.keys(items).forEach(key => {
-                if (items[key][0] + threshold < getCurrentTimestamp()) {
+                if (items[key][0] + threshold < timestamp) {
                   delete items[key];
                 }
               });
+
               window.localStorage.setItem(offlineKey, JSON.stringify(items));
               flush = null;
-            }, 1);
+            });
           }
 
           return values;
@@ -804,8 +812,23 @@ function stringifyId(id) {
   }
 }
 
+const notFoundErrors = new WeakSet();
+function notFoundError(Model, stringId) {
+  const err = Error(
+    stringifyModel(
+      Model,
+      `Model instance ${
+        stringId !== undefined ? `with '${stringId}' id ` : ""
+      }does not exist`,
+    ),
+  );
+
+  notFoundErrors.add(err);
+  return err;
+}
+
 function mapError(model, err, suppressLog) {
-  if (suppressLog !== false) {
+  if (suppressLog !== false && !notFoundErrors.has(err)) {
     // eslint-disable-next-line no-console
     console.error(err);
   }
@@ -878,15 +901,7 @@ function get(Model, id) {
 
       if (typeof result !== "object" || result === null) {
         if (offline) offline.set(stringId, result);
-
-        throw Error(
-          stringifyModel(
-            Model,
-            `Model instance ${
-              stringId !== undefined ? `with '${stringId}' id ` : ""
-            }does not exist`,
-          ),
-        );
+        throw notFoundError(Model, stringId);
       }
 
       if (result instanceof Promise) {
@@ -894,15 +909,7 @@ function get(Model, id) {
           .then(data => {
             if (typeof data !== "object" || data === null) {
               if (offline) offline.set(stringId, result);
-
-              throw Error(
-                stringifyModel(
-                  Model,
-                  `Model instance ${
-                    stringId !== undefined ? ` with '${stringId}' id ` : ""
-                  }does not exist`,
-                ),
-              );
+              throw notFoundError(Model, stringId);
             }
 
             const model = config.create(
@@ -1099,11 +1106,7 @@ function set(model, values = {}) {
           resultModel ||
             mapError(
               config.placeholder(resultId),
-              Error(
-                `Model instance ${
-                  id !== undefined ? `with '${id}' id` : ""
-                }does not exist`,
-              ),
+              notFoundError(config.model, id),
               false,
             ),
           true,
