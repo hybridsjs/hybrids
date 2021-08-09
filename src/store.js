@@ -812,8 +812,9 @@ function stringifyId(id) {
   }
 }
 
+const notFoundErrors = new WeakSet();
 function notFoundError(Model, stringId) {
-  return Error(
+  const err = Error(
     stringifyModel(
       Model,
       `Model instance ${
@@ -821,10 +822,13 @@ function notFoundError(Model, stringId) {
       }does not exist`,
     ),
   );
+
+  notFoundErrors.add(err);
+  return err;
 }
 
 function mapError(model, err, suppressLog) {
-  if (suppressLog !== false) {
+  if (suppressLog !== false && !notFoundErrors.has(err)) {
     // eslint-disable-next-line no-console
     console.error(err);
   }
