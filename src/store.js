@@ -90,7 +90,6 @@ function hashCode(str) {
 
 const offlinePrefix = "hybrids:store:cache";
 const offlineKeys = {};
-const deffer = Promise.resolve();
 
 let clearPromise;
 function setupOfflineKey(config, threshold) {
@@ -105,13 +104,14 @@ function setupOfflineKey(config, threshold) {
   offlineKeys[key] = getCurrentTimestamp() + threshold;
 
   if (!clearPromise) {
-    clearPromise = deffer.then(() => {
+    clearPromise = Promise.resolve().then(() => {
       const previousKeys =
         JSON.parse(window.localStorage.getItem(offlinePrefix)) || {};
+      const timestamp = getCurrentTimestamp();
 
       Object.keys(previousKeys).forEach(k => {
         /* istanbul ignore next */
-        if (previousKeys[k] < getCurrentTimestamp() && !offlineKeys[k]) {
+        if (!offlineKeys[k] && previousKeys[k] < timestamp) {
           window.localStorage.removeItem(k);
           delete previousKeys[k];
         }
@@ -153,10 +153,10 @@ function setupStorage(config, options) {
   }
 
   if (result.offline) {
-    const threshold =
-      typeof result.offline === "number"
-        ? result.offline
-        : 1000 * 60 * 60 * 24 * 7; /* 7 days */
+    const isBool = result.offline === true;
+    const threshold = isBool
+      ? 1000 * 60 * 60 * 24 * 30 /* 30 days */
+      : result.offline;
     const offlineKey = setupOfflineKey(config, threshold);
 
     try {
@@ -166,12 +166,24 @@ function setupStorage(config, options) {
 
       result.offline = Object.freeze({
         key: offlineKey,
-        get(id) {
-          if (hasOwnProperty.call(items, id)) {
-            return JSON.parse(items[id][1]);
-          }
-          return null;
-        },
+        get: isBool
+          ? id => {
+              if (hasOwnProperty.call(items, id)) {
+                return JSON.parse(items[id][1]);
+              }
+              return null;
+            }
+          : id => {
+              if (hasOwnProperty.call(items, id)) {
+                const item = items[id];
+                if (item[0] + threshold < getCurrentTimestamp()) {
+                  delete items[id];
+                  return null;
+                }
+                return JSON.parse(item[1]);
+              }
+              return null;
+            },
         set(id, values) {
           if (values) {
             items[id] = [
@@ -205,7 +217,7 @@ function setupStorage(config, options) {
           }
 
           if (!flush) {
-            flush = deffer.then(() => {
+            flush = Promise.resolve().then(() => {
               const timestamp = getCurrentTimestamp();
 
               Object.keys(items).forEach(key => {

@@ -2485,6 +2485,39 @@ describe("store:", () => {
       );
     });
 
+    it("cleans up the localStorage when model reaches threshold", () => {
+      Model = {
+        id: true,
+        value: "cleans up threshold",
+        [store.connect]: {
+          offline: 100,
+          cache: false,
+          get: id => Promise.resolve().then(() => ({ id, value: Date.now() })),
+        },
+      };
+
+      return store.pending(store.get(Model, "1")).then(model => {
+        cache.invalidateAll(storeConfigs.get(Model), {
+          clearValue: true,
+        });
+
+        const cachedModel = store.get(Model, "1");
+        expect(store.ready(cachedModel)).toBe(true);
+
+        return resolveTimeout(() => {
+          isOffline = true;
+          cache.invalidateAll(storeConfigs.get(Model), {
+            clearValue: true,
+          });
+          const pendingModel = store.get(Model, "1");
+          expect(store.ready(pendingModel)).toBe(false);
+          return store.pending(pendingModel).then(resultModel => {
+            expect(resultModel.value).not.toBe(model.value);
+          });
+        });
+      });
+    });
+
     it("clears values when clear method is called for model instance", () => {
       Model = {
         id: true,
