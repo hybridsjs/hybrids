@@ -230,13 +230,36 @@ If the main source fails (for example, due to network problems), the value from 
 
 The keys for storing model instances are automatically generated using the model definition structure. If the definition changes, the key changes as well. Nested models are stored inside of the parent instances if they don't set their own `offline` mode, or otherwise, they have their own place in the storage, while the parent model keeps the id reference.
 
-#### Invalidation
+#### Automatic Clearing
 
-The offline cache uses a self-cleaning strategy, which ensures that the cache is not growing indefinitely. If the `offline` option is set to `true`, it uses the default seven days expiration time. You can also set the expiration time to any number of milliseconds. After the threshold, the obsolete model instances are deleted from the cache. However, the cache is only automatically cleared if the main source is available and returns values (updates the cache values), so when the user is offline, the cache values stay even if the expiration time is reached.
+The offline cache uses a self-clearing strategy, which ensures that the cache is not growing indefinitely. If the `offline` option is set to `true`, it uses the default thirty days expiration time. You can also set the expiration time to any number of milliseconds. After the threshold, the obsolete model instances are deleted from the cache.
+
+```typescript
+offline: true
+```
+
+If the options is set to `true`, the cache is cleared only if the main source is available and returns values (updates the cache values). In that case, when the user is offline, the cache values stay and they are used even if the expiration time is reached.
 
 > When the user is offline, he cannot receive updates of the model structures (the new JS code). Because of that, the cache and model definitions are in sync, and the offline cache provides the latest structure with existing values
 
-Beside the automatic cleaning, you can manually clear offline cache, for example when the user logs out and private data must be removed. If the `offline` option is set to `true`, the `store.clear()` method also clears cache values in `localStorage` for the model instance or model definition (with `clearValue` option set to `true`). You can read more about how to use the method in the section above.
+```typescript
+offline: 1000 * 60 * 5 // 5 minutes
+```
+
+If the option is set to a `number` (time in milliseconds), the cached value is only returned if the expiration time is not yet reached. Otherwise, it is removed from the `localStorage`.
+
+Use `true` for models, which can be used for a long time, and even when they are out of date. On another hand, the explicit time in milliseconds guarantees that the value will be returned only in that time window, also when the main source is not available.
+
+#### Manual Clearing
+
+Beside the automatic clearing, you can manually remove offline cache values, for example when the user logs out and private data must be deleted. If the `offline` option is set, the `store.clear()` method also clears cache values saved in `localStorage` for the model instance or model definition (with `clearValue` option set to `true`). You can read more about how to use the method in the section above.
+
+```typescript
+import Session from "./Session";
+
+// Clears memory and localStorage caches
+store.clear(Session);
+```
 
 ### loose
 
