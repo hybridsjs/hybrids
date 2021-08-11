@@ -2413,6 +2413,29 @@ describe("store:", () => {
       ).toThrow();
     });
 
+    it("throws when nested model has 'offline' option set to lower value", () => {
+      const NestedModel = {
+        value: "nested model",
+        [store.connect]: {
+          offline: 100,
+          get: () => Promise.resolve().then(() => ({})),
+        },
+      };
+
+      Model = {
+        nestedModel: NestedModel,
+        [store.connect]: {
+          offline: true,
+          get: () => Promise.resolve().then(() => ({ nestedModel: {} })),
+        },
+      };
+
+      return store.pending(store.get(Model)).then(() => {
+        cache.invalidateAll(storeConfigs.get(Model), { clearValue: true });
+        expect(store.ready(store.get(Model))).toBe(false);
+      });
+    });
+
     it("returns model from offline cache", () => {
       Model = {
         id: true,
