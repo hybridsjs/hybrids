@@ -166,6 +166,7 @@ function setupStorage(config, options) {
 
       result.offline = Object.freeze({
         key: offlineKey,
+        threshold,
         get: isBool
           ? id => {
               if (hasOwnProperty.call(items, id)) {
@@ -185,50 +186,64 @@ function setupStorage(config, options) {
               return null;
             },
         set(id, values) {
-          if (values) {
-            items[id] = [
-              getCurrentTimestamp(),
-              JSON.stringify(values, function replacer(key, value) {
-                if (value === this[""]) return value;
+          try {
+            if (values) {
+              items[id] = [
+                getCurrentTimestamp(),
+                JSON.stringify(values, function replacer(key, value) {
+                  if (value === this[""]) return value;
 
-                if (value && typeof value === "object") {
-                  const valueConfig = definitions.get(value);
-                  const offline = valueConfig && valueConfig.storage.offline;
-                  if (offline) {
-                    if (valueConfig.list) {
-                      return value.map(model => {
-                        configs
-                          .get(valueConfig.model)
-                          .storage.offline.set(model.id, model);
-                        return `${model}`;
-                      });
+                  if (value && typeof value === "object") {
+                    const valueConfig = definitions.get(value);
+                    const offline = valueConfig && valueConfig.storage.offline;
+                    if (offline) {
+                      if (offline.threshold < threshold) {
+                        throw stringifyModel(
+                          config.model,
+                          Error(
+                            `Cannot save model instance into the offline cache - external nested model has lower 'offline' threshold (${offline.threshold} ms) than the parent definition (${threshold} ms)`,
+                          ),
+                        );
+                      }
+
+                      if (valueConfig.list) {
+                        return value.map(model => {
+                          configs
+                            .get(valueConfig.model)
+                            .storage.offline.set(model.id, model);
+                          return `${model}`;
+                        });
+                      }
+
+                      valueConfig.storage.offline.set(value.id, value);
+                      return `${value}`;
                     }
-
-                    valueConfig.storage.offline.set(value.id, value);
-                    return `${value}`;
                   }
-                }
 
-                return value;
-              }),
-            ];
-          } else {
-            delete items[id];
-          }
+                  return value;
+                }),
+              ];
+            } else {
+              delete items[id];
+            }
 
-          if (!flush) {
-            flush = Promise.resolve().then(() => {
-              const timestamp = getCurrentTimestamp();
+            if (!flush) {
+              flush = Promise.resolve().then(() => {
+                const timestamp = getCurrentTimestamp();
 
-              Object.keys(items).forEach(key => {
-                if (items[key][0] + threshold < timestamp) {
-                  delete items[key];
-                }
+                Object.keys(items).forEach(key => {
+                  if (items[key][0] + threshold < timestamp) {
+                    delete items[key];
+                  }
+                });
+
+                window.localStorage.setItem(offlineKey, JSON.stringify(items));
+                flush = null;
               });
-
-              window.localStorage.setItem(offlineKey, JSON.stringify(items));
-              flush = null;
-            });
+            }
+          } catch (e) {
+            delete items[id];
+            console.error(e);
           }
 
           return values;
@@ -392,6 +407,8 @@ function setupModel(Model, nested) {
 
     let invalidatePromise;
     const enumerable = hasOwnProperty.call(Model, "id");
+    const external = !!storage;
+
     const checks = new Map();
 
     const proto = {
@@ -403,9 +420,9 @@ function setupModel(Model, nested) {
 
     config = {
       model: Model,
-      external: !!storage,
+      external,
       enumerable,
-      nested: !enumerable && nested,
+      nested: !enumerable && !external && nested,
       placeholder: id => {
         const model = Object.create(placeholder);
         definitions.set(model, config);
