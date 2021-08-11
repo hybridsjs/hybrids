@@ -58,7 +58,9 @@ function saveLayout(target) {
 
 function restoreLayout(target) {
   const activeEl = document.activeElement;
-  const focusEl = focusMap.get(target) || (rootRouter.contains(activeEl) ? activeEl : rootRouter);
+  const focusEl =
+    focusMap.get(target) ||
+    (rootRouter.contains(activeEl) ? activeEl : rootRouter);
 
   if (focusEl.tabIndex === -1) {
     const outline = focusEl.style.outline;
@@ -903,7 +905,6 @@ function connectRootRouter(host, invalidate, options) {
     throw e;
   }
 
-  window.history.scrollRestoration = "manual";
   const state = window.history.state;
 
   if (!state) {
