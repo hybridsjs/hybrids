@@ -95,12 +95,6 @@ let clearPromise;
 function setupOfflineKey(config, threshold) {
   const key = `${offlinePrefix}:${hashCode(JSON.stringify(config.model))}`;
 
-  if (offlineKeys[key]) {
-    throw Error(
-      "A model definition with the same structure already setup for the offline mode",
-    );
-  }
-
   offlineKeys[key] = getCurrentTimestamp() + threshold;
 
   if (!clearPromise) {
@@ -186,64 +180,50 @@ function setupStorage(config, options) {
               return null;
             },
         set(id, values) {
-          try {
-            if (values) {
-              items[id] = [
-                getCurrentTimestamp(),
-                JSON.stringify(values, function replacer(key, value) {
-                  if (value === this[""]) return value;
+          if (values) {
+            items[id] = [
+              getCurrentTimestamp(),
+              JSON.stringify(values, function replacer(key, value) {
+                if (value === this[""]) return value;
 
-                  if (value && typeof value === "object") {
-                    const valueConfig = definitions.get(value);
-                    const offline = valueConfig && valueConfig.storage.offline;
-                    if (offline) {
-                      if (offline.threshold < threshold) {
-                        throw stringifyModel(
-                          config.model,
-                          Error(
-                            `Cannot save model instance into the offline cache - external nested model has lower 'offline' threshold (${offline.threshold} ms) than the parent definition (${threshold} ms)`,
-                          ),
-                        );
-                      }
-
-                      if (valueConfig.list) {
-                        return value.map(model => {
-                          configs
-                            .get(valueConfig.model)
-                            .storage.offline.set(model.id, model);
-                          return `${model}`;
-                        });
-                      }
-
-                      valueConfig.storage.offline.set(value.id, value);
-                      return `${value}`;
+                if (value && typeof value === "object") {
+                  const valueConfig = definitions.get(value);
+                  const offline = valueConfig && valueConfig.storage.offline;
+                  if (offline) {
+                    if (valueConfig.list) {
+                      return value.map(model => {
+                        configs
+                          .get(valueConfig.model)
+                          .storage.offline.set(model.id, model);
+                        return `${model}`;
+                      });
                     }
+
+                    valueConfig.storage.offline.set(value.id, value);
+                    return `${value}`;
                   }
+                }
 
-                  return value;
-                }),
-              ];
-            } else {
-              delete items[id];
-            }
-
-            if (!flush) {
-              flush = Promise.resolve().then(() => {
-                const timestamp = getCurrentTimestamp();
-
-                Object.keys(items).forEach(key => {
-                  if (items[key][0] + threshold < timestamp) {
-                    delete items[key];
-                  }
-                });
-
-                window.localStorage.setItem(offlineKey, JSON.stringify(items));
-                flush = null;
-              });
-            }
-          } catch (e) {
+                return value;
+              }),
+            ];
+          } else {
             delete items[id];
-            console.error(e);
+          }
+
+          if (!flush) {
+            flush = Promise.resolve().then(() => {
+              const timestamp = getCurrentTimestamp();
+
+              Object.keys(items).forEach(key => {
+                if (items[key][0] + threshold < timestamp) {
+                  delete items[key];
+                }
+              });
+
+              window.localStorage.setItem(offlineKey, JSON.stringify(items));
+              flush = null;
+            });
           }
 
           return values;
@@ -445,6 +425,8 @@ function setupModel(Model, nested) {
 
     configs.set(Model, config);
 
+    config.storage = setupStorage(config, storage || memoryStorage(config));
+
     const transform = Object.keys(Object.freeze(Model)).map(key => {
       if (key !== "id") {
         Object.defineProperty(placeholder, key, {
@@ -532,6 +514,18 @@ function setupModel(Model, nested) {
 
             const localConfig = bootstrap(defaultValue, true);
 
+            if (
+              localConfig.external &&
+              config.storage.offline &&
+              localConfig.storage.offline &&
+              localConfig.storage.offline.threshold <
+                config.storage.offline.threshold
+            ) {
+              throw Error(
+                `External nested model for '${key}' property has lower offline threshold (${localConfig.storage.offline.threshold} ms) than the parent definition (${config.storage.offline.threshold} ms)`,
+              );
+            }
+
             if (localConfig.enumerable && defaultValue[1]) {
               const nestedOptions = defaultValue[1];
               if (typeof nestedOptions !== "object") {
@@ -566,6 +560,16 @@ function setupModel(Model, nested) {
 
           const nestedConfig = bootstrap(defaultValue, true);
           if (nestedConfig.enumerable || nestedConfig.external) {
+            if (
+              config.storage.offline &&
+              nestedConfig.storage.offline &&
+              nestedConfig.storage.offline.threshold <
+                config.storage.offline.threshold
+            ) {
+              throw Error(
+                `External nested model for '${key}' property has lower offline threshold (${nestedConfig.storage.offline.threshold} ms) than the parent definition (${config.storage.offline.threshold} ms)`,
+              );
+            }
             return (model, data, lastModel) => {
               let resultModel;
 
@@ -653,8 +657,6 @@ function setupModel(Model, nested) {
       return Object.freeze(model);
     };
 
-    config.storage = setupStorage(config, storage || memoryStorage(config));
-
     Object.freeze(placeholder);
     Object.freeze(config);
   }
@@ -719,7 +721,7 @@ function setupListModel(Model, nested) {
       }
     }
 
-    nested = !modelConfig.enumerable && nested;
+    nested = !modelConfig.enumerable && !modelConfig.external && nested;
 
     config = {
       list: true,
@@ -727,31 +729,32 @@ function setupListModel(Model, nested) {
       model: Model,
       contexts,
       enumerable: modelConfig.enumerable,
+      external: modelConfig.external,
       storage: Object.freeze({
         ...setupStorage(config, {
           cache: modelConfig.storage.cache,
           get: !nested && (id => modelConfig.storage.list(id)),
         }),
-        offline: !nested &&
-          modelConfig.storage.offline && {
-            get: id => {
-              const result = modelConfig.storage.offline.get(
-                hashCode(String(stringifyId(id))),
-              );
-              return result
-                ? result.map(item => modelConfig.storage.offline.get(item))
-                : null;
-            },
-            set: (id, values) => {
-              modelConfig.storage.offline.set(
-                hashCode(String(stringifyId(id))),
-                values.map(item => {
-                  modelConfig.storage.offline.set(item.id, item);
-                  return item.id;
-                }),
-              );
-            },
+        offline: modelConfig.storage.offline && {
+          threshold: modelConfig.storage.offline.threshold,
+          get: id => {
+            const result = modelConfig.storage.offline.get(
+              hashCode(String(stringifyId(id))),
+            );
+            return result
+              ? result.map(item => modelConfig.storage.offline.get(item))
+              : null;
           },
+          set: (id, values) => {
+            modelConfig.storage.offline.set(
+              hashCode(String(stringifyId(id))),
+              values.map(item => {
+                modelConfig.storage.offline.set(item.id, item);
+                return item.id;
+              }),
+            );
+          },
+        },
       }),
       placeholder: () => {
         const model = Object.create(listPlaceholderPrototype);
