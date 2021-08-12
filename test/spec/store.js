@@ -2400,19 +2400,6 @@ describe("store:", () => {
       isOffline = false;
     });
 
-    it("throws for the same structure used twice", () => {
-      Model = {
-        id: true,
-        value: "throws",
-        [store.connect]: { offline: true, get: id => ({ id }) },
-      };
-
-      store.get(Model, "1");
-      expect(() =>
-        store.get({ ...Model, [store.connect]: Model[store.connect] }, "1"),
-      ).toThrow();
-    });
-
     it("throws when nested model has 'offline' option set to lower value", () => {
       const NestedModel = {
         value: "nested model",
@@ -2430,10 +2417,17 @@ describe("store:", () => {
         },
       };
 
-      return store.pending(store.get(Model)).then(() => {
-        cache.invalidateAll(storeConfigs.get(Model), { clearValue: true });
-        expect(store.ready(store.get(Model))).toBe(false);
-      });
+      expect(() => store.get(Model)).toThrow();
+
+      Model = {
+        nestedModels: [NestedModel],
+        [store.connect]: {
+          offline: true,
+          get: () => ({ nestedModels: [{}] }),
+        },
+      };
+
+      expect(() => store.get(Model)).toThrow();
     });
 
     it("returns model from offline cache", () => {

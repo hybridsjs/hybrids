@@ -230,6 +230,8 @@ If the main source fails (for example, due to network problems), the value from 
 
 The keys for storing model instances are automatically generated using the model definition structure. If the definition changes, the key changes as well. Nested models are stored inside of the parent instances if they don't set their own `offline` mode, or otherwise, they have their own place in the storage, while the parent model keeps the id reference.
 
+!> Keep in mind that in a rare case when different model definitions have identical structure of properties, they will share the same key in the `localStorage` for offline mode
+
 #### Automatic Clearing
 
 The offline cache uses a self-clearing strategy, which ensures that the cache is not growing indefinitely. If the `offline` option is set to `true`, it uses the default thirty days expiration time. You can also set the expiration time to any number of milliseconds. After the threshold, the obsolete model instances are deleted from the cache.
