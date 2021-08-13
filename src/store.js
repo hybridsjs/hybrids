@@ -932,7 +932,7 @@ function get(Model, id) {
       let result = config.storage.get(id);
 
       if (typeof result !== "object" || result === null) {
-        if (offline) offline.set(stringId, result);
+        if (offline) offline.set(stringId, null);
         throw notFoundError(Model, stringId);
       }
 
@@ -940,7 +940,7 @@ function get(Model, id) {
         result = result
           .then(data => {
             if (typeof data !== "object" || data === null) {
-              if (offline) offline.set(stringId, result);
+              if (offline) offline.set(stringId, null);
               throw notFoundError(Model, stringId);
             }
 
