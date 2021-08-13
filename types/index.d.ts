@@ -192,6 +192,7 @@ declare module "hybrids" {
   }
 
   /* Router */
+
   type View<E> = TaggedHybrids<E> & {
     __router__connect__?: {
       url?: string;
@@ -204,7 +205,7 @@ declare module "hybrids" {
   };
 
   function router<E, V>(
-    views: View<any>[],
+    views: View<any>[] | (() => View<any>[]),
     options?: {
       url?: string;
     },
@@ -222,7 +223,7 @@ declare module "hybrids" {
     };
 
     function url<E>(
-      view: Hybrids<E>,
+      view: View<E>,
       params?: UrlParams<E> & UrlOptions,
     ): URL | string;
 
@@ -231,7 +232,7 @@ declare module "hybrids" {
     function currentUrl<E>(params?: UrlParams<E> & UrlOptions): string;
 
     function active(
-      views: Hybrids<any> | Hybrids<any>[],
+      views: View<any> | View<any>[],
       options?: { stack?: boolean },
     ): boolean;
 

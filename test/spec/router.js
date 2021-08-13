@@ -39,7 +39,11 @@ describe("router:", () => {
         </div>
       `,
     };
-    NestedTwo = { tag: "test-router-child-nested-two" };
+    NestedTwo = {
+      [router.connect]: { url: "/nested-two?some" },
+      tag: "test-router-child-nested-two",
+      some: "test",
+    };
 
     Child = {
       [router.connect]: {
@@ -54,7 +58,11 @@ describe("router:", () => {
       content: ({ nested }) => html`
         <a href="${router.backUrl()}">Back</a>
         <a href="${router.url(OtherChild, { otherId: "1" })}">OtherChild</a>
-        <a id="nested-two-link" href="${router.url(NestedTwo)}">NestedTwo</a>
+        <a
+          id="nested-two-link"
+          href="${router.url(NestedTwo, { some: "value" })}"
+          >NestedTwo</a
+        >
         ${nested}
       `,
     };
@@ -286,6 +294,66 @@ describe("router:", () => {
     });
   });
 
+  describe("connect nested router", () => {
+    beforeEach(() => {
+      host.parentElement.removeChild(host);
+    });
+
+    it("throws for more than one nested router in the definition", () => {
+      const NestedView = { tag: "test-router-nested-root-nested-view" };
+      const RootView = {
+        tag: "test-router-nested-root-view",
+        nested: router([NestedView]),
+        nestedTwo: router([NestedView]),
+      };
+      define({
+        tag: "test-router-app",
+        views: router([RootView]),
+      });
+      const el = document.createElement("test-router-app");
+      expect(() => el.connectedCallback()).toThrow();
+    });
+
+    it("throws for nested router defined inside of the dialog view", () => {
+      const NestedView = { tag: "test-router-nested-root-nested-view" };
+      const DialogView = {
+        [router.connect]: {
+          dialog: true,
+        },
+        tag: "test-router-nested-dialog-view",
+        nested: router([NestedView]),
+      };
+      const RootView = {
+        [router.connect]: { stack: [DialogView] },
+        tag: "test-router-nested-root-view",
+        nested: router([NestedView]),
+      };
+      define({
+        tag: "test-router-app",
+        views: router([RootView]),
+      });
+      const el = document.createElement("test-router-app");
+      expect(() => el.connectedCallback()).toThrow();
+    });
+
+    it("throws when parent view has 'url' option", () => {
+      const NestedView = { tag: "test-router-nested-root-nested-view" };
+      const RootView = {
+        [router.connect]: {
+          url: "/",
+        },
+        tag: "test-router-nested-root-view",
+        nested: router([NestedView]),
+      };
+      define({
+        tag: "test-router-app",
+        views: router([RootView]),
+      });
+      const el = document.createElement("test-router-app");
+      expect(() => el.connectedCallback()).toThrow();
+    });
+  });
+
   describe("navigate -", () => {
     it("navigates to Child and go back to Home", () =>
       resolveRaf(() => {
@@ -336,6 +404,7 @@ describe("router:", () => {
             expect(host.children[0].constructor.hybrids).toBe(Child);
 
             expect(host.views[0].nested[0].constructor.hybrids).toBe(NestedTwo);
+            expect(host.views[0].nested[0].some).toBe("value");
             expect(window.history.state.length).toBe(2);
           });
         });
@@ -403,10 +472,6 @@ describe("router:", () => {
     });
 
     describe("without 'url' option", () => {
-      it("throws an error when set not supported parameter", () => {
-        expect(() => router.url(Home, { param: 1 })).toThrow();
-      });
-
       it("returns URL with hash for view with not set 'url' option", () => {
         const url = router.url(Home);
         expect(url).toBeInstanceOf(URL);
@@ -432,14 +497,10 @@ describe("router:", () => {
         expect(() => router.url(OtherChild, { otherParam: 1 })).toThrow();
       });
 
-      it("throws an error when set not supported parameter", () => {
+      it("does not throws an error when set meta parameter", () => {
         expect(() =>
-          router.url(OtherChild, { otherId: "1", otherParam: 1 }),
-        ).toThrow();
-      });
-
-      it("throws an error when set not supported parameter", () => {
-        expect(() => router.url(OtherURLChild, { param: 1 })).toThrow();
+          router.url(OtherURLChild, { scrollToTop: true }),
+        ).not.toThrow();
       });
 
       it("returns URL with pathname", () => {
@@ -460,9 +521,15 @@ describe("router:", () => {
     });
   });
 
-  describe("resolve() -", () => {});
-  describe("backUrl() -", () => {});
+  describe("backUrl() -", () => {
+    it("returns an empty string when no router is connected", () => {
+      window.history.replaceState(null, "");
+      expect(router.backUrl()).toBe("");
+    });
+  });
+
   describe("guardUrl() -", () => {});
   describe("currentUrl() -", () => {});
+  describe("resolve() -", () => {});
   describe("active() -", () => {});
 });

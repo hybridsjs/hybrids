@@ -56,26 +56,30 @@ function saveLayout(target) {
   scrollMap.set(target, map);
 }
 
+function focusElement(target) {
+  if (target.tabIndex === -1) {
+    const outline = target.style.outline;
+    target.tabIndex = 0;
+    target.style.outline = "none";
+    target.addEventListener(
+      "blur",
+      () => {
+        target.removeAttribute("tabindex");
+        target.style.outline = outline;
+      },
+      { once: true },
+    );
+  }
+  target.focus({ preventScroll: true });
+}
+
 function restoreLayout(target) {
   const activeEl = document.activeElement;
   const focusEl =
     focusMap.get(target) ||
     (rootRouter.contains(activeEl) ? activeEl : rootRouter);
 
-  if (focusEl.tabIndex === -1) {
-    const outline = focusEl.style.outline;
-    focusEl.tabIndex = 0;
-    focusEl.style.outline = "none";
-    focusEl.addEventListener(
-      "blur",
-      () => {
-        focusEl.removeAttribute("tabindex");
-        focusEl.style.outline = outline;
-      },
-      { once: true },
-    );
-  }
-  focusEl.focus({ preventScroll: true });
+  focusElement(focusEl);
 
   const map = scrollMap.get(target);
 
@@ -120,14 +124,14 @@ function setupBrowserUrl(browserUrl, id) {
     browserUrl,
     pathnameParams,
     paramsKeys: [...searchParams, ...pathnameParams],
-    url(params, suppressErrors) {
+    url(params) {
       let temp = normalizedPathname;
 
       if (pathnameParams.length) {
         temp = temp.split(placeholder).reduce((acc, part, index) => {
           const key = pathnameParams[index - 1];
 
-          if (!hasOwnProperty.call(params, key) && !suppressErrors) {
+          if (!hasOwnProperty.call(params, key)) {
             throw Error(`The '${key}' parameter must be defined for <${id}>`);
           }
 
@@ -139,15 +143,7 @@ function setupBrowserUrl(browserUrl, id) {
 
       Object.keys(params).forEach(key => {
         if (pathnameParams.includes(key)) return;
-
-        if (
-          searchParams.includes(key) ||
-          (!suppressErrors && metaParams.includes(key))
-        ) {
-          url.searchParams.append(key, params[key] || "");
-        } else if (!suppressErrors && !metaParams.includes(key)) {
-          throw TypeError(`The '${key}' parameter is not supported by <${id}>`);
-        }
+        url.searchParams.append(key, params[key] || "");
       });
 
       return url;
@@ -179,8 +175,7 @@ function setupBrowserUrl(browserUrl, id) {
       }
 
       url.searchParams.forEach((value, key) => {
-        if (searchParams.includes(key) || metaParams.includes(key))
-          params[key] = value;
+        params[key] = value;
       });
 
       return params;
@@ -233,7 +228,7 @@ function getNestedRouterOptions(hybrids, config) {
   if (nestedRouters.length) {
     if (nestedRouters.length > 1) {
       throw TypeError(
-        `<${config.id}> must contain at most one nested router: ${nestedRouters.length}`,
+        `<${config.id}> must contain at most one nested router, found: ${nestedRouters.length}`,
       );
     }
 
@@ -288,23 +283,39 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
 
     if (options.dialog) {
       callbacks.push(host => {
-        const cb = event => {
+        const goBackOnEscKey = event => {
           if (event.key === "Escape") {
             event.stopPropagation();
             window.history.go(-1);
           }
         };
-        host.addEventListener("keydown", cb);
+
+        const focusDialog = () => {
+          focusElement(host);
+        };
+
+        const prevActiveEl = document.activeElement;
+
+        rootRouter.addEventListener("focusin", focusDialog);
+        host.addEventListener("focusout", focusDialog);
+        host.addEventListener("keydown", goBackOnEscKey);
+
+        focusElement(host);
+
         return () => {
-          host.removeEventListener("keydown", cb);
+          rootRouter.removeEventListener("focusin", focusDialog);
+          host.removeEventListener("focusout", focusDialog);
+          host.removeEventListener("keydown", goBackOnEscKey);
+
+          focusElement(prevActiveEl);
         };
       });
     }
 
-    const writableParams = new Set();
+    const writableParams = [];
     Object.keys(Constructor.prototype).forEach(key => {
       const desc = Object.getOwnPropertyDescriptor(Constructor.prototype, key);
-      if (desc.set) writableParams.add(key);
+      if (desc.set) writableParams.push(key);
     });
 
     if (options.url) {
@@ -324,7 +335,13 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         cache.observe(
           _,
           connect,
-          host => browserUrl.url(host, true),
+          host =>
+            browserUrl.url(
+              browserUrl.paramsKeys.reduce((acc, key) => {
+                acc[key] = host[key];
+                return acc;
+              }, {}),
+            ),
           (host, url) => {
             const state = window.history.state;
             let entry = state[0];
@@ -385,20 +402,11 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       parentsWithGuards: undefined,
       stack: [],
       ...(browserUrl || {
-        url(params, suppressErrors) {
+        url(params) {
           const url = new URL("", window.location.origin);
 
           Object.keys(params).forEach(key => {
-            if (
-              writableParams.has(key) ||
-              (!suppressErrors && metaParams.includes(key))
-            ) {
-              url.searchParams.append(key, params[key] || "");
-            } else if (!suppressErrors && !metaParams.includes(key)) {
-              throw TypeError(
-                `The '${key}' parameter is not supported by <${id}>`,
-              );
-            }
+            url.searchParams.append(key, params[key] || "");
           });
 
           return new URL(
@@ -409,7 +417,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         match(url) {
           const params = {};
           url.searchParams.forEach((value, key) => {
-            if (writableParams.has(key) || metaParams.includes(key))
+            if (writableParams.includes(key) || metaParams.includes(key))
               params[key] = value;
           });
 
@@ -420,25 +428,43 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         const el = new Constructor();
         configs.set(el, config);
 
-        el.style.outline = "none";
-
         return el;
       },
       getEntry(params = {}, other) {
-        const entry = { id, params, ...other };
+        const entryParams = {};
+        const restParams = Object.keys(params).reduce((acc, key) => {
+          if (
+            writableParams.includes(key) &&
+            (!config.paramsKeys || config.paramsKeys.includes(key))
+          ) {
+            entryParams[key] = params[key];
+          } else {
+            acc[key] = params[key];
+          }
+
+          return acc;
+        }, {});
+
+        const entry = { id, params: entryParams, ...other };
         const guardConfig = config.parentsWithGuards.find(c => !c.guard());
 
         if (guardConfig) {
-          return guardConfig.getEntry(params, { from: entry });
+          return guardConfig.getEntry(restParams, { from: entry });
         }
 
         if (config.guard && config.guard()) {
-          return { ...config.stack[0].getEntry(params) };
+          return { ...config.stack[0].getEntry(restParams) };
         }
 
         if (config.nestedParent) {
-          return config.nestedParent.getEntry(params, { nested: entry });
+          return config.nestedParent.getEntry(restParams, { nested: entry });
         }
+
+        metaParams.forEach(key => {
+          if (hasOwnProperty.call(restParams, key)) {
+            entry.params[key] = restParams[key];
+          }
+        });
 
         return entry;
       },
@@ -509,11 +535,12 @@ function getBackUrl({ nested = false, scrollToTop = false } = {}) {
       while (prevEntry.nested) {
         prevEntry = prevEntry.nested;
       }
-    } else
+    } else {
       while (entry.id === prevEntry.id && i < state.length - 1) {
         i += 1;
         prevEntry = state[i];
       }
+    }
 
     config = getConfigById(prevEntry.id);
 
@@ -529,7 +556,13 @@ function getBackUrl({ nested = false, scrollToTop = false } = {}) {
       return config.url(params);
     }
   } else {
-    const currentConfig = getConfigById(state[0].id);
+    let entry = state[0];
+    if (nested) {
+      while (entry.nested) {
+        entry = entry.nested;
+      }
+    }
+    const currentConfig = getConfigById(entry.id);
     if (currentConfig.parent) {
       config = currentConfig.parent;
     }
@@ -544,7 +577,15 @@ function getBackUrl({ nested = false, scrollToTop = false } = {}) {
     }
 
     if (config) {
-      return config.url(state[0].params, true);
+      let entry = state[0];
+      const params = { ...entry.params };
+
+      while (entry.nested) {
+        entry = entry.nested;
+        Object.assign(params, entry.params);
+      }
+
+      return config.url(params);
     }
   }
 
@@ -570,10 +611,11 @@ function getCurrentUrl(params) {
   const state = window.history.state;
   if (!state) return "";
 
-  const entry = state[0];
-  const config = getConfigById(entry.id);
+  let entry = state[0];
+  while (entry.nested) entry = entry.nested;
 
-  return config.url({ ...entry.params, ...params });
+  const config = getConfigById(entry.id);
+  return config.url({ ...entry.params, ...params }, true);
 }
 
 function active(views, { stack = false } = {}) {
@@ -1027,9 +1069,9 @@ function router(views, options) {
 export default Object.assign(router, {
   connect,
   url: getUrl,
-  resolve: resolveEvent,
   backUrl: getBackUrl,
   guardUrl: getGuardUrl,
   currentUrl: getCurrentUrl,
+  resolve: resolveEvent,
   active,
 });
