@@ -345,16 +345,12 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           (host, url) => {
             const state = window.history.state;
             let entry = state[0];
-            while (entry && entry.id !== config.id) {
-              entry = entry.nested;
-            }
+            while (entry.nested) entry = entry.nested;
 
-            if (entry) {
-              entry.params = browserUrl.paramsKeys.reduce((acc, key) => {
-                acc[key] = String(host[key] || "");
-                return acc;
-              }, {});
-            }
+            entry.params = browserUrl.paramsKeys.reduce((acc, key) => {
+              acc[key] = String(host[key] || "");
+              return acc;
+            }, {});
 
             window.history.replaceState(state, "", url);
           },
@@ -431,14 +427,11 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         return el;
       },
       getEntry(params = {}, other) {
-        const entryParams = {};
-        const restParams = Object.keys(params).reduce((acc, key) => {
+        const entryParams = Object.keys(params).reduce((acc, key) => {
           if (
             writableParams.includes(key) &&
             (!config.paramsKeys || config.paramsKeys.includes(key))
           ) {
-            entryParams[key] = params[key];
-          } else {
             acc[key] = params[key];
           }
 
@@ -449,20 +442,20 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         const guardConfig = config.parentsWithGuards.find(c => !c.guard());
 
         if (guardConfig) {
-          return guardConfig.getEntry(restParams, { from: entry });
+          return guardConfig.getEntry(params, { from: entry });
         }
 
         if (config.guard && config.guard()) {
-          return { ...config.stack[0].getEntry(restParams) };
+          return { ...config.stack[0].getEntry(params) };
         }
 
         if (config.nestedParent) {
-          return config.nestedParent.getEntry(restParams, { nested: entry });
+          return config.nestedParent.getEntry(params, { nested: entry });
         }
 
         metaParams.forEach(key => {
-          if (hasOwnProperty.call(restParams, key)) {
-            entry.params[key] = restParams[key];
+          if (hasOwnProperty.call(params, key)) {
+            entry.params[key] = params[key];
           }
         });
 

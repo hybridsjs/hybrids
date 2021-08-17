@@ -9,6 +9,7 @@ describe("router:", () => {
   let Child;
   let OtherChild;
   let OtherURLChild;
+  let Dialog;
   let Home;
   let host;
 
@@ -27,7 +28,16 @@ describe("router:", () => {
       `,
     };
 
+    NestedTwo = {
+      [router.connect]: { url: "/nested-two?some" },
+      tag: "test-router-child-nested-two",
+      some: "test",
+    };
+
     NestedOne = {
+      [router.connect]: {
+        stack: [NestedTwo],
+      },
       tag: "test-router-child-nested-one",
       render: () => html`
         <div
@@ -39,18 +49,13 @@ describe("router:", () => {
         </div>
       `,
     };
-    NestedTwo = {
-      [router.connect]: { url: "/nested-two?some" },
-      tag: "test-router-child-nested-two",
-      some: "test",
-    };
 
     Child = {
       [router.connect]: {
         stack: [OtherChild],
       },
       tag: "test-router-child",
-      nested: router([NestedOne, NestedTwo]),
+      nested: router([NestedOne]),
       render: () =>
         html`
           <slot></slot>
@@ -79,14 +84,26 @@ describe("router:", () => {
       `,
     };
 
+    Dialog = {
+      [router.connect]: {
+        dialog: true,
+      },
+      tag: "test-router-dialog",
+      content: () => html`
+        <p>Dialog</p>
+        <a href="${router.backUrl()}">Back</a>
+      `,
+    };
+
     Home = {
       [router.connect]: {
-        stack: [Child, OtherURLChild, OtherChild],
+        stack: [Child, OtherURLChild, OtherChild, Dialog],
       },
       tag: "test-router-home",
       content: () => html`
         <a href="${router.url(Child)}">Child</a>
         <a href="${router.url(OtherChild, { otherId: "1" })}">Child</a>
+        <a id="dialog-link" href="${router.url(Dialog)}">Dialog</a>
         <div
           class="overflow"
           style="height: 100px; overflow: scroll"
@@ -155,6 +172,72 @@ describe("router:", () => {
       expect(() => router([A]).connect(el)).toThrow();
     });
 
+    it("throws when dialog has 'url' option", () => {
+      host.parentElement.removeChild(host);
+
+      expect(() =>
+        router([
+          {
+            [router.connect]: { dialog: true, url: "/home" },
+            tag: "test-router-dialog-throw",
+          },
+        ]).connect(document.createElement("div")),
+      ).toThrow();
+    });
+
+    it("throws when dialog has 'stack' option", () => {
+      host.parentElement.removeChild(host);
+
+      expect(() =>
+        router([
+          {
+            [router.connect]: { dialog: true, stack: [] },
+            tag: "test-router-dialog-throw",
+          },
+        ]).connect(document.createElement("div")),
+      ).toThrow();
+    });
+
+    it("throws when view 'url' option is not a string", () => {
+      host.parentElement.removeChild(host);
+
+      expect(() =>
+        router([
+          {
+            [router.connect]: { url: true },
+            tag: "test-router-url-throw",
+          },
+        ]).connect(document.createElement("div")),
+      ).toThrow();
+    });
+
+    it("throws when view does not support browser url option", () => {
+      host.parentElement.removeChild(host);
+
+      expect(() =>
+        router([
+          {
+            [router.connect]: { url: "/test?open" },
+            tag: "test-router-url-throw",
+          },
+        ]).connect(document.createElement("div")),
+      ).toThrow();
+    });
+
+    it("throws when view does not support browser url option", () => {
+      host.parentElement.removeChild(host);
+
+      expect(() =>
+        router([
+          {
+            [router.connect]: { url: "/:userId" },
+            userId: () => "test",
+            tag: "test-router-url-throw",
+          },
+        ]).connect(document.createElement("div")),
+      ).toThrow();
+    });
+
     it("returns empty array for not connected host", () => {
       const el = document.createElement("test-router-app");
       expect(el.views).toEqual([]);
@@ -217,7 +300,7 @@ describe("router:", () => {
       }).then(done);
     });
 
-    it("resets state to previously connected view", done => {
+    it("resets state to previously connected view", () =>
       resolveRaf(() => {
         const el = host.children[0].children[0];
         el.click();
@@ -235,8 +318,7 @@ describe("router:", () => {
             expect(host.children[0].constructor.hybrids).toBe(Home);
           });
         });
-      }).then(done);
-    });
+      }));
 
     it("saves and restores scroll position", () => {
       host.style.height = "200vh";
@@ -405,7 +487,53 @@ describe("router:", () => {
 
             expect(host.views[0].nested[0].constructor.hybrids).toBe(NestedTwo);
             expect(host.views[0].nested[0].some).toBe("value");
-            expect(window.history.state.length).toBe(2);
+            expect(window.history.state.length).toBe(3);
+          });
+        });
+      }));
+
+    it("navigates to Dialog and go back to Home by link", () =>
+      resolveRaf(() => {
+        let el = host.querySelector("#dialog-link");
+        el.click();
+        return resolveRaf(() => {
+          expect(host.views[0].constructor.hybrids).toBe(Home);
+          expect(host.children[0].constructor.hybrids).toBe(Home);
+          expect(host.views[1].constructor.hybrids).toBe(Dialog);
+          expect(host.children[1].constructor.hybrids).toBe(Dialog);
+          expect(window.history.state.length).toBe(2);
+
+          el = host.children[1].querySelector("a");
+          el.click();
+
+          return resolveRaf(() => {
+            expect(host.views[0].constructor.hybrids).toBe(Home);
+            expect(host.children[0].constructor.hybrids).toBe(Home);
+            expect(window.history.state.length).toBe(1);
+          });
+        });
+      }));
+
+    it("navigates to Dialog and go back to Home by keyboard", () =>
+      resolveRaf(() => {
+        const el = host.querySelector("#dialog-link");
+        el.click();
+        return resolveRaf(() => {
+          expect(host.views[0].constructor.hybrids).toBe(Home);
+          expect(host.children[0].constructor.hybrids).toBe(Home);
+          expect(host.views[1].constructor.hybrids).toBe(Dialog);
+          expect(host.children[1].constructor.hybrids).toBe(Dialog);
+          expect(window.history.state.length).toBe(2);
+
+          const keyEventEsc = new KeyboardEvent("keydown", { key: "Escape" });
+          const keyEventEnter = new KeyboardEvent("keydown", { key: "Enter" });
+          host.children[1].dispatchEvent(keyEventEnter);
+          host.children[1].dispatchEvent(keyEventEsc);
+
+          return resolveRaf(() => {
+            expect(host.views[0].constructor.hybrids).toBe(Home);
+            expect(host.children[0].constructor.hybrids).toBe(Home);
+            expect(window.history.state.length).toBe(1);
           });
         });
       }));
@@ -526,6 +654,31 @@ describe("router:", () => {
       window.history.replaceState(null, "");
       expect(router.backUrl()).toBe("");
     });
+
+    it("returns back url for nested view", () =>
+      resolveRaf(() => {
+        let el = host.children[0].children[0];
+        el.click();
+        return resolveRaf(() => {
+          el = document.getElementById("nested-two-link");
+          el.click();
+
+          return resolveRaf(() => {
+            expect(host.views[0].constructor.hybrids).toBe(Child);
+            expect(host.children[0].constructor.hybrids).toBe(Child);
+
+            expect(router.backUrl().hash).toBe("#@test-router-home");
+            expect(
+              router
+                .backUrl({ scrollToTop: true })
+                .hash.includes("scrollToTop"),
+            ).toBe(true);
+            expect(router.backUrl({ nested: true }).hash).toBe(
+              "#@test-router-child-nested-one",
+            );
+          });
+        });
+      }));
   });
 
   describe("guardUrl() -", () => {});
