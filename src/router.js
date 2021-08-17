@@ -124,7 +124,7 @@ function setupBrowserUrl(browserUrl, id) {
     browserUrl,
     pathnameParams,
     paramsKeys: [...searchParams, ...pathnameParams],
-    url(params) {
+    url(params, options = {}) {
       let temp = normalizedPathname;
 
       if (pathnameParams.length) {
@@ -143,6 +143,8 @@ function setupBrowserUrl(browserUrl, id) {
 
       Object.keys(params).forEach(key => {
         if (pathnameParams.includes(key)) return;
+        if (options.omitMetaParams && metaParams.includes(key)) return;
+
         url.searchParams.append(key, params[key] || "");
       });
 
@@ -341,6 +343,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
                 acc[key] = host[key];
                 return acc;
               }, {}),
+              { omitMetaParams: true },
             ),
           (host, url) => {
             const state = window.history.state;
@@ -896,7 +899,7 @@ function connectRootRouter(host, invalidate, options) {
     const nestedConfig = getConfigById(nestedEntry.id);
 
     const url = nestedConfig.browserUrl
-      ? nestedConfig.url(entry.params, true)
+      ? nestedConfig.url(entry.params, { omitMetaParams: true })
       : options.url;
     const offset = getEntryOffset(entry);
 
