@@ -124,7 +124,7 @@ function setupBrowserUrl(browserUrl, id) {
     browserUrl,
     pathnameParams,
     paramsKeys: [...searchParams, ...pathnameParams],
-    url(params, options = {}) {
+    url(params, strict = false) {
       let temp = normalizedPathname;
 
       if (pathnameParams.length) {
@@ -142,8 +142,12 @@ function setupBrowserUrl(browserUrl, id) {
       const url = new URL(temp, window.location.origin);
 
       Object.keys(params).forEach(key => {
-        if (pathnameParams.includes(key)) return;
-        if (options.omitMetaParams && metaParams.includes(key)) return;
+        if (
+          pathnameParams.includes(key) ||
+          (strict && (metaParams.includes(key) || !searchParams.includes(key)))
+        ) {
+          return;
+        }
 
         url.searchParams.append(key, params[key] || "");
       });
@@ -343,7 +347,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
                 acc[key] = host[key];
                 return acc;
               }, {}),
-              { omitMetaParams: true },
+              true,
             ),
           (host, url) => {
             const state = window.history.state;
@@ -431,10 +435,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       },
       getEntry(params = {}, other) {
         const entryParams = Object.keys(params).reduce((acc, key) => {
-          if (
-            writableParams.includes(key) &&
-            (!config.paramsKeys || config.paramsKeys.includes(key))
-          ) {
+          if (writableParams.includes(key)) {
             acc[key] = params[key];
           }
 
@@ -611,7 +612,7 @@ function getCurrentUrl(params) {
   while (entry.nested) entry = entry.nested;
 
   const config = getConfigById(entry.id);
-  return config.url({ ...entry.params, ...params }, true);
+  return config.url({ ...entry.params, ...params });
 }
 
 function active(views, { stack = false } = {}) {
@@ -899,7 +900,7 @@ function connectRootRouter(host, invalidate, options) {
     const nestedConfig = getConfigById(nestedEntry.id);
 
     const url = nestedConfig.browserUrl
-      ? nestedConfig.url(entry.params, { omitMetaParams: true })
+      ? nestedConfig.url(entry.params, true)
       : options.url;
     const offset = getEntryOffset(entry);
 
