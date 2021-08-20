@@ -681,7 +681,101 @@ describe("router:", () => {
       }));
   });
 
-  describe("guardUrl() -", () => {});
+  describe("guardUrl() -", () => {
+    it("returns an empty string when no router is connected", () => {
+      window.history.replaceState(null, "");
+      expect(router.guardUrl()).toBe("");
+    });
+
+    it("returns an url to the first stacked view", () =>
+      resolveRaf(() => {
+        expect(router.guardUrl().hash).toBe("#@test-router-child");
+
+        const el = host.children[0].children[1];
+        el.click();
+        return resolveRaf(() => {
+          expect(router.guardUrl()).toBe("");
+        });
+      }));
+
+    describe("for guarded view", () => {
+      let guardFlag;
+
+      beforeEach(() => {
+        host.parentElement.removeChild(host);
+
+        guardFlag = false;
+
+        Child = {
+          [router.connect]: {
+            url: "/child",
+          },
+          tag: "test-router-child",
+          content: () =>
+            html`
+              <a href="${router.url(Home)}">Home</a>
+            `,
+        };
+
+        Home = {
+          [router.connect]: {
+            stack: [Child],
+            guard: () => {
+              if (!guardFlag) throw Error("guard failed");
+              return guardFlag;
+            },
+          },
+          tag: "test-router-home",
+          content: () => html`
+            <a href="${router.guardUrl()}">Child</a>
+          `,
+        };
+
+        define({
+          tag: "test-router-app",
+          views: router([Home]),
+          content: ({ views }) => html`${views}` // prettier-ignore
+        });
+
+        window.history.replaceState(null, "", "/child");
+
+        host = document.createElement("test-router-app");
+        document.body.appendChild(host);
+
+        return resolveRaf(() => {});
+      });
+
+      it("shows parent guarded view and navigate to child", () => {
+        expect(host.views[0].constructor.hybrids).toBe(Home);
+
+        let el = host.children[0].children[0];
+
+        expect(el.pathname).toBe("/child");
+        el.click();
+
+        return resolveRaf(() => {
+          expect(host.views[0].constructor.hybrids).toBe(Home);
+          guardFlag = true;
+
+          el.click();
+
+          return resolveRaf(() => {
+            expect(host.views[0].constructor.hybrids).toBe(Child);
+            el = host.children[0].children[0];
+
+            expect(el.hash).toBe("#@test-router-home");
+            el.click();
+
+            return resolveRaf(() => {
+              expect(host.views[0].constructor.hybrids).toBe(Child);
+              expect(host.children[0].constructor.hybrids).toBe(Child);
+            });
+          });
+        });
+      });
+    });
+  });
+
   describe("currentUrl() -", () => {});
   describe("resolve() -", () => {});
   describe("active() -", () => {});

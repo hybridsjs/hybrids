@@ -381,10 +381,9 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
 
     let guard;
     if (options.guard) {
-      const el = new Constructor();
       guard = () => {
         try {
-          return options.guard(el);
+          return options.guard();
         } catch (e) {
           console.error(e);
           return false;

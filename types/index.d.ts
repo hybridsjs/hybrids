@@ -225,11 +225,11 @@ declare module "hybrids" {
     function url<E>(
       view: View<E>,
       params?: UrlParams<E> & UrlOptions,
-    ): URL | string;
+    ): URL | "";
 
-    function backUrl(options?: { nested?: boolean } & UrlOptions): string;
-    function guardUrl(params?: UrlParams<any> & UrlOptions): string;
-    function currentUrl<E>(params?: UrlParams<E> & UrlOptions): string;
+    function backUrl(options?: { nested?: boolean } & UrlOptions): URL | "";
+    function guardUrl(params?: UrlParams<any> & UrlOptions): URL | "";
+    function currentUrl<E>(params?: UrlParams<E> & UrlOptions): URL | "";
 
     function active(
       views: View<any> | View<any>[],
