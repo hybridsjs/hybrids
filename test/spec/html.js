@@ -1325,7 +1325,9 @@ describe("html:", () => {
         `,
     };
 
-    define(TestShadyParent, TestShadyChild);
+    beforeAll(() => {
+      define(TestShadyParent, TestShadyChild);
+    });
 
     const shadyTree = test(`
       <test-shady-parent></test-shady-parent>

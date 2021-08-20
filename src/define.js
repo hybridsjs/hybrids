@@ -142,7 +142,7 @@ export function defineElement(tagName, hybrids, omitProps) {
 
         const lastHybrids = CustomElement.hybrids;
 
-        compile(CustomElement, hybrids);
+        compile(CustomElement, hybrids, omitProps);
         update(CustomElement, lastHybrids);
 
         return CustomElement;
@@ -209,7 +209,9 @@ export function defineElement(tagName, hybrids, omitProps) {
 function defineTagged(elements) {
   elements.forEach(hybrids => {
     if (typeof hybrids.tag !== "string") {
-      throw TypeError(`Tagged element must have a string tag: ${hybrids.tag}`);
+      throw TypeError(
+        `Tagged element 'tag' property must be a string: ${hybrids.tag}`,
+      );
     }
 
     defineElement(pascalToDash(hybrids.tag), hybrids, ["tag"]);

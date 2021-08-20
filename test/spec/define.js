@@ -54,6 +54,15 @@ describe("define:", () => {
       });
     });
 
+    it("updates tagged component", () => {
+      const component = { tag: "test-define-update-component", value: "test" };
+      define(component);
+      define({ ...component });
+
+      const el = document.createElement("test-define-update-component");
+      expect("tag" in el).toBe(false);
+    });
+
     it("throws for element without 'tag' string property", () => {
       expect(() => {
         define({ value: "test" });
