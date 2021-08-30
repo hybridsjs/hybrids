@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.1.0](https://github.com/hybridsjs/hybrids/compare/v6.0.0...v6.1.0) (2021-08-30)
+
+
+### Features
+
+* **store:** offline mode for external storages ([#175](https://github.com/hybridsjs/hybrids/issues/175)) ([345821b](https://github.com/hybridsjs/hybrids/commit/345821b966d785092eed0125bba12610b93148c5))
+
+
+### Bug Fixes
+
+* **define:** omit tag property when HMR updates definitions ([74bcc63](https://github.com/hybridsjs/hybrids/commit/74bcc634c4d0ea372b2a1d22eb8f6c5970f7c4bf))
+* **store:** a number for offline mode removes cached values after the threshold ([16f036a](https://github.com/hybridsjs/hybrids/commit/16f036aa5cc21afa1df2bc90e98ff9a84f303cb8))
+* **store:** clear values for empty result for offline cache ([a1071b4](https://github.com/hybridsjs/hybrids/commit/a1071b4503b7eba521a87b9ad84fcd02799e33d2))
+* **store:** don't throw for async setup offline key ([fd23eaf](https://github.com/hybridsjs/hybrids/commit/fd23eaf1ca1f157ac9f58d6c9216e30046be0ce4))
+* **store:** move offline threshold check to model definition ([edb22e4](https://github.com/hybridsjs/hybrids/commit/edb22e4730c50d528f07fb77baff067bb4ea3ff3))
+* **store:** prevent from lower offline values in nested models ([1147732](https://github.com/hybridsjs/hybrids/commit/1147732948cb1def6aaa59583f531cb0897450d5))
+* **store:** throw error for default get action ([1b011a1](https://github.com/hybridsjs/hybrids/commit/1b011a1ac8cdd3cdc5558d4eab573330de7ca1fa))
+
 ## [6.0.0](https://github.com/hybridsjs/hybrids/compare/v5.4.0...v6.0.0) (2021-07-17)
 
 
