@@ -301,15 +301,16 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         };
 
         const prevActiveEl = document.activeElement;
+        const root = rootRouter;
 
-        rootRouter.addEventListener("focusin", focusDialog);
+        root.addEventListener("focusin", focusDialog);
         host.addEventListener("focusout", focusDialog);
         host.addEventListener("keydown", goBackOnEscKey);
 
         focusElement(host);
 
         return () => {
-          rootRouter.removeEventListener("focusin", focusDialog);
+          root.removeEventListener("focusin", focusDialog);
           host.removeEventListener("focusout", focusDialog);
           host.removeEventListener("keydown", goBackOnEscKey);
 
@@ -521,8 +522,6 @@ function getBackUrl({ nested = false, scrollToTop = false } = {}) {
   const state = window.history.state;
   if (!state) return "";
 
-  let config;
-
   if (state.length > 1) {
     const entry = state[0];
     let i = 1;
@@ -538,42 +537,34 @@ function getBackUrl({ nested = false, scrollToTop = false } = {}) {
       }
     }
 
-    config = getConfigById(prevEntry.id);
+    const params = { ...prevEntry.params };
 
-    if (!config.guard) {
-      const params = { ...prevEntry.params };
-
-      if (scrollToTop) {
-        params.scrollToTop = true;
-      } else {
-        delete params.scrollToTop;
-      }
-
-      return config.url(params);
+    if (scrollToTop) {
+      params.scrollToTop = true;
+    } else {
+      delete params.scrollToTop;
     }
-  } else {
-    let entry = state[0];
-    if (nested) {
-      while (entry.nested) {
-        entry = entry.nested;
-      }
-    }
-    const currentConfig = getConfigById(entry.id);
-    if (currentConfig.parent) {
-      config = currentConfig.parent;
+
+    return getConfigById(prevEntry.id).url(params);
+  }
+
+  let entry = state[0];
+
+  if (nested) {
+    while (entry.nested) {
+      entry = entry.nested;
     }
   }
 
+  let config = getConfigById(entry.id).parent;
+
   if (config) {
-    if (config.guard) {
+    while (config && config.guard) {
       config = config.parent;
-      while (config && config.guard) {
-        config = config.parent;
-      }
     }
 
     if (config) {
-      let entry = state[0];
+      entry = state[0];
       const params = { ...entry.params };
 
       while (entry.nested) {
@@ -687,7 +678,7 @@ function handleNavigate(event) {
       return;
   }
 
-  if (rootRouter && url && url.origin === window.location.origin) {
+  if (url && url.origin === window.location.origin) {
     const entry = getEntryFromURL(url);
     if (entry) {
       event.preventDefault();
@@ -899,7 +890,7 @@ function connectRootRouter(host, invalidate, options) {
     const nestedConfig = getConfigById(nestedEntry.id);
 
     const url = nestedConfig.browserUrl
-      ? nestedConfig.url(entry.params, true)
+      ? nestedConfig.url(nestedEntry.params, true)
       : options.url;
     const offset = getEntryOffset(entry);
 
@@ -929,17 +920,15 @@ function connectRootRouter(host, invalidate, options) {
     );
   }
 
-  rootRouter = host;
-  flushes.set(host, flush);
-
   let roots;
   try {
     roots = setupViews(options.views, options);
+    rootRouter = host;
+    flushes.set(host, flush);
   } catch (e) {
     console.error(
       `Error while connecting router in <${host.tagName.toLowerCase()}>:`,
     );
-    rootRouter = null;
     throw e;
   }
 

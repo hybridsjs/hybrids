@@ -1,782 +1,841 @@
-import { define, router, html } from "../../src/index.js";
-import { resolveRaf, resolveTimeout } from "../helpers.js";
+import { define, html, router } from "../../src/index.js";
+import { resolveTimeout } from "../helpers.js";
+
+function hybrids(el) {
+  return el.constructor.hybrids;
+}
 
 const browserUrl = window.location.pathname;
 
 describe("router:", () => {
-  let NestedOne;
-  let NestedTwo;
-  let Child;
-  let OtherChild;
-  let OtherURLChild;
+  let RootView;
+  let ChildView;
+  let OtherChildView;
+  let NestedViewOne;
+  let NestedViewTwo;
   let Dialog;
-  let Home;
   let host;
 
-  beforeEach(done => {
-    OtherChild = {
-      [router.connect]: {
-        url: "/other_child/:otherId/test?param",
-      },
-      tag: "test-router-other-child",
-      otherId: "",
-      param: false,
-      otherParam: "",
-      content: () => html`
-        <a href="${router.backUrl()}">Back</a>
-        <a href="${router.url(Home, { scrollToTop: true })}">Home</a>
-      `,
+  afterAll(() => {
+    window.history.replaceState(null, "", browserUrl);
+  });
+
+  it("throws for wrong arguments", () => {
+    const el = document.createElement("div");
+    expect(() => router().connect(el)).toThrow();
+    expect(() => router(() => "test").connect(el)).toThrow();
+  });
+
+  it("throws when views have circular reference", () => {
+    let A;
+
+    const B = {
+      [router.connect]: { stack: () => [A] },
+      tag: "test-router-circular-b",
     };
 
-    NestedTwo = {
-      [router.connect]: { url: "/nested-two?some" },
-      tag: "test-router-child-nested-two",
-      some: "test",
+    A = {
+      [router.connect]: { stack: [B] },
+      tag: "test-router-circular-a",
     };
 
-    NestedOne = {
-      [router.connect]: {
-        stack: [NestedTwo],
-      },
-      tag: "test-router-child-nested-one",
-      render: () => html`
-        <div
-          class="overflow"
-          style="height: 100px; overflow: scroll"
-          tabindex="0"
-        >
-          <div style="height: 300px"></div>
-        </div>
-      `,
-    };
+    const el = document.createElement("div");
+    expect(() => router([A]).connect(el)).toThrow();
+  });
 
-    Child = {
-      [router.connect]: {
-        stack: [OtherChild],
-      },
-      tag: "test-router-child",
-      nested: router([NestedOne]),
-      render: () =>
-        html`
-          <slot></slot>
-        `,
-      content: ({ nested }) => html`
-        <a href="${router.backUrl()}">Back</a>
-        <a href="${router.url(OtherChild, { otherId: "1" })}">OtherChild</a>
-        <a
-          id="nested-two-link"
-          href="${router.url(NestedTwo, { some: "value" })}"
-          >NestedTwo</a
-        >
-        ${nested}
-      `,
-    };
+  it("throws when dialog has 'url' option", () => {
+    expect(() =>
+      router([
+        {
+          [router.connect]: { dialog: true, url: "/home" },
+          tag: "test-router-dialog-throw",
+        },
+      ]).connect(document.createElement("div")),
+    ).toThrow();
+  });
 
-    OtherURLChild = {
-      [router.connect]: {
-        url: "/other_url_child",
-      },
-      tag: "test-router-other-url-child",
-      param: "",
-      otherParam: "",
-      content: () => html`
-        <a href="${router.backUrl()}">Back</a>
-      `,
-    };
+  it("throws when view 'url' option is not a string", () => {
+    expect(() =>
+      router([
+        {
+          [router.connect]: { url: true },
+          tag: "test-router-url-throw",
+        },
+      ]).connect(document.createElement("div")),
+    ).toThrow();
+  });
 
-    Dialog = {
+  it("throws when dialog has 'stack' option", () => {
+    expect(() =>
+      router([
+        {
+          [router.connect]: { dialog: true, stack: [] },
+          tag: "test-router-dialog-throw",
+        },
+      ]).connect(document.createElement("div")),
+    ).toThrow();
+  });
+
+  it("throws when view does not support browser url option", () => {
+    expect(() =>
+      router([
+        {
+          [router.connect]: { url: "/test?open" },
+          tag: "test-router-url-throw",
+        },
+      ]).connect(document.createElement("div")),
+    ).toThrow();
+  });
+
+  it("throws for more than one nested router in the definition", () => {
+    const NestedView = { tag: "test-router-nested-root-nested-view" };
+    define({
+      tag: "test-router-app",
+      views: router([
+        {
+          tag: "test-router-nested-root-view",
+          nested: router([NestedView]),
+          nestedTwo: router([NestedView]),
+        },
+      ]),
+    });
+    const el = document.createElement("test-router-app");
+    expect(() => el.connectedCallback()).toThrow();
+  });
+
+  it("throws for nested router defined inside of the dialog view", () => {
+    const NestedView = { tag: "test-router-nested-root-nested-view" };
+    const DialogView = {
       [router.connect]: {
         dialog: true,
       },
-      tag: "test-router-dialog",
-      content: () => html`
-        <p>Dialog</p>
-        <a href="${router.backUrl()}">Back</a>
-      `,
+      tag: "test-router-nested-dialog-view",
+      nested: router([NestedView]),
     };
-
-    Home = {
-      [router.connect]: {
-        stack: [Child, OtherURLChild, OtherChild, Dialog],
-      },
-      tag: "test-router-home",
-      content: () => html`
-        <a href="${router.url(Child)}">Child</a>
-        <a href="${router.url(OtherChild, { otherId: "1" })}">Child</a>
-        <a id="dialog-link" href="${router.url(Dialog)}">Dialog</a>
-        <div
-          class="overflow"
-          style="height: 100px; overflow: scroll"
-          tabindex="0"
-        >
-          <div style="height: 300px"></div>
-        </div>
-        <input type="text" />
-        <a href="${router.currentUrl()}">Home</a>
-      `,
-    };
-
     define({
       tag: "test-router-app",
-      views: router([Home]),
-      content: ({ views }) => html`${views}` // prettier-ignore
+      views: router([
+        {
+          [router.connect]: { stack: [DialogView] },
+          tag: "test-router-nested-root-view",
+          nested: router([NestedView]),
+        },
+      ]),
     });
-
-    window.history.replaceState(null, "", browserUrl);
-    resolveRaf(() => {
-      host = document.createElement("test-router-app");
-      document.body.appendChild(host);
-      resolveRaf(done);
-    });
+    const el = document.createElement("test-router-app");
+    expect(() => el.connectedCallback()).toThrow();
   });
 
-  afterEach(() => {
-    const parent = host.parentElement;
-    if (parent) {
-      parent.removeChild(host);
-    }
-    window.history.replaceState(null, "", browserUrl);
+  it("throws when parent view has 'url' option", () => {
+    const NestedView = { tag: "test-router-nested-root-nested-view" };
+    define({
+      tag: "test-router-app",
+      views: router([
+        {
+          [router.connect]: {
+            url: "/",
+          },
+          tag: "test-router-nested-root-view",
+          nested: router([NestedView]),
+        },
+      ]),
+    });
+    const el = document.createElement("test-router-app");
+    expect(() => el.connectedCallback()).toThrow();
   });
 
-  describe("connect root router -", () => {
-    it("throws for wrong arguments", () => {
-      host.parentElement.removeChild(host);
-
-      const el = document.createElement("div");
-      expect(() => router().connect(el)).toThrow();
-      expect(() => router(() => "test").connect(el)).toThrow();
-    });
-
-    it("throws when connecting root router twice", () => {
-      expect(() => {
-        const anotherHost = document.createElement("test-router-app");
-        anotherHost.connectedCallback();
-      }).toThrow();
-    });
-
-    it("throws when views have circular reference", () => {
-      host.parentElement.removeChild(host);
-      let A;
-
-      const B = {
-        [router.connect]: { stack: () => [A] },
-        tag: "test-router-circular-b",
+  describe("test app", () => {
+    beforeAll(() => {
+      NestedViewTwo = {
+        [router.connect]: {
+          url: "/nested/:value/test?param",
+        },
+        value: "1",
+        param: false,
+        tag: "test-router-nested-view-two",
       };
 
-      A = {
-        [router.connect]: { stack: [B] },
-        tag: "test-router-circular-a",
+      const OtherNestedComponent = {
+        tag: "test-router-other-nested-component",
+        render: () =>
+          html`
+            <div>Other nested component</div>
+          `,
       };
 
-      const el = document.createElement("div");
-      expect(() => router([A]).connect(el)).toThrow();
+      const NestedComponent = {
+        tag: "test-router-nested-component",
+        render: () =>
+          html`
+            <div
+              class="overflow"
+              style="height: 100px; overflow: scroll"
+              tabindex="0"
+            >
+              <div style="height: 300px"></div>
+            </div>
+            <test-router-other-nested-component></test-router-other-nested-component>
+          `.define(OtherNestedComponent),
+      };
+
+      NestedViewOne = {
+        [router.connect]: {
+          stack: [NestedViewTwo],
+        },
+        tag: "test-router-nested-view-one",
+        render: () =>
+          html`
+            <test-router-nested-component></test-router-nested-component>
+            <slot></slot>
+          `.define(NestedComponent),
+        content: () => html`
+          <a
+            href="${router.url(NestedViewTwo, { value: "1" })}"
+            id="NestedViewTwo"
+            >NestedViewTwo</a
+          >
+        `,
+      };
+
+      OtherChildView = {
+        [router.connect]: { url: "/other_url_child" },
+        tag: "test-router-other-child-view",
+      };
+
+      ChildView = {
+        [router.connect]: {
+          stack: [OtherChildView],
+        },
+        tag: "test-router-child-view",
+        views: router([NestedViewOne]),
+        content: ({ views }) => html`
+          ${views}
+          <a href="${router.url(RootView)}" id="RootView">RootView</a>
+          <a
+            href="${router.url(RootView, { scrollToTop: true })}"
+            id="RootViewScrollToTop"
+          >
+            RootView with scroll to top
+          </a>
+          <a href="${router.url(OtherChildView)}" id="OtherChildView"
+            >OtherChildView</a
+          >
+        `,
+      };
+
+      Dialog = {
+        [router.connect]: { dialog: true },
+        tag: "test-router-dialog",
+      };
+
+      RootView = {
+        [router.connect]: {
+          stack: [ChildView, Dialog],
+        },
+        tag: "test-router-root-view",
+        content: () => html`
+          <a href="${router.url(ChildView)}" id="ChildView">Child</a>
+          <a href="${router.url(Dialog)}" id="Dialog">Dialog</a>
+
+          <div id="overflow" style="height: 100px; overflow: scroll">
+            <div style="height: 300px"></div>
+          </div>
+          <input id="input" />
+        `,
+      };
+
+      define({
+        tag: "test-router-app",
+        views: router([RootView]),
+        content: ({ views }) => html`${views}` // prettier-ignore
+      });
+
+      return resolveTimeout(() => {});
     });
 
-    it("throws when dialog has 'url' option", () => {
-      host.parentElement.removeChild(host);
+    describe("bootstrap root router", () => {
+      beforeEach(() => {
+        host = document.createElement("test-router-app");
+      });
 
-      expect(() =>
-        router([
-          {
-            [router.connect]: { dialog: true, url: "/home" },
-            tag: "test-router-dialog-throw",
-          },
-        ]).connect(document.createElement("div")),
-      ).toThrow();
-    });
+      afterEach(() => {
+        if (host.parentElement) {
+          host.parentElement.removeChild(host);
+        }
+      });
 
-    it("throws when dialog has 'stack' option", () => {
-      host.parentElement.removeChild(host);
+      it("returns empty array for not connected host", () => {
+        expect(host.views).toEqual([]);
+      });
 
-      expect(() =>
-        router([
-          {
-            [router.connect]: { dialog: true, stack: [] },
-            tag: "test-router-dialog-throw",
-          },
-        ]).connect(document.createElement("div")),
-      ).toThrow();
-    });
-
-    it("throws when view 'url' option is not a string", () => {
-      host.parentElement.removeChild(host);
-
-      expect(() =>
-        router([
-          {
-            [router.connect]: { url: true },
-            tag: "test-router-url-throw",
-          },
-        ]).connect(document.createElement("div")),
-      ).toThrow();
-    });
-
-    it("throws when view does not support browser url option", () => {
-      host.parentElement.removeChild(host);
-
-      expect(() =>
-        router([
-          {
-            [router.connect]: { url: "/test?open" },
-            tag: "test-router-url-throw",
-          },
-        ]).connect(document.createElement("div")),
-      ).toThrow();
-    });
-
-    it("throws when view does not support browser url option", () => {
-      host.parentElement.removeChild(host);
-
-      expect(() =>
-        router([
-          {
-            [router.connect]: { url: "/:userId" },
-            userId: () => "test",
-            tag: "test-router-url-throw",
-          },
-        ]).connect(document.createElement("div")),
-      ).toThrow();
-    });
-
-    it("returns empty array for not connected host", () => {
-      const el = document.createElement("test-router-app");
-      expect(el.views).toEqual([]);
-    });
-
-    it("displays root view", done => {
-      resolveRaf(() => {
-        expect(host.views[0].constructor.hybrids).toBe(Home);
-        expect(host.children[0].constructor.hybrids).toBe(Home);
-      }).then(done);
-    });
-
-    it("does not match URL and displays root view", () => {
-      host.parentElement.removeChild(host);
-      window.history.replaceState(null, "", "/other_child/1");
-      return resolveRaf(() => {
+      it("clears or restores state from the history", () => {
+        window.history.replaceState(null, "", "/other_child/1");
         document.body.appendChild(host);
 
-        return resolveRaf(() => {
+        return resolveTimeout(() => {
+          // Clears URL and uses root view
           expect(window.location.pathname).toBe(browserUrl);
-          expect(host.views[0].constructor.hybrids).toBe(Home);
-          expect(host.children[0].constructor.hybrids).toBe(Home);
-        });
-      });
-    });
+          expect(hybrids(host.views[0])).toBe(RootView);
+          expect(hybrids(host.children[0])).toBe(RootView);
 
-    it("uses view from the history state", done => {
-      resolveRaf(() => {
-        const el = host.children[0].children[0];
-        el.click();
-        return resolveRaf(() => {
-          host.parentElement.removeChild(host);
-          host = document.createElement("test-router-app");
-          document.body.appendChild(host);
-          return resolveRaf(() => {
-            expect(host.children[0].constructor.hybrids).toBe(Child);
-          });
-        });
-      }).then(done);
-    });
+          host.querySelector("#Dialog").click();
 
-    it("resets state to default root view", done => {
-      resolveRaf(() => {
-        const el = host.children[0].children[0];
-        el.click();
-        return resolveRaf(() => {
-          host.parentElement.removeChild(host);
-          const Another = { tag: "test-router-another" };
-          define({
-            tag: "test-router-app",
-            views: router([Another]),
-            content: ({ views }) => html`${views}` // prettier-ignore
-          });
-          host = document.createElement("test-router-app");
-          document.body.appendChild(host);
-          return resolveRaf(() => {
-            expect(host.children[0].constructor.hybrids).toBe(Another);
-          });
-        });
-      }).then(done);
-    });
+          return resolveTimeout(() => {
+            host.parentElement.removeChild(host);
 
-    it("resets state to previously connected view", () =>
-      resolveRaf(() => {
-        const el = host.children[0].children[0];
-        el.click();
-        return resolveRaf(() => {
-          host.parentElement.removeChild(host);
-          Home = { tag: "test-router-home" };
-          define({
-            tag: "test-router-app",
-            views: router([Home]),
-            content: ({ views }) => html`${views}` // prettier-ignore
-          });
-          host = document.createElement("test-router-app");
-          document.body.appendChild(host);
-          return resolveRaf(() => {
-            expect(host.children[0].constructor.hybrids).toBe(Home);
-          });
-        });
-      }));
-
-    it("saves and restores scroll position", () => {
-      host.style.height = "200vh";
-      host.style.width = "200vw";
-      host.style.display = "block";
-
-      document.scrollingElement.scrollTop = 200;
-      document.scrollingElement.scrollLeft = 200;
-
-      let el = host.children[0].children[0];
-      el.click();
-
-      return resolveRaf(() => {
-        expect(document.scrollingElement.scrollTop).toBe(0);
-        expect(document.scrollingElement.scrollLeft).toBe(0);
-
-        el = host.children[0].children[0];
-        el.click();
-
-        return resolveRaf(() => {
-          expect(document.scrollingElement.scrollTop).toBe(200);
-          expect(document.scrollingElement.scrollLeft).toBe(200);
-
-          el = host.children[0].children[1];
-          el.click();
-
-          return resolveRaf(() => {
-            el = host.children[0].children[1];
-            el.click();
-
-            return resolveRaf(() => {
-              expect(host.views[0].constructor.hybrids).toBe(Home);
-              expect(document.scrollingElement.scrollTop).toBe(0);
-              expect(document.scrollingElement.scrollLeft).toBe(0);
-            });
-          });
-        });
-      });
-    });
-
-    it("does not change focus element", () => {
-      const input = host.querySelector("input");
-      input.focus();
-      let el = host.children[0].children[0];
-      el.click();
-
-      return resolveRaf(() => {
-        el = host.children[0].children[0];
-        el.click();
-
-        return resolveRaf(() => {
-          expect(document.activeElement).toBe(input);
-        });
-      });
-    });
-  });
-
-  describe("connect nested router", () => {
-    beforeEach(() => {
-      host.parentElement.removeChild(host);
-    });
-
-    it("throws for more than one nested router in the definition", () => {
-      const NestedView = { tag: "test-router-nested-root-nested-view" };
-      const RootView = {
-        tag: "test-router-nested-root-view",
-        nested: router([NestedView]),
-        nestedTwo: router([NestedView]),
-      };
-      define({
-        tag: "test-router-app",
-        views: router([RootView]),
-      });
-      const el = document.createElement("test-router-app");
-      expect(() => el.connectedCallback()).toThrow();
-    });
-
-    it("throws for nested router defined inside of the dialog view", () => {
-      const NestedView = { tag: "test-router-nested-root-nested-view" };
-      const DialogView = {
-        [router.connect]: {
-          dialog: true,
-        },
-        tag: "test-router-nested-dialog-view",
-        nested: router([NestedView]),
-      };
-      const RootView = {
-        [router.connect]: { stack: [DialogView] },
-        tag: "test-router-nested-root-view",
-        nested: router([NestedView]),
-      };
-      define({
-        tag: "test-router-app",
-        views: router([RootView]),
-      });
-      const el = document.createElement("test-router-app");
-      expect(() => el.connectedCallback()).toThrow();
-    });
-
-    it("throws when parent view has 'url' option", () => {
-      const NestedView = { tag: "test-router-nested-root-nested-view" };
-      const RootView = {
-        [router.connect]: {
-          url: "/",
-        },
-        tag: "test-router-nested-root-view",
-        nested: router([NestedView]),
-      };
-      define({
-        tag: "test-router-app",
-        views: router([RootView]),
-      });
-      const el = document.createElement("test-router-app");
-      expect(() => el.connectedCallback()).toThrow();
-    });
-  });
-
-  describe("navigate -", () => {
-    it("navigates to Child and go back to Home", () =>
-      resolveRaf(() => {
-        let el = host.children[0].children[0];
-        el.click();
-        return resolveRaf(() => {
-          expect(host.views[0].constructor.hybrids).toBe(Child);
-          expect(host.children[0].constructor.hybrids).toBe(Child);
-          expect(window.history.state.length).toBe(2);
-
-          el = host.children[0].children[0];
-          el.click();
-
-          return resolveRaf(() => {
-            expect(host.views[0].constructor.hybrids).toBe(Home);
-            expect(host.children[0].constructor.hybrids).toBe(Home);
-            expect(window.history.state.length).toBe(1);
-          });
-        });
-      }));
-
-    it("navigates to Child and push state with OtherChild", () =>
-      resolveRaf(() => {
-        let el = host.children[0].children[0];
-        el.click();
-        return resolveRaf(() => {
-          el = host.children[0].children[1];
-          el.click();
-
-          return resolveRaf(() => {
-            expect(host.views[0].constructor.hybrids).toBe(OtherChild);
-            expect(host.children[0].constructor.hybrids).toBe(OtherChild);
-            expect(window.history.state.length).toBe(3);
-          });
-        });
-      }));
-
-    it("navigates to Child and goes to NestedTwo", () =>
-      resolveRaf(() => {
-        let el = host.children[0].children[0];
-        el.click();
-        return resolveRaf(() => {
-          el = document.getElementById("nested-two-link");
-          el.click();
-
-          return resolveRaf(() => {
-            expect(host.views[0].constructor.hybrids).toBe(Child);
-            expect(host.children[0].constructor.hybrids).toBe(Child);
-
-            expect(host.views[0].nested[0].constructor.hybrids).toBe(NestedTwo);
-            expect(host.views[0].nested[0].some).toBe("value");
-            expect(window.history.state.length).toBe(3);
-          });
-        });
-      }));
-
-    it("navigates to Dialog and go back to Home by link", () =>
-      resolveRaf(() => {
-        let el = host.querySelector("#dialog-link");
-        el.click();
-        return resolveRaf(() => {
-          expect(host.views[0].constructor.hybrids).toBe(Home);
-          expect(host.children[0].constructor.hybrids).toBe(Home);
-          expect(host.views[1].constructor.hybrids).toBe(Dialog);
-          expect(host.children[1].constructor.hybrids).toBe(Dialog);
-          expect(window.history.state.length).toBe(2);
-
-          el = host.children[1].querySelector("a");
-          el.click();
-
-          return resolveRaf(() => {
-            expect(host.views[0].constructor.hybrids).toBe(Home);
-            expect(host.children[0].constructor.hybrids).toBe(Home);
-            expect(window.history.state.length).toBe(1);
-          });
-        });
-      }));
-
-    it("navigates to Dialog and go back to Home by keyboard", () =>
-      resolveRaf(() => {
-        const el = host.querySelector("#dialog-link");
-        el.click();
-        return resolveRaf(() => {
-          expect(host.views[0].constructor.hybrids).toBe(Home);
-          expect(host.children[0].constructor.hybrids).toBe(Home);
-          expect(host.views[1].constructor.hybrids).toBe(Dialog);
-          expect(host.children[1].constructor.hybrids).toBe(Dialog);
-          expect(window.history.state.length).toBe(2);
-
-          const keyEventEsc = new KeyboardEvent("keydown", { key: "Escape" });
-          const keyEventEnter = new KeyboardEvent("keydown", { key: "Enter" });
-          host.children[1].dispatchEvent(keyEventEnter);
-          host.children[1].dispatchEvent(keyEventEsc);
-
-          return resolveRaf(() => {
-            expect(host.views[0].constructor.hybrids).toBe(Home);
-            expect(host.children[0].constructor.hybrids).toBe(Home);
-            expect(window.history.state.length).toBe(1);
-          });
-        });
-      }));
-
-    it("saves and restores scroll position and focus element", () =>
-      resolveRaf(() => {
-        const div = host.querySelector(".overflow");
-        expect(div.scrollTop).toBe(0);
-        div.scrollTop = 150;
-
-        div.focus();
-
-        // Go to "Child"
-        let el = host.children[0].children[0];
-        el.click();
-
-        return resolveRaf(() => {
-          const nestedDiv = host
-            .querySelector("test-router-child-nested-one")
-            .render()
-            .querySelector(".overflow");
-
-          expect(nestedDiv.scrollTop).toBe(0);
-          nestedDiv.scrollTop = 150;
-
-          // Go to "Other Child"
-          el = host.children[0].children[1];
-          el.click();
-
-          return resolveRaf(() => {
-            // Back to Child
-            el = host.children[0].children[0];
-            el.click();
+            host = document.createElement("test-router-app");
+            document.body.appendChild(host);
 
             return resolveTimeout(() => {
-              expect(
-                host
-                  .querySelector("test-router-child-nested-one")
-                  .render()
-                  .querySelector(".overflow"),
-              ).toBe(nestedDiv);
-
-              expect(nestedDiv.scrollTop).toBe(150);
-
-              // Back to Home
-              el = host.children[0].children[0];
-              el.click();
+              // Uses saved state from the window history
+              expect(hybrids(host.children[0])).toBe(RootView);
+              host.querySelector("#ChildView").click();
 
               return resolveTimeout(() => {
-                expect(host.querySelector(".overflow")).toBe(div);
-                expect(div.scrollTop).toBe(150);
-                expect(document.activeElement).toBe(div);
+                host.parentElement.removeChild(host);
+
+                host = document.createElement("test-router-app");
+                document.body.appendChild(host);
+
+                return resolveTimeout(() => {
+                  // Uses saved state from the window history
+                  expect(hybrids(host.children[0])).toBe(ChildView);
+
+                  host.parentElement.removeChild(host);
+                  const Another = { tag: "test-router-another" };
+                  define({
+                    tag: "test-router-app-another",
+                    views: router([Another]),
+                    content: ({ views }) => html`${views}` // prettier-ignore
+                  });
+
+                  host = document.createElement("test-router-app-another");
+                  document.body.appendChild(host);
+
+                  return resolveTimeout(() => {
+                    // Clears not connected views and uses root view
+                    expect(host.children[0].constructor.hybrids).toBe(Another);
+                    window.history.replaceState(null, "", browserUrl);
+                  });
+                });
               });
             });
           });
         });
-      }));
-  });
-
-  describe("url() -", () => {
-    it("returns empty string for not connected view", () => {
-      const MyElement = { tag: "test-router-my-element" };
-      expect(router.url(MyElement)).toBe("");
-    });
-
-    describe("without 'url' option", () => {
-      it("returns URL with hash for view with not set 'url' option", () => {
-        const url = router.url(Home);
-        expect(url).toBeInstanceOf(URL);
-        expect(url.hash).toBe("#@test-router-home");
       });
     });
 
-    describe("with 'url' option", () => {
-      it("throws for duplicated parameters in URL", () => {
-        const desc = router([
-          {
-            [router.connect]: { url: "/:test?test" },
-            tag: "test-router-url-error",
-          },
-        ]);
-        host.parentElement.removeChild(host);
-        expect(() =>
-          desc.connect(document.createElement("div"), "test", () => {}),
-        ).toThrow();
+    describe("connected", () => {
+      beforeAll(() => {
+        host = document.createElement("test-router-app");
+
+        host.style.height = "200vh";
+        host.style.width = "200vw";
+        host.style.display = "block";
+
+        window.history.replaceState(null, "", browserUrl);
+
+        document.body.appendChild(host);
+
+        return resolveTimeout(() => {});
       });
 
-      it("throws an error for missing parameter", () => {
-        expect(() => router.url(OtherChild, { otherParam: 1 })).toThrow();
+      afterAll(() => {
+        if (host.parentElement) {
+          host.parentElement.removeChild(host);
+        }
       });
 
-      it("does not throws an error when set meta parameter", () => {
-        expect(() =>
-          router.url(OtherURLChild, { scrollToTop: true }),
-        ).not.toThrow();
+      it("throws when connecting root router twice", () => {
+        expect(() => {
+          const anotherHost = document.createElement("test-router-app");
+          anotherHost.connectedCallback();
+        }).toThrow();
       });
 
-      it("returns URL with pathname", () => {
-        const url = router.url(OtherURLChild);
-        expect(url).toBeInstanceOf(URL);
-        expect(url.hash).toBe("");
-        expect(url.pathname).toBe("/other_url_child");
-        expect(url.search).toBe("");
+      it("displays root view", () =>
+        resolveTimeout(() => {
+          expect(hybrids(host.views[0])).toBe(RootView);
+          expect(hybrids(host.children[0])).toBe(RootView);
+        }));
+
+      it("saves and restores scroll position preserving focused element", () => {
+        const input = host.querySelector("#input");
+        input.focus();
+
+        return resolveTimeout(() => {
+          document.scrollingElement.scrollTop = 200;
+          document.scrollingElement.scrollLeft = 200;
+
+          host.querySelector("#ChildView").click();
+
+          return resolveTimeout(() => {
+            expect(document.scrollingElement.scrollTop).toBe(0);
+            expect(document.scrollingElement.scrollLeft).toBe(0);
+
+            host.querySelector("#RootView").click();
+
+            return resolveTimeout(() => {
+              expect(hybrids(host.views[0])).toBe(RootView);
+              expect(document.activeElement).toBe(input);
+
+              expect(document.scrollingElement.scrollTop).toBe(200);
+              expect(document.scrollingElement.scrollLeft).toBe(200);
+
+              host.querySelector("#ChildView").click();
+
+              return resolveTimeout(() => {
+                expect(document.scrollingElement.scrollTop).toBe(0);
+                expect(document.scrollingElement.scrollLeft).toBe(0);
+
+                host.querySelector("#RootViewScrollToTop").click();
+
+                return resolveTimeout(() => {
+                  expect(hybrids(host.views[0])).toBe(RootView);
+                  expect(document.scrollingElement.scrollTop).toBe(0);
+                  expect(document.scrollingElement.scrollLeft).toBe(0);
+                });
+              });
+            });
+          });
+        });
       });
 
-      it("returns URL with parameter and search", () => {
-        const url = router.url(OtherChild, { otherId: 1, param: false });
-        expect(url).toBeInstanceOf(URL);
-        expect(url.hash).toBe("");
-        expect(url.pathname).toBe("/other_child/1/test");
-        expect(url.search).toBe("?param=");
+      it("navigate by pushing and pulling views from the stack", () => {
+        host.querySelector("#ChildView").click();
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.children[0])).toBe(ChildView);
+          expect(window.history.state.length).toBe(2);
+          expect(router.backUrl().hash).toBe("#@test-router-root-view");
+
+          host.querySelector("#OtherChildView").click();
+
+          return resolveTimeout(() => {
+            expect(hybrids(host.children[0])).toBe(OtherChildView);
+            expect(window.history.state.length).toBe(3);
+            expect(host.views.length).toBe(1);
+            expect(router.backUrl().hash).toBe("#@test-router-child-view");
+            expect(router.backUrl({ scrollToTop: true }).hash).toBe(
+              "#@test-router-child-view?scrollToTop=true",
+            );
+
+            window.history.back();
+
+            return resolveTimeout(() => {
+              expect(hybrids(host.children[0])).toBe(ChildView);
+              expect(hybrids(host.children[0].views[0])).toBe(NestedViewOne);
+              expect(window.history.state.length).toBe(2);
+
+              host.querySelector("#NestedViewTwo").click();
+
+              return resolveTimeout(() => {
+                expect(hybrids(host.children[0])).toBe(ChildView);
+                expect(hybrids(host.children[0].views[0])).toBe(NestedViewTwo);
+                expect(window.history.state.length).toBe(3);
+
+                expect(router.backUrl().hash).toBe("#@test-router-root-view");
+                expect(router.backUrl({ nested: true }).hash).toBe(
+                  "#@test-router-nested-view-one",
+                );
+
+                host.querySelector("#RootView").click();
+
+                return resolveTimeout(() => {
+                  expect(hybrids(host.children[0])).toBe(RootView);
+                  expect(window.history.state.length).toBe(1);
+
+                  host.querySelector("#Dialog").click();
+
+                  return resolveTimeout(() => {
+                    expect(hybrids(host.children[0])).toBe(RootView);
+                    expect(hybrids(host.children[1])).toBe(Dialog);
+                    expect(window.history.state.length).toBe(2);
+
+                    const keyEventEsc = new KeyboardEvent("keydown", {
+                      key: "Escape",
+                    });
+                    const keyEventEnter = new KeyboardEvent("keydown", {
+                      key: "Enter",
+                    });
+                    host.children[1].dispatchEvent(keyEventEnter);
+                    host.children[1].dispatchEvent(keyEventEsc);
+
+                    return resolveTimeout(() => {
+                      expect(hybrids(host.children[0])).toBe(RootView);
+                      expect(window.history.state.length).toBe(1);
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    describe("url() -", () => {
+      it("returns empty string for not connected view", () => {
+        const MyElement = { tag: "test-router-my-element" };
+        expect(router.url(MyElement)).toBe("");
+      });
+
+      describe("with connected router", () => {
+        beforeAll(() => {
+          host = document.createElement("test-router-app");
+          document.body.appendChild(host);
+        });
+
+        afterAll(() => {
+          document.body.removeChild(host);
+        });
+
+        describe("without 'url' option", () => {
+          it("returns URL with hash for view with not set 'url' option", () => {
+            const url = router.url(RootView, { param: false });
+            expect(url).toBeInstanceOf(URL);
+            expect(url.hash).toBe("#@test-router-root-view?param=");
+          });
+        });
+
+        describe("with 'url' option", () => {
+          it("throws for duplicated parameters in URL", () => {
+            const desc = router([
+              {
+                [router.connect]: { url: "/:test?test" },
+                tag: "test-router-url-error",
+              },
+            ]);
+
+            expect(() =>
+              desc.connect(document.createElement("div"), "test", () => {}),
+            ).toThrow();
+          });
+
+          it("throws an error for missing parameter", () => {
+            expect(() =>
+              router.url(NestedViewTwo, { otherParam: 1 }),
+            ).toThrow();
+          });
+
+          it("does not throws an error when set meta parameter", () => {
+            expect(() =>
+              router.url(NestedViewTwo, { value: "", scrollToTop: true }),
+            ).not.toThrow();
+          });
+
+          it("returns URL with pathname", () => {
+            const url = router.url(OtherChildView);
+            expect(url).toBeInstanceOf(URL);
+            expect(url.hash).toBe("");
+            expect(url.pathname).toBe("/other_url_child");
+            expect(url.search).toBe("");
+          });
+
+          it("returns URL with parameter and search", () => {
+            const url = router.url(NestedViewTwo, {
+              value: 1,
+              param: false,
+            });
+            expect(url).toBeInstanceOf(URL);
+            expect(url.hash).toBe("");
+            expect(url.pathname).toBe("/nested/1/test");
+            expect(url.search).toBe("?param=");
+          });
+        });
+      });
+    });
+
+    describe("currentUrl() -", () => {
+      it("returns an empty string when no router is connected", () => {
+        window.history.replaceState(null, "", browserUrl);
+        expect(router.currentUrl()).toBe("");
+      });
+
+      it("returns an url to the current stack view", () => {
+        window.history.replaceState(null, "", "/other_url_child");
+
+        host = document.createElement("test-router-app");
+        document.body.appendChild(host);
+
+        return resolveTimeout(() => {
+          expect(router.currentUrl().pathname).toBe("/other_url_child");
+          expect(router.currentUrl({ param: true }).search).toBe("?param=true");
+
+          document.body.removeChild(host);
+        });
+      });
+
+      it("returns an url to the current nested view", () => {
+        window.history.replaceState(null, "", "/nested/1/test");
+
+        host = document.createElement("test-router-app");
+        document.body.appendChild(host);
+
+        return resolveTimeout(() => {
+          expect(router.currentUrl().pathname).toBe("/nested/1/test");
+          expect(router.currentUrl({ param: true }).search).toBe("?param=true");
+
+          document.body.removeChild(host);
+        });
+      });
+    });
+
+    describe("active() -", () => {
+      afterEach(() => {
+        if (host && host.parentElement) {
+          host.parentElement.removeChild(host);
+        }
+      });
+
+      it("returns false when no router is connected", () => {
+        window.history.replaceState(null, "");
+        expect(router.active(RootView)).toBe(false);
+      });
+
+      it("returns boolean value for views", () => {
+        window.history.replaceState(null, "", browserUrl);
+        host = document.createElement("test-router-app");
+        document.body.appendChild(host);
+
+        return resolveTimeout(() => {
+          expect(() => router.active({})).toThrow();
+
+          expect(router.active(RootView)).toBe(true);
+          expect(router.active(ChildView)).toBe(false);
+          expect(router.active([RootView])).toBe(true);
+          expect(router.active([RootView, ChildView])).toBe(true);
+
+          host.querySelector("#ChildView").click();
+
+          return resolveTimeout(() => {
+            expect(router.active(RootView)).toBe(false);
+            expect(router.active(RootView, { stack: true })).toBe(true);
+            expect(router.active(ChildView)).toBe(true);
+            expect(router.active([RootView])).toBe(false);
+            expect(router.active([RootView, ChildView])).toBe(true);
+          });
+        });
       });
     });
   });
 
   describe("backUrl() -", () => {
     it("returns an empty string when no router is connected", () => {
-      window.history.replaceState(null, "");
+      window.history.replaceState(null, "", browserUrl);
       expect(router.backUrl()).toBe("");
     });
 
-    it("returns back url for nested view", () =>
-      resolveRaf(() => {
-        let el = host.children[0].children[0];
-        el.click();
-        return resolveRaf(() => {
-          el = document.getElementById("nested-two-link");
-          el.click();
+    describe("for stacked view as an entry point", () => {
+      let NestedOne;
+      let NestedTwo;
+      let Child;
+      let OtherChild;
+      let Home;
 
-          return resolveRaf(() => {
-            expect(host.views[0].constructor.hybrids).toBe(Child);
-            expect(host.children[0].constructor.hybrids).toBe(Child);
-
-            expect(router.backUrl().hash).toBe("#@test-router-home");
-            expect(
-              router
-                .backUrl({ scrollToTop: true })
-                .hash.includes("scrollToTop"),
-            ).toBe(true);
-            expect(router.backUrl({ nested: true }).hash).toBe(
-              "#@test-router-child-nested-one",
-            );
-          });
-        });
-      }));
-  });
-
-  describe("guardUrl() -", () => {
-    it("returns an empty string when no router is connected", () => {
-      window.history.replaceState(null, "");
-      expect(router.guardUrl()).toBe("");
-    });
-
-    it("returns an url to the first stacked view", () =>
-      resolveRaf(() => {
-        expect(router.guardUrl().hash).toBe("#@test-router-child");
-
-        const el = host.children[0].children[1];
-        el.click();
-        return resolveRaf(() => {
-          expect(router.guardUrl()).toBe("");
-        });
-      }));
-
-    describe("for guarded view", () => {
-      let guardFlag;
-
-      beforeEach(() => {
-        host.parentElement.removeChild(host);
-
-        guardFlag = false;
-
-        Child = {
+      beforeAll(() => {
+        NestedOne = {
           [router.connect]: {
             url: "/child",
           },
-          tag: "test-router-child",
+          tag: "test-router-child-nested-back-url",
+        };
+
+        Child = {
+          tag: "test-router-child-back-url",
+          nestedViews: router([NestedOne]),
           content: () =>
             html`
               <a href="${router.url(Home)}">Home</a>
             `,
         };
 
-        Home = {
+        NestedTwo = {
           [router.connect]: {
-            stack: [Child],
-            guard: () => {
-              if (!guardFlag) throw Error("guard failed");
-              return guardFlag;
-            },
+            url: "/nested_two",
           },
-          tag: "test-router-home",
+          tag: "test-router-child-nested-two-back-url",
+        };
+
+        OtherChild = {
+          [router.connect]: {
+            stack: [NestedTwo],
+            guard: () => true,
+          },
+          tag: "test-router-other-child-back-url",
+        };
+
+        Home = {
+          [router.connect]: { stack: [Child, OtherChild] },
+          tag: "test-router-home-back-url",
           content: () => html`
             <a href="${router.guardUrl()}">Child</a>
           `,
         };
 
         define({
-          tag: "test-router-app",
+          tag: "test-router-app-back-url",
           views: router([Home]),
           content: ({ views }) => html`${views}` // prettier-ignore
         });
+      });
 
+      beforeEach(() => {
+        host = document.createElement("test-router-app-back-url");
+      });
+
+      afterEach(() => {
+        if (host.parentElement) {
+          document.body.removeChild(host);
+        }
+      });
+
+      it("returns a parent url", () => {
         window.history.replaceState(null, "", "/child");
-
-        host = document.createElement("test-router-app");
         document.body.appendChild(host);
 
-        return resolveRaf(() => {});
+        return resolveTimeout(() => {
+          expect(router.backUrl().hash).toBe("#@test-router-home-back-url");
+          expect(router.backUrl({ nested: true }).hash).toBe(
+            "#@test-router-child-back-url",
+          );
+        });
+      });
+
+      it("returns an empty string when root is active", () => {
+        window.history.replaceState(null, "", browserUrl);
+        document.body.appendChild(host);
+
+        return resolveTimeout(() => {
+          expect(router.backUrl()).toBe("");
+        });
+      });
+
+      it("returns closest not guarded view", () => {
+        window.history.replaceState(null, "", "/nested_two");
+        document.body.appendChild(host);
+
+        return resolveTimeout(() => {
+          expect(router.backUrl().hash).toBe("#@test-router-home-back-url");
+          expect(router.backUrl({ nested: true }).hash).toBe(
+            "#@test-router-home-back-url",
+          );
+        });
+      });
+
+      it("returns empty string when no unguarded view is in the tree", () => {
+        const ChildUnguarded = { tag: "test-router-child-unguarded" };
+
+        define({
+          tag: "test-router-app-unguarded",
+          views: router([
+            {
+              [router.connect]: {
+                stack: [ChildUnguarded],
+                guard: () => true,
+              },
+              tag: "test-router-home-view-unguarded",
+            },
+          ]),
+          content: ({ views }) => html`${views}` // prettier-ignore
+        });
+
+        const guardedHost = document.createElement("test-router-app-unguarded");
+
+        window.history.replaceState(null, "", browserUrl);
+        document.body.appendChild(guardedHost);
+
+        return resolveTimeout(() => {
+          expect(router.backUrl()).toBe("");
+          expect(hybrids(guardedHost.views[0])).toBe(ChildUnguarded);
+          document.body.removeChild(guardedHost);
+        });
+      });
+    });
+  });
+
+  describe("guardUrl() -", () => {
+    it("returns an empty string when no router is connected", () => {
+      window.history.replaceState(null, "", browserUrl);
+      expect(router.guardUrl()).toBe("");
+    });
+
+    describe("", () => {
+      let guardFlag;
+
+      beforeAll(() => {
+        ChildView = {
+          [router.connect]: {
+            url: "/child",
+          },
+          tag: "test-router-child-view",
+          content: () =>
+            html`
+              <a href="${router.url(RootView)}" id="RootView">RootView</a>
+            `,
+        };
+
+        RootView = {
+          [router.connect]: {
+            stack: [ChildView],
+            guard: () => {
+              if (!guardFlag) throw Error("guard failed");
+              return guardFlag;
+            },
+          },
+          tag: "test-router-root-view",
+          content: () => html`
+            <a href="${router.guardUrl()}" id="ChildView">ChildView</a>
+          `,
+        };
+
+        define({
+          tag: "test-router-app-guard-url",
+          views: router([RootView]),
+          content: ({ views }) => html`${views}` // prettier-ignore
+        });
+
+        host = document.createElement("test-router-app-guard-url");
+        document.body.appendChild(host);
+
+        return resolveTimeout(() => {});
+      });
+
+      afterAll(() => {
+        window.history.replaceState(null, "", browserUrl);
+        document.body.removeChild(host);
       });
 
       it("shows parent guarded view and navigate to child", () => {
-        expect(host.views[0].constructor.hybrids).toBe(Home);
+        expect(hybrids(host.views[0])).toBe(RootView);
+        expect(router.guardUrl().pathname).toBe("/child");
 
-        let el = host.children[0].children[0];
+        guardFlag = false;
+        let el = host.querySelector("#ChildView");
 
         expect(el.pathname).toBe("/child");
         el.click();
 
-        return resolveRaf(() => {
-          expect(host.views[0].constructor.hybrids).toBe(Home);
+        return resolveTimeout(() => {
+          expect(hybrids(host.views[0])).toBe(RootView);
           guardFlag = true;
 
           el.click();
 
-          return resolveRaf(() => {
-            expect(host.views[0].constructor.hybrids).toBe(Child);
-            el = host.children[0].children[0];
+          return resolveTimeout(() => {
+            expect(router.guardUrl()).toBe("");
+            expect(hybrids(host.views[0])).toBe(ChildView);
+            el = host.querySelector("#RootView");
 
-            expect(el.hash).toBe("#@test-router-home");
+            expect(el.hash).toBe("#@test-router-root-view");
             el.click();
 
-            return resolveRaf(() => {
-              expect(host.views[0].constructor.hybrids).toBe(Child);
-              expect(host.children[0].constructor.hybrids).toBe(Child);
+            return resolveTimeout(() => {
+              expect(hybrids(host.views[0])).toBe(ChildView);
             });
           });
         });
       });
     });
   });
-
-  describe("currentUrl() -", () => {});
-  describe("resolve() -", () => {});
-  describe("active() -", () => {});
 });
