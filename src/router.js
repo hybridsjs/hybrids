@@ -165,7 +165,7 @@ function setupBrowserUrl(browserUrl, id) {
 
           temp = temp.substr(1);
 
-          if (!parts[i] || temp.substr(0, parts[i].length) !== parts[i]) {
+          if (parts[i] && temp.substr(0, parts[i].length) !== parts[i]) {
             return null;
           }
 
@@ -1051,12 +1051,14 @@ function router(views, options) {
   return desc;
 }
 
-export default Object.assign(router, {
-  connect,
-  url: getUrl,
-  backUrl: getBackUrl,
-  guardUrl: getGuardUrl,
-  currentUrl: getCurrentUrl,
-  resolve: resolveEvent,
-  active,
-});
+export default Object.freeze(
+  Object.assign(router, {
+    connect,
+    url: getUrl,
+    backUrl: getBackUrl,
+    guardUrl: getGuardUrl,
+    currentUrl: getCurrentUrl,
+    resolve: resolveEvent,
+    active,
+  }),
+);

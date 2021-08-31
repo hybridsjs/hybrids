@@ -11,6 +11,7 @@ describe("router:", () => {
   let RootView;
   let ChildView;
   let OtherChildView;
+  let OtherChildWithLongerUrl;
   let NestedViewOne;
   let NestedViewTwo;
   let Dialog;
@@ -155,27 +156,21 @@ describe("router:", () => {
         tag: "test-router-nested-view-two",
       };
 
-      const OtherNestedComponent = {
-        tag: "test-router-other-nested-component",
-        render: () =>
-          html`
-            <div>Other nested component</div>
-          `,
-      };
-
       const NestedComponent = {
         tag: "test-router-nested-component",
+        scroll: {
+          connect(_) {
+            const el = _.render().children[0];
+            el.scrollTop = 100;
+            el.scrollLeft = 100;
+          },
+        },
         render: () =>
           html`
-            <div
-              class="overflow"
-              style="height: 100px; overflow: scroll"
-              tabindex="0"
-            >
+            <div class="overflow" style="height: 100px; overflow: scroll">
               <div style="height: 300px"></div>
             </div>
-            <test-router-other-nested-component></test-router-other-nested-component>
-          `.define(OtherNestedComponent),
+          `,
       };
 
       NestedViewOne = {
@@ -199,15 +194,23 @@ describe("router:", () => {
 
       OtherChildView = {
         [router.connect]: { url: "/other_url_child" },
+        param: false,
         tag: "test-router-other-child-view",
+      };
+
+      OtherChildWithLongerUrl = {
+        [router.connect]: { url: "/:value/other" },
+        value: "",
+        tag: "test-router-other-child-view-longer",
       };
 
       ChildView = {
         [router.connect]: {
-          stack: [OtherChildView],
+          stack: [OtherChildWithLongerUrl, OtherChildView],
         },
         tag: "test-router-child-view",
         views: router([NestedViewOne]),
+        render: () => html`<slot></slot>`, // prettier-ignore
         content: ({ views }) => html`
           ${views}
           <a href="${router.url(RootView)}" id="RootView">RootView</a>
@@ -480,6 +483,19 @@ describe("router:", () => {
         expect(router.url(MyElement)).toBe("");
       });
 
+      it("throws for duplicated parameters in URL", () => {
+        const desc = router([
+          {
+            [router.connect]: { url: "/:test?test" },
+            tag: "test-router-url-error",
+          },
+        ]);
+
+        expect(() =>
+          desc.connect(document.createElement("div"), "test", () => {}),
+        ).toThrow();
+      });
+
       describe("with connected router", () => {
         beforeAll(() => {
           host = document.createElement("test-router-app");
@@ -499,19 +515,6 @@ describe("router:", () => {
         });
 
         describe("with 'url' option", () => {
-          it("throws for duplicated parameters in URL", () => {
-            const desc = router([
-              {
-                [router.connect]: { url: "/:test?test" },
-                tag: "test-router-url-error",
-              },
-            ]);
-
-            expect(() =>
-              desc.connect(document.createElement("div"), "test", () => {}),
-            ).toThrow();
-          });
-
           it("throws an error for missing parameter", () => {
             expect(() =>
               router.url(NestedViewTwo, { otherParam: 1 }),
@@ -553,12 +556,29 @@ describe("router:", () => {
       });
 
       it("returns an url to the current stack view", () => {
-        window.history.replaceState(null, "", "/other_url_child");
+        window.history.replaceState(null, "", "/other_url_child/other");
 
         host = document.createElement("test-router-app");
         document.body.appendChild(host);
 
         return resolveTimeout(() => {
+          expect(hybrids(host.views[0])).toBe(OtherChildWithLongerUrl);
+          expect(router.currentUrl().pathname).toBe("/other_url_child/other");
+          expect(router.currentUrl({ param: true }).search).toBe("?param=true");
+
+          document.body.removeChild(host);
+        });
+      });
+
+      it("returns an url to the current stack view", () => {
+        window.history.replaceState(null, "", "/other_url_child?param=1");
+
+        host = document.createElement("test-router-app");
+        document.body.appendChild(host);
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.views[0])).toBe(OtherChildView);
+          expect(host.views[0].param).toBe(true);
           expect(router.currentUrl().pathname).toBe("/other_url_child");
           expect(router.currentUrl({ param: true }).search).toBe("?param=true");
 
@@ -678,6 +698,11 @@ describe("router:", () => {
           views: router([Home]),
           content: ({ views }) => html`${views}` // prettier-ignore
         });
+      });
+
+      afterAll(() => {
+        window.history.replaceState(null, "", browserUrl);
+        return resolveTimeout(() => {});
       });
 
       beforeEach(() => {
