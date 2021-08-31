@@ -315,7 +315,7 @@ function uuid(temp) {
 
 function ref(fn) {
   if (typeof fn !== "function") {
-    throw TypeError(`The first argument must be a funtion: ${typeof fn}`);
+    throw TypeError(`The first argument must be a function: ${typeof fn}`);
   }
 
   refs.add(fn);
@@ -1499,24 +1499,26 @@ function store(Model, options = {}) {
   return desc;
 }
 
-export default Object.assign(store, {
-  // storage
-  connect,
+export default Object.freeze(
+  Object.assign(store, {
+    // storage
+    connect,
 
-  // actions
-  get,
-  set,
-  sync,
-  clear,
+    // actions
+    get,
+    set,
+    sync,
+    clear,
 
-  // guards
-  pending,
-  error,
-  ready,
+    // guards
+    pending,
+    error,
+    ready,
 
-  // helpers
-  submit,
-  value: valueWithValidation,
-  resolve: resolveToLatest,
-  ref,
-});
+    // helpers
+    submit,
+    value: valueWithValidation,
+    resolve: resolveToLatest,
+    ref,
+  }),
+);
