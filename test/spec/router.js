@@ -7,7 +7,7 @@ function hybrids(el) {
 
 const browserUrl = window.location.pathname;
 
-describe("router:", () => {
+fdescribe("router:", () => {
   let RootView;
   let ChildView;
   let OtherChildView;
@@ -496,6 +496,20 @@ describe("router:", () => {
         ).toThrow();
       });
 
+      it("throws for duplicated parameters in URL", () => {
+        const desc = router([
+          {
+            [router.connect]: { url: "/:test" },
+            test: () => "",
+            tag: "test-router-url-error",
+          },
+        ]);
+
+        expect(() =>
+          desc.connect(document.createElement("div"), "test", () => {}),
+        ).toThrow();
+      });
+
       describe("with connected router", () => {
         beforeAll(() => {
           host = document.createElement("test-router-app");
@@ -794,6 +808,13 @@ describe("router:", () => {
             url: "/child",
           },
           tag: "test-router-child-view",
+        };
+
+        OtherChildView = {
+          tag: "test-router-other-child-view",
+          [router.connect]: {
+            url: "/other_child",
+          },
           content: () =>
             html`
               <a href="${router.url(RootView)}" id="RootView">RootView</a>
@@ -802,7 +823,7 @@ describe("router:", () => {
 
         RootView = {
           [router.connect]: {
-            stack: [ChildView],
+            stack: [ChildView, OtherChildView],
             guard: () => {
               if (!guardFlag) throw Error("guard failed");
               return guardFlag;
@@ -810,7 +831,9 @@ describe("router:", () => {
           },
           tag: "test-router-root-view",
           content: () => html`
-            <a href="${router.guardUrl()}" id="ChildView">ChildView</a>
+            <a href="${router.url(OtherChildView)}" id="OtherChildView"
+              >OtherChildView</a
+            >
           `,
         };
 
@@ -831,25 +854,25 @@ describe("router:", () => {
         document.body.removeChild(host);
       });
 
-      it("shows parent guarded view and navigate to child", () => {
+      it("shows parent guarded view and navigate to other child", () => {
         expect(hybrids(host.views[0])).toBe(RootView);
         expect(router.guardUrl().pathname).toBe("/child");
 
         guardFlag = false;
-        let el = host.querySelector("#ChildView");
-
-        expect(el.pathname).toBe("/child");
+        let el = host.querySelector("#OtherChildView");
         el.click();
 
         return resolveTimeout(() => {
           expect(hybrids(host.views[0])).toBe(RootView);
+          expect(router.guardUrl().pathname).toBe("/other_child");
+
           guardFlag = true;
 
           el.click();
 
           return resolveTimeout(() => {
             expect(router.guardUrl()).toBe("");
-            expect(hybrids(host.views[0])).toBe(ChildView);
+            expect(hybrids(host.views[0])).toBe(OtherChildView);
             el = host.querySelector("#RootView");
 
             expect(el.hash).toBe("#@test-router-root-view");
