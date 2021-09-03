@@ -445,6 +445,12 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         const entry = { id, params: entryParams, ...other };
         const guardConfig = config.parentsWithGuards.find(c => !c.guard());
 
+        routerOptions.params.forEach(key => {
+          if (!hasOwnProperty.call(params, key)) {
+            entry.params[key] = rootRouter[key];
+          }
+        });
+
         if (guardConfig) {
           return guardConfig.getEntry(params, { from: entry });
         }
@@ -759,10 +765,15 @@ function resolveStack(host, state) {
     return nextView;
   });
 
-  Object.assign(stack[0], state[0].params);
   stacks.set(host, stack);
 
-  const flush = flushes.get(stack[0]);
+  const view = stack[0];
+  const flush = flushes.get(view);
+
+  Object.entries(state[0].params).forEach(([key, value]) => {
+    if (key in view) view[key] = value;
+  });
+
   if (flush) flush();
 }
 
@@ -1027,7 +1038,12 @@ function connectNestedRouter(host, invalidate) {
 }
 
 function router(views, options) {
-  options = { url: window.location.pathname, ...options, views };
+  options = {
+    url: window.location.pathname,
+    params: [],
+    ...options,
+    views,
+  };
 
   const desc = {
     get: host => {

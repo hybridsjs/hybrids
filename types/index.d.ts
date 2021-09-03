@@ -208,6 +208,7 @@ declare module "hybrids" {
     views: View<any>[] | (() => View<any>[]),
     options?: {
       url?: string;
+      params?: Array<keyof E>;
     },
   ): Descriptor<E, HTMLElement[]>;
 
