@@ -127,18 +127,18 @@ The above action will update only the `myUser.address.street` value leaving the 
 The factory defines a property descriptor connected to the store depending on the model definition configuration.
 
 ```typescript
-store(Model: object, options?: id | { id?: string | (host) => any, draft?: boolean }): object
+store(Model: object, options?: string | { id?: any | (host) => any, draft?: boolean }): object
 ```
 
 * **arguments**:
   * `Model` - a model definition
-  * `options` - an object with the following properties or the shorter syntax with the below `id` field value
+  * `options` - an object with following options or a string with the property name:
     * `id` - a `host` property name, or a function returning the identifier using the `host`
     * `draft` - a boolean switch for the draft mode, where the property returns a copy of the model instance for the form manipulation
 * **returns**:
   * a hybrid property descriptor, which resolves to a store model instance
 
-If the model definition storage supports set action, the defined property will be writable using the `store.set()` method internally. Still, the preferred way is to use `store.set()` method directly for updating model instance.
+If the model definition storage supports set action, the defined property will be writable, and it will use the `store.set()` method internally. Still, the preferred way is to use `store.set()` method directly for updating model instance.
 
 ```javascript
 function setDarkTheme(host, event) {
@@ -159,7 +159,7 @@ define({
 
 ### Singleton
 
-If the model definition is a singleton, you can setup the property just with the definition.
+If the model definition is a singleton, you should define the property just with the definition.
 
 ```javascript
 import { Settings } from "./models.js";
@@ -174,7 +174,7 @@ define({
 
 ### Enumerable
 
-For the enumerable model definition, the `id` can be set to the property name or a function, or can be not defined, so the model instance is set by the property.
+For the enumerable model definition, the `id` can be set to the property name or a function, or can be not defined.
 
 ```javascript
 import { User, SearchResult }  from "./models.js";
@@ -192,11 +192,28 @@ define({
     return { order, query };
   }),
 
-  // Id not set - assertion to host.user sets the model instance
+  // Id not set - "user" attribute or assertion to host.user sets the model instance
   // like: `el.user = "1"`, or `el.user = userModel`;
   user: store(User),
 });
 ```
+
+If `options` argument is omitted, the model instance is set by the own property key. Only then, the factory uses the same fallback mechanism as the `property` factory, so passing static attribute will initialize model instance with corresponding id:
+
+```javascript
+define({
+  tag: "my-element",
+  user: store(User),
+  ...,
+});
+
+// Somewhere else
+html`
+  <my-element user="1"></my-element>
+`;
+```
+
+!> The property for enumerable model defined by the store factory without `options` argument, which is not initialized by assertion or attribute, will throw an error when the model instance is accessed.
 
 #### Cache
 
