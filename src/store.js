@@ -1311,7 +1311,7 @@ function mapValueWithState(lastValue, nextValue) {
         enumerable: true,
       });
       return acc;
-    }, Object.create(lastValue)),
+    }, Object.create(Object.getPrototypeOf(lastValue))),
   );
 
   definitions.set(result, definitions.get(lastValue));
