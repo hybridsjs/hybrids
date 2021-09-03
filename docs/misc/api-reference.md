@@ -132,16 +132,16 @@ store.sync(modelOrDefinition: object, values: object | null) : Model;
 ### factory
 
 ```typescript
-store(Model: object, options?: id | { id?: string | (host) => any, draft?: boolean }): object
+store(Model: object, options?: string | { id?: any | (host) => any, draft?: boolean }): object
 ```
 
 * **arguments**:
-  * `Model: object` - a model definition
-  * `options` - an object with the following properties or the shorter syntax with the below `id` field value
+  * `Model` - a model definition
+  * `options` - an object with following options or a string with the property name:
     * `id` - a `host` property name, or a function returning the identifier using the `host`
     * `draft` - a boolean switch for the draft mode, where the property returns a copy of the model instance for the form manipulation
 * **returns**:
-  * hybrid property descriptor, which resolves to a store model instance
+  * a hybrid property descriptor, which resolves to a store model instance
 
 ```typescript
 store.submit(model: Model): Promise<Model>

@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import * as cache from "./cache.js";
-import { storePointer } from "./utils.js";
+import { storePointer, camelToDash } from "./utils.js";
 
 const connect = Symbol("store.connect");
 
@@ -1478,6 +1478,19 @@ function store(Model, options = {}) {
   };
 
   if (!options.id && !options.draft && (config.enumerable || config.list)) {
+    const attrs = new WeakSet();
+    desc.connect = (host, key) => {
+      if (!attrs.has(host)) {
+        attrs.add(host);
+
+        const attrName = camelToDash(key);
+
+        if (host.hasAttribute(attrName)) {
+          host[key] = host.getAttribute(attrName);
+        }
+      }
+    };
+
     desc.set = (host, values) => {
       const valueConfig = definitions.get(values);
       if (valueConfig) {

@@ -1330,6 +1330,48 @@ describe("store:", () => {
     });
 
     describe("for enumerable model without id", () => {
+      it("throws when get before setting an id", () => {
+        const desc = store(Model);
+        expect(() => desc.get({})).toThrow();
+      });
+
+      it("throws when set model by reference from different definition", () => {
+        const model = store.get({ id: true }, "1");
+        const desc = store(Model);
+        expect(() => desc.set({}, model)).toThrow();
+      });
+
+      it("initialize model from the attribute value", () => {
+        const desc = store(Model);
+        const div = document.createElement("div");
+        const spy = jasmine.createSpy();
+
+        div.setAttribute("data-id", "1");
+        Object.defineProperty(div, "dataId", {
+          set: spy,
+          get: () => "",
+        });
+        desc.connect(div, "dataId");
+
+        expect(spy).toHaveBeenCalledWith("1");
+        desc.connect(div, "dataId");
+
+        expect(spy).toHaveBeenCalledTimes(1);
+      });
+
+      it("initialize model without the attribute value", () => {
+        const desc = store(Model);
+        const div = document.createElement("div");
+        const spy = jasmine.createSpy();
+
+        Object.defineProperty(div, "dataId", {
+          set: spy,
+          get: () => "",
+        });
+        desc.connect(div, "dataId");
+        expect(spy).toHaveBeenCalledTimes(0);
+      });
+
       it("set method returns model by id", () => {
         const desc = store(Model);
         const model = desc.set({}, "1");
@@ -1341,12 +1383,6 @@ describe("store:", () => {
         const desc = store(Model);
         const returnedModel = desc.set({}, model);
         expect(returnedModel).toBe(model);
-      });
-
-      it("throws when set model by reference from different definition", () => {
-        const model = store.get({ id: true }, "1");
-        const desc = store(Model);
-        expect(() => desc.set({}, model)).toThrow();
       });
     });
 
