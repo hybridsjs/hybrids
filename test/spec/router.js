@@ -7,7 +7,7 @@ function hybrids(el) {
 
 const browserUrl = window.location.pathname;
 
-fdescribe("router:", () => {
+describe("router:", () => {
   let RootView;
   let ChildView;
   let OtherChildView;
@@ -15,6 +15,8 @@ fdescribe("router:", () => {
   let NestedViewOne;
   let NestedViewTwo;
   let Dialog;
+  let MultipleView;
+  let MultipleViewWithUrl;
   let host;
 
   afterAll(() => {
@@ -145,6 +147,22 @@ fdescribe("router:", () => {
     expect(() => el.connectedCallback()).toThrow();
   });
 
+  it("throws when global parameter is not defined", () => {
+    define({
+      tag: "test-router-app",
+      views: router(
+        [
+          {
+            tag: "test-router-nested-root-view",
+          },
+        ],
+        { params: ["global"] },
+      ),
+    });
+    const el = document.createElement("test-router-app");
+    expect(() => el.connectedCallback()).toThrow();
+  });
+
   describe("test app", () => {
     beforeAll(() => {
       NestedViewTwo = {
@@ -178,6 +196,8 @@ fdescribe("router:", () => {
           stack: [NestedViewTwo],
         },
         tag: "test-router-nested-view-one",
+        globalA: "",
+        globalC: "",
         render: () =>
           html`
             <test-router-nested-component></test-router-nested-component>
@@ -196,6 +216,11 @@ fdescribe("router:", () => {
         [router.connect]: { url: "/other_url_child" },
         param: false,
         tag: "test-router-other-child-view",
+        content: () => html`
+          <a href="${router.url(MultipleView)}" id="MultipleViewFromOtherChild"
+            >MultipleViewFromOtherChild</a
+          >
+        `,
       };
 
       OtherChildWithLongerUrl = {
@@ -209,7 +234,9 @@ fdescribe("router:", () => {
           stack: [OtherChildWithLongerUrl, OtherChildView],
         },
         tag: "test-router-child-view",
-        views: router([NestedViewOne]),
+        globalA: "",
+        globalC: "value",
+        views: router([NestedViewOne], { params: ["globalC"] }),
         render: () => html`<slot></slot>`, // prettier-ignore
         content: ({ views }) => html`
           ${views}
@@ -229,16 +256,117 @@ fdescribe("router:", () => {
       Dialog = {
         [router.connect]: { dialog: true },
         tag: "test-router-dialog",
+        content: () => html`
+          <a href="${router.currentUrl()}" id="DialogCurrent">DialogCurrent</a>
+        `,
       };
+
+      MultipleView = {
+        [router.connect]: {
+          multiple: true,
+        },
+        value: "",
+        param: 0,
+        tag: "test-router-multiple-view",
+        content: () => html`
+          <a href="${router.currentUrl()}" id="MultipleViewCurrent"
+            >MultipleViewCurrent</a
+          >
+          <a
+            href="${router.currentUrl({ param: 2 })}"
+            id="MultipleViewCurrentOther"
+            >MultipleViewCurrentOther</a
+          >
+        `,
+      };
+
+      MultipleViewWithUrl = {
+        [router.connect]: {
+          multiple: true,
+          url: "/multiple/:value/test?param",
+        },
+        value: "",
+        param: 0,
+        tag: "test-router-multiple-with-url-view",
+        content: () => html`
+          <a href="${router.currentUrl()}" id="MultipleViewCurrent"
+            >MultipleViewCurrent</a
+          >
+          <a
+            href="${router.currentUrl({ param: 2 })}"
+            id="MultipleViewCurrentOther"
+            >MultipleViewCurrentOther</a
+          >
+          <a
+            href="${router.currentUrl({ value: "other" })}"
+            id="MultipleViewCurrentOtherPath"
+            >MultipleViewCurrentOtherPath</a
+          >
+        `,
+      };
+
+      function delayWithPromise(_, event) {
+        router.resolve(event, Promise.resolve());
+      }
 
       RootView = {
         [router.connect]: {
-          stack: [ChildView, Dialog],
+          stack: [ChildView, MultipleView, MultipleViewWithUrl, Dialog],
         },
         tag: "test-router-root-view",
+        globalB: "",
         content: () => html`
           <a href="${router.url(ChildView)}" id="ChildView">Child</a>
           <a href="${router.url(Dialog)}" id="Dialog">Dialog</a>
+          <a href="${router.currentUrl({ scrollToTop: true })}" id="RootView">
+            RootView
+          </a>
+          <a
+            href="${router.url(ChildView)}"
+            onclick="${delayWithPromise}"
+            id="ChildViewDelayed"
+          >
+            Child
+          </a>
+          <a
+            href="${router.url(OtherChildView)}"
+            onclick="${delayWithPromise}"
+            id="OtherChildViewDelayed"
+          >
+            OtherChild
+          </a>
+
+          <a
+            href="${router.url(MultipleView, { value: "test", param: 1 })}"
+            id="MultipleView"
+          >
+            MultipleView
+          </a>
+          <a
+            href="${router.url(MultipleViewWithUrl, {
+              value: "test",
+              param: 1,
+            })}"
+            id="MultipleViewWithUrl"
+          >
+            MultipleViewWithUrl
+          </a>
+
+          <form id="form-with-outer-action">
+            <button type="submit"></button>
+          </form>
+
+          <form id="form-with-action" action="${router.url(ChildView)}">
+            <button type="submit"></button>
+          </form>
+
+          <form
+            id="form-with-resolve"
+            onsubmit="${delayWithPromise}"
+            action="${router.url(OtherChildView)}"
+          >
+            <button type="submit"></button>
+          </form>
 
           <div id="overflow" style="height: 100px; overflow: scroll">
             <div style="height: 300px"></div>
@@ -249,7 +377,9 @@ fdescribe("router:", () => {
 
       define({
         tag: "test-router-app",
-        views: router([RootView]),
+        globalA: "value",
+        globalB: "value",
+        views: router([RootView], { params: ["globalA", "globalB"] }),
         content: ({ views }) => html`${views}` // prettier-ignore
       });
 
@@ -397,6 +527,15 @@ fdescribe("router:", () => {
                   expect(hybrids(host.views[0])).toBe(RootView);
                   expect(document.scrollingElement.scrollTop).toBe(0);
                   expect(document.scrollingElement.scrollLeft).toBe(0);
+
+                  document.scrollingElement.scrollTop = 200;
+
+                  host.querySelector("#RootView").click();
+
+                  return resolveTimeout(() => {
+                    expect(hybrids(host.views[0])).toBe(RootView);
+                    expect(document.scrollingElement.scrollTop).toBe(0);
+                  });
                 });
               });
             });
@@ -405,12 +544,15 @@ fdescribe("router:", () => {
       });
 
       it("navigate by pushing and pulling views from the stack", () => {
+        expect(host.views[0].globalA).toBe(undefined);
+        expect(host.views[0].globalB).toBe("value");
         host.querySelector("#ChildView").click();
 
         return resolveTimeout(() => {
           expect(hybrids(host.children[0])).toBe(ChildView);
           expect(window.history.state.length).toBe(2);
           expect(router.backUrl().hash).toBe("#@test-router-root-view");
+          expect(host.children[0].globalA).toBe("value");
 
           host.querySelector("#OtherChildView").click();
 
@@ -420,7 +562,7 @@ fdescribe("router:", () => {
             expect(host.views.length).toBe(1);
             expect(router.backUrl().hash).toBe("#@test-router-child-view");
             expect(router.backUrl({ scrollToTop: true }).hash).toBe(
-              "#@test-router-child-view?scrollToTop=true",
+              "#@test-router-child-view?scrollToTop=1",
             );
 
             window.history.back();
@@ -429,6 +571,8 @@ fdescribe("router:", () => {
               expect(hybrids(host.children[0])).toBe(ChildView);
               expect(hybrids(host.children[0].views[0])).toBe(NestedViewOne);
               expect(window.history.state.length).toBe(2);
+              expect(host.views[0].views[0].globalC).toBe("value");
+              expect(host.views[0].views[0].globalA).toBe("");
 
               host.querySelector("#NestedViewTwo").click();
 
@@ -455,24 +599,232 @@ fdescribe("router:", () => {
                     expect(hybrids(host.children[1])).toBe(Dialog);
                     expect(window.history.state.length).toBe(2);
 
-                    const keyEventEsc = new KeyboardEvent("keydown", {
-                      key: "Escape",
-                    });
-                    const keyEventEnter = new KeyboardEvent("keydown", {
-                      key: "Enter",
-                    });
-                    host.children[1].dispatchEvent(keyEventEnter);
-                    host.children[1].dispatchEvent(keyEventEsc);
+                    host.querySelector("#DialogCurrent").click();
 
                     return resolveTimeout(() => {
                       expect(hybrids(host.children[0])).toBe(RootView);
-                      expect(window.history.state.length).toBe(1);
+                      expect(hybrids(host.children[1])).toBe(Dialog);
+                      expect(window.history.state.length).toBe(2);
+
+                      const keyEventEsc = new KeyboardEvent("keydown", {
+                        key: "Escape",
+                      });
+                      const keyEventEnter = new KeyboardEvent("keydown", {
+                        key: "Enter",
+                      });
+                      host.children[1].dispatchEvent(keyEventEnter);
+                      host.children[1].dispatchEvent(keyEventEsc);
+
+                      return resolveTimeout(() => {
+                        expect(hybrids(host.children[0])).toBe(RootView);
+                        expect(window.history.state.length).toBe(1);
+                      });
                     });
                   });
                 });
               });
             });
           });
+        });
+      });
+
+      it("navigates to other child and replaces whole stack it with another view", () => {
+        host.querySelector("#ChildView").click();
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.children[0])).toBe(ChildView);
+          host.querySelector("#OtherChildView").click();
+
+          return resolveTimeout(() => {
+            expect(hybrids(host.children[0])).toBe(OtherChildView);
+            host.querySelector("#MultipleViewFromOtherChild").click();
+
+            return resolveTimeout(() => {
+              expect(hybrids(host.children[0])).toBe(MultipleView);
+              window.history.back();
+
+              return resolveTimeout(() => {
+                expect(hybrids(host.children[0])).toBe(RootView);
+              });
+            });
+          });
+        });
+      });
+
+      it("navigates to multiple view without url", () => {
+        host.querySelector("#MultipleView").click();
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.children[0])).toBe(MultipleView);
+          expect(host.views[0].value).toBe("test");
+          expect(host.views[0].param).toBe(1);
+
+          const view = host.views[0];
+
+          host.querySelector("#MultipleViewCurrent").click();
+
+          return resolveTimeout(() => {
+            expect(host.views[0]).toBe(view);
+
+            host.querySelector("#MultipleViewCurrentOther").click();
+
+            return resolveTimeout(() => {
+              expect(host.views[0]).not.toBe(view);
+              window.history.back();
+
+              return resolveTimeout(() => {
+                expect(host.views[0]).toBe(view);
+                window.history.back();
+
+                return resolveTimeout(() => {
+                  expect(hybrids(host.children[0])).toBe(RootView);
+                });
+              });
+            });
+          });
+        });
+      });
+
+      it("navigates to multiple view with url", () => {
+        host.querySelector("#MultipleViewWithUrl").click();
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.children[0])).toBe(MultipleViewWithUrl);
+          expect(host.views[0].value).toBe("test");
+          expect(host.views[0].param).toBe(1);
+
+          const view = host.views[0];
+
+          host.querySelector("#MultipleViewCurrent").click();
+
+          return resolveTimeout(() => {
+            expect(host.views[0]).toBe(view);
+
+            host.querySelector("#MultipleViewCurrentOther").click();
+
+            return resolveTimeout(() => {
+              expect(host.views[0]).toBe(view);
+              expect(host.views[0].param).toBe(2);
+
+              host.querySelector("#MultipleViewCurrentOtherPath").click();
+
+              return resolveTimeout(() => {
+                expect(host.views[0]).not.toBe(view);
+                expect(host.views[0].value).toBe("other");
+
+                window.history.back();
+
+                return resolveTimeout(() => {
+                  expect(host.views[0]).toBe(view);
+                  window.history.back();
+
+                  return resolveTimeout(() => {
+                    expect(hybrids(host.children[0])).toBe(RootView);
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+
+      it("skips navigation when ctrl or shift key is pressed", () => {
+        const preventClick = e => e.preventDefault();
+        const anchor = host.querySelector("#ChildView");
+
+        document.addEventListener("click", preventClick);
+
+        const ctrlEvt = new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+          ctrlKey: true,
+        });
+
+        anchor.dispatchEvent(ctrlEvt);
+
+        const metaEvt = new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+          metaKey: true,
+        });
+
+        anchor.dispatchEvent(metaEvt);
+
+        document.removeEventListener("click", preventClick);
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.views[0])).toBe(RootView);
+        });
+      });
+
+      it("skips navigation by form with outer action", () => {
+        const preventFormSubmit = e => e.preventDefault();
+
+        document.addEventListener("submit", preventFormSubmit);
+
+        const form = host.querySelector("#form-with-outer-action");
+        const button = host.querySelector("#form-with-outer-action button");
+
+        form.action = "0139eu0923r0923ur";
+        button.click();
+
+        form.action = "https://google.com";
+        button.click();
+
+        document.removeEventListener("submit", preventFormSubmit);
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.views[0])).toBe(RootView);
+        });
+      });
+
+      it("navigates by form submission", () => {
+        const button = host.querySelector("#form-with-action button");
+        button.click();
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.children[0])).toBe(ChildView);
+          window.history.back();
+
+          return resolveTimeout(() => {});
+        });
+      });
+
+      it("navigates by form submission with resolve promise", () => {
+        const button = host.querySelector("#form-with-resolve button");
+        button.click();
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.children[0])).toBe(OtherChildView);
+          window.history.back();
+
+          return resolveTimeout(() => {});
+        });
+      });
+
+      it("navigates by link with resolve promise", () => {
+        const button = host.querySelector("#ChildViewDelayed");
+        button.click();
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.children[0])).toBe(ChildView);
+          window.history.back();
+
+          return resolveTimeout(() => {});
+        });
+      });
+
+      it("cancels and navigates by link with resolve promise", () => {
+        host.querySelector("#ChildViewDelayed").click();
+        host.querySelector("#OtherChildViewDelayed").click();
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.children[0])).toBe(OtherChildView);
+          window.history.back();
+
+          return resolveTimeout(() => {});
         });
       });
     });
@@ -578,7 +930,7 @@ fdescribe("router:", () => {
         return resolveTimeout(() => {
           expect(hybrids(host.views[0])).toBe(OtherChildWithLongerUrl);
           expect(router.currentUrl().pathname).toBe("/other_url_child/other");
-          expect(router.currentUrl({ param: true }).search).toBe("?param=true");
+          expect(router.currentUrl({ param: true }).search).toBe("?param=1");
 
           document.body.removeChild(host);
         });
@@ -594,7 +946,7 @@ fdescribe("router:", () => {
           expect(hybrids(host.views[0])).toBe(OtherChildView);
           expect(host.views[0].param).toBe(true);
           expect(router.currentUrl().pathname).toBe("/other_url_child");
-          expect(router.currentUrl({ param: true }).search).toBe("?param=true");
+          expect(router.currentUrl({ param: true }).search).toBe("?param=1");
 
           document.body.removeChild(host);
         });
@@ -608,7 +960,7 @@ fdescribe("router:", () => {
 
         return resolveTimeout(() => {
           expect(router.currentUrl().pathname).toBe("/nested/1/test");
-          expect(router.currentUrl({ param: true }).search).toBe("?param=true");
+          expect(router.currentUrl({ param: true }).search).toBe("?param=1");
 
           document.body.removeChild(host);
         });

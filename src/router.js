@@ -102,6 +102,10 @@ function restoreLayout(target) {
   }
 }
 
+function mapUrlParam(value) {
+  return value === true ? 1 : value || "";
+}
+
 const metaParams = ["scrollToTop"];
 const placeholder = Date.now();
 
@@ -135,7 +139,7 @@ function setupBrowserUrl(browserUrl, id) {
             throw Error(`The '${key}' parameter must be defined for <${id}>`);
           }
 
-          return `${acc}${params[key]}${part}`;
+          return `${acc}${mapUrlParam(params[key])}${part}`;
         });
       }
 
@@ -149,7 +153,7 @@ function setupBrowserUrl(browserUrl, id) {
           return;
         }
 
-        url.searchParams.append(key, params[key] || "");
+        url.searchParams.append(key, mapUrlParam(params[key]));
       });
 
       return url;
@@ -409,7 +413,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           const url = new URL("", window.location.origin);
 
           Object.keys(params).forEach(key => {
-            url.searchParams.append(key, params[key] || "");
+            url.searchParams.append(key, mapUrlParam(params[key]));
           });
 
           return new URL(
@@ -444,12 +448,6 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
 
         const entry = { id, params: entryParams, ...other };
         const guardConfig = config.parentsWithGuards.find(c => !c.guard());
-
-        routerOptions.params.forEach(key => {
-          if (!hasOwnProperty.call(params, key)) {
-            entry.params[key] = rootRouter[key];
-          }
-        });
 
         if (guardConfig) {
           return guardConfig.getEntry(params, { from: entry });
@@ -662,26 +660,17 @@ function handleNavigate(event) {
 
   let url;
 
-  switch (event.type) {
-    case "click": {
-      if (event.ctrlKey || event.metaKey) return;
-      const anchorEl = event
-        .composedPath()
-        .find(el => el instanceof HTMLAnchorElement);
+  if (event.type === "click") {
+    if (event.ctrlKey || event.metaKey) return;
+    const anchorEl = event
+      .composedPath()
+      .find(el => el instanceof HTMLAnchorElement);
 
-      if (anchorEl) {
-        url = new URL(anchorEl.href, window.location.origin);
-      }
-      break;
+    if (anchorEl) {
+      url = new URL(anchorEl.href, window.location.origin);
     }
-    case "submit": {
-      if (event.target.action) {
-        url = new URL(event.target.action, window.location.origin);
-      }
-      break;
-    }
-    default:
-      return;
+  } else {
+    url = new URL(event.target.action, window.location.origin);
   }
 
   if (url && url.origin === window.location.origin) {
@@ -723,7 +712,7 @@ function resolveEvent(event, promise) {
   });
 }
 
-function resolveStack(host, state) {
+function resolveStack(host, state, options) {
   let stack = stacks.get(host);
   const reducedState = state.reduce((acc, entry, index) => {
     if (
@@ -772,6 +761,10 @@ function resolveStack(host, state) {
 
   Object.entries(state[0].params).forEach(([key, value]) => {
     if (key in view) view[key] = value;
+  });
+
+  options.params.forEach(key => {
+    if (key in view) view[key] = host[key];
   });
 
   if (flush) flush();
@@ -826,11 +819,9 @@ function getEntryOffset(entry) {
 
       const c = getConfigById(e.id);
       if (hasInStack(c, config)) {
-        if (config.multiple) {
-          if (state[i][0].id === entry.id) {
-            offset = c.guard ? offset : offset - 1;
-            break;
-          }
+        if (config.multiple && state[i][0].id === entry.id) {
+          offset -= 1;
+          break;
         }
 
         if (j > 0) {
@@ -855,7 +846,7 @@ function getEntryOffset(entry) {
 
 function connectRootRouter(host, invalidate, options) {
   function flush() {
-    resolveStack(host, window.history.state);
+    resolveStack(host, window.history.state, options);
     invalidate();
   }
 
@@ -927,7 +918,7 @@ function connectRootRouter(host, invalidate, options) {
 
   if (rootRouter) {
     throw Error(
-      `An element with root router already connected to the document: ${rootRouter}`,
+      `An element with root router already connected to the document: <${rootRouter.tagName.toLowerCase()}>`,
     );
   }
 
@@ -1005,7 +996,7 @@ function connectRootRouter(host, invalidate, options) {
   };
 }
 
-function connectNestedRouter(host, invalidate) {
+function connectNestedRouter(host, invalidate, options) {
   const config = configs.get(host);
 
   function getNestedState() {
@@ -1021,7 +1012,7 @@ function connectNestedRouter(host, invalidate) {
   }
 
   function flush() {
-    resolveStack(host, getNestedState());
+    resolveStack(host, getNestedState(), options);
     invalidate();
   }
 
@@ -1053,10 +1044,18 @@ function router(views, options) {
         .reverse();
     },
     connect: (host, key, invalidate) => {
+      options.params.forEach(param => {
+        if (!(param in host)) {
+          throw Error(
+            `Property '${param}' for global parameters is not defined in <${host.tagName.toLowerCase()}>`,
+          );
+        }
+      });
+
       if (!stacks.has(host)) stacks.set(host, []);
 
       if (configs.has(host)) {
-        return connectNestedRouter(host, invalidate);
+        return connectNestedRouter(host, invalidate, options);
       }
 
       return connectRootRouter(host, invalidate, options);
