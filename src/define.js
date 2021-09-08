@@ -1,5 +1,4 @@
 import property from "./property.js";
-import render from "./render.js";
 
 import * as cache from "./cache.js";
 import { pascalToDash, deferred } from "./utils.js";
@@ -8,6 +7,34 @@ const defaultMethod = (host, value) => value;
 
 export const callbacksMap = new WeakMap();
 const propsMap = new WeakMap();
+
+function render(fn, useShadow = true) {
+  const getTarget = useShadow
+    ? host =>
+        host.shadowRoot ||
+        host.attachShadow({
+          mode: hasOwnProperty.call(fn, "mode") ? fn.mode : "open",
+          delegatesFocus: hasOwnProperty.call(fn, "delegatesFocus")
+            ? fn.delegatesFocus
+            : false,
+        })
+    : host => host;
+
+  return {
+    get(host) {
+      const updateDOM = fn(host);
+      const target = getTarget(host);
+
+      return function flush() {
+        updateDOM(host, target);
+        return target;
+      };
+    },
+    observe(host, flush) {
+      flush();
+    },
+  };
+}
 
 function translate(key, desc) {
   const type = typeof desc;
@@ -20,7 +47,7 @@ function translate(key, desc) {
         config = render(desc);
         break;
       case "content":
-        config = render(desc, { shadowRoot: false });
+        config = render(desc, false);
         break;
       default:
         config = { get: desc };
