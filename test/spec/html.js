@@ -1154,7 +1154,7 @@ describe("html:", () => {
         expect(container.children.length).toBe(2);
       }
 
-      resolveTimeout(() => {
+      setTimeout(() => {
         expect(getComputedStyle(container.children[0]).color).toBe(
           "rgb(255, 0, 0)",
         );
@@ -1162,7 +1162,7 @@ describe("html:", () => {
         html`
           <div>content</div>
         `({}, container);
-        return resolveTimeout(() => {
+        return setTimeout(() => {
           if (document.adoptedStyleSheets) {
             expect(getComputedStyle(container.children[0]).color).toBe(
               "rgb(0, 0, 0)",
@@ -1170,8 +1170,9 @@ describe("html:", () => {
           }
 
           expect(container.children.length).toBe(1);
-        });
-      }).then(done);
+          done();
+        }, 500);
+      }, 500);
     });
 
     it("adds async styles by style tags to the shadowRoot", done => {
@@ -1180,7 +1181,7 @@ describe("html:", () => {
 
       getComputedStyle(container.children[0]);
 
-      resolveTimeout(() => {
+      setTimeout(() => {
         expect(container.children.length).toBe(2);
         expect(getComputedStyle(container.children[0]).color).toBe(
           "rgb(255, 0, 0)",
@@ -1195,7 +1196,9 @@ describe("html:", () => {
         );
 
         expect(container.children.length).toBe(1);
-      }).then(done);
+
+        done();
+      }, 500);
     });
 
     if (document.adoptedStyleSheets) {
