@@ -191,6 +191,55 @@ declare module "hybrids" {
     ): number;
   }
 
+  /* Router */
+
+  type View<E> = TaggedHybrids<E> & {
+    __router__connect__?: {
+      url?: string;
+      multiple?: boolean;
+      dialog?: boolean;
+      replace?: boolean;
+      guard?: (host: E) => any;
+      stack?: View<any>[];
+    };
+  };
+
+  function router<E, V>(
+    views: View<any>[] | (() => View<any>[]),
+    options?: {
+      url?: string;
+      params?: Array<keyof E>;
+    },
+  ): Descriptor<E, HTMLElement[]>;
+
+  namespace router {
+    const connect = "__router__connect__";
+
+    type UrlParams<E> = {
+      [property in keyof E]?: E[property];
+    };
+
+    type UrlOptions = {
+      scrollToTop?: boolean;
+    };
+
+    function url<E>(
+      view: View<E>,
+      params?: UrlParams<E> & UrlOptions,
+    ): URL | "";
+
+    function backUrl(options?: { nested?: boolean } & UrlOptions): URL | "";
+    function guardUrl(params?: UrlParams<any> & UrlOptions): URL | "";
+    function currentUrl<E>(params?: UrlParams<E> & UrlOptions): URL | "";
+
+    function active(
+      views: View<any> | View<any>[],
+      options?: { stack?: boolean },
+    ): boolean;
+
+    function resolve(event: Event, promise: Promise<any>): void;
+  }
+
   /* Utils */
 
   function dispatch(

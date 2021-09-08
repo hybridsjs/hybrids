@@ -42,7 +42,7 @@ export function resolveTimeout(fn) {
       Promise.resolve()
         .then(fn)
         .then(resolve);
-    }, 250);
+    }, 100);
   });
 }
 
