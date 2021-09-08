@@ -466,16 +466,9 @@ function setupModel(Model, nested) {
       switch (type) {
         case "function":
           return model => {
-            let resolved;
-            let value;
-
             Object.defineProperty(model, key, {
               get() {
-                if (!resolved) {
-                  value = defaultValue(this);
-                  resolved = true;
-                }
-                return value;
+                return cache.get(this, key, () => defaultValue(this));
               },
             });
           };

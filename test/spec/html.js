@@ -1,7 +1,6 @@
 import { html } from "../../src/template/index.js";
 import { createInternalWalker } from "../../src/template/core.js";
 import define from "../../src/define.js";
-import renderFactory from "../../src/render.js";
 import { dispatch } from "../../src/utils.js";
 import { test, resolveTimeout } from "../helpers.js";
 import { property } from "../../src/index.js";
@@ -97,12 +96,9 @@ describe("html:", () => {
 
   it("replaces resolved nested custom element template", done => {
     define("test-replace-trigger", {
-      render: renderFactory(
-        () => html`
-          content
-        `,
-        { shadowRoot: false },
-      ),
+      content: () => html`
+        content
+      `,
     });
 
     const render = flag => html`

@@ -1,6 +1,7 @@
 import { test, resolveRaf } from "../helpers.js";
 import define from "../../src/define.js";
 import { invalidate } from "../../src/cache.js";
+import { html } from "../../src/index.js";
 
 describe("define:", () => {
   it("throws when element constructor is not an object", () => {
@@ -240,49 +241,181 @@ describe("define:", () => {
     );
   });
 
-  describe("for render key", () => {
-    it("uses render factory if value is a function", done => {
-      define("test-define-render", {
-        render: () => () => {},
+  describe("for 'render' key", () => {
+    const tree = test(`
+      <test-define-render></test-define-render>
+    `);
+
+    beforeAll(() => {
+      define({
+        tag: "test-define-render",
+        value: 0,
+        property: "",
+        render: ({ value }) => (host, shadowRoot) => {
+          shadowRoot.innerHTML = `<div>${value}</div>`;
+        },
+      });
+    });
+
+    it(
+      "renders content",
+      tree(el =>
+        resolveRaf(() => {
+          expect(el.shadowRoot.children[0].textContent).toBe("0");
+        }),
+      ),
+    );
+
+    it(
+      "updates content",
+      tree(el =>
+        resolveRaf(() => {
+          el.value = 1;
+          return resolveRaf(() => {
+            expect(el.shadowRoot.children[0].textContent).toBe("1");
+          });
+        }),
+      ),
+    );
+
+    it(
+      "renders content on direct call",
+      tree(el => {
+        const target = el.render();
+
+        expect(target).toBe(el.shadowRoot);
+        expect(el.shadowRoot.children[0].textContent).toBe("0");
+      }),
+    );
+
+    it(
+      "does not re-create shadow DOM",
+      tree(el => {
+        const shadowRoot = el.shadowRoot;
+        const parent = el.parentElement;
+        parent.removeChild(el);
+
+        return resolveRaf(() => {
+          parent.appendChild(el);
+          expect(el.shadowRoot).toBe(shadowRoot);
+        });
+      }),
+    );
+
+    it("renders elements in parent slot", done => {
+      define({
+        tag: "test-define-render-parent-slot",
+        render: () =>
+          html`
+            <slot></slot>
+          `,
       });
 
-      const tree = test("<test-define-render></test-define-render>");
+      const slotTree = test(`
+        <test-define-render-parent-slot>
+          <test-define-render></test-define-render>
+        </test-define-render-parent-slot>
+      `);
 
+      slotTree(el =>
+        resolveRaf(() => {
+          expect(el.children[0].shadowRoot.children[0].textContent).toBe("0");
+        }),
+      )(done);
+    });
+
+    it('creates shadowRoot with "delegatesFocus" option', done => {
+      define({
+        tag: "test-render-custom-shadow",
+        render: Object.assign(
+          () => html`
+            <input type="text" />
+          `,
+          { mode: "closed", delegatesFocus: true },
+        ),
+      });
+
+      const TestRenderCustomShadowEl = customElements.get(
+        "test-render-custom-shadow",
+      );
+
+      const origAttachShadow = TestRenderCustomShadowEl.prototype.attachShadow;
+      const spy = jasmine.createSpy("attachShadow");
+
+      TestRenderCustomShadowEl.prototype.attachShadow = function attachShadow(
+        ...args
+      ) {
+        spy(...args);
+        return origAttachShadow.call(this, ...args);
+      };
+
+      test(`
+        <test-render-custom-shadow></test-render-custom-shadow>
+      `)(() =>
+        resolveRaf(() => {
+          expect(spy).toHaveBeenCalledWith({
+            mode: "closed",
+            delegatesFocus: true,
+          });
+        }),
+      )(done);
+    });
+
+    it("uses render factory if value is a function", done => {
       tree(el => {
         expect(typeof el.render).toBe("function");
       })(done);
     });
 
     it("does not use render factory if value is not a function", done => {
-      define("test-define-render-other", {
+      define({
+        tag: "test-define-render-other",
         render: [],
       });
-
-      const tree = test(
-        "<test-define-render-other></test-define-render-other>",
-      );
-
-      tree(el => {
+      test("<test-define-render-other></test-define-render-other>")(el => {
         expect(typeof el.render).toBe("object");
       })(done);
     });
   });
 
-  describe("for content key", () => {
+  describe("for 'content' key", () => {
     it("uses render factory if value is a function", done => {
-      define("test-define-content", {
-        content: () => () => {},
+      define({
+        tag: "test-render-light-dom",
+        testValue: true,
+        content: ({ testValue }) =>
+          testValue
+            ? html`
+                <div>true</div>
+              `
+            : html`
+                <div>false</div>
+              `,
       });
 
-      const tree = test("<test-define-content></test-define-content>");
+      test(`
+        <test-render-light-dom>
+          <div>other content</div>
+        </test-render-light-dom>
+      `)(el =>
+        resolveRaf(() => {
+          expect(el.content).toBeInstanceOf(Function);
+          expect(el.children.length).toBe(1);
+          expect(el.children[0].innerHTML).toBe("true");
 
-      tree(el => {
-        expect(typeof el.content).toBe("function");
-      })(done);
+          el.testValue = false;
+
+          return resolveRaf(() => {
+            expect(el.children.length).toBe(1);
+            expect(el.children[0].innerHTML).toBe("false");
+          });
+        }),
+      )(done);
     });
 
     it("does not use render factory if value is not a function", done => {
-      define("test-define-content-other", {
+      define({
+        tag: "test-define-content-other",
         content: [],
       });
 
@@ -317,11 +450,13 @@ describe("define:", () => {
 
   describe("already defined element", () => {
     const hybrids = {
+      tag: "test-define-multiple",
       one: true,
     };
 
-    const CustomElement = define("test-define-multiple", hybrids);
-    define("test-define-multiple-two", {});
+    define(hybrids);
+    const CustomElement = customElements.get("test-define-multiple");
+    define({ tag: "test-define-multiple-two" });
 
     const editTree = test(`
       <test-define-multiple>
