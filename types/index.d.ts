@@ -91,11 +91,6 @@ declare module "hybrids" {
     options?: { deep?: boolean; nested?: boolean },
   ): Descriptor<E, V>;
 
-  function render<E>(
-    fn: RenderFunction<E>,
-    customOptions?: { shadowRoot?: boolean | object },
-  ): Descriptor<E, () => HTMLElement>;
-
   /* Store */
 
   type Model<M> = {
