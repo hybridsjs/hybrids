@@ -30,12 +30,6 @@ const customLaunchers = {
     platform: "Windows 10",
     version: "latest",
   },
-  SL_iOS: {
-    base: "SauceLabs",
-    browserName: "iphone",
-    platform: "macOS 11.00",
-    version: "latest",
-  },
 };
 
 const reporters = ["dots"];
