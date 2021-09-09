@@ -1454,9 +1454,15 @@ function store(Model, options = {}) {
           ? lastValue.id
           : options.id && options.id(host);
 
-      const nextValue = get(Model, id);
+      const nextValue =
+        id === undefined && config.enumerable ? null : get(Model, id);
 
-      if (lastValue && nextValue !== lastValue && !ready(nextValue)) {
+      if (
+        lastValue &&
+        nextValue &&
+        nextValue !== lastValue &&
+        !ready(nextValue)
+      ) {
         return mapValueWithState(lastValue, nextValue);
       }
 

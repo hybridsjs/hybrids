@@ -1330,9 +1330,9 @@ describe("store:", () => {
     });
 
     describe("for enumerable model without id", () => {
-      it("throws when get before setting an id", () => {
+      it("returns null when get before setting an id", () => {
         const desc = store(Model);
-        expect(() => desc.get({})).toThrow();
+        expect(desc.get({})).toBe(null);
       });
 
       it("throws when set model by reference from different definition", () => {
@@ -1391,11 +1391,6 @@ describe("store:", () => {
 
       beforeEach(() => {
         desc = store(Model, { draft: true });
-      });
-
-      it("throws an error when draft mode is off", () => {
-        desc = store(Model);
-        expect(() => desc.get({})).toThrow();
       });
 
       it("returns new model instance for not initialized model", () => {

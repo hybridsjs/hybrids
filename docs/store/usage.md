@@ -140,6 +140,8 @@ store(Model: object, options?: string | { id?: any | (host) => any, draft?: bool
 
 If the model definition storage supports set action, the defined property will be writable, and it will use the `store.set()` method internally. Still, the preferred way is to use `store.set()` method directly for updating model instance.
 
+!> Setting the values by assignment to the property will be removed in upcoming `v7.0.0` release.
+
 ```javascript
 function setDarkTheme(host, event) {
   // updates `admin` property of the user model instance by the assertion
@@ -198,7 +200,7 @@ define({
 });
 ```
 
-If `options` argument is omitted, the model instance is set by the own property key. Only then, the factory uses the same fallback mechanism as the `property` factory, so passing static attribute will initialize model instance with corresponding id:
+If `options` argument is omitted, the model instance is set by the own property key. In this mode setting the value of the property updates the `id` of the model, not the values. Also, only then, the factory uses the same fallback mechanism as the `property` factory to the attribute value, so passing static attribute will initialize model instance with corresponding id:
 
 ```javascript
 define({
@@ -212,8 +214,6 @@ html`
   <my-element user="1"></my-element>
 `;
 ```
-
-!> The property for enumerable model defined by the store factory without `options` argument, which is not initialized by assertion or attribute, will throw an error when the model instance is accessed.
 
 #### Cache
 
