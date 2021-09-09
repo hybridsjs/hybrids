@@ -2,7 +2,7 @@ import { dataMap, removeTemplate } from "../utils.js";
 import resolveArray, { arrayMap } from "./array.js";
 import resolveNode from "./node.js";
 
-export default function resolveValue(host, target, value) {
+export default function resolveValue(host, target, value, lastValue) {
   let type = typeof value;
   if (Array.isArray(value)) {
     type = "array";
@@ -31,7 +31,7 @@ export default function resolveValue(host, target, value) {
       resolveArray(host, target, value, resolveValue);
       break;
     case "node":
-      resolveNode(host, target, value);
+      resolveNode(host, target, value, lastValue);
       break;
     default:
       target.textContent = type === "number" || value ? value : "";

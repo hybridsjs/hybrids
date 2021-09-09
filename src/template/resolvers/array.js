@@ -69,7 +69,7 @@ export default function resolveArray(host, target, value, resolveValue) {
         movePlaceholder(entry.placeholder, previousSibling);
       }
       if (matchedEntry.value !== entry.value) {
-        resolveValue(host, entry.placeholder, entry.value);
+        resolveValue(host, entry.placeholder, entry.value, matchedEntry.value);
       }
     } else {
       entry.placeholder = document.createTextNode("");

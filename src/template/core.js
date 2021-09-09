@@ -395,24 +395,19 @@ export function compileTemplate(rawParts, isSVG, styles) {
     data.prevArgs = args;
 
     for (let index = 0; index < data.markers.length; index += 1) {
+      if (prevArgs && prevArgs[index] === args[index]) continue; // eslint-disable-line no-continue
       const [node, marker] = data.markers[index];
-      if (!prevArgs || prevArgs[index] !== args[index]) {
-        try {
-          marker(
+
+      try {
+        marker(host, node, args[index], prevArgs && prevArgs[index]);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(
+          `Following error was thrown when updating a template expression in ${stringifyElement(
             host,
-            node,
-            args[index],
-            prevArgs ? prevArgs[index] : undefined,
-          );
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(
-            `Following error was thrown when updating a template expression in ${stringifyElement(
-              host,
-            )}\n${beautifyTemplateLog(signature, index)}`,
-          );
-          throw error;
-        }
+          )}\n${beautifyTemplateLog(signature, index)}`,
+        );
+        throw error;
       }
     }
 
