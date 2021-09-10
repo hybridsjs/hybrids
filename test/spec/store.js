@@ -2509,6 +2509,30 @@ describe("store:", () => {
       );
     });
 
+    it("returns model with circular reference from offline cache", () => {
+      Model = {
+        id: true,
+        value: "circular reference",
+        model: store.ref(() => Model),
+        [store.connect]: {
+          cache: 0,
+          offline: true,
+          get: id => {
+            if (isOffline) throw Error("Offline");
+            return { value: "test", model: id };
+          },
+        },
+      };
+
+      let model = store.get(Model, "1");
+      isOffline = true;
+      store.clear(Model, false);
+      model = store.get(Model, "1");
+
+      expect(store.error(model)).toBeInstanceOf(Error);
+      expect(model.model).toBe(model);
+    });
+
     it("cleans up the localStorage from obsolete models", () => {
       Model = {
         id: true,

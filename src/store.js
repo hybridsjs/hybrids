@@ -188,6 +188,10 @@ function setupStorage(config, options) {
 
                 if (value && typeof value === "object") {
                   const valueConfig = definitions.get(value);
+                  if (valueConfig === config && value.id === id) {
+                    return String(value);
+                  }
+
                   const offline = valueConfig && valueConfig.storage.offline;
                   if (offline) {
                     if (valueConfig.list) {
@@ -955,7 +959,11 @@ function get(Model, id) {
         !config.list && stringId ? { ...result, id: stringId } : result,
       );
 
-      if (offline) offline.set(stringId, model);
+      if (offline) {
+        Promise.resolve().then(() => {
+          offline.set(stringId, model);
+        });
+      }
 
       return setTimestamp(model);
     } catch (e) {
