@@ -1,8 +1,5 @@
-import property from "./property.js";
-import render from "./render.js";
-
 import * as cache from "./cache.js";
-import { pascalToDash, deferred } from "./utils.js";
+import { pascalToDash, deferred, camelToDash } from "./utils.js";
 
 const defaultMethod = (host, value) => value;
 
@@ -10,33 +7,84 @@ export const callbacksMap = new WeakMap();
 const propsMap = new WeakMap();
 
 function translate(key, desc) {
-  const type = typeof desc;
-
-  let config;
+  let type = typeof desc;
 
   if (type === "function") {
     switch (key) {
       case "render":
-        config = render(desc);
-        break;
+        return {
+          get: host => {
+            const updateDOM = desc(host);
+            const target =
+              host.shadowRoot ||
+              host.attachShadow({
+                mode: desc.mode || "open",
+                delegatesFocus: desc.delegatesFocus || false,
+              });
+            return () => {
+              updateDOM(host, target);
+              return target;
+            };
+          },
+          observe(host, flush) { flush(); } // prettier-ignore
+        };
       case "content":
-        config = render(desc, { shadowRoot: false });
+        return {
+          get: host => {
+            const updateDOM = desc(host);
+            return function flush() {
+              updateDOM(host);
+              return host;
+            };
+          },
+          observe(host, flush) { flush(); } // prettier-ignore
+        };
+      default:
+        return { get: desc };
+    }
+  }
+
+  if (type !== "object" || desc === null || Array.isArray(desc)) {
+    desc = { get: desc !== undefined ? desc : defaultMethod };
+  }
+
+  type = typeof desc.get;
+  if (type !== "function") {
+    let fn;
+
+    switch (type) {
+      case "string":
+        fn = String;
+        break;
+      case "number":
+        fn = Number;
+        break;
+      case "boolean":
+        fn = Boolean;
+        break;
+      case "object":
+        if (desc.get) Object.freeze(desc.get);
+        fn = value => {
+          if (typeof value !== "object") {
+            throw TypeError(
+              `Assigned value must be an object: ${typeof value}`,
+            );
+          }
+          return value && Object.freeze(value);
+        };
         break;
       default:
-        config = { get: desc };
+        fn = v => v;
     }
-  } else if (type !== "object" || desc === null || Array.isArray(desc)) {
-    config = property(desc);
-  } else {
-    config = {
-      get: desc.get || defaultMethod,
-      set: desc.set || (!desc.get && defaultMethod) || undefined,
-      connect: desc.connect,
-      observe: desc.observe,
+
+    return {
+      ...desc,
+      get: (host, value) => fn(value !== undefined ? value : desc),
+      type,
     };
   }
 
-  return config;
+  return { ...desc };
 }
 
 function compile(Hybrid, hybrids, omitProps = []) {
@@ -49,30 +97,66 @@ function compile(Hybrid, hybrids, omitProps = []) {
   propsMap.set(Hybrid, props);
 
   props.forEach(key => {
-    const config = translate(key, hybrids[key]);
+    const desc = translate(key, hybrids[key]);
+    const writable = desc.get.length > 1;
 
     Object.defineProperty(Hybrid.prototype, key, {
       get: function get() {
-        return cache.get(this, key, config.get);
+        return cache.get(this, key, desc.get);
       },
-      set:
-        config.set &&
-        function set(newValue) {
-          cache.set(this, key, config.set, newValue);
-        },
+      set: writable
+        ? function set(newValue) {
+            cache.set(this, key, defaultMethod, newValue);
+          }
+        : undefined,
       enumerable: true,
       configurable: true,
     });
 
-    if (config.observe) {
+    if (writable) {
+      const connect = desc.connect;
+      const initialized = new WeakSet();
+      const attrName = camelToDash(key);
+
+      desc.connect = (host, _, invalidate) => {
+        if (!initialized.has(host)) {
+          initialized.add(host);
+
+          if (host.hasAttribute(attrName)) {
+            const attrValue = host.getAttribute(attrName);
+            host[key] =
+              attrValue === "" && desc.type === "boolean" ? true : attrValue;
+          }
+        }
+
+        return connect && connect(host, _, invalidate);
+      };
+
+      if (desc.type !== "undefined") {
+        const observe = desc.observe;
+        desc.observe = (host, value, lastValue) => {
+          const attrValue = value === true ? "" : value;
+
+          if (!value && value !== 0) {
+            host.removeAttribute(attrName);
+          } else {
+            host.setAttribute(attrName, attrValue);
+          }
+
+          if (observe) observe(host, value, lastValue);
+        };
+      }
+    }
+
+    if (desc.observe) {
       callbacks.unshift(host =>
-        cache.observe(host, key, config.get, config.observe),
+        cache.observe(host, key, desc.get, desc.observe),
       );
     }
 
-    if (config.connect) {
+    if (desc.connect) {
       callbacks.push(host =>
-        config.connect(host, key, options => {
+        desc.connect(host, key, options => {
           cache.invalidate(host, key, {
             force: options && options.force === true,
           });
