@@ -174,7 +174,7 @@ describe("router:", () => {
         tag: "test-router-nested-view-two",
       };
 
-      const NestedComponent = {
+      define({
         tag: "test-router-nested-component",
         scroll: {
           connect(_) {
@@ -189,7 +189,7 @@ describe("router:", () => {
               <div style="height: 300px"></div>
             </div>
           `,
-      };
+      });
 
       NestedViewOne = {
         [router.connect]: {
@@ -202,7 +202,7 @@ describe("router:", () => {
           html`
             <test-router-nested-component></test-router-nested-component>
             <slot></slot>
-          `.define(NestedComponent),
+          `,
         content: () => html`
           <a
             href="${router.url(NestedViewTwo, { value: "1" })}"
@@ -503,6 +503,7 @@ describe("router:", () => {
           host.querySelector("#ChildView").click();
 
           return resolveTimeout(() => {
+            expect(hybrids(host.views[0])).toBe(ChildView);
             expect(document.scrollingElement.scrollTop).toBe(0);
             expect(document.scrollingElement.scrollLeft).toBe(0);
 

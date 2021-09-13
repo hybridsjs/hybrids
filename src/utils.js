@@ -33,6 +33,30 @@ export function stringifyElement(target) {
   return `<${String(target.tagName).toLowerCase()}>`;
 }
 
-export const deferred = Promise.resolve();
+export function walkInShadow(target, cb) {
+  if (target.nodeType === Node.ELEMENT_NODE) {
+    cb(target);
 
+    if (target.shadowRoot) {
+      walkInShadow(target.shadowRoot, cb);
+    }
+  }
+
+  const walker = document.createTreeWalker(
+    target,
+    NodeFilter.SHOW_ELEMENT,
+    null,
+    false,
+  );
+
+  while (walker.nextNode()) {
+    const el = walker.currentNode;
+    cb(el);
+    if (el.shadowRoot) {
+      walkInShadow(el.shadowRoot, cb);
+    }
+  }
+}
+
+export const deferred = Promise.resolve();
 export const storePointer = new WeakMap();
