@@ -138,48 +138,37 @@ store(Model: object, options?: string | { id?: any | (host) => any, draft?: bool
 * **returns**:
   * a hybrid property descriptor, which resolves to a store model instance
 
-If the model definition storage supports set action, the defined property will be writable, and it will use the `store.set()` method internally. Still, the preferred way is to use `store.set()` method directly for updating model instance.
-
-!> Setting the values by assignment to the property will be removed in upcoming `v7.0.0` release.
-
-```javascript
-function setDarkTheme(host, event) {
-  // updates `admin` property of the user model instance by the assertion
-  store.set(host.user, { admin: true });
-}
-
-define({
-  tag: "my-element",
-  userId: "1",
-  user: store(User, { id: "userId" }),
-  render: ({ user }) => html`
-    ...
-    <button onclick="${setAdminRights}">Set admin rights</button>
-  `,
-});
-```
+> Updating the state of the model instance is only possible by the `store.set()` method directly
 
 ### Singleton
 
-If the model definition is a singleton, you should define the property just with the definition.
+If the model definition is a singleton, define the property without `id` option:
 
 ```javascript
-import { Settings } from "./models.js";
+const Settings = {
+  darkTheme: false,
+};
+
+function toggleDarkTheme(host) {
+  store.set(Settings, { darkTheme: !host.settings.darkTheme });
+}
 
 define({
   tag: "my-element",
   settings: store(Settings),
   color: ({ settings }) => settings.darkTheme ? "white" : "black",
-  ...
+  render: () => html`
+    <button onclick="${toggleDarkTheme}">Toggle dark theme</button>
+  `
 });
 ```
 
-### Enumerable
+### Enumerables and Listings
 
-For the enumerable model definition, the `id` can be set to the property name or a function, or can be not defined.
+For the enumerable or listing model definition, if the `id` option is set, the property creates readonly connection to the model instance with the resolved `id` value:
 
 ```javascript
-import { User, SearchResult }  from "./models.js";
+import { User }  from "./models.js";
 
 define({
   tag: "my-element",
@@ -190,9 +179,15 @@ define({
   // Id from the host properties
   order: "asc",
   query: "",
-  searchResult: store(SearchResult, ({ order, query }) => {
-    return { order, query };
-  }),
+  searchResult: store([User], { id: ({ order, query }) => ({ order, query }) }),
+});
+```
+
+If `id` is omitted, the model instance is set by the own property key.
+
+```javascript
+define({
+  tag: "my-element",
 
   // Id not set - "user" attribute or assertion to host.user sets the model instance
   // like: `el.user = "1"`, or `el.user = userModel`;
@@ -200,24 +195,24 @@ define({
 });
 ```
 
-If `options` argument is omitted, the model instance is set by the own property key. In this mode setting the value of the property updates the `id` of the model, not the values. Also, only then, the factory uses the same fallback mechanism as the `property` factory to the attribute value, so passing static attribute will initialize model instance with corresponding id:
+The model instance can be set by the property assertion (passing the id or a model instance), or by the corresponding static attribute value:
 
 ```javascript
-define({
-  tag: "my-element",
-  user: store(User),
-  ...,
-});
+// set id by the property
+const el = document.createElement("my-element");
+el.user = "2";
 
-// Somewhere else
-html`
-  <my-element user="1"></my-element>
-`;
+// set by model reference
+const someUser = store.get(User, "3");
+el.user = someUser;
+ 
+// set id by the attribute value
+html`<my-element user="1"></my-element>`;
 ```
 
 #### Cache
 
-The significant difference between using `store.get()` method directly and the factory for enumerable models is a unique behavior implemented for returning the last resolved value when identifier changes. The get method always returns the data according to the current state of the model. However, The factory caches the last value of the property, so when the id changes, the property still returns the previous state until the next instance is ready.
+The significant difference between using `store.get()` method directly and the factory for properties, which set `id` option is a unique behavior for returning the last resolved value when identifier changes. The get method always returns the data according to the current state of the model. However, if the `id` options is set for enumerable or listing definition, the factory caches the last value of the property, until the next value is ready. In the meantime guards returns a state of the next value. It means, that it returns old value, but in pending state, rather than empty placeholder for the new value:
 
 ```javascript
 import { User } from "./models.js";

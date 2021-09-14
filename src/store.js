@@ -1304,23 +1304,6 @@ function ready(...models) {
   );
 }
 
-function mapValueWithState(lastValue, nextValue) {
-  const result = Object.freeze(
-    Object.keys(lastValue).reduce((acc, key) => {
-      Object.defineProperty(acc, key, {
-        get: () => lastValue[key],
-        enumerable: true,
-      });
-      return acc;
-    }, Object.create(Object.getPrototypeOf(lastValue))),
-  );
-
-  definitions.set(result, definitions.get(lastValue));
-  cache.set(result, "state", () => getModelState(nextValue));
-
-  return result;
-}
-
 function getValuesFromModel(model, values) {
   model = { ...model, ...values };
   delete model.id;
@@ -1337,16 +1320,16 @@ function submit(draft, values = {}) {
     throw Error("Model draft in pending state");
   }
 
-  const options = draftMap.get(config);
+  const modelConfig = draftMap.get(config);
   let result;
 
-  if (!options.id) {
-    result = set(options.model, getValuesFromModel(draft, values));
-  } else {
-    const model = get(options.model, draft.id);
+  if (cache.getEntry(modelConfig, draft.id).value) {
+    const model = get(modelConfig.model, draft.id);
     result = Promise.resolve(pending(model) || model).then(resolvedModel =>
       set(resolvedModel, getValuesFromModel(draft, values)),
     );
+  } else {
+    result = set(modelConfig.model, getValuesFromModel(draft, values));
   }
 
   result = result
@@ -1408,6 +1391,7 @@ function valueWithValidation(
   return defaultValue;
 }
 
+const draftConfigs = new WeakMap();
 function store(Model, options = {}) {
   const config = bootstrap(Model);
 
@@ -1427,62 +1411,79 @@ function store(Model, options = {}) {
       );
     }
 
-    Model = {
-      ...Model,
-      [connect]: {
-        get(id) {
-          const model = get(config.model, id);
-          return ready(model) ? model : pending(model);
+    let draft = draftConfigs.get(config);
+    if (!draft) {
+      draft = bootstrap({
+        ...Model,
+        [connect]: {
+          get(id) {
+            const model = get(config.model, id);
+            return ready(model) ? model : pending(model);
+          },
+          set(id, values) {
+            return values === null ? { id } : values;
+          },
         },
-        set(id, values) {
-          return values === null ? { id } : values;
-        },
-      },
-    };
+      });
 
-    options.draft = bootstrap(Model);
-    draftMap.set(options.draft, { model: config.model, id: options.id });
+      draftConfigs.set(config, draft);
+      draftMap.set(draft, config);
+    }
+
+    Model = draft.model;
+    options.draft = draft;
   }
 
-  const createMode =
-    options.draft &&
-    ((config.enumerable && !options.id) ||
-      (!config.enumerable && config.external));
-
-  const desc = {
-    get: (host, lastValue) => {
-      if (createMode && !lastValue) {
-        const nextValue = options.draft.create({});
-        syncCache(options.draft, nextValue.id, nextValue, false);
-        return get(Model, nextValue.id);
-      }
-
-      const id =
-        (options.draft || options.id === undefined) && lastValue
-          ? lastValue.id
-          : options.id && options.id(host);
-
-      const nextValue =
-        id === undefined && config.enumerable ? null : get(Model, id);
-
-      if (
-        lastValue &&
-        nextValue &&
-        nextValue !== lastValue &&
-        !ready(nextValue)
-      ) {
-        return mapValueWithState(lastValue, nextValue);
-      }
-
-      return nextValue;
-    },
-    connect: options.draft
-      ? (host, key) => () => {
-          cache.invalidate(host, key, { clearValue: true });
-          clear(Model, false);
+  let desc;
+  if (options.draft || (!options.id && config.enumerable)) {
+    desc = {
+      get: (host, value) => {
+        const valueConfig = definitions.get(value);
+        if (valueConfig && valueConfig.model !== Model) {
+          throw TypeError("Model definitions do not match");
         }
-      : undefined,
-  };
+        const id =
+          valueConfig || valueConfig === null
+            ? value.id
+            : value || (options.id && options.id(host));
+
+        if (options.draft) {
+          if (!id && (config.enumerable || config.external)) {
+            const draftModel = options.draft.create({});
+            syncCache(options.draft, draftModel.id, draftModel, false);
+            value = get(Model, draftModel.id);
+          } else {
+            value = get(Model, id);
+          }
+
+          return value;
+        }
+
+        if (!value) return null;
+
+        return store.get(
+          Model,
+          valueConfig || valueConfig === null ? value.id : value,
+        );
+      },
+      set: (host, value) => value,
+      connect: options.draft && (() => () => clear(Model, false)),
+    };
+  } else {
+    desc = {
+      get: (host, value) => {
+        const nextValue = get(Model, options.id && options.id(host));
+
+        if (nextValue !== value && ready(value) && !ready(nextValue)) {
+          const tempValue = config.create(value);
+          cache.set(tempValue, "state", () => getModelState(nextValue));
+          return tempValue;
+        }
+
+        return nextValue;
+      },
+    };
+  }
 
   if (!options.id && !options.draft && (config.enumerable || config.list)) {
     const attrs = new WeakSet();
@@ -1496,23 +1497,6 @@ function store(Model, options = {}) {
           host[key] = host.getAttribute(attrName);
         }
       }
-    };
-
-    desc.set = (host, values) => {
-      const valueConfig = definitions.get(values);
-      if (valueConfig) {
-        if (valueConfig === config) return values;
-        throw TypeError("Model instance must match the definition");
-      }
-      return store.get(Model, values);
-    };
-  } else if (!config.list) {
-    desc.set = (host, values, lastValue) => {
-      if (!lastValue || !ready(lastValue)) lastValue = desc.get(host);
-
-      store.set(lastValue, values).catch(/* istanbul ignore next */ () => {});
-
-      return lastValue;
     };
   }
 
