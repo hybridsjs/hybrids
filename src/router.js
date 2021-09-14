@@ -524,6 +524,16 @@ function getUrl(view, params = {}) {
   return config ? config.url(params) : "";
 }
 
+function getAllEntryParams(entry) {
+  const params = {};
+  while (entry) {
+    Object.assign(params, entry.params);
+    entry = entry.nested;
+  }
+
+  return params;
+}
+
 function getBackUrl({ nested = false, scrollToTop = false } = {}) {
   const state = window.history.state;
   if (!state) return "";
@@ -543,7 +553,7 @@ function getBackUrl({ nested = false, scrollToTop = false } = {}) {
       }
     }
 
-    const params = { ...prevEntry.params };
+    const params = getAllEntryParams(state[i]);
 
     if (scrollToTop) {
       params.scrollToTop = true;
@@ -570,15 +580,7 @@ function getBackUrl({ nested = false, scrollToTop = false } = {}) {
     }
 
     if (config) {
-      entry = state[0];
-      const params = { ...entry.params };
-
-      while (entry.nested) {
-        entry = entry.nested;
-        Object.assign(params, entry.params);
-      }
-
-      return config.url(params);
+      return config.url(getAllEntryParams(state[0]));
     }
   }
 
