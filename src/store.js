@@ -1378,7 +1378,7 @@ function valueWithValidation(
     fn = (...args) => {
       const result = validate(...args);
       return result !== true && result !== undefined
-        ? result || errorMessage
+        ? errorMessage || result
         : result;
     };
   } else {
