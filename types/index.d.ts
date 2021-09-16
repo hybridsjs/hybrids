@@ -237,7 +237,7 @@ declare module "hybrids" {
       options?: { stack?: boolean },
     ): boolean;
 
-    function resolve(event: Event, promise: Promise<any>): void;
+    function resolve<P>(event: Event, promise: Promise<P>): Promise<P>;
   }
 
   /* Utils */

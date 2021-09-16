@@ -706,7 +706,7 @@ function resolveEvent(event, promise) {
     composedPath: () => path,
   };
 
-  promise.then(() => {
+  return promise.then(() => {
     if (promise === activePromise) {
       requestAnimationFrame(() => {
         handleNavigate(pseudoEvent);
