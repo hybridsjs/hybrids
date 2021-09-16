@@ -1,8 +1,53 @@
 import * as cache from "./cache.js";
 import { pascalToDash, deferred, camelToDash, walkInShadow } from "./utils.js";
 
+const connect = Symbol("define.connect");
 const propsMap = new WeakMap();
+const disconnects = new WeakMap();
+
 export const callbacksMap = new WeakMap();
+
+class HybridsRootElement extends HTMLElement {
+  constructor() {
+    super();
+
+    const props = propsMap.get(this.constructor);
+
+    for (let index = 0; index < props.length; index += 1) {
+      const key = props[index];
+      if (hasOwnProperty.call(this, key)) {
+        const value = this[key];
+        delete this[key];
+        this[key] = value;
+      }
+    }
+
+    cache.suspend(this);
+  }
+
+  connectedCallback() {
+    cache.unsuspend(this);
+
+    const callbacks = callbacksMap.get(this.constructor);
+    const list = [];
+
+    for (let index = 0; index < callbacks.length; index += 1) {
+      const cb = callbacks[index](this);
+      if (cb) list.push(cb);
+    }
+
+    disconnects.set(this, list);
+  }
+
+  disconnectedCallback() {
+    cache.suspend(this);
+
+    const list = disconnects.get(this);
+    for (let index = 0; index < list.length; index += 1) {
+      list[index]();
+    }
+  }
+}
 
 const transform = {
   string: { from: String, to: String },
@@ -80,18 +125,19 @@ function translate(key, desc) {
 
   if (type === "undefined") {
     type = "function";
-    desc.value = setter;
+
+    desc = {
+      ...desc,
+      value: setter,
+      writable: true,
+    };
   }
 
   const attrName = camelToDash(key);
 
   if (type === "function") {
-    const writable = hasOwnProperty.call(desc, "writable")
-      ? desc.writable
-      : desc.value.length > 1;
-
     return {
-      value: writable
+      value: desc.writable
         ? (host, value) => {
             if (value === undefined && host.hasAttribute(attrName)) {
               value = host.getAttribute(attrName);
@@ -100,7 +146,7 @@ function translate(key, desc) {
             return desc.value(host, value);
           }
         : desc.value,
-      writable,
+      writable: desc.writable,
       connect: desc.connect,
       observe: desc.observe,
     };
@@ -150,21 +196,35 @@ function translate(key, desc) {
   };
 }
 
-function compile(Hybrid, hybrids) {
-  Hybrid.hybrids = hybrids;
+function compile(hybrids, lastHybrids) {
+  if (hybrids === lastHybrids) return hybrids;
+
+  let HybridsElement = lastHybrids && lastHybrids[connect];
+  if (HybridsElement) {
+    propsMap.get(HybridsElement).forEach(key => {
+      delete HybridsElement.prototype[key];
+    });
+  } else {
+    HybridsElement = class extends HybridsRootElement {};
+  }
+
+  hybrids[connect] = HybridsElement;
+  Object.freeze(hybrids);
+
+  HybridsElement.hybrids = hybrids;
 
   const callbacks = [];
   const props = Object.keys(hybrids);
 
-  callbacksMap.set(Hybrid, callbacks);
-  propsMap.set(Hybrid, props);
+  callbacksMap.set(HybridsElement, callbacks);
+  propsMap.set(HybridsElement, props);
 
   props.forEach(key => {
     if (key === "tag") return;
 
     const desc = translate(key, hybrids[key]);
 
-    Object.defineProperty(Hybrid.prototype, key, {
+    Object.defineProperty(HybridsElement.prototype, key, {
       get: function get() {
         return cache.get(this, key, desc.value);
       },
@@ -195,11 +255,11 @@ function compile(Hybrid, hybrids) {
     }
   });
 
-  return Hybrid;
+  return HybridsElement;
 }
 
 const updateQueue = new Map();
-function update(Hybrid, lastHybrids) {
+function update(HybridsElement, lastHybrids) {
   if (!updateQueue.size) {
     deferred.then(() => {
       walkInShadow(document.body, node => {
@@ -223,76 +283,24 @@ function update(Hybrid, lastHybrids) {
       updateQueue.clear();
     });
   }
-  updateQueue.set(Hybrid, lastHybrids);
+  updateQueue.set(HybridsElement, lastHybrids);
 }
 
-const disconnects = new WeakMap();
-class HybridRootElement extends HTMLElement {
-  constructor() {
-    super();
-
-    const props = propsMap.get(this.constructor);
-
-    for (let index = 0; index < props.length; index += 1) {
-      const key = props[index];
-      if (hasOwnProperty.call(this, key)) {
-        const value = this[key];
-        delete this[key];
-        this[key] = value;
-      }
-    }
-
-    cache.suspend(this);
-  }
-
-  connectedCallback() {
-    cache.unsuspend(this);
-
-    const callbacks = callbacksMap.get(this.constructor);
-    const list = [];
-
-    for (let index = 0; index < callbacks.length; index += 1) {
-      const cb = callbacks[index](this);
-      if (cb) list.push(cb);
-    }
-
-    disconnects.set(this, list);
-  }
-
-  disconnectedCallback() {
-    cache.suspend(this);
-
-    const list = disconnects.get(this);
-    for (let index = 0; index < list.length; index += 1) {
-      list[index]();
-    }
-  }
-}
-
-export default function define(hybrids) {
-  if (!hasOwnProperty.call(hybrids, "tag")) {
+function define(hybrids) {
+  if (!hybrids.tag) {
     throw TypeError(
-      "Missing tag name in 'tag' property in the hybrids definition",
+      "Error while defining hybrids: 'tag' property with dashed tag name is required",
     );
   }
 
-  const tagName = hybrids.tag && pascalToDash(hybrids.tag);
-  let HybridElement = tagName && window.customElements.get(tagName);
+  const tagName = pascalToDash(hybrids.tag);
+  const HybridsElement = window.customElements.get(tagName);
 
-  if (HybridElement) {
-    const lastHybrids = HybridElement.hybrids;
-
+  if (HybridsElement) {
+    const lastHybrids = HybridsElement.hybrids;
     if (lastHybrids) {
-      if (hybrids === lastHybrids) return hybrids;
-
-      Object.keys(lastHybrids).forEach(key => {
-        delete HybridElement.prototype[key];
-      });
-
-      compile(HybridElement, hybrids);
-      update(HybridElement, lastHybrids);
-
-      return hybrids;
+      update(HybridsElement, lastHybrids);
+      return compile(hybrids, lastHybrids);
     }
 
     throw TypeError(
@@ -300,12 +308,13 @@ export default function define(hybrids) {
     );
   }
 
-  HybridElement = compile(class extends HybridRootElement {}, hybrids);
-
-  if (tagName) {
-    customElements.define(tagName, HybridElement);
-    return hybrids;
-  }
-
-  return HybridElement;
+  customElements.define(tagName, compile(hybrids));
+  return hybrids;
 }
+
+export default Object.freeze(
+  Object.assign(define, {
+    compile: hybrids => compile(hybrids),
+    connect,
+  }),
+);

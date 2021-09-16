@@ -1476,6 +1476,7 @@ function store(Model, options = {}) {
         );
       },
       connect: options.draft && (() => () => clear(Model, false)),
+      writable: true,
     };
   } else {
     desc = {

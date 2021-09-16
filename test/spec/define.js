@@ -9,13 +9,18 @@ describe("define:", () => {
     if (el && el.parentElement) el.parentElement.removeChild(el);
   });
 
-  it("throws when 'tag' property is missing", () => {
+  it("throws when 'tag' property is missing or not a dashed string", () => {
     expect(() => {
       define({ prop1: "value1" });
     }).toThrow();
+
     expect(() => {
       define({ tag: null, prop1: "value1" });
-    }).not.toThrow();
+    }).toThrow();
+
+    expect(() => {
+      define({ tag: "test", prop1: "value1" });
+    }).toThrow();
   });
 
   it("throws when another external element is defined on the same tag name", () => {
@@ -43,6 +48,12 @@ describe("define:", () => {
         },
       });
     }).toThrow();
+    expect(() => {
+      define({
+        tag: "test-define-throws",
+        prop: null,
+      });
+    }).toThrow();
   });
 
   it("throws for not required descriptor form", () => {
@@ -62,8 +73,8 @@ describe("define:", () => {
     expect(define(hybrids)).toBe(hybrids);
   });
 
-  it("returns class constructor when tag name is null", () => {
-    expect(define({ tag: null, some: "" })).toBeInstanceOf(Function);
+  it("returns a class constructor when compile method is used", () => {
+    expect(define.compile({ some: "" }).prototype).toBeInstanceOf(HTMLElement);
   });
 
   it("redefines the same element", () => {
@@ -175,7 +186,10 @@ describe("define:", () => {
         prop4: ["a", "b", "c"],
         computed: ({ prop2, prop3 }) => `${prop2} ${prop3}`,
         fullDesc: () => "fullDesc",
-        fullDescWritable: (host, val) => (val ? val * 2 : 0),
+        fullDescWritable: {
+          value: (host, val) => (val ? val * 2 : 0),
+          writable: true,
+        },
         fullDescReadonly: {
           value: (host, val) => (val ? val * 2 : 0),
           writable: false,
