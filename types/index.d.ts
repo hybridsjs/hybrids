@@ -122,7 +122,16 @@ declare module "hybrids" {
       : M[property];
   };
 
-  type StorageResult<M> = M | null | Promise<M | null>;
+  type StorageValues<M> = {
+    [property in keyof M]?: M[property] extends object
+      ? M[property] | string
+      : M[property];
+  };
+
+  type StorageResult<M> =
+    | StorageValues<M>
+    | null
+    | Promise<StorageValues<M> | null>;
 
   type Storage<M> = {
     get?: (id: ModelIdentifier) => StorageResult<M>;
