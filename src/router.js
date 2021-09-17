@@ -1,4 +1,4 @@
-import define, { callbacksMap } from "./define.js";
+import { callbacksMap } from "./define.js";
 import * as cache from "./cache.js";
 import { dispatch, pascalToDash, walkInShadow } from "./utils.js";
 
@@ -241,19 +241,23 @@ function getConfigById(id) {
 }
 
 function setupView(hybrids, routerOptions, parent, nestedParent) {
-  let config = getConfigById(pascalToDash(hybrids.tag));
+  const id = pascalToDash(hybrids.tag);
+  let config = getConfigById(id);
 
   if (config && config.hybrids !== hybrids) {
     config = null;
   }
 
   if (!config) {
-    let browserUrl = null;
-
-    define(hybrids);
-
-    const id = pascalToDash(hybrids.tag);
     const Constructor = customElements.get(id);
+
+    if (!Constructor || Constructor.hybrids !== hybrids) {
+      throw Error(
+        `<${id}> view must be defined by 'define()' function before it can be used in router factory`,
+      );
+    }
+
+    let browserUrl = null;
 
     const options = {
       dialog: false,
