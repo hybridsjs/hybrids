@@ -6,7 +6,7 @@ import {
 import * as cache from "../../src/cache.js";
 import { resolveRaf, resolveTimeout } from "../helpers.js";
 
-describe("store:", () => {
+fdescribe("store:", () => {
   let Model;
 
   beforeAll(() => {
@@ -1207,6 +1207,12 @@ describe("store:", () => {
       });
 
       describe("with id", () => {
+        it("throws when try to set value by assertion", () => {
+          expect(() => {
+            el.byprop = "1";
+          }).toThrow();
+        });
+
         it("gets and updates store model instance", () => {
           let pendingModel = el.byprop;
           expect(store.pending(pendingModel)).toBeTruthy();
@@ -1227,6 +1233,12 @@ describe("store:", () => {
         });
 
         describe("in draft mode", () => {
+          it("throws when try to set value by assertion", () => {
+            expect(() => {
+              el.draft = "1";
+            }).toThrow();
+          });
+
           it("has global space for draft definitions", () => {
             const anotherEl = document.createElement(
               "test-store-factory-enumerable",
@@ -1289,10 +1301,10 @@ describe("store:", () => {
           expect(el.withoutid).toBe(null);
         });
 
-        it("throws when set model by reference from different definition", () => {
+        it("set id by model by reference from different definition", () => {
           const model = store.get({ id: true }, "1");
           el.withoutid = model;
-          expect(el.withoutid).toBe(null);
+          expect(el.withoutid.id).toBe("1");
         });
 
         it("set model id from the attribute value", () => {

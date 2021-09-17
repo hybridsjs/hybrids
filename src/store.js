@@ -1440,42 +1440,39 @@ function store(Model, options = {}) {
   }
 
   let desc;
-  if (options.draft || (!options.id && config.enumerable)) {
+  if (options.draft) {
+    desc = {
+      value: options.id
+        ? host => get(Model, options.id(host))
+        : (host, value) => {
+            const valueConfig = definitions.get(value);
+            const id = valueConfig || valueConfig === null ? value.id : value;
+
+            if (!id && (config.enumerable || config.external)) {
+              const draftModel = options.draft.create({});
+              syncCache(options.draft, draftModel.id, draftModel, false);
+              value = get(Model, draftModel.id);
+            } else {
+              value = get(Model, id);
+            }
+
+            return value;
+          },
+      connect: () => () => clear(Model, false),
+      writable: !options.id,
+    };
+  } else if (!options.id && config.enumerable) {
     desc = {
       value: (host, value) => {
-        const valueConfig = definitions.get(value);
-        if (
-          valueConfig &&
-          valueConfig !== config &&
-          valueConfig !== options.draft
-        ) {
-          return null;
-        }
-        const id =
-          valueConfig || valueConfig === null
-            ? value.id
-            : value || (options.id && options.id(host));
-
-        if (options.draft) {
-          if (!id && (config.enumerable || config.external)) {
-            const draftModel = options.draft.create({});
-            syncCache(options.draft, draftModel.id, draftModel, false);
-            value = get(Model, draftModel.id);
-          } else {
-            value = get(Model, id);
-          }
-
-          return value;
-        }
-
         if (!value) return null;
+
+        const valueConfig = definitions.get(value);
 
         return store.get(
           Model,
           valueConfig || valueConfig === null ? value.id : value,
         );
       },
-      connect: options.draft && (() => () => clear(Model, false)),
       writable: true,
     };
   } else {

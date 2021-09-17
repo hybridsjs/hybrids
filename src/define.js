@@ -1,7 +1,6 @@
 import * as cache from "./cache.js";
 import { pascalToDash, deferred, camelToDash, walkInShadow } from "./utils.js";
 
-const connect = Symbol("define.connect");
 const propsMap = new WeakMap();
 const disconnects = new WeakMap();
 
@@ -196,20 +195,15 @@ function translate(key, desc) {
   };
 }
 
-function compile(hybrids, lastHybrids) {
-  if (hybrids === lastHybrids) return hybrids;
-
-  let HybridsElement = lastHybrids && lastHybrids[connect];
+function compile(hybrids, HybridsElement) {
   if (HybridsElement) {
+    if (hybrids === HybridsElement.hybrids) return HybridsElement;
     propsMap.get(HybridsElement).forEach(key => {
       delete HybridsElement.prototype[key];
     });
   } else {
     HybridsElement = class extends HybridsRootElement {};
   }
-
-  hybrids[connect] = HybridsElement;
-  Object.freeze(hybrids);
 
   HybridsElement.hybrids = hybrids;
 
@@ -259,7 +253,7 @@ function compile(hybrids, lastHybrids) {
 }
 
 const updateQueue = new Map();
-function update(HybridsElement, lastHybrids) {
+function update(HybridsElement) {
   if (!updateQueue.size) {
     deferred.then(() => {
       walkInShadow(document.body, node => {
@@ -283,7 +277,7 @@ function update(HybridsElement, lastHybrids) {
       updateQueue.clear();
     });
   }
-  updateQueue.set(HybridsElement, lastHybrids);
+  updateQueue.set(HybridsElement, HybridsElement.hybrids);
 }
 
 function define(hybrids) {
@@ -297,10 +291,11 @@ function define(hybrids) {
   const HybridsElement = window.customElements.get(tagName);
 
   if (HybridsElement) {
-    const lastHybrids = HybridsElement.hybrids;
-    if (lastHybrids) {
-      update(HybridsElement, lastHybrids);
-      return compile(hybrids, lastHybrids);
+    if (HybridsElement.hybrids) {
+      update(HybridsElement);
+      compile(hybrids, HybridsElement);
+
+      return Object.freeze(hybrids);
     }
 
     throw TypeError(
@@ -309,12 +304,9 @@ function define(hybrids) {
   }
 
   customElements.define(tagName, compile(hybrids));
-  return hybrids;
+  return Object.freeze(hybrids);
 }
 
 export default Object.freeze(
-  Object.assign(define, {
-    compile: hybrids => compile(hybrids),
-    connect,
-  }),
+  Object.assign(define, { compile: hybrids => compile(hybrids) }),
 );
