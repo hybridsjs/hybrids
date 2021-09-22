@@ -121,17 +121,6 @@ function translate(key, desc) {
   }
 
   type = Array.isArray(desc.value) ? "array" : typeof desc.value;
-
-  if (type === "undefined") {
-    type = "function";
-
-    desc = {
-      ...desc,
-      value: setter,
-      writable: true,
-    };
-  }
-
   const attrName = camelToDash(key);
 
   if (type === "function") {

@@ -67,6 +67,32 @@ describe("define:", () => {
     }).toThrow();
   });
 
+  it("throws for undefined value", () => {
+    expect(() => {
+      define({
+        tag: "test-define-throws",
+        undefinedProp: undefined,
+      });
+    }).toThrow();
+    expect(() => {
+      define({
+        tag: "test-define-throws",
+        undefinedProp: {
+          connect: () => {},
+        },
+      });
+    }).toThrow();
+    expect(() => {
+      define({
+        tag: "test-define-throws",
+        undefinedProp: {
+          value: undefined,
+          connect: () => {},
+        },
+      });
+    }).toThrow();
+  });
+
   it("returns passed hybrids if the tag name is defined", () => {
     const hybrids = { tag: "test-define-twice" };
     expect(define(hybrids)).toBe(hybrids);
@@ -194,7 +220,6 @@ describe("define:", () => {
           value: (host, val) => (val ? val * 2 : 0),
           writable: false,
         },
-        undefinedProp: undefined,
         render: ({ prop1 }) =>
           html`<div>${prop1}</div>`, // prettier-ignore
         content: ({ prop1 }) =>
@@ -213,7 +238,6 @@ describe("define:", () => {
       expect(el.computed).toBe("0 false");
       expect(el.fullDesc).toBe("fullDesc");
       expect(el.fullDescWritable).toBe(0);
-      expect(el.undefinedProp).toBe(undefined);
     });
 
     it("sets values from corresponding attributes", () => {
@@ -221,13 +245,11 @@ describe("define:", () => {
       el.setAttribute("prop2", "2");
       el.setAttribute("prop3", "");
       el.setAttribute("prop4", "b");
-      el.setAttribute("undefined-prop", "c");
 
       expect(el.prop1).toBe("a");
       expect(el.prop2).toBe(2);
       expect(el.prop3).toBe(true);
       expect(el.prop4).toEqual(["b"]);
-      expect(el.undefinedProp).toBe("c");
     });
 
     it("updates writable properties", () => {
