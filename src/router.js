@@ -1,6 +1,6 @@
 import { callbacksMap } from "./define.js";
 import * as cache from "./cache.js";
-import { dispatch, pascalToDash, walkInShadow } from "./utils.js";
+import { dispatch, walkInShadow } from "./utils.js";
 
 const connect = Symbol("router.connect");
 const configs = new WeakMap();
@@ -241,7 +241,7 @@ function getConfigById(id) {
 }
 
 function setupView(hybrids, routerOptions, parent, nestedParent) {
-  const id = pascalToDash(hybrids.tag);
+  const id = hybrids.tag;
   let config = getConfigById(id);
 
   if (config && config.hybrids !== hybrids) {

@@ -1,5 +1,5 @@
 import * as cache from "./cache.js";
-import { pascalToDash, deferred, camelToDash, walkInShadow } from "./utils.js";
+import { deferred, camelToDash, walkInShadow } from "./utils.js";
 
 const propsMap = new WeakMap();
 const disconnects = new WeakMap();
@@ -287,8 +287,7 @@ function define(hybrids) {
     );
   }
 
-  const tagName = pascalToDash(hybrids.tag);
-  const HybridsElement = window.customElements.get(tagName);
+  const HybridsElement = window.customElements.get(hybrids.tag);
 
   if (HybridsElement) {
     if (HybridsElement.hybrids) {
@@ -299,11 +298,11 @@ function define(hybrids) {
     }
 
     throw TypeError(
-      `Custom element with '${tagName}' tag name already defined outside of the hybrids context`,
+      `Custom element with '${hybrids.tag}' tag name already defined outside of the hybrids context`,
     );
   }
 
-  customElements.define(tagName, compile(hybrids));
+  customElements.define(hybrids.tag, compile(hybrids));
   return Object.freeze(hybrids);
 }
 

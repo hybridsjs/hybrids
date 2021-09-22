@@ -6,7 +6,7 @@ import {
 import * as cache from "../../src/cache.js";
 import { resolveRaf, resolveTimeout } from "../helpers.js";
 
-fdescribe("store:", () => {
+describe("store:", () => {
   let Model;
 
   beforeAll(() => {

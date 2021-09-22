@@ -8,10 +8,6 @@ export function camelToDash(str) {
   return result;
 }
 
-export function pascalToDash(str) {
-  return camelToDash(str.replace(/((?!([A-Z]{2}|^))[A-Z])/g, "-$1"));
-}
-
 export function dispatch(host, eventType, options = {}) {
   return host.dispatchEvent(
     new CustomEvent(eventType, { bubbles: false, ...options }),

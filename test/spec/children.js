@@ -245,12 +245,12 @@ describe("children:", () => {
 
     beforeAll(() => {
       TestDynamicChild = define({
-        tag: "TestDynamicChild",
+        tag: "test-dynamic-child",
         name: "",
       });
 
       define({
-        tag: "TestDynamicParent",
+        tag: "test-dynamic-parent",
         items: children(TestDynamicChild),
         render: ({ items }) => html`
           <div>
