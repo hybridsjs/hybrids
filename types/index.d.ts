@@ -3,25 +3,23 @@ declare module "hybrids" {
     force?: boolean;
   }
 
+  type Property<E, V> =
+    | PropertyValue<E, V>
+    | ((host: E & HTMLElement, value: V) => V)
+    | Descriptor<E, V>;
+
+  type PropertyValue<E, V> = string | number | boolean | string[];
+
   interface Descriptor<E, V> {
-    get?: V | ((host: E & HTMLElement, value: any) => V);
+    value: PropertyValue<E, V> | ((host: E & HTMLElement, value: any) => V);
     connect?(
       host: E & HTMLElement & { __property_key__: V },
       key: "__property_key__",
       invalidate: (options?: InvalidateOptions) => void,
     ): Function | void;
     observe?(host: E & HTMLElement, value: V, lastValue: V): void;
+    writable?: boolean;
   }
-
-  type DescriptorValue<D> = D extends (...args: any) => any
-    ? ReturnType<D> extends Descriptor<any, infer V>
-      ? V
-      : never
-    : D extends Descriptor<any, infer V>
-    ? V
-    : never;
-
-  type Property<E, V> = Descriptor<E, V> | Descriptor<E, V>["get"];
 
   interface UpdateFunction<E> {
     (host: E & HTMLElement, target: ShadowRoot | Text | E): void;
@@ -31,30 +29,25 @@ declare module "hybrids" {
     (host: E & HTMLElement): UpdateFunction<E>;
   }
 
-  type Hybrids<E> = {
-    [property in Extract<
-      keyof Omit<E, keyof HTMLElement>,
-      string
-    >]: property extends "render" | "content"
-      ? E[property] extends () => HTMLElement
-        ? RenderFunction<E>
-        : Property<E, E[property]>
-      : Property<E, E[property]>;
-  } &
-    (E extends { tag: any } ? {} : { tag?: string }) & {
-      render?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
-      content?: RenderFunction<E> | Descriptor<E, () => HTMLElement>;
-    };
-
-  interface MapOfHybrids {
-    [tagName: string]: Hybrids<any>;
-  }
-
-  type MapOfConstructors<T> = {
-    [tagName in keyof T]: T[tagName] extends Hybrids<infer E>
-      ? HybridElement<E>
-      : typeof HTMLElement;
+  type HybridsBase = {
+    __router__connect__?: ViewOptions;
+    tag: string;
   };
+
+  type Hybrids<E> = HybridsBase &
+    {
+      [property in Extract<
+        keyof Omit<E, keyof HTMLElement>,
+        string
+      >]: property extends "render" | "content"
+        ? E[property] extends () => HTMLElement
+          ? RenderFunction<E>
+          : Property<E, E[property]>
+        : Property<E, E[property]>;
+    } & {
+      render?: RenderFunction<E>;
+      content?: RenderFunction<E>;
+    };
 
   interface HybridElement<E> {
     new (): E & HTMLElement;
@@ -63,15 +56,11 @@ declare module "hybrids" {
 
   /* Define */
 
-  function define<E>(
-    tagName: string | null,
-    hybrids: Hybrids<E>,
-  ): HybridElement<E>;
+  function define<E>(hybrids: Hybrids<E>): typeof hybrids;
 
-  type TaggedHybrids<E> = Hybrids<E> & { tag: string };
-
-  function define<E>(hybrids: TaggedHybrids<E>): typeof hybrids;
-  function define(listOfHybrids: TaggedHybrids<any>[]): typeof listOfHybrids;
+  namespace define {
+    function compile<E>(hybrids: Hybrids<E>): HybridElement<E>;
+  }
 
   /* Factories */
 
@@ -141,7 +130,11 @@ declare module "hybrids" {
 
   function store<E, M>(
     Model: Model<M>,
-    options?: StoreOptions<E>,
+  ): Descriptor<E, M extends { id: any } ? M | undefined : M>;
+
+  function store<E, M>(
+    Model: Model<M>,
+    options: StoreOptions<E>,
   ): Descriptor<E, M>;
 
   namespace store {
@@ -190,19 +183,17 @@ declare module "hybrids" {
 
   /* Router */
 
-  type View<E> = TaggedHybrids<E> & {
-    __router__connect__?: {
-      url?: string;
-      multiple?: boolean;
-      dialog?: boolean;
-      replace?: boolean;
-      guard?: (host: E) => any;
-      stack?: View<any>[];
-    };
-  };
+  interface ViewOptions<> {
+    url?: string;
+    multiple?: boolean;
+    dialog?: boolean;
+    replace?: boolean;
+    stack?: HybridsBase[];
+    guard?: () => boolean;
+  }
 
-  function router<E, V>(
-    views: View<any>[] | (() => View<any>[]),
+  function router<E>(
+    views: HybridsBase[] | (() => HybridsBase[]),
     options?: {
       url?: string;
       params?: Array<keyof E>;
@@ -221,7 +212,7 @@ declare module "hybrids" {
     };
 
     function url<E>(
-      view: View<E>,
+      view: HybridsBase,
       params?: UrlParams<E> & UrlOptions,
     ): URL | "";
 
@@ -230,7 +221,7 @@ declare module "hybrids" {
     function currentUrl<E>(params?: UrlParams<E> & UrlOptions): URL | "";
 
     function active(
-      views: View<any> | View<any>[],
+      views: HybridsBase | HybridsBase[],
       options?: { stack?: boolean },
     ): boolean;
 
@@ -248,7 +239,6 @@ declare module "hybrids" {
   /* Template Engine */
 
   interface UpdateFunctionWithMethods<E> extends UpdateFunction<E> {
-    define: (elements: MapOfHybrids) => this;
     key: (id: any) => this;
     style: (...styles: Array<string | CSSStyleSheet>) => this;
     css: (parts: TemplateStringsArray, ...args: unknown[]) => this;
