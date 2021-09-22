@@ -54,7 +54,7 @@ const transform = {
   boolean: { from: Boolean, to: String },
   array: {
     from: val =>
-      Array.isArray(val) ? val : (val && String(val).split(" ")) || [],
+      Array.isArray(val) ? val.map(String) : (val && String(val).split(" ")) || [],
     to: val => val.join(" "),
   },
 };
