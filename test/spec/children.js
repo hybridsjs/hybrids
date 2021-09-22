@@ -4,23 +4,19 @@ import children from "../../src/children.js";
 import { html } from "../../src/template/index.js";
 
 describe("children:", () => {
-  const child = {
-    customName: "",
-  };
+  let child;
+  let tree;
 
-  define("test-children-child", child);
+  beforeAll(() => {
+    child = {
+      tag: "test-children-child",
+      customName: "",
+    };
+    define(child);
+  });
 
   describe("direct children", () => {
-    define("test-children-direct", {
-      direct: children(child),
-      customName: ({ direct }) => direct && direct[0] && direct[0].customName,
-      render: ({ customName }) =>
-        html`
-          ${customName}
-        `,
-    });
-
-    const tree = test(`
+    tree = test(`
       <test-children-direct>
         <test-children-child custom-name="one">
           <test-children-child custom-name="five"></test-children-child>
@@ -31,6 +27,18 @@ describe("children:", () => {
         </div>
       </test-children-direct>
     `);
+
+    beforeAll(() => {
+      define({
+        tag: "test-children-direct",
+        direct: children(child),
+        customName: ({ direct }) => direct && direct[0] && direct[0].customName,
+        render: ({ customName }) =>
+          html`
+            ${customName}
+          `,
+      });
+    });
 
     it(
       "returns list",
@@ -100,15 +108,18 @@ describe("children:", () => {
   });
 
   describe("function condition", () => {
-    define("test-children-fn", {
-      direct: children(hybrids => hybrids === child),
-    });
-
-    const tree = test(`
+    tree = test(`
       <test-children-fn>
         <test-children-child></test-children-child>
       </test-children-fn>
     `);
+
+    beforeAll(() => {
+      define({
+        tag: "test-children-fn",
+        direct: children(hybrids => hybrids === child),
+      });
+    });
 
     it(
       "returns item list",
@@ -120,11 +131,7 @@ describe("children:", () => {
   });
 
   describe("deep children", () => {
-    define("test-children-deep", {
-      deep: children(child, { deep: true }),
-    });
-
-    const tree = test(`
+    tree = test(`
       <test-children-deep>
         <test-children-child custom-name="one">
           <test-children-child custom-name="five"></test-children-child>
@@ -135,6 +142,13 @@ describe("children:", () => {
         </div>
       </test-children-deep>
     `);
+
+    beforeAll(() => {
+      define({
+        tag: "test-children-deep",
+        deep: children(child, { deep: true }),
+      });
+    });
 
     it(
       "returns item list",
@@ -179,11 +193,7 @@ describe("children:", () => {
   });
 
   describe("nested children", () => {
-    define("test-children-nested", {
-      nested: children(child, { deep: true, nested: true }),
-    });
-
-    const tree = test(`
+    tree = test(`
       <test-children-nested>
         <test-children-child custom-name="one">
           <test-children-child custom-name="five"></test-children-child>
@@ -194,6 +204,13 @@ describe("children:", () => {
         </div>
       </test-children-nested>
     `);
+
+    beforeAll(() => {
+      define({
+        tag: "test-children-nested",
+        nested: children(child, { deep: true, nested: true }),
+      });
+    });
 
     it(
       "returns item list",
@@ -224,42 +241,47 @@ describe("children:", () => {
   });
 
   describe("dynamic children", () => {
-    const TestDynamicChild = {
-      tag: "TestDynamicChild",
-      name: "",
-    };
+    let TestDynamicChild;
 
-    const TestDynamicParent = {
-      tag: "TestDynamicParent",
-      items: children(TestDynamicChild),
-      render: ({ items }) => html`
-        <div>
-          ${items.map(({ name }) =>
-            html`
-              <div>${name}</div>
-            `.key(name),
-          )}
-        </div>
-        <slot></slot>
-      `,
-    };
+    beforeAll(() => {
+      TestDynamicChild = define({
+        tag: "test-dynamic-child",
+        name: "",
+      });
 
-    define("test-dynamic-wrapper", {
-      items: [],
-      render: ({ items }) =>
-        html`
-          <test-dynamic-parent>
-            <test-dynamic-child name="one"></test-dynamic-child>
-            ${items.map(name =>
+      define({
+        tag: "test-dynamic-parent",
+        items: children(TestDynamicChild),
+        render: ({ items }) => html`
+          <div>
+            ${items.map(({ name }) =>
               html`
-                <test-dynamic-child name="${name}"></test-dynamic-child>
+                <div>${name}</div>
               `.key(name),
             )}
-          </test-dynamic-parent>
-        `.define(TestDynamicParent, TestDynamicChild),
+          </div>
+          <slot></slot>
+        `,
+      });
+
+      define({
+        tag: "test-dynamic-wrapper",
+        items: [],
+        render: ({ items }) =>
+          html`
+            <test-dynamic-parent>
+              <test-dynamic-child name="one"></test-dynamic-child>
+              ${items.map(name =>
+                html`
+                  <test-dynamic-child name="${name}"></test-dynamic-child>
+                `.key(name),
+              )}
+            </test-dynamic-parent>
+          `,
+      });
     });
 
-    const tree = test(`
+    tree = test(`
       <test-dynamic-wrapper></test-dynamic-wrapper>
     `);
 

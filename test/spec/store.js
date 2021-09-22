@@ -1,4 +1,4 @@
-import { store } from "../../src/index.js";
+import { define, store } from "../../src/index.js";
 import {
   configs as storeConfigs,
   lists as storeLists,
@@ -989,7 +989,7 @@ describe("store:", () => {
 
       const desc = store(Model, { draft: true });
       const host = {};
-      const model = desc.get(host);
+      const model = desc.value(host);
 
       store
         .set(model, { one: "" })
@@ -1014,7 +1014,7 @@ describe("store:", () => {
 
       const desc = store(Model, { draft: true });
       const host = {};
-      const model = desc.get(host);
+      const model = desc.value(host);
 
       store
         .set(model, { number: 0 })
@@ -1171,334 +1171,247 @@ describe("store:", () => {
   });
 
   describe("factory", () => {
-    describe("for enumerable model", () => {
-      let promise;
-      let desc;
+    let el;
 
-      beforeEach(() => {
-        promise = store.set(Model, {});
-        desc = store(Model, ({ id }) => id);
-      });
-
-      it("get store model instance", done => {
-        promise
-          .then(model => {
-            expect(desc.get(model)).toBe(model);
-          })
-          .then(done);
-      });
-
-      it("maps id to host property", done => {
-        desc = store(Model, "id");
-        promise
-          .then(model => {
-            expect(desc.get({ id: model.id })).toBe(model);
-          })
-          .then(done);
-      });
-
-      it("updates store model instance", done => {
-        promise
-          .then(model => {
-            store.set(model, { string: "new value" });
-            const nextModel = desc.get(model, model);
-
-            expect(store.pending(nextModel)).toBeInstanceOf(Promise);
-            return model;
-          })
-          .then(model => {
-            const nextModel = desc.get(model, model);
-            expect(nextModel).not.toBe(model);
-            expect(nextModel.string).toBe("new value");
-          })
-          .then(done);
-      });
-
-      it("removes store model instance", done => {
-        promise
-          .then(model => store.set(model, null))
-          .then(model => {
-            const nextModel = desc.get(model, model);
-            expect(store.error(nextModel)).toBeInstanceOf(Error);
-            expect(store.ready(nextModel)).toBe(false);
-          })
-          .then(done);
-      });
-
-      describe("in draft mode", () => {
-        beforeEach(() => {
-          desc = store(Model, { id: "id", draft: true });
-        });
-
-        it("returns a draft of the original model", done => {
-          promise
-            .then(model => {
-              const draftModel = desc.get(model);
-
-              expect(desc.get(model)).not.toBe(model);
-              expect(draftModel.id).toBe(model.id);
-            })
-            .then(done);
-        });
-
-        it("returns the first draft of the original model after model changes", done => {
-          promise
-            .then(model => {
-              const draftModel = desc.get(model);
-
-              return store
-                .set(model, { string: "new value" })
-                .then(targetModel =>
-                  resolveTimeout(() => {
-                    const nextDraftModel = desc.get(model, draftModel);
-
-                    expect(targetModel.string).toBe("new value");
-                    expect(nextDraftModel.string).toBe("value");
-                    expect(nextDraftModel).toBe(draftModel);
-                  }),
-                );
-            })
-            .then(done);
-        });
-
-        it("updates a draft of the original model", done => {
-          promise
-            .then(model => {
-              const draftModel = desc.get(model);
-              return store
-                .set(draftModel, { string: "new value" })
-                .then(nextDraftModel => {
-                  expect(desc.get(model, draftModel)).toBe(nextDraftModel);
-                  expect(nextDraftModel.string).toBe("new value");
-                  const targetModel = store.get(Model, model.id);
-
-                  expect(targetModel).not.toEqual(nextDraftModel);
-                });
-            })
-            .then(done);
-        });
-
-        it("throws when submit not a draft", done => {
-          promise
-            .then(model => {
-              expect(() => store.submit(model)).toThrow();
-            })
-            .then(done);
-        });
-
-        it("submits changes from draft to the original model", done => {
-          promise
-            .then(model => {
-              const draftModel = desc.get(model);
-              return store
-                .set(draftModel, { string: "new value" })
-                .then(nextDraftModel => {
-                  const result = store.submit(nextDraftModel);
-                  expect(store.pending(nextDraftModel)).toBe(result);
-
-                  return result.then(targetModel => {
-                    expect(store.get(Model, nextDraftModel.id)).toBe(
-                      targetModel,
-                    );
-                    expect(targetModel).toEqual(nextDraftModel);
-                    expect(desc.get(model, nextDraftModel)).toEqual(
-                      targetModel,
-                    );
-                  });
-                });
-            })
-            .then(done);
-        });
-
-        it("clears draft cache when disconnected", done => {
-          promise
-            .then(model => {
-              desc.get(model);
-              desc.connect(model)();
-
-              return resolveTimeout(() => {
-                store.set(model, { string: "new value" }).then(() => {
-                  const nextDraftModel = desc.get(model);
-                  expect(nextDraftModel.string).toBe("new value");
-                });
-              });
-            })
-            .then(done);
-        });
-      });
+    afterEach(() => {
+      if (el && el.parentElement) document.body.removeChild(el);
+      return resolveRaf(() => {});
     });
 
-    describe("for enumerable model without id", () => {
-      it("returns null when get before setting an id", () => {
-        const desc = store(Model);
-        expect(desc.get({})).toBe(null);
-      });
-
-      it("throws when set model by reference from different definition", () => {
-        const model = store.get({ id: true }, "1");
-        const desc = store(Model);
-        expect(() => desc.get({}, model)).toThrow();
-      });
-
-      it("initialize model from the attribute value", () => {
-        const desc = store(Model);
-        const div = document.createElement("div");
-        const spy = jasmine.createSpy();
-
-        div.setAttribute("data-id", "1");
-        Object.defineProperty(div, "dataId", {
-          set: spy,
-          get: () => "",
-        });
-        desc.connect(div, "dataId");
-
-        expect(spy).toHaveBeenCalledWith("1");
-        desc.connect(div, "dataId");
-
-        expect(spy).toHaveBeenCalledTimes(1);
-      });
-
-      it("initialize model without the attribute value", () => {
-        const desc = store(Model);
-        const div = document.createElement("div");
-        const spy = jasmine.createSpy();
-
-        Object.defineProperty(div, "dataId", {
-          set: spy,
-          get: () => "",
-        });
-        desc.connect(div, "dataId");
-        expect(spy).toHaveBeenCalledTimes(0);
-      });
-
-      it("returns model by id", () => {
-        const desc = store(Model);
-        const model = desc.get({}, "1");
-        expect(model.id).toBe("1");
-      });
-
-      it("returns model by reference", () => {
-        const model = store.get(Model, "1");
-        const desc = store(Model);
-        const returnedModel = desc.get({}, model);
-        expect(returnedModel).toBe(model);
-      });
-
-      it("returns updated model", () => {
+    describe("for enumerable model", () => {
+      beforeEach(() => {
+        let idCount = 2;
         Model = {
           id: true,
           value: "test",
-          [store.connect]: id => Promise.resolve({ id }),
+          [store.connect]: {
+            get: id => Promise.resolve({ id, value: "test" }),
+            set: (id, values) => ({ ...values, id: id || idCount++ }), // eslint-disable-line no-plusplus
+          },
         };
 
-        const desc = store(Model);
-        const promiseModel = desc.get({}, "1");
+        define({
+          tag: "test-store-factory-enumerable",
+          modelId: "1",
+          byprop: store(Model, "modelId"),
+          byfn: store(Model, ({ modelId }) => modelId),
+          withoutid: store(Model),
+          draft: store(Model, { draft: true, id: "modelId" }),
+          draftwithoutid: store(Model, { draft: true }),
+        });
 
-        return store.pending(promiseModel).then(returnedModel => {
-          const resultModel = desc.get({}, promiseModel);
-          expect(resultModel).toBe(returnedModel);
+        el = document.createElement("test-store-factory-enumerable");
+        document.body.appendChild(el);
+
+        return resolveRaf(() => {});
+      });
+
+      describe("with id", () => {
+        it("throws when try to set value by assertion", () => {
+          expect(() => {
+            el.byprop = "1";
+          }).toThrow();
+        });
+
+        it("gets and updates store model instance", () => {
+          let pendingModel = el.byprop;
+          expect(store.pending(pendingModel)).toBeTruthy();
+          return store.pending(pendingModel).then(resultModel => {
+            expect(el.byprop).toBe(resultModel);
+            expect(el.byfn).toBe(resultModel);
+
+            store.set(resultModel, { value: "new value" });
+
+            pendingModel = el.byprop;
+            expect(store.pending(pendingModel)).toBeTruthy();
+
+            return store.pending(pendingModel).then(anotherResultModel => {
+              expect(el.byprop).toBe(anotherResultModel);
+              expect(el.byfn).toBe(anotherResultModel);
+            });
+          });
+        });
+
+        describe("in draft mode", () => {
+          it("throws when try to set value by assertion", () => {
+            expect(() => {
+              el.draft = "1";
+            }).toThrow();
+          });
+
+          it("has global space for draft definitions", () => {
+            const anotherEl = document.createElement(
+              "test-store-factory-enumerable",
+            );
+            expect(el.draft).toBe(anotherEl.draft);
+          });
+
+          it("returns a draft of the original model", () => {
+            const pendingModel = el.draft;
+            expect(store.pending(pendingModel)).toBeTruthy();
+            return store.pending(pendingModel).then(() => {
+              expect(el.draft).not.toBe(store.get(Model, el.modelId));
+            });
+          });
+
+          it("returns the first draft of the original model after model changes", () =>
+            store.pending(el.draft).then(model =>
+              store.set(model, { value: "new value" }).then(() => {
+                expect(el.draft.value).toBe("new value");
+                expect(store.get(Model, el.modelId).value).toBe("test");
+              }),
+            ));
+
+          it("throws when submit not a draft", () =>
+            store.pending(store.get(Model, "1")).then(model => {
+              expect(() => store.submit(model)).toThrow();
+            }));
+
+          it("throws when submits draft model instance in pending state", () => {
+            expect(() => store.submit(el.draft)).toThrow();
+          });
+
+          it("submits changes from draft to the original model", () =>
+            store
+              .pending(el.draft)
+              .then(model => store.set(model, { value: "new value" }))
+              .then(() => store.submit(el.draft))
+              .then(() => {
+                expect(el.draft.value).toBe("new value");
+                expect(store.get(Model, el.modelId).value).toBe("new value");
+              }));
+
+          it("clears draft cache when disconnected", () =>
+            store
+              .pending(el.draft)
+              .then(model => store.set(model, { string: "new value" }))
+              .then(() => {
+                document.body.removeChild(el);
+
+                return resolveTimeout(() => {
+                  document.body.appendChild(el);
+                  expect(el.draft.value).toBe("test");
+                });
+              }));
         });
       });
 
-      it("clear reference by property setter", () => {
-        const desc = store(Model);
-        const nextDraftModel = desc.set({}, null);
-        const draftModel = desc.get({}, nextDraftModel);
-        expect(draftModel).toBe(null);
-      });
-    });
+      describe("without id", () => {
+        it("returns null when get before setting an id", () => {
+          expect(el.withoutid).toBe(null);
+        });
 
-    describe("for enumerable model in draft mode without id", () => {
-      let desc;
+        it("set id by model by reference from different definition", () => {
+          const model = store.get({ id: true }, "1");
+          el.withoutid = model;
+          expect(el.withoutid.id).toBe("1");
+        });
 
-      beforeEach(() => {
-        desc = store(Model, { draft: true });
-      });
+        it("set model id from the attribute value", () => {
+          el.setAttribute("withoutid", "2");
+          expect(el.withoutid).toBe(store.get(Model, "2"));
+        });
 
-      it("has global space for draft definitions", () => {
-        const anotherDesc = store(Model, { draft: true });
-        expect(desc.get({}, "1")).toBe(anotherDesc.get({}, "1"));
-      });
+        it("set model id by assertion", () => {
+          el.withoutid = 2;
+          expect(el.withoutid).toBe(store.get(Model, "2"));
+        });
 
-      it("returns new model instance for not initialized model", () => {
-        const draftModel = desc.get({});
-        expect(draftModel).toBeDefined();
-        expect(store.ready(draftModel)).toBe(true);
+        it("set model by reference", () => {
+          const model = store.get(Model, "1");
+          el.withoutid = model;
+          expect(el.withoutid).toBe(model);
+        });
 
-        expect(desc.get({}, draftModel)).toBe(draftModel);
-      });
+        it("returns updated model", () => {
+          const model = store.get(Model, "1");
+          el.withoutid = model;
+          return store
+            .pending(model)
+            .then(resultModel => store.set(resultModel, { value: "new value" }))
+            .then(() => {
+              expect(el.withoutid.value).toBe("new value");
+            });
+        });
 
-      it("updates not initialized draft new model instance", done => {
-        const draftModel = desc.get({});
-        store
-          .set(draftModel, { string: "new value" })
-          .then(targetModel => {
-            const nextDraftModel = desc.get({}, draftModel);
-            expect(targetModel).toBe(nextDraftModel);
-            expect(nextDraftModel.string).toBe("new value");
-          })
-          .then(done);
-      });
+        it("clears reference by property assertion", () => {
+          const model = store.get(Model, "1");
+          el.withoutid = model;
+          el.withoutid = null;
+          expect(el.withoutid).toBe(null);
+        });
 
-      it("throws when submits draft model instance in pending state", () => {
-        const draftModel = desc.get({});
-        store.set(draftModel, { string: "my value" });
-        expect(() => store.submit(draftModel)).toThrow();
-      });
+        describe("in draft mode", () => {
+          it("returns new model instance for not initialized model", () => {
+            expect(el.draftwithoutid).toBeDefined();
+            expect(store.ready(el.draftwithoutid)).toBe(true);
+          });
 
-      it("submits new model each time", done => {
-        const draftModel = desc.get({});
-        store
-          .set(draftModel, { string: "my value" })
-          .then(nextDraftModel =>
-            store.submit(nextDraftModel).then(targetModel => {
-              expect(store.get(Model, targetModel.id)).toBe(targetModel);
-              expect(targetModel.id).not.toBe(nextDraftModel.id);
-              expect(targetModel.id).toBe(desc.get({}, nextDraftModel).id);
+          it("updates not initialized draft new model instance", () =>
+            store
+              .set(el.draftwithoutid, { value: "new value" })
+              .then(targetModel => {
+                expect(el.draftwithoutid).toBe(targetModel);
+                expect(targetModel.value).toBe("new value");
+              }));
 
-              expect(targetModel.string).toBe(nextDraftModel.string);
+          it("submits new model and updates values to resolved model", () =>
+            store.submit(el.draftwithoutid).then(resultModel => {
+              expect(resultModel.id).toBe("2");
+              expect(el.draftwithoutid).toEqual(resultModel);
 
-              const targetDraftModel = desc.get({}, nextDraftModel);
-              expect(targetDraftModel).not.toBe(nextDraftModel);
-
-              return store.submit(targetDraftModel).then(nextTargetModel => {
-                expect(nextTargetModel.id).not.toBe(targetModel);
-                expect(nextTargetModel.id).toBe(
-                  desc.get({}, targetDraftModel).id,
-                );
+              el.draftwithoutid = null;
+              expect(el.draftwithoutid).not.toEqual(resultModel);
+              return store.submit(el.draftwithoutid).then(otherModel => {
+                expect(otherModel.id).toBe("3");
               });
-            }),
-          )
-          .then(done);
-      });
+            }));
 
-      it("reset draft values by property setter", () => {
-        const nextDraftModel = desc.set({}, null);
-        const draftModel = desc.get({}, nextDraftModel);
-        expect(draftModel.string).toBe("value");
-      });
-
-      it("reset draft values by store set method", () => {
-        const draftModel = desc.get({});
-        store.set(draftModel, null);
-
-        expect(desc.get({}, draftModel).string).toBe("value");
+          it("reset draft values by store set method", () =>
+            store
+              .set(el.draftwithoutid, { value: "new value" })
+              .then(() => store.set(el.draftwithoutid, null))
+              .then(() => {
+                expect(el.draftwithoutid.value).toBe("test");
+              }));
+        });
       });
     });
 
     describe("for singleton model", () => {
-      let desc;
-
       beforeEach(() => {
         Model = { value: "test" };
-        desc = store(Model);
+
+        define({
+          tag: "test-store-factory-singleton",
+          model: store(Model),
+          draft: store(Model, { draft: true }),
+        });
+        el = document.createElement("test-store-factory-singleton");
+        document.body.appendChild(el);
       });
 
-      it("returns model instance", () => {
-        expect(desc.get({})).toEqual({ value: "test" });
+      it("throws when id is set for singleton definition", () => {
+        expect(() => {
+          store(Model, "modelId");
+        }).toThrow();
+        expect(() => {
+          store(Model, () => "modelId");
+        }).toThrow();
+        expect(() => {
+          store(Model, { id: "modelId" });
+        }).toThrow();
       });
 
-      it("uses default values for external storage in draft mode", () => {
+      it("returns model and updated model", () => {
+        expect(el.model).toEqual({ value: "test" });
+
+        return store.set(Model, { value: "new value" }).then(() => {
+          expect(el.model).toEqual({ value: "new value" });
+        });
+      });
+
+      it("in draft mode uses default values for external storage", () => {
         Model = {
           value: "test",
           [store.connect]: {
@@ -1507,56 +1420,42 @@ describe("store:", () => {
           },
         };
 
-        desc = store(Model, { draft: true });
-        expect(desc.get({})).toEqual({ value: "test" });
-      });
-
-      it("set model", () => {
-        const pendingModel = desc.get({});
-        store.set(Model, { value: "new value" });
-        store.pending(pendingModel).then(() => {
-          expect(desc.get({}, pendingModel)).toEqual({ value: "new value" });
-        });
-      });
-
-      it("set model from the error state", done => {
-        Model = {
-          value: "test",
-          [store.connect]: {
-            get: () => Promise.reject(Error()),
-            set: (id, values) => Promise.resolve(values),
-          },
-        };
-
-        desc = store(Model);
-        const pendingModel = desc.get({});
-        store
-          .pending(pendingModel)
-          .then(errorModel =>
-            store.set(errorModel, { value: "one" }).then(model => {
-              expect(desc.get({}, errorModel)).toBe(model);
-              expect(model.value).toBe("one");
-            }),
-          )
-          .then(done);
-      });
-
-      it("updates singleton model", () => {
-        const model = desc.get({});
-        store.set(model, { value: "new value" });
-        store.pending(model).then(() => {
-          expect(desc.get({}, model)).toEqual({ value: "new value" });
-        });
+        const desc = store(Model, { draft: true });
+        expect(desc.value({})).toEqual({ value: "test" });
       });
     });
 
     describe("for listing model", () => {
-      it("have set method for change when no id is set", () => {
-        expect(store([Model]).set).toBeInstanceOf(Function);
+      beforeEach(() => {
+        Model = {
+          id: true,
+          value: "test",
+          [store.connect]: {
+            list: id => (id === "default" ? [{ id: "1" }, { id: "2" }] : []),
+          },
+        };
+
+        define({
+          tag: "test-store-factory-listing",
+          listwithid: store([Model], () => "default"),
+          listwithoutid: store([Model]),
+        });
+        el = document.createElement("test-store-factory-listing");
+        document.body.appendChild(el);
       });
 
-      it("does not have set method when id is set", () => {
-        expect(store([Model], { id: "query" }).set).toBeFalsy();
+      it("set id by assertion when no id option is set", () => {
+        expect(el.listwithoutid).toBe(null);
+        el.listwithoutid = "some";
+        expect(el.listwithoutid).toEqual([]);
+        el.listwithoutid = "default";
+        expect(el.listwithoutid.length).toBe(2);
+      });
+
+      it("throws when try to update property with id option", () => {
+        expect(() => {
+          el.listwithid = "another";
+        }).toThrow();
       });
 
       it("throws for the draft mode", () => {
@@ -1565,9 +1464,7 @@ describe("store:", () => {
     });
 
     describe("connected to async storage", () => {
-      let desc;
       let mode;
-      let host;
 
       beforeEach(() => {
         const storage = {
@@ -1582,80 +1479,55 @@ describe("store:", () => {
             set: (id, values) => Promise[mode]().then(() => values),
           },
         };
-        desc = store(Model, ({ id }) => id);
+
+        define({
+          tag: "test-store-factory-async",
+          modelId: "1",
+          model: store(Model, "modelId"),
+          draft: store(Model, { draft: true, id: "modelId" }),
+        });
+
         mode = "resolve";
-        host = { id: "1" };
+        el = document.createElement("test-store-factory-async");
+        document.body.appendChild(el);
       });
 
-      it("returns pending placeholder with prototype to model", done => {
-        const pendingModel = desc.get(host);
+      it("returns pending placeholder with prototype to model", () =>
         store
-          .pending(pendingModel)
-          .then(() => {
-            const modelOne = desc.get(host, pendingModel);
-            expect(modelOne).toEqual({ id: "1", value: "one" });
+          .pending(el.model)
+          .then(model => {
+            expect(el.model).toBe(model);
+            el.modelId = "2";
+            expect(el.model).not.toBe(model);
+            expect(el.model.id).toBe("1");
+            expect(store.pending(el.model)).toBeTruthy();
 
-            host.id = "2";
-
-            const pendingTwo = desc.get(host, modelOne);
-            const promise = store.pending(pendingTwo);
-
-            expect(pendingTwo).toEqual(modelOne);
-            expect(pendingTwo).not.toBe(modelOne);
-            expect(store.ready(pendingTwo)).toBe(true);
-
-            expect(promise).toBeInstanceOf(Promise);
-
-            return promise.then(modelTwo => {
-              const result = desc.get(host, pendingTwo);
-              expect(store.ready(modelTwo)).toBe(true);
-              expect(result).toBe(modelTwo);
-            });
+            return store.pending(el.model);
           })
-          .then(done);
-      });
+          .then(model => {
+            expect(model.id).toBe("2");
+            expect(el.model).toBe(model);
+          }));
 
       describe("for draft mode", () => {
-        beforeEach(() => {
-          desc = store(Model, { id: "id", draft: true });
-        });
-
-        it("returns a draft of the original model", done => {
-          const draftModel = desc.get(host);
-          expect(store.pending(draftModel)).toBeInstanceOf(Promise);
-
-          store
-            .pending(draftModel)
-            .then(() => {
-              expect(desc.get(host, draftModel).value).toBe("one");
-            })
-            .then(done);
-        });
-
-        it("always returns the first draft of the original model", done => {
-          const draftModel = desc.get(host);
-          expect(store.pending(draftModel)).toBeInstanceOf(Promise);
-
+        it("always returns the first draft of the original model", () =>
           store
             .pending(store.get(Model, "1"))
-            .then(model => store.set(model, { value: "other" }))
+            .then(model => {
+              expect(el.draft.value).toBe("one");
+              return store.set(model, { value: "other" });
+            })
             .then(() => {
-              expect(desc.get(host, draftModel).value).toBe("one");
-            })
-            .then(done);
-        });
+              expect(el.draft.value).toBe("one");
+            }));
 
-        it("sets error state when submit fails", done => {
-          store
-            .pending(desc.get(host))
-            .then(draftModel => {
-              mode = "reject";
-              return store.submit(draftModel).catch(error => {
-                expect(store.error(draftModel)).toBe(error);
-              });
-            })
-            .then(done);
-        });
+        it("sets error state when submit fails", () =>
+          store.pending(el.draft).then(draftModel => {
+            mode = "reject";
+            return store.submit(draftModel).catch(error => {
+              expect(store.error(draftModel)).toBe(error);
+            });
+          }));
       });
     });
   });

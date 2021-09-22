@@ -22,10 +22,9 @@ export default function children(
     typeof hybridsOrFn === "function"
       ? hybridsOrFn
       : hybrids => hybrids === hybridsOrFn;
+
   return {
-    get(host) {
-      return walk(host, fn, options);
-    },
+    value: host => walk(host, fn, options),
     connect(host, key, invalidate) {
       const observer = new MutationObserver(invalidate);
 

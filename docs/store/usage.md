@@ -202,7 +202,7 @@ The model instance can be set by the property assertion (passing the id or a mod
 const el = document.createElement("my-element");
 el.user = "2";
 
-// set by model reference
+// set by model reference of the same model definition
 const someUser = store.get(User, "3");
 el.user = someUser;
  

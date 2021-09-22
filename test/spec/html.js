@@ -1,10 +1,8 @@
 import { html } from "../../src/template/index.js";
 import { createInternalWalker } from "../../src/template/core.js";
 import define from "../../src/define.js";
-import renderFactory from "../../src/render.js";
 import { dispatch } from "../../src/utils.js";
 import { test, resolveTimeout } from "../helpers.js";
-import { property } from "../../src/index.js";
 import store from "../../src/store.js";
 
 describe("html:", () => {
@@ -60,8 +58,9 @@ describe("html:", () => {
   });
 
   it("logs template with highlight expression when an error occur", () => {
-    define("test-html-object-property", {
-      model: property({}),
+    define({
+      tag: "test-html-object-property",
+      model: () => "value",
     });
 
     const renderWithNewLines = value => html`
@@ -96,13 +95,11 @@ describe("html:", () => {
   });
 
   it("replaces resolved nested custom element template", done => {
-    define("test-replace-trigger", {
-      render: renderFactory(
-        () => html`
-          content
-        `,
-        { shadowRoot: false },
-      ),
+    define({
+      tag: "test-replace-trigger",
+      content: () => html`
+        content
+      `,
     });
 
     const render = flag => html`
@@ -133,7 +130,8 @@ describe("html:", () => {
     });
 
     it("sets property", () => {
-      define("test-html-computed-property", {
+      define({
+        tag: "test-html-computed-property",
         value: "",
       });
       html`
@@ -205,7 +203,8 @@ describe("html:", () => {
     });
 
     it("sets property using camelCase name", () => {
-      define("test-html-property", {
+      define({
+        tag: "test-html-property",
         customProperty: 0,
       });
 
@@ -1298,38 +1297,36 @@ describe("html:", () => {
   });
 
   describe("ShadyCSS custom property scope", () => {
-    const TestShadyChild = {
-      tag: "test-shady-child",
-      value: 0,
-      render: ({ value }) => html`
-        <span>${value}</span>
-        <style>
-          span {
-            color: var(--custom-color);
-          }
-        </style>
-      `,
-    };
-
-    const TestShadyParent = {
-      tag: "test-shady-parent",
-      active: false,
-      render: ({ active }) =>
-        html`
-          <test-shady-child class="${{ active }}"></test-shady-child>
+    beforeAll(() => {
+      define({
+        tag: "test-shady-child",
+        value: 0,
+        render: ({ value }) => html`
+          <span>${value}</span>
           <style>
-            test-shady-child {
-              --custom-color: red;
-            }
-            test-shady-child.active {
-              --custom-color: blue;
+            span {
+              color: var(--custom-color);
             }
           </style>
         `,
-    };
+      });
 
-    beforeAll(() => {
-      define(TestShadyParent, TestShadyChild);
+      define({
+        tag: "test-shady-parent",
+        active: false,
+        render: ({ active }) =>
+          html`
+            <test-shady-child class="${{ active }}"></test-shady-child>
+            <style>
+              test-shady-child {
+                --custom-color: red;
+              }
+              test-shady-child.active {
+                --custom-color: blue;
+              }
+            </style>
+          `,
+      });
     });
 
     const shadyTree = test(`

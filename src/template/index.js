@@ -1,5 +1,3 @@
-import defineElements from "../define.js";
-
 import { compileTemplate, getPlaceholder } from "./core.js";
 import * as helpers from "./helpers.js";
 
@@ -11,10 +9,6 @@ const templatesMap = new Map();
 const stylesMap = new WeakMap();
 
 const methods = {
-  define(...elements) {
-    defineElements(...elements);
-    return this;
-  },
   key(id) {
     this.id = id;
     return this;

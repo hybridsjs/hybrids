@@ -4,20 +4,23 @@ import parent from "../../src/parent.js";
 
 describe("parent:", () => {
   const parentHybrids = {
+    tag: "test-parent-parent",
     customProperty: "value",
   };
 
-  define("test-parent-parent", parentHybrids);
+  beforeAll(() => {
+    define(parentHybrids);
 
-  define("test-parent-child", {
-    parent: parent(parentHybrids),
-    computed: {
-      get: host => `${host.parent.customProperty} other value`,
-    },
-  });
+    define({
+      tag: "test-parent-child",
+      parent: parent(parentHybrids),
+      computed: host => `${host.parent.customProperty} other value`,
+    });
 
-  define("test-parent-child-fn", {
-    parent: parent(hybrids => hybrids === parentHybrids),
+    define({
+      tag: "test-parent-child-fn",
+      parent: parent(hybrids => hybrids === parentHybrids),
+    });
   });
 
   const directParentTree = test(`

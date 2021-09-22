@@ -32,27 +32,34 @@ describe("router:", () => {
   it("throws when views have circular reference", () => {
     let A;
 
-    const B = {
+    const B = define({
       [router.connect]: { stack: () => [A] },
       tag: "test-router-circular-b",
-    };
+    });
 
-    A = {
+    A = define({
       [router.connect]: { stack: [B] },
       tag: "test-router-circular-a",
-    };
+    });
 
     const el = document.createElement("div");
     expect(() => router([A]).connect(el)).toThrow();
   });
 
+  it("throws when view is not defined", () => {
+    const NotDefine = { tag: "test-router-not-define" };
+    expect(() => {
+      router([NotDefine]).connect(document.createElement("div"));
+    }).toThrow();
+  });
+
   it("throws when dialog has 'url' option", () => {
     expect(() =>
       router([
-        {
+        define({
           [router.connect]: { dialog: true, url: "/home" },
           tag: "test-router-dialog-throw",
-        },
+        }),
       ]).connect(document.createElement("div")),
     ).toThrow();
   });
@@ -60,10 +67,10 @@ describe("router:", () => {
   it("throws when view 'url' option is not a string", () => {
     expect(() =>
       router([
-        {
+        define({
           [router.connect]: { url: true },
           tag: "test-router-url-throw",
-        },
+        }),
       ]).connect(document.createElement("div")),
     ).toThrow();
   });
@@ -71,10 +78,10 @@ describe("router:", () => {
   it("throws when dialog has 'stack' option", () => {
     expect(() =>
       router([
-        {
+        define({
           [router.connect]: { dialog: true, stack: [] },
           tag: "test-router-dialog-throw",
-        },
+        }),
       ]).connect(document.createElement("div")),
     ).toThrow();
   });
@@ -82,24 +89,24 @@ describe("router:", () => {
   it("throws when view does not support browser url option", () => {
     expect(() =>
       router([
-        {
+        define({
           [router.connect]: { url: "/test?open" },
           tag: "test-router-url-throw",
-        },
+        }),
       ]).connect(document.createElement("div")),
     ).toThrow();
   });
 
   it("throws for more than one nested router in the definition", () => {
-    const NestedView = { tag: "test-router-nested-root-nested-view" };
+    const NestedView = define({ tag: "test-router-nested-root-nested-view" });
     define({
       tag: "test-router-app",
       views: router([
-        {
+        define({
           tag: "test-router-nested-root-view",
           nested: router([NestedView]),
           nestedTwo: router([NestedView]),
-        },
+        }),
       ]),
     });
     const el = document.createElement("test-router-app");
@@ -107,22 +114,22 @@ describe("router:", () => {
   });
 
   it("throws for nested router defined inside of the dialog view", () => {
-    const NestedView = { tag: "test-router-nested-root-nested-view" };
-    const DialogView = {
+    const NestedView = define({ tag: "test-router-nested-root-nested-view" });
+    const DialogView = define({
       [router.connect]: {
         dialog: true,
       },
       tag: "test-router-nested-dialog-view",
       nested: router([NestedView]),
-    };
+    });
     define({
       tag: "test-router-app",
       views: router([
-        {
+        define({
           [router.connect]: { stack: [DialogView] },
           tag: "test-router-nested-root-view",
           nested: router([NestedView]),
-        },
+        }),
       ]),
     });
     const el = document.createElement("test-router-app");
@@ -130,17 +137,17 @@ describe("router:", () => {
   });
 
   it("throws when parent view has 'url' option", () => {
-    const NestedView = { tag: "test-router-nested-root-nested-view" };
+    const NestedView = define({ tag: "test-router-nested-root-nested-view" });
     define({
       tag: "test-router-app",
       views: router([
-        {
+        define({
           [router.connect]: {
             url: "/",
           },
           tag: "test-router-nested-root-view",
           nested: router([NestedView]),
-        },
+        }),
       ]),
     });
     const el = document.createElement("test-router-app");
@@ -152,9 +159,9 @@ describe("router:", () => {
       tag: "test-router-app",
       views: router(
         [
-          {
+          define({
             tag: "test-router-nested-root-view",
-          },
+          }),
         ],
         { params: ["global"] },
       ),
@@ -165,16 +172,16 @@ describe("router:", () => {
 
   describe("test app", () => {
     beforeAll(() => {
-      NestedViewTwo = {
+      NestedViewTwo = define({
         [router.connect]: {
           url: "/nested/:value/test?param",
         },
+        tag: "test-router-nested-view-two",
         value: "1",
         param: false,
-        tag: "test-router-nested-view-two",
-      };
+      });
 
-      const NestedComponent = {
+      define({
         tag: "test-router-nested-component",
         scroll: {
           connect(_) {
@@ -189,9 +196,9 @@ describe("router:", () => {
               <div style="height: 300px"></div>
             </div>
           `,
-      };
+      });
 
-      NestedViewOne = {
+      NestedViewOne = define({
         [router.connect]: {
           stack: [NestedViewTwo],
         },
@@ -202,7 +209,7 @@ describe("router:", () => {
           html`
             <test-router-nested-component></test-router-nested-component>
             <slot></slot>
-          `.define(NestedComponent),
+          `,
         content: () => html`
           <a
             href="${router.url(NestedViewTwo, { value: "1" })}"
@@ -210,9 +217,9 @@ describe("router:", () => {
             >NestedViewTwo</a
           >
         `,
-      };
+      });
 
-      OtherChildView = {
+      OtherChildView = define({
         [router.connect]: { url: "/other_url_child" },
         param: false,
         tag: "test-router-other-child-view",
@@ -221,15 +228,15 @@ describe("router:", () => {
             >MultipleViewFromOtherChild</a
           >
         `,
-      };
+      });
 
-      OtherChildWithLongerUrl = {
+      OtherChildWithLongerUrl = define({
         [router.connect]: { url: "/:value/other" },
         value: "",
         tag: "test-router-other-child-view-longer",
-      };
+      });
 
-      ChildView = {
+      ChildView = define({
         [router.connect]: {
           stack: [OtherChildWithLongerUrl, OtherChildView],
         },
@@ -251,17 +258,17 @@ describe("router:", () => {
             >OtherChildView</a
           >
         `,
-      };
+      });
 
-      Dialog = {
+      Dialog = define({
         [router.connect]: { dialog: true },
         tag: "test-router-dialog",
         content: () => html`
           <a href="${router.currentUrl()}" id="DialogCurrent">DialogCurrent</a>
         `,
-      };
+      });
 
-      MultipleView = {
+      MultipleView = define({
         [router.connect]: {
           multiple: true,
         },
@@ -278,9 +285,9 @@ describe("router:", () => {
             >MultipleViewCurrentOther</a
           >
         `,
-      };
+      });
 
-      MultipleViewWithUrl = {
+      MultipleViewWithUrl = define({
         [router.connect]: {
           multiple: true,
           url: "/multiple/:value/test?param",
@@ -303,13 +310,13 @@ describe("router:", () => {
             >MultipleViewCurrentOtherPath</a
           >
         `,
-      };
+      });
 
       function delayWithPromise(_, event) {
         router.resolve(event, Promise.resolve());
       }
 
-      RootView = {
+      RootView = define({
         [router.connect]: {
           stack: [ChildView, MultipleView, MultipleViewWithUrl, Dialog],
         },
@@ -373,7 +380,7 @@ describe("router:", () => {
           </div>
           <input id="input" />
         `,
-      };
+      });
 
       define({
         tag: "test-router-app",
@@ -435,7 +442,7 @@ describe("router:", () => {
                   expect(hybrids(host.children[0])).toBe(ChildView);
 
                   host.parentElement.removeChild(host);
-                  const Another = { tag: "test-router-another" };
+                  const Another = define({ tag: "test-router-another" });
                   define({
                     tag: "test-router-app-another",
                     views: router([Another]),
@@ -503,6 +510,7 @@ describe("router:", () => {
           host.querySelector("#ChildView").click();
 
           return resolveTimeout(() => {
+            expect(hybrids(host.views[0])).toBe(ChildView);
             expect(document.scrollingElement.scrollTop).toBe(0);
             expect(document.scrollingElement.scrollLeft).toBe(0);
 
@@ -837,10 +845,10 @@ describe("router:", () => {
 
       it("throws for duplicated parameters in URL", () => {
         const desc = router([
-          {
+          define({
             [router.connect]: { url: "/:test?test" },
             tag: "test-router-url-error",
-          },
+          }),
         ]);
 
         expect(() =>
@@ -850,11 +858,11 @@ describe("router:", () => {
 
       it("throws for duplicated parameters in URL", () => {
         const desc = router([
-          {
+          define({
             [router.connect]: { url: "/:test" },
             test: () => "",
             tag: "test-router-url-error",
-          },
+          }),
         ]);
 
         expect(() =>
@@ -1020,44 +1028,44 @@ describe("router:", () => {
       let Home;
 
       beforeAll(() => {
-        NestedOne = {
+        NestedOne = define({
           [router.connect]: {
             url: "/child",
           },
           tag: "test-router-child-nested-back-url",
-        };
+        });
 
-        Child = {
+        Child = define({
           tag: "test-router-child-back-url",
           nestedViews: router([NestedOne]),
           content: () =>
             html`
               <a href="${router.url(Home)}">Home</a>
             `,
-        };
+        });
 
-        NestedTwo = {
+        NestedTwo = define({
           [router.connect]: {
             url: "/nested_two",
           },
           tag: "test-router-child-nested-two-back-url",
-        };
+        });
 
-        OtherChild = {
+        OtherChild = define({
           [router.connect]: {
             stack: [NestedTwo],
             guard: () => true,
           },
           tag: "test-router-other-child-back-url",
-        };
+        });
 
-        Home = {
+        Home = define({
           [router.connect]: { stack: [Child, OtherChild] },
           tag: "test-router-home-back-url",
           content: () => html`
             <a href="${router.guardUrl()}">Child</a>
           `,
-        };
+        });
 
         define({
           tag: "test-router-app-back-url",
@@ -1115,18 +1123,18 @@ describe("router:", () => {
       });
 
       it("returns empty string when no unguarded view is in the tree", () => {
-        const ChildUnguarded = { tag: "test-router-child-unguarded" };
+        const ChildUnguarded = define({ tag: "test-router-child-unguarded" });
 
         define({
           tag: "test-router-app-unguarded",
           views: router([
-            {
+            define({
               [router.connect]: {
                 stack: [ChildUnguarded],
                 guard: () => true,
               },
               tag: "test-router-home-view-unguarded",
-            },
+            }),
           ]),
           content: ({ views }) => html`${views}` // prettier-ignore
         });
@@ -1155,14 +1163,14 @@ describe("router:", () => {
       let guardFlag;
 
       beforeAll(() => {
-        ChildView = {
+        ChildView = define({
           [router.connect]: {
             url: "/child",
           },
           tag: "test-router-child-view",
-        };
+        });
 
-        OtherChildView = {
+        OtherChildView = define({
           tag: "test-router-other-child-view",
           [router.connect]: {
             url: "/other_child",
@@ -1171,9 +1179,9 @@ describe("router:", () => {
             html`
               <a href="${router.url(RootView)}" id="RootView">RootView</a>
             `,
-        };
+        });
 
-        RootView = {
+        RootView = define({
           [router.connect]: {
             stack: [ChildView, OtherChildView],
             guard: () => {
@@ -1187,7 +1195,7 @@ describe("router:", () => {
               >OtherChildView</a
             >
           `,
-        };
+        });
 
         define({
           tag: "test-router-app-guard-url",

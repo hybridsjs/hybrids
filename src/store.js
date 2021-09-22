@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import * as cache from "./cache.js";
-import { storePointer, camelToDash } from "./utils.js";
+import { storePointer } from "./utils.js";
 
 const connect = Symbol("store.connect");
 
@@ -799,6 +799,8 @@ function setupListModel(Model, nested) {
           return acc;
         }, []);
 
+        Object.defineProperty(result, "id", { value: items.id });
+
         definitions.set(result, config);
         storePointer.set(result, store);
 
@@ -941,9 +943,8 @@ function get(Model, id) {
               throw notFoundError(Model, stringId);
             }
 
-            const model = config.create(
-              !config.list && stringId ? { ...data, id: stringId } : data,
-            );
+            if (data.id !== stringId) data.id = stringId;
+            const model = config.create(data);
 
             if (offline) offline.set(stringId, model);
 
@@ -955,9 +956,8 @@ function get(Model, id) {
       }
 
       if (cachedModel) definitions.set(cachedModel, null);
-      const model = config.create(
-        !config.list && stringId ? { ...result, id: stringId } : result,
-      );
+      if (result.id !== stringId) result.id = stringId;
+      const model = config.create(result);
 
       if (offline) {
         Promise.resolve().then(() => {
@@ -1398,10 +1398,15 @@ function store(Model, options = {}) {
   if (typeof options !== "object") {
     options = { id: options };
   }
-
   if (options.id !== undefined && typeof options.id !== "function") {
     const id = options.id;
     options.id = host => host[id];
+  }
+
+  if (options.id && !config.enumerable) {
+    throw TypeError(
+      "Store factory for singleton model definition does not support 'id' option",
+    );
   }
 
   if (options.draft) {
@@ -1435,43 +1440,44 @@ function store(Model, options = {}) {
   }
 
   let desc;
-  if (options.draft || (!options.id && config.enumerable)) {
+  if (options.draft) {
     desc = {
-      get: (host, value) => {
-        const valueConfig = definitions.get(value);
-        if (valueConfig && valueConfig.model !== Model) {
-          throw TypeError("Model definitions do not match");
-        }
-        const id =
-          valueConfig || valueConfig === null
-            ? value.id
-            : value || (options.id && options.id(host));
+      value: options.id
+        ? host => get(Model, options.id(host))
+        : (host, value) => {
+            const valueConfig = definitions.get(value);
+            const id = valueConfig || valueConfig === null ? value.id : value;
 
-        if (options.draft) {
-          if (!id && (config.enumerable || config.external)) {
-            const draftModel = options.draft.create({});
-            syncCache(options.draft, draftModel.id, draftModel, false);
-            value = get(Model, draftModel.id);
-          } else {
-            value = get(Model, id);
-          }
+            if (!id && (config.enumerable || config.external)) {
+              const draftModel = options.draft.create({});
+              syncCache(options.draft, draftModel.id, draftModel, false);
+              value = get(Model, draftModel.id);
+            } else {
+              value = get(Model, id);
+            }
 
-          return value;
-        }
-
+            return value;
+          },
+      connect: () => () => clear(Model, false),
+      writable: !options.id,
+    };
+  } else if (!options.id && config.enumerable) {
+    desc = {
+      value: (host, value) => {
         if (!value) return null;
+
+        const valueConfig = definitions.get(value);
 
         return store.get(
           Model,
           valueConfig || valueConfig === null ? value.id : value,
         );
       },
-      set: (host, value) => value,
-      connect: options.draft && (() => () => clear(Model, false)),
+      writable: true,
     };
   } else {
     desc = {
-      get: (host, value) => {
+      value: (host, value) => {
         const nextValue = get(Model, options.id && options.id(host));
 
         if (nextValue !== value && ready(value) && !ready(nextValue)) {
@@ -1482,21 +1488,7 @@ function store(Model, options = {}) {
 
         return nextValue;
       },
-    };
-  }
-
-  if (!options.id && !options.draft && (config.enumerable || config.list)) {
-    const attrs = new WeakSet();
-    desc.connect = (host, key) => {
-      if (!attrs.has(host)) {
-        attrs.add(host);
-
-        const attrName = camelToDash(key);
-
-        if (host.hasAttribute(attrName)) {
-          host[key] = host.getAttribute(attrName);
-        }
-      }
+      writable: false,
     };
   }
 

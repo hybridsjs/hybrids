@@ -1,412 +1,366 @@
-import { test, resolveRaf } from "../helpers.js";
-import define from "../../src/define.js";
-import { invalidate } from "../../src/cache.js";
+import { define, html } from "../../src/index.js";
+import { resolveRaf } from "../helpers.js";
 
 describe("define:", () => {
-  it("throws when element constructor is not an object", () => {
-    expect(() => define("test-define-multiple", null)).toThrow();
+  let el;
+  let spy;
+
+  afterEach(() => {
+    if (el && el.parentElement) el.parentElement.removeChild(el);
   });
 
-  it("returns custom element with a name", () => {
-    const CustomElement = define("test-define-custom-element", {});
-    expect(
-      {}.isPrototypeOf.call(HTMLElement.prototype, CustomElement.prototype),
-    ).toBe(true);
-    expect(CustomElement.name).toBe("test-define-custom-element");
+  it("throws when 'tag' property is missing or not a dashed string", () => {
+    expect(() => {
+      define({ prop1: "value1" });
+    }).toThrow();
+
+    expect(() => {
+      define({ tag: null, prop1: "value1" });
+    }).toThrow();
+
+    expect(() => {
+      define({ tag: "test", prop1: "value1" });
+    }).toThrow();
   });
 
-  it("returns the constructor without defining in the registry", () => {
-    const MyElement = {
-      value: "test",
-    };
-
-    const Constructor = define(null, MyElement);
-
-    expect(Constructor.prototype.value).toBeDefined();
-    expect(define(null, MyElement)).not.toBe(Constructor);
-
-    customElements.define("test-define-from-constructor", Constructor);
-    const el = document.createElement("test-define-from-constructor");
-
-    expect(el.value).toBe("test");
+  it("throws when another external element is defined on the same tag name", () => {
+    customElements.define("test-define-external", class extends HTMLElement {});
+    expect(() => {
+      define({ tag: "test-define-external", prop1: "value1" });
+    }).toThrow();
   });
 
-  describe("for objects", () => {
-    it("defines tagged components", done => {
-      const testHtmlDefine = { tag: "testHtmlDefine", value: "test" };
-      const TestPascal = { tag: "TestPascal", value: "value-test-pascal" };
-      const HTMLDefine = { tag: "HTMLDefine", value: "value-html-define" };
-      const result = define(testHtmlDefine, TestPascal, HTMLDefine);
+  it("throws for unsupported property value", () => {
+    expect(() => {
+      define({
+        tag: "test-define-throws",
+        prop: Symbol("asd"),
+      });
+    }).toThrow();
+  });
 
-      expect(result).toEqual([testHtmlDefine, TestPascal, HTMLDefine]);
-      expect(define(HTMLDefine)).toBe(HTMLDefine);
+  it("throws for unsupported property option", () => {
+    expect(() => {
+      define({
+        tag: "test-define-throws",
+        prop: {
+          get: () => {},
+        },
+      });
+    }).toThrow();
+    expect(() => {
+      define({
+        tag: "test-define-throws",
+        prop: null,
+      });
+    }).toThrow();
+  });
 
-      requestAnimationFrame(() => {
-        const testHtmlDefineEl = document.createElement("test-html-define");
-        const testPascalEl = document.createElement("test-pascal");
-        const htmlDefineEl = document.createElement("html-define");
+  it("throws for not required descriptor form", () => {
+    expect(() => {
+      define({
+        tag: "test-define-throws",
+        prop: {
+          value: 1,
+        },
+      });
+    }).toThrow();
+  });
 
-        expect(testHtmlDefineEl.value).toBe("test");
-        expect(testPascalEl.value).toBe("value-test-pascal");
-        expect(htmlDefineEl.value).toBe("value-html-define");
+  it("returns passed hybrids if the tag name is defined", () => {
+    const hybrids = { tag: "test-define-twice" };
+    expect(define(hybrids)).toBe(hybrids);
+    expect(define(hybrids)).toBe(hybrids);
+  });
 
-        done();
+  it("returns a class constructor when compile method is used", () => {
+    expect(define.compile({ some: "" }).prototype).toBeInstanceOf(HTMLElement);
+  });
+
+  it("redefines the same element", () => {
+    define({
+      tag: "test-define-same-deep",
+      prop: "test",
+    });
+
+    define({
+      tag: "test-define-same",
+      prop1: "test",
+      render: () =>
+        html`
+          <test-define-same-deep></test-define-same-deep>
+        `,
+    });
+
+    el = document.createElement("test-define-same");
+    document.body.appendChild(el);
+
+    return resolveRaf(() => {
+      define({
+        tag: "test-define-same",
+        prop2: "test",
+        render: () =>
+          html`
+            <test-define-same-deep></test-define-same-deep>
+          `,
+      });
+
+      define({
+        tag: "test-define-same-deep",
+        prop: () => "other",
+      });
+
+      return resolveRaf(() => {
+        expect(el.prop1).toBe(undefined);
+        expect(el.prop2).toBe("test");
+
+        expect(el.shadowRoot.children[0].prop).toBe("other");
       });
     });
-
-    it("updates tagged component", () => {
-      const component = { tag: "test-define-update-component", value: "test" };
-      define(component);
-      define({ ...component });
-
-      const el = document.createElement("test-define-update-component");
-      expect("tag" in el).toBe(false);
-    });
-
-    it("throws for element without 'tag' string property", () => {
-      expect(() => {
-        define({ value: "test" });
-      }).toThrow();
-      expect(() => {
-        define({ tag: 0, value: "test" });
-      }).toThrow();
-    });
   });
 
-  describe("for object descriptor", () => {
-    let connectSpy;
-    let observeSpy;
-    let disconnectSpy;
+  it("upgrades values from the instance", () => {
+    el = document.createElement("test-define-upgrade-values");
+    el.prop1 = "0";
+    el.prop2 = "asdf";
 
-    define("test-define-object", {
-      one: {
-        get: (host, v) => v + 1,
-        set: (host, newVal) => newVal,
-        connect: (...args) => {
-          connectSpy(...args);
-          return disconnectSpy;
+    document.body.appendChild(el);
+
+    define({
+      tag: "test-define-upgrade-values",
+      prop1: 0,
+      prop2: false,
+    });
+
+    expect(el.prop1).toBe(0);
+    expect(el.prop2).toBe(true);
+  });
+
+  it("invalidates property value", () => {
+    spy = jasmine.createSpy();
+    let ref;
+    const count = 0;
+
+    define({
+      tag: "test-define-invalidate-value",
+      prop: {
+        value: () => count,
+        connect(host, key, invalidate) {
+          ref = invalidate;
         },
       },
-      two: {
-        set: (host, value) => value * value,
-      },
-      three: {
-        one: "one",
-        two: "two",
-      },
-      four: {
-        connect: (host, key) => {
-          host[key] = "four";
-        },
-      },
-      five: {
-        observe: (...args) => observeSpy(...args),
+      otherProp: ({ prop }) => {
+        spy();
+        return prop;
       },
     });
 
-    const tree = test("<test-define-object></test-define-object>");
+    el = document.createElement("test-define-invalidate-value");
+    document.body.appendChild(el);
+
+    expect(el.prop).toBe(0);
+    expect(el.otherProp).toBe(0);
+    expect(el.otherProp).toBe(0);
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    ref();
+    expect(el.otherProp).toBe(0);
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    ref({ force: true });
+    expect(el.otherProp).toBe(0);
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  describe("created element", () => {
+    beforeAll(() => {
+      define({
+        tag: "test-define-default",
+        prop1: "",
+        prop2: 0,
+        prop3: {
+          value: false,
+          connect: (...args) => spy && spy(...args),
+          observe: (...args) => spy && spy(...args),
+        },
+        prop4: ["a", "b", "c"],
+        computed: ({ prop2, prop3 }) => `${prop2} ${prop3}`,
+        fullDesc: () => "fullDesc",
+        fullDescWritable: {
+          value: (host, val) => (val ? val * 2 : 0),
+          writable: true,
+        },
+        fullDescReadonly: {
+          value: (host, val) => (val ? val * 2 : 0),
+          writable: false,
+        },
+        undefinedProp: undefined,
+        render: ({ prop1 }) =>
+          html`<div>${prop1}</div>`, // prettier-ignore
+        content: ({ prop1 }) =>
+          html`<div>${prop1}</div>` // prettier-ignore
+      });
+    });
 
     beforeEach(() => {
-      connectSpy = jasmine.createSpy();
-      observeSpy = jasmine.createSpy();
-      disconnectSpy = jasmine.createSpy();
+      el = document.createElement("test-define-default");
     });
 
-    it(
-      "sets getter and setter",
-      tree(el => {
-        el.one = 10;
-        expect(el.one).toBe(11);
-      }),
-    );
+    it("returns an element with defined properties", () => {
+      expect(el.prop1).toBe("");
+      expect(el.prop2).toBe(0);
+      expect(el.prop3).toBe(false);
+      expect(el.computed).toBe("0 false");
+      expect(el.fullDesc).toBe("fullDesc");
+      expect(el.fullDescWritable).toBe(0);
+      expect(el.undefinedProp).toBe(undefined);
+    });
 
-    it(
-      "sets setter and uses default getter",
-      tree(el => {
-        el.two = 10;
-        expect(el.two).toBe(100);
-      }),
-    );
+    it("sets values from corresponding attributes", () => {
+      el.setAttribute("prop1", "a");
+      el.setAttribute("prop2", "2");
+      el.setAttribute("prop3", "");
+      el.setAttribute("prop4", "b");
+      el.setAttribute("undefined-prop", "c");
 
-    it("does not set property for object descriptor", () =>
-      tree(el => {
-        expect(el.three).toEqual(undefined);
-      }));
+      expect(el.prop1).toBe("a");
+      expect(el.prop2).toBe(2);
+      expect(el.prop3).toBe(true);
+      expect(el.prop4).toEqual(["b"]);
+      expect(el.undefinedProp).toBe("c");
+    });
 
-    it(
-      "uses default get and set methods when both omitted",
-      tree(el => {
-        expect(el.four).toEqual("four");
-      }),
-    );
+    it("updates writable properties", () => {
+      el.prop1 = "a";
+      expect(el.prop1).toBe("a");
 
-    it(
-      "calls connect method",
-      tree(el => {
-        expect(connectSpy.calls.first().args[0]).toBe(el);
-        expect(connectSpy.calls.first().args[1]).toBe("one");
-      }),
-    );
+      el.prop2 = "1";
+      expect(el.prop2).toBe(1);
 
-    it(
-      "calls disconnect method",
-      tree(el => {
-        el.parentElement.removeChild(el);
-        expect(disconnectSpy).toHaveBeenCalledTimes(1);
-      }),
-    );
+      el.prop3 = "true";
+      expect(el.prop3).toBe(true);
 
-    it(
-      "returns previous value when invalidate",
-      tree(el => {
-        el.one = 10;
-        expect(el.one).toBe(11);
-        invalidate(el, "one");
-        expect(el.one).toBe(12);
-      }),
-    );
+      el.prop4 = false;
+      expect(el.prop4).toEqual([]);
 
-    it(
-      "calls observe method",
-      tree(el => {
-        expect(observeSpy).toHaveBeenCalledTimes(0);
-        el.five = 1;
+      el.prop4 = "a s d";
+      expect(el.prop4).toEqual(["a", "s", "d"]);
+
+      el.prop4 = ["d", "e", "f"];
+      expect(el.prop4).toEqual(["d", "e", "f"]);
+
+      el.fullDescWritable = 1;
+      expect(el.fullDescWritable).toBe(2);
+
+      el.undefinedProp = {};
+      expect(el.undefinedProp).toEqual({});
+
+      document.body.appendChild(el);
+
+      return resolveRaf(() => {
+        expect(el.getAttribute("prop1")).toBe("a");
+        expect(el.getAttribute("prop2")).toBe("1");
+        expect(el.getAttribute("prop3")).toBe("");
+        expect(el.getAttribute("prop4")).toBe("d e f");
+      });
+    });
+
+    it("throws when updating readonly computed property", () => {
+      expect(() => {
+        el.computed = "a";
+      }).toThrow();
+      expect(() => {
+        el.fullDesc = "a";
+      }).toThrow();
+    });
+
+    it("throws when assert readonly full description", () => {
+      expect(el.fullDescReadonly).toBe(0);
+      expect(() => {
+        el.fullDescReadonly = 1;
+      }).toThrow();
+    });
+
+    it("sets corresponding attribute value for primitives properties", () => {
+      document.body.appendChild(el);
+
+      return resolveRaf(() => {
+        expect(el.getAttribute("prop1")).toBe(null);
+        expect(el.getAttribute("prop2")).toBe("0");
+        expect(el.getAttribute("prop3")).toBe(null);
+        expect(el.getAttribute("prop4")).toBe("a b c");
+      });
+    });
+
+    it("calls custom connect and observe methods", () => {
+      spy = jasmine.createSpy("define");
+      el = document.createElement("test-define-default");
+
+      expect(spy).toHaveBeenCalledTimes(0);
+      document.body.appendChild(el);
+      expect(spy).toHaveBeenCalledTimes(1);
+
+      return resolveRaf(() => {
+        expect(spy).toHaveBeenCalledTimes(2);
+        el.prop3 = true;
         return resolveRaf(() => {
-          expect(observeSpy).toHaveBeenCalledTimes(1);
-          expect(observeSpy).toHaveBeenCalledWith(el, 1, undefined);
+          expect(spy).toHaveBeenCalledTimes(3);
+          expect(spy.calls.mostRecent().args).toEqual([el, true, false]);
         });
-      }),
-    );
-
-    it(
-      "does not call observe method if value did not change",
-      tree(el => {
-        el.five = 1;
-        return resolveRaf(() => {
-          expect(observeSpy).toHaveBeenCalledTimes(1);
-          el.one = 1;
-          el.five = 2;
-          el.five = 1;
-          return resolveRaf(() => {
-            expect(observeSpy).toHaveBeenCalledTimes(1);
-          });
-        });
-      }),
-    );
-
-    it(
-      "does not call observe method if element is disconnected",
-      tree(el => {
-        el.five = 1;
-        el.parentElement.removeChild(el);
-        return resolveRaf(() => {
-          expect(observeSpy).toHaveBeenCalledTimes(0);
-        });
-      }),
-    );
-  });
-
-  describe("for primitive value", () => {
-    define("test-define-primitive", {
-      testProperty: "value",
-    });
-
-    const tree = test(`
-      <test-define-primitive></test-define-primitive>
-    `);
-
-    it(
-      "applies property module with passed argument",
-      tree(el => {
-        expect(el.testProperty).toBe("value");
-      }),
-    );
-  });
-
-  describe("for function descriptor", () => {
-    define("test-define-function", {
-      getter: () => "some value",
-    });
-
-    const tree = test(`
-      <test-define-function></test-define-function>
-    `);
-
-    it(
-      "sets it as getter of the element property",
-      tree(el => {
-        expect(el.getter).toBe("some value");
-      }),
-    );
-  });
-
-  describe("for render key", () => {
-    it("uses render factory if value is a function", done => {
-      define("test-define-render", {
-        render: () => () => {},
       });
-
-      const tree = test("<test-define-render></test-define-render>");
-
-      tree(el => {
-        expect(typeof el.render).toBe("function");
-      })(done);
     });
 
-    it("does not use render factory if value is not a function", done => {
-      define("test-define-render-other", {
-        render: [],
-      });
+    it("renders to shadowRoot", () => {
+      document.body.appendChild(el);
+      expect(el.shadowRoot).toBe(null);
 
-      const tree = test(
-        "<test-define-render-other></test-define-render-other>",
-      );
-
-      tree(el => {
-        expect(typeof el.render).toBe("object");
-      })(done);
-    });
-  });
-
-  describe("for content key", () => {
-    it("uses render factory if value is a function", done => {
-      define("test-define-content", {
-        content: () => () => {},
-      });
-
-      const tree = test("<test-define-content></test-define-content>");
-
-      tree(el => {
-        expect(typeof el.content).toBe("function");
-      })(done);
-    });
-
-    it("does not use render factory if value is not a function", done => {
-      define("test-define-content-other", {
-        content: [],
-      });
-
-      const tree = test(
-        "<test-define-content-other></test-define-content-other>",
-      );
-
-      tree(el => {
-        expect(typeof el.content).toBe("object");
-      })(done);
-    });
-  });
-
-  describe("for array descriptor", () => {
-    const one = [];
-
-    define("test-define-empty-object", {
-      one,
-    });
-
-    const tree = test(`
-      <test-define-empty-object></test-define-empty-object>
-    `);
-
-    it(
-      "sets object as a property",
-      tree(el => {
-        expect(el.one).toBe(one);
-      }),
-    );
-  });
-
-  describe("already defined element", () => {
-    const hybrids = {
-      one: true,
-    };
-
-    const CustomElement = define("test-define-multiple", hybrids);
-    define("test-define-multiple-two", {});
-
-    const editTree = test(`
-      <test-define-multiple>
-        <test-define-multiple-two></test-define-multiple-two>
-      </test-define-multiple>
-    `);
-
-    it("throws an error for replacing other custom element", () => {
-      customElements.define("test-define-multiple-other", HTMLElement);
-      expect(() => define("test-define-multiple-other", {})).toThrow();
-    });
-
-    it("returns the same custom element", () => {
-      expect(define("test-define-multiple", hybrids)).toBe(CustomElement);
-    });
-
-    it("updates when hybrids does not match", done => {
-      test(`
-        <test-define-multiple>
-          <test-define-multiple-two></test-define-multiple-two>
-        </test-define-multiple>
-      `)(el => {
-        const spy = jasmine.createSpy("connect");
-        const newHybrids = {
-          one: "text",
-          two: {
-            get: () => null,
-            connect: spy,
-          },
-        };
-        define("test-define-multiple", newHybrids);
-        define("test-define-multiple-two", newHybrids);
-
-        return Promise.resolve().then(() => {
-          expect(el.one).toBe("text");
-          expect(el.children[0].one).toBe("text");
-
-          expect(spy).toHaveBeenCalledTimes(2);
-        });
-      })(done);
-    });
-
-    it(
-      "updates & calls observe only on connected elements when hybrids does not match",
-      editTree(el => {
-        const spy = jasmine.createSpy("connect");
-        const newHybrids = {
-          one: "text",
-          two: {
-            get: () => "test",
-            observe: spy,
-          },
-        };
-
-        define("test-define-multiple", newHybrids);
-        define("test-define-multiple-two", newHybrids);
-
-        el.innerHTML = "<test-define-multiple-two></test-define-multiple-two>";
+      return resolveRaf(() => {
+        expect(el.shadowRoot.innerHTML).toBe("<div></div>");
+        el.prop1 = "a";
 
         return resolveRaf(() => {
-          expect(el.one).toBe("text");
-          expect(el.children[0].one).toBe("text");
-
-          expect(spy).toHaveBeenCalledTimes(2);
+          expect(el.shadowRoot.innerHTML).toBe("<div>a</div>");
         });
-      }),
-    );
+      });
+    });
 
-    it("updates elements in shadowRoot", done => {
-      test("<div></div>")(el => {
-        const connect = jasmine.createSpy();
+    it("uses fn options for render in shadowRoot", () => {
+      define({
+        tag: "test-define-render-options",
+        render: Object.assign(
+          () =>
+            html`
+              <div>test</div>
+            `,
+          { delegatesFocus: true },
+        ),
+      });
 
-        el.attachShadow({ mode: "open" });
-        const child = document.createElement("test-define-multiple");
-        el.shadowRoot.appendChild(child);
+      el = document.createElement("test-define-render-options");
+      document.body.appendChild(el);
 
-        define("test-define-multiple", {
-          one: { get: () => "text", connect },
+      el.attachShadow = jasmine.createSpy("attachShadow");
+
+      return resolveRaf(() => {
+        expect(el.attachShadow).toHaveBeenCalledOnceWith({
+          mode: "open",
+          delegatesFocus: true,
         });
+      });
+    });
 
-        return Promise.resolve().then(() => {
-          expect(connect).toHaveBeenCalledTimes(1);
-          expect(child.one).toBe("text");
+    it("puts content to children", () => {
+      document.body.appendChild(el);
+      expect(el.innerHTML).toBe("");
+
+      return resolveRaf(() => {
+        expect(el.innerHTML).toBe("<div></div>");
+        el.prop1 = "a";
+
+        return resolveRaf(() => {
+          expect(el.innerHTML).toBe("<div>a</div>");
         });
-      })(done);
+      });
     });
   });
 });

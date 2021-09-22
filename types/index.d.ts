@@ -4,8 +4,7 @@ declare module "hybrids" {
   }
 
   interface Descriptor<E, V> {
-    get?(host: E & HTMLElement, lastValue: V | undefined): V;
-    set?(host: E & HTMLElement, value: any, lastValue: V | undefined): V;
+    get?: V | ((host: E & HTMLElement, value: any) => V);
     connect?(
       host: E & HTMLElement & { __property_key__: V },
       key: "__property_key__",
@@ -22,7 +21,7 @@ declare module "hybrids" {
     ? V
     : never;
 
-  type Property<E, V> = V | Descriptor<E, V> | Descriptor<E, V>["get"];
+  type Property<E, V> = Descriptor<E, V> | Descriptor<E, V>["get"];
 
   interface UpdateFunction<E> {
     (host: E & HTMLElement, target: ShadowRoot | Text | E): void;
@@ -76,12 +75,6 @@ declare module "hybrids" {
 
   /* Factories */
 
-  function property<E, V>(
-    value: V | null | undefined | ((value: any) => V),
-    connect?: Descriptor<E, V>["connect"],
-    observe?: Descriptor<E, V>["observe"],
-  ): Descriptor<E, V>;
-
   function parent<E, V>(
     hybridsOrFn: Hybrids<V> | ((hybrids: Hybrids<E>) => boolean),
   ): Descriptor<E, V>;
@@ -90,11 +83,6 @@ declare module "hybrids" {
     hybridsOrFn: Hybrids<V> | ((hybrids: Hybrids<E>) => boolean),
     options?: { deep?: boolean; nested?: boolean },
   ): Descriptor<E, V>;
-
-  function render<E>(
-    fn: RenderFunction<E>,
-    customOptions?: { shadowRoot?: boolean | object },
-  ): Descriptor<E, () => HTMLElement>;
 
   /* Store */
 

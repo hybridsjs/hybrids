@@ -1,6 +1,6 @@
-import define, { callbacksMap } from "./define.js";
+import { callbacksMap } from "./define.js";
 import * as cache from "./cache.js";
-import { dispatch, pascalToDash } from "./utils.js";
+import { dispatch, walkInShadow } from "./utils.js";
 
 const connect = Symbol("router.connect");
 const configs = new WeakMap();
@@ -11,30 +11,6 @@ const routers = new WeakMap();
 
 let rootRouter = null;
 const entryPoints = new Set();
-
-function mapDeepElements(target, cb) {
-  if (target.nodeType === Node.ELEMENT_NODE) {
-    cb(target);
-    if (target.shadowRoot) {
-      mapDeepElements(target.shadowRoot, cb);
-    }
-  }
-
-  const walker = document.createTreeWalker(
-    target,
-    NodeFilter.SHOW_ELEMENT,
-    null,
-    false,
-  );
-
-  while (walker.nextNode()) {
-    const el = walker.currentNode;
-    cb(el);
-    if (el.shadowRoot) {
-      mapDeepElements(el.shadowRoot, cb);
-    }
-  }
-}
 
 const scrollMap = new WeakMap();
 const focusMap = new WeakMap();
@@ -47,7 +23,7 @@ function saveLayout(target) {
   const rootEl = document.scrollingElement;
   map.set(rootEl, { left: rootEl.scrollLeft, top: rootEl.scrollTop });
 
-  mapDeepElements(target, el => {
+  walkInShadow(target, el => {
     if (el.scrollLeft || el.scrollTop) {
       map.set(el, { left: el.scrollLeft, top: el.scrollTop });
     }
@@ -265,19 +241,23 @@ function getConfigById(id) {
 }
 
 function setupView(hybrids, routerOptions, parent, nestedParent) {
-  let config = getConfigById(pascalToDash(hybrids.tag));
+  const id = hybrids.tag;
+  let config = getConfigById(id);
 
   if (config && config.hybrids !== hybrids) {
     config = null;
   }
 
   if (!config) {
-    let browserUrl = null;
-
-    define(hybrids);
-
-    const id = pascalToDash(hybrids.tag);
     const Constructor = customElements.get(id);
+
+    if (!Constructor || Constructor.hybrids !== hybrids) {
+      throw Error(
+        `<${id}> view must be defined by 'define()' function before it can be used in router factory`,
+      );
+    }
+
+    let browserUrl = null;
 
     const options = {
       dialog: false,
@@ -1041,7 +1021,7 @@ function router(views, options) {
   };
 
   const desc = {
-    get: host => {
+    value: host => {
       const stack = stacks.get(host) || [];
       return stack
         .slice(0, stack.findIndex(el => !configs.get(el).dialog) + 1)

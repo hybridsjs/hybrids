@@ -1,99 +1,259 @@
-import property from "./property.js";
-import render from "./render.js";
-
 import * as cache from "./cache.js";
-import { pascalToDash, deferred } from "./utils.js";
+import { deferred, camelToDash, walkInShadow } from "./utils.js";
 
-const defaultMethod = (host, value) => value;
+const propsMap = new WeakMap();
+const disconnects = new WeakMap();
 
 export const callbacksMap = new WeakMap();
-const propsMap = new WeakMap();
 
+class HybridsRootElement extends HTMLElement {
+  constructor() {
+    super();
+
+    const props = propsMap.get(this.constructor);
+
+    for (let index = 0; index < props.length; index += 1) {
+      const key = props[index];
+      if (hasOwnProperty.call(this, key)) {
+        const value = this[key];
+        delete this[key];
+        this[key] = value;
+      }
+    }
+
+    cache.suspend(this);
+  }
+
+  connectedCallback() {
+    cache.unsuspend(this);
+
+    const callbacks = callbacksMap.get(this.constructor);
+    const list = [];
+
+    for (let index = 0; index < callbacks.length; index += 1) {
+      const cb = callbacks[index](this);
+      if (cb) list.push(cb);
+    }
+
+    disconnects.set(this, list);
+  }
+
+  disconnectedCallback() {
+    cache.suspend(this);
+
+    const list = disconnects.get(this);
+    for (let index = 0; index < list.length; index += 1) {
+      list[index]();
+    }
+  }
+}
+
+const transform = {
+  string: { from: String, to: String },
+  number: { from: Number, to: String },
+  boolean: { from: Boolean, to: String },
+  array: {
+    from: val =>
+      Array.isArray(val) ? val : (val && String(val).split(" ")) || [],
+    to: val => val.join(" "),
+  },
+};
+
+function render(fn, useShadow) {
+  return {
+    value: useShadow
+      ? host => {
+          const updateDOM = fn(host);
+          const target =
+            host.shadowRoot ||
+            host.attachShadow({
+              mode: "open",
+              delegatesFocus: fn.delegatesFocus || false,
+            });
+          return () => {
+            updateDOM(host, target);
+            return target;
+          };
+        }
+      : host => {
+          const updateDOM = fn(host);
+          return () => {
+            updateDOM(host, host);
+            return host;
+          };
+        },
+    observe(host, flush) { flush(); } // prettier-ignore
+  };
+}
+
+const setter = (host, value) => value;
+const supportedOptions = ["value", "writable", "observe", "connect"];
 function translate(key, desc) {
-  const type = typeof desc;
-
-  let config;
+  let type = typeof desc;
 
   if (type === "function") {
     switch (key) {
       case "render":
-        config = render(desc);
-        break;
+        return render(desc, true);
       case "content":
-        config = render(desc, { shadowRoot: false });
-        break;
+        return render(desc);
       default:
-        config = { get: desc };
+        desc = { value: desc };
     }
-  } else if (type !== "object" || desc === null || Array.isArray(desc)) {
-    config = property(desc);
+  } else if (type !== "object" || Array.isArray(desc)) {
+    desc = { value: desc };
   } else {
-    config = {
-      get: desc.get || defaultMethod,
-      set: desc.set || (!desc.get && defaultMethod) || undefined,
+    const descKeys = Object.keys(desc);
+    if (descKeys.length === 1 && descKeys[0] === "value") {
+      throw TypeError(
+        `Not required descriptor form of the '${key}' property - set property value directly`,
+      );
+    } else {
+      const unsupported = descKeys.find(
+        prop => !supportedOptions.includes(prop),
+      );
+      if (unsupported) {
+        throw TypeError(
+          `Unsupported '${unsupported}' option in the descriptor of the '${key}' property`,
+        );
+      }
+    }
+  }
+
+  type = Array.isArray(desc.value) ? "array" : typeof desc.value;
+
+  if (type === "undefined") {
+    type = "function";
+
+    desc = {
+      ...desc,
+      value: setter,
+      writable: true,
+    };
+  }
+
+  const attrName = camelToDash(key);
+
+  if (type === "function") {
+    return {
+      value: desc.writable
+        ? (host, value) => {
+            if (value === undefined && host.hasAttribute(attrName)) {
+              value = host.getAttribute(attrName);
+            }
+
+            return desc.value(host, value);
+          }
+        : desc.value,
+      writable: desc.writable,
       connect: desc.connect,
       observe: desc.observe,
     };
   }
 
-  return config;
+  const fn = transform[type];
+
+  if (!fn) throw TypeError(`Unsupported type for '${key}' property: ${type}`);
+  if (type === "array") Object.freeze(desc.value);
+
+  const updateAttr =
+    type === "boolean"
+      ? (host, value) => {
+          if (value) {
+            host.setAttribute(attrName, "");
+          } else {
+            host.removeAttribute(attrName);
+          }
+        }
+      : (host, value) => {
+          if (!value && value !== 0) {
+            host.removeAttribute(attrName);
+          } else {
+            host.setAttribute(attrName, fn.to(value));
+          }
+        };
+
+  return {
+    value: (host, value) => {
+      if (value === undefined) {
+        if (host.hasAttribute(attrName)) {
+          return fn.from(type === "boolean" || host.getAttribute(attrName));
+        }
+        return desc.value;
+      }
+
+      return fn.from(value);
+    },
+    writable: true,
+    connect: desc.connect,
+    observe: desc.observe
+      ? (host, value, lastValue) => {
+          updateAttr(host, value);
+          desc.observe(host, value, lastValue);
+        }
+      : updateAttr,
+  };
 }
 
-function compile(Hybrid, hybrids, omitProps = []) {
-  Hybrid.hybrids = hybrids;
+function compile(hybrids, HybridsElement) {
+  if (HybridsElement) {
+    if (hybrids === HybridsElement.hybrids) return HybridsElement;
+    propsMap.get(HybridsElement).forEach(key => {
+      delete HybridsElement.prototype[key];
+    });
+  } else {
+    HybridsElement = class extends HybridsRootElement {};
+  }
+
+  HybridsElement.hybrids = hybrids;
 
   const callbacks = [];
-  const props = Object.keys(hybrids).filter(key => !omitProps.includes(key));
+  const props = Object.keys(hybrids);
 
-  callbacksMap.set(Hybrid, callbacks);
-  propsMap.set(Hybrid, props);
+  callbacksMap.set(HybridsElement, callbacks);
+  propsMap.set(HybridsElement, props);
 
   props.forEach(key => {
-    const config = translate(key, hybrids[key]);
+    if (key === "tag") return;
 
-    Object.defineProperty(Hybrid.prototype, key, {
+    const desc = translate(key, hybrids[key]);
+
+    Object.defineProperty(HybridsElement.prototype, key, {
       get: function get() {
-        return cache.get(this, key, config.get);
+        return cache.get(this, key, desc.value);
       },
-      set:
-        config.set &&
-        function set(newValue) {
-          cache.set(this, key, config.set, newValue);
-        },
+      set: desc.writable
+        ? function set(newValue) {
+            cache.set(this, key, setter, newValue);
+          }
+        : undefined,
       enumerable: true,
       configurable: true,
     });
 
-    if (config.observe) {
+    if (desc.observe) {
       callbacks.unshift(host =>
-        cache.observe(host, key, config.get, config.observe),
+        cache.observe(host, key, desc.value, desc.observe),
       );
     }
 
-    if (config.connect) {
-      callbacks.push(host =>
-        config.connect(host, key, options => {
+    if (desc.connect) {
+      callbacks.push(host => {
+        function invalidate(options) {
           cache.invalidate(host, key, {
-            force: options && options.force === true,
+            force: typeof options === "object" && options.force === true,
           });
-        }),
-      );
+        }
+        return desc.connect(host, key, invalidate);
+      });
     }
   });
-}
 
-function walkInShadow(node, fn) {
-  fn(node);
-
-  Array.from(node.children).forEach(el => walkInShadow(el, fn));
-
-  if (node.shadowRoot) {
-    Array.from(node.shadowRoot.children).forEach(el => walkInShadow(el, fn));
-  }
+  return HybridsElement;
 }
 
 const updateQueue = new Map();
-function update(Hybrid, lastHybrids) {
+function update(HybridsElement) {
   if (!updateQueue.size) {
     deferred.then(() => {
       walkInShadow(document.body, node => {
@@ -117,113 +277,35 @@ function update(Hybrid, lastHybrids) {
       updateQueue.clear();
     });
   }
-  updateQueue.set(Hybrid, lastHybrids);
+  updateQueue.set(HybridsElement, HybridsElement.hybrids);
 }
 
-const disconnects = new WeakMap();
-
-export function defineElement(tagName, hybrids, omitProps) {
-  const type = typeof hybrids;
-  if (!hybrids || type !== "object") {
-    throw TypeError(`Second argument must be an object: ${type}`);
+function define(hybrids) {
+  if (!hybrids.tag) {
+    throw TypeError(
+      "Error while defining hybrids: 'tag' property with dashed tag name is required",
+    );
   }
 
-  if (tagName !== null) {
-    const CustomElement = window.customElements.get(tagName);
+  const HybridsElement = window.customElements.get(hybrids.tag);
 
-    if (CustomElement) {
-      if (CustomElement.hybrids === hybrids) {
-        return CustomElement;
-      }
-      if (CustomElement.hybrids) {
-        Object.keys(CustomElement.hybrids).forEach(key => {
-          delete CustomElement.prototype[key];
-        });
+  if (HybridsElement) {
+    if (HybridsElement.hybrids) {
+      update(HybridsElement);
+      compile(hybrids, HybridsElement);
 
-        const lastHybrids = CustomElement.hybrids;
-
-        compile(CustomElement, hybrids, omitProps);
-        update(CustomElement, lastHybrids);
-
-        return CustomElement;
-      }
-
-      return window.customElements.define(tagName, HTMLElement);
+      return Object.freeze(hybrids);
     }
+
+    throw TypeError(
+      `Custom element with '${hybrids.tag}' tag name already defined outside of the hybrids context`,
+    );
   }
 
-  class Hybrid extends HTMLElement {
-    constructor() {
-      super();
-
-      const props = propsMap.get(Hybrid);
-
-      for (let index = 0; index < props.length; index += 1) {
-        const key = props[index];
-        if (hasOwnProperty.call(this, key)) {
-          const value = this[key];
-          delete this[key];
-          this[key] = value;
-        }
-      }
-
-      cache.suspend(this);
-    }
-
-    connectedCallback() {
-      cache.unsuspend(this);
-
-      const callbacks = callbacksMap.get(Hybrid);
-      const list = [];
-
-      for (let index = 0; index < callbacks.length; index += 1) {
-        const cb = callbacks[index](this);
-        if (cb) list.push(cb);
-      }
-
-      disconnects.set(this, list);
-    }
-
-    disconnectedCallback() {
-      const list = disconnects.get(this);
-      for (let index = 0; index < list.length; index += 1) {
-        list[index]();
-      }
-
-      cache.suspend(this);
-    }
-  }
-
-  compile(Hybrid, hybrids, omitProps);
-
-  if (tagName !== null) {
-    Object.defineProperty(Hybrid, "name", {
-      get: () => tagName,
-    });
-    customElements.define(tagName, Hybrid);
-  }
-
-  return Hybrid;
+  customElements.define(hybrids.tag, compile(hybrids));
+  return Object.freeze(hybrids);
 }
 
-function defineTagged(elements) {
-  elements.forEach(hybrids => {
-    if (typeof hybrids.tag !== "string") {
-      throw TypeError(
-        `Tagged element 'tag' property must be a string: ${hybrids.tag}`,
-      );
-    }
-
-    defineElement(pascalToDash(hybrids.tag), hybrids, ["tag"]);
-  }, {});
-
-  return elements.length === 1 ? elements[0] : elements;
-}
-
-export default function define(...args) {
-  if (typeof args[0] === "object" && args[0] !== null) {
-    return defineTagged(args);
-  }
-
-  return defineElement(...args);
-}
+export default Object.freeze(
+  Object.assign(define, { compile: hybrids => compile(hybrids) }),
+);
