@@ -1464,7 +1464,7 @@ function store(Model, options = {}) {
   } else if (!options.id && config.enumerable) {
     desc = {
       value: (host, value) => {
-        if (!value) return null;
+        if (!value) return undefined;
 
         const valueConfig = definitions.get(value);
 

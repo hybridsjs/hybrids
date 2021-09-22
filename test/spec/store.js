@@ -1298,7 +1298,7 @@ describe("store:", () => {
 
       describe("without id", () => {
         it("returns null when get before setting an id", () => {
-          expect(el.withoutid).toBe(null);
+          expect(el.withoutid).toBe(undefined);
         });
 
         it("set id by model by reference from different definition", () => {
@@ -1338,7 +1338,7 @@ describe("store:", () => {
           const model = store.get(Model, "1");
           el.withoutid = model;
           el.withoutid = null;
-          expect(el.withoutid).toBe(null);
+          expect(el.withoutid).toBe(undefined);
         });
 
         describe("in draft mode", () => {
@@ -1445,7 +1445,7 @@ describe("store:", () => {
       });
 
       it("set id by assertion when no id option is set", () => {
-        expect(el.listwithoutid).toBe(null);
+        expect(el.listwithoutid).toBe(undefined);
         el.listwithoutid = "some";
         expect(el.listwithoutid).toEqual([]);
         el.listwithoutid = "default";
