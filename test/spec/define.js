@@ -67,32 +67,6 @@ describe("define:", () => {
     }).toThrow();
   });
 
-  it("throws for undefined value", () => {
-    expect(() => {
-      define({
-        tag: "test-define-throws",
-        undefinedProp: undefined,
-      });
-    }).toThrow();
-    expect(() => {
-      define({
-        tag: "test-define-throws",
-        undefinedProp: {
-          connect: () => {},
-        },
-      });
-    }).toThrow();
-    expect(() => {
-      define({
-        tag: "test-define-throws",
-        undefinedProp: {
-          value: undefined,
-          connect: () => {},
-        },
-      });
-    }).toThrow();
-  });
-
   it("returns passed hybrids if the tag name is defined", () => {
     const hybrids = { tag: "test-define-twice" };
     expect(define(hybrids)).toBe(hybrids);
@@ -211,6 +185,7 @@ describe("define:", () => {
         },
         prop4: ["a", "b", "c"],
         computed: ({ prop2, prop3 }) => `${prop2} ${prop3}`,
+        noValue: undefined,
         fullDesc: () => "fullDesc",
         fullDescWritable: {
           value: (host, val) => (val ? val * 2 : 0),
@@ -245,11 +220,13 @@ describe("define:", () => {
       el.setAttribute("prop2", "2");
       el.setAttribute("prop3", "");
       el.setAttribute("prop4", "b");
+      el.setAttribute("full-desc-writable", "2");
 
       expect(el.prop1).toBe("a");
       expect(el.prop2).toBe(2);
       expect(el.prop3).toBe(true);
       expect(el.prop4).toEqual(["b"]);
+      expect(el.fullDescWritable).toEqual(4);
     });
 
     it("updates writable properties", () => {
@@ -274,8 +251,9 @@ describe("define:", () => {
       el.fullDescWritable = 1;
       expect(el.fullDescWritable).toBe(2);
 
-      el.undefinedProp = {};
-      expect(el.undefinedProp).toEqual({});
+      const value = {};
+      el.noValue = value;
+      expect(el.noValue).toBe(value);
 
       document.body.appendChild(el);
 

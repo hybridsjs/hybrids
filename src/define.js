@@ -54,7 +54,9 @@ const transform = {
   boolean: { from: Boolean, to: String },
   array: {
     from: val =>
-      Array.isArray(val) ? val.map(String) : (val && String(val).split(" ")) || [],
+      Array.isArray(val)
+        ? val.map(String)
+        : (val && String(val).split(" ")) || [],
     to: val => val.join(" "),
   },
 };
@@ -123,6 +125,15 @@ function translate(key, desc) {
   type = Array.isArray(desc.value) ? "array" : typeof desc.value;
   const attrName = camelToDash(key);
 
+  if (type === "undefined") {
+    return {
+      value: setter,
+      connect: desc.connect,
+      observe: desc.observe,
+      writable: true,
+    };
+  }
+
   if (type === "function") {
     return {
       value: desc.writable
@@ -134,9 +145,9 @@ function translate(key, desc) {
             return desc.value(host, value);
           }
         : desc.value,
-      writable: desc.writable,
       connect: desc.connect,
       observe: desc.observe,
+      writable: desc.writable,
     };
   }
 
@@ -173,7 +184,6 @@ function translate(key, desc) {
 
       return fn.from(value);
     },
-    writable: true,
     connect: desc.connect,
     observe: desc.observe
       ? (host, value, lastValue) => {
@@ -181,6 +191,7 @@ function translate(key, desc) {
           desc.observe(host, value, lastValue);
         }
       : updateAttr,
+    writable: true,
   };
 }
 

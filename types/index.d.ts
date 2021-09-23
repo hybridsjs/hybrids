@@ -1,14 +1,14 @@
 declare module "hybrids" {
-  interface InvalidateOptions {
-    force?: boolean;
-  }
+  type PropertyValue<E, V> = string | number | boolean | string[] | undefined;
 
   type Property<E, V> =
     | PropertyValue<E, V>
     | ((host: E & HTMLElement, value: V) => V)
     | Descriptor<E, V>;
 
-  type PropertyValue<E, V> = string | number | boolean | string[];
+  interface InvalidateOptions {
+    force?: boolean;
+  }
 
   interface Descriptor<E, V> {
     value: PropertyValue<E, V> | ((host: E & HTMLElement, value: any) => V);
