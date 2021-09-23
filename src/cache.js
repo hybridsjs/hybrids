@@ -45,8 +45,6 @@ function cleanContexts(entry) {
   entry.contexts.forEach(contextEntry => {
     if (suspense.has(contextEntry.target)) {
       Object.assign(contextEntry, {
-        value: undefined,
-        lastValue: undefined,
         depState: 0,
         resolved: false,
       });
