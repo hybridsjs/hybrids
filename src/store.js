@@ -1423,7 +1423,7 @@ function store(Model, options = {}) {
         [connect]: {
           get(id) {
             const model = get(config.model, id);
-            return ready(model) ? model : pending(model);
+            return pending(model) || model;
           },
           set(id, values) {
             return values === null ? { id } : values;
@@ -1446,9 +1446,13 @@ function store(Model, options = {}) {
         ? host => get(Model, options.id(host))
         : (host, value) => {
             const valueConfig = definitions.get(value);
-            const id = valueConfig || valueConfig === null ? value.id : value;
+            const id = valueConfig !== undefined ? value.id : value;
 
-            if (!id && (config.enumerable || config.external)) {
+            if (
+              !id &&
+              (config.enumerable ||
+                (config.external && valueConfig === undefined))
+            ) {
               const draftModel = options.draft.create({});
               syncCache(options.draft, draftModel.id, draftModel, false);
               value = get(Model, draftModel.id);
@@ -1458,7 +1462,6 @@ function store(Model, options = {}) {
 
             return value;
           },
-      connect: () => () => clear(Model, false),
       writable: !options.id,
     };
   } else if (!options.id && config.enumerable) {
@@ -1468,10 +1471,7 @@ function store(Model, options = {}) {
 
         const valueConfig = definitions.get(value);
 
-        return store.get(
-          Model,
-          valueConfig || valueConfig === null ? value.id : value,
-        );
+        return store.get(Model, valueConfig !== undefined ? value.id : value);
       },
       writable: true,
     };
