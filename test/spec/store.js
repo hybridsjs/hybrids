@@ -1193,8 +1193,8 @@ describe("store:", () => {
         define({
           tag: "test-store-factory-enumerable",
           modelId: "1",
-          byprop: store(Model, "modelId"),
-          byfn: store(Model, ({ modelId }) => modelId),
+          byprop: store(Model, { id: "modelId" }),
+          byfn: store(Model, { id: ({ modelId }) => modelId }),
           withoutid: store(Model),
           draft: store(Model, { draft: true, id: "modelId" }),
           draftwithoutid: store(Model, { draft: true }),
@@ -1393,10 +1393,10 @@ describe("store:", () => {
 
       it("throws when id is set for singleton definition", () => {
         expect(() => {
-          store(Model, "modelId");
+          store(Model, { id: "modelId" });
         }).toThrow();
         expect(() => {
-          store(Model, () => "modelId");
+          store(Model, { id: () => "modelId" });
         }).toThrow();
         expect(() => {
           store(Model, { id: "modelId" });
@@ -1441,7 +1441,7 @@ describe("store:", () => {
 
         define({
           tag: "test-store-factory-listing",
-          listwithid: store([Model], () => "default"),
+          listwithid: store([Model], { id: () => "default" }),
           listwithoutid: store([Model]),
         });
         el = document.createElement("test-store-factory-listing");
@@ -1487,7 +1487,7 @@ describe("store:", () => {
         define({
           tag: "test-store-factory-async",
           modelId: "1",
-          model: store(Model, "modelId"),
+          model: store(Model, { id: "modelId" }),
           draft: store(Model, { draft: true, id: "modelId" }),
         });
 

@@ -1395,9 +1395,6 @@ const draftConfigs = new WeakMap();
 function store(Model, options = {}) {
   const config = bootstrap(Model);
 
-  if (typeof options !== "object") {
-    options = { id: options };
-  }
   if (options.id !== undefined && typeof options.id !== "function") {
     const id = options.id;
     options.id = host => host[id];
