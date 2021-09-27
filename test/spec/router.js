@@ -184,7 +184,7 @@ describe("router:", () => {
       define({
         tag: "test-router-nested-component",
         scroll: {
-          value: () => undefined,
+          value: undefined,
           connect(_) {
             const el = _.render().children[0];
             el.scrollTop = 100;

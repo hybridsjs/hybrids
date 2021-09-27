@@ -22,7 +22,7 @@ export default function parent(hybridsOrFn) {
       ? hybridsOrFn
       : hybrids => hybrids === hybridsOrFn;
   return {
-    value: host => walk(host, fn),
+    get: host => walk(host, fn),
     connect(host, key, invalidate) {
       const target = host[key];
       if (target) {

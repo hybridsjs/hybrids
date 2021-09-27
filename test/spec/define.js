@@ -37,32 +37,16 @@ describe("define:", () => {
         prop: Symbol("asd"),
       });
     }).toThrow();
-  });
-
-  it("throws for unsupported property option", () => {
-    expect(() => {
-      define({
-        tag: "test-define-throws",
-        prop: {
-          get: () => {},
-        },
-      });
-    }).toThrow();
     expect(() => {
       define({
         tag: "test-define-throws",
         prop: null,
       });
     }).toThrow();
-  });
-
-  it("throws for not required descriptor form", () => {
     expect(() => {
       define({
         tag: "test-define-throws",
-        prop: {
-          value: 1,
-        },
+        prop: [],
       });
     }).toThrow();
   });
@@ -144,7 +128,7 @@ describe("define:", () => {
     define({
       tag: "test-define-invalidate-value",
       prop: {
-        value: () => count,
+        get: () => count,
         connect(host, key, invalidate) {
           ref = invalidate;
         },
@@ -181,19 +165,14 @@ describe("define:", () => {
         prop3: {
           value: false,
           connect: (...args) => spy && spy(...args),
-          observe: (...args) => spy && spy(...args),
         },
-        prop4: ["a", "b", "c"],
         computed: ({ prop2, prop3 }) => `${prop2} ${prop3}`,
-        noValue: undefined,
         fullDesc: () => "fullDesc",
         fullDescWritable: {
-          value: (host, val) => (val ? val * 2 : 0),
-          writable: true,
+          set: (host, val) => (val ? val * 2 : 0),
         },
         fullDescReadonly: {
-          value: (host, val) => (val ? val * 2 : 0),
-          writable: false,
+          get: () => 0,
         },
         render: ({ prop1 }) =>
           html`<div>${prop1}</div>`, // prettier-ignore
@@ -219,13 +198,11 @@ describe("define:", () => {
       el.setAttribute("prop1", "a");
       el.setAttribute("prop2", "2");
       el.setAttribute("prop3", "");
-      el.setAttribute("prop4", "b");
       el.setAttribute("full-desc-writable", "2");
 
       expect(el.prop1).toBe("a");
       expect(el.prop2).toBe(2);
       expect(el.prop3).toBe(true);
-      expect(el.prop4).toEqual(["b"]);
       expect(el.fullDescWritable).toEqual(4);
     });
 
@@ -239,21 +216,8 @@ describe("define:", () => {
       el.prop3 = "true";
       expect(el.prop3).toBe(true);
 
-      el.prop4 = false;
-      expect(el.prop4).toEqual([]);
-
-      el.prop4 = "a s d";
-      expect(el.prop4).toEqual(["a", "s", "d"]);
-
-      el.prop4 = ["d", "e", "f"];
-      expect(el.prop4).toEqual(["d", "e", "f"]);
-
       el.fullDescWritable = 1;
       expect(el.fullDescWritable).toBe(2);
-
-      const value = {};
-      el.noValue = value;
-      expect(el.noValue).toBe(value);
 
       document.body.appendChild(el);
 
@@ -261,7 +225,6 @@ describe("define:", () => {
         expect(el.getAttribute("prop1")).toBe("a");
         expect(el.getAttribute("prop2")).toBe("1");
         expect(el.getAttribute("prop3")).toBe("");
-        expect(el.getAttribute("prop4")).toBe("d e f");
       });
     });
 
@@ -288,11 +251,10 @@ describe("define:", () => {
         expect(el.getAttribute("prop1")).toBe(null);
         expect(el.getAttribute("prop2")).toBe("0");
         expect(el.getAttribute("prop3")).toBe(null);
-        expect(el.getAttribute("prop4")).toBe("a b c");
       });
     });
 
-    it("calls custom connect and observe methods", () => {
+    it("calls custom connect method", () => {
       spy = jasmine.createSpy("define");
       el = document.createElement("test-define-default");
 
@@ -301,11 +263,11 @@ describe("define:", () => {
       expect(spy).toHaveBeenCalledTimes(1);
 
       return resolveRaf(() => {
-        expect(spy).toHaveBeenCalledTimes(2);
+        expect(spy).toHaveBeenCalledTimes(1);
         el.prop3 = true;
         return resolveRaf(() => {
-          expect(spy).toHaveBeenCalledTimes(3);
-          expect(spy.calls.mostRecent().args).toEqual([el, true, false]);
+          expect(spy).toHaveBeenCalledTimes(1);
+          expect(el.getAttribute("prop3")).toBe("");
         });
       });
     });

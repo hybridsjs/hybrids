@@ -1,24 +1,20 @@
 declare module "hybrids" {
-  type PropertyValue<E, V> = string | number | boolean | string[] | undefined;
-
   type Property<E, V> =
-    | PropertyValue<E, V>
-    | ((host: E & HTMLElement, value: V) => V)
-    | Descriptor<E, V>;
-
-  interface InvalidateOptions {
-    force?: boolean;
-  }
+    | (V extends string | number | boolean ? V : never)
+    | ((host: E & HTMLElement, lastValue: V) => V)
+    | Descriptor<E, V>
+    | undefined;
 
   interface Descriptor<E, V> {
-    value: PropertyValue<E, V> | ((host: E & HTMLElement, value: any) => V);
+    value?: V;
+    get?: (host: E & HTMLElement, lastValue: any) => V;
+    set?: (host: E & HTMLElement, value: any, lastValue: V) => any;
     connect?(
       host: E & HTMLElement & { __property_key__: V },
       key: "__property_key__",
-      invalidate: (options?: InvalidateOptions) => void,
+      invalidate: (options?: { force?: boolean }) => void,
     ): Function | void;
     observe?(host: E & HTMLElement, value: V, lastValue: V): void;
-    writable?: boolean;
   }
 
   interface UpdateFunction<E> {
@@ -30,8 +26,8 @@ declare module "hybrids" {
   }
 
   type HybridsBase = {
-    __router__connect__?: ViewOptions;
     tag: string;
+    __router__connect__?: ViewOptions;
   };
 
   type Hybrids<E> = HybridsBase &
@@ -123,18 +119,16 @@ declare module "hybrids" {
     loose?: boolean;
   };
 
-  type StoreOptions<E> =
-    | keyof E
-    | ((host: E) => ModelIdentifier)
-    | { id?: keyof E | ((host: E) => ModelIdentifier); draft?: boolean };
-
   function store<E, M>(
     Model: Model<M>,
   ): Descriptor<E, M extends { id: any } ? M | undefined : M>;
 
   function store<E, M>(
     Model: Model<M>,
-    options: StoreOptions<E>,
+    options: {
+      id?: keyof E | ((host: E) => ModelIdentifier);
+      draft?: boolean;
+    },
   ): Descriptor<E, M>;
 
   namespace store {

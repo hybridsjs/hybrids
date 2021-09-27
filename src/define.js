@@ -48,22 +48,9 @@ class HybridsRootElement extends HTMLElement {
   }
 }
 
-const transform = {
-  string: { from: String, to: String },
-  number: { from: Number, to: String },
-  boolean: { from: Boolean, to: String },
-  array: {
-    from: val =>
-      Array.isArray(val)
-        ? val.map(String)
-        : (val && String(val).split(" ")) || [],
-    to: val => val.join(" "),
-  },
-};
-
 function render(fn, useShadow) {
   return {
-    value: useShadow
+    get: useShadow
       ? host => {
           const updateDOM = fn(host);
           const target =
@@ -88,110 +75,55 @@ function render(fn, useShadow) {
   };
 }
 
-const setter = (host, value) => value;
-const supportedOptions = ["value", "writable", "observe", "connect"];
-function translate(key, desc) {
-  let type = typeof desc;
+const transforms = {
+  string: String,
+  number: Number,
+  boolean: Boolean,
+  undefined: v => v,
+};
 
-  if (type === "function") {
-    switch (key) {
-      case "render":
-        return render(desc, true);
-      case "content":
-        return render(desc);
-      default:
-        desc = { value: desc };
-    }
-  } else if (type !== "object" || Array.isArray(desc)) {
-    desc = { value: desc };
-  } else {
-    const descKeys = Object.keys(desc);
-    if (descKeys.length === 1 && descKeys[0] === "value") {
-      throw TypeError(
-        `Not required descriptor form of the '${key}' property - set property value directly`,
-      );
-    } else {
-      const unsupported = descKeys.find(
-        prop => !supportedOptions.includes(prop),
-      );
-      if (unsupported) {
-        throw TypeError(
-          `Unsupported '${unsupported}' option in the descriptor of the '${key}' property`,
-        );
-      }
-    }
+function property(key, desc) {
+  const type = typeof desc.value;
+  const transform = transforms[type];
+
+  if (!transform) {
+    throw TypeError(
+      `Invalid default value for '${key}' property - it must be a string, number, boolean or undefined: ${type}`,
+    );
   }
 
-  type = Array.isArray(desc.value) ? "array" : typeof desc.value;
+  const defaultValue = desc.value;
   const attrName = camelToDash(key);
 
-  if (type === "undefined") {
-    return {
-      value: setter,
-      connect: desc.connect,
-      observe: desc.observe,
-      writable: true,
-    };
-  }
-
-  if (type === "function") {
-    return {
-      value: desc.writable
-        ? (host, value) => {
-            if (value === undefined && host.hasAttribute(attrName)) {
-              value = host.getAttribute(attrName);
-            }
-
-            return desc.value(host, value);
-          }
-        : desc.value,
-      connect: desc.connect,
-      observe: desc.observe,
-      writable: desc.writable,
-    };
-  }
-
-  const fn = transform[type];
-
-  if (!fn) throw TypeError(`Unsupported type for '${key}' property: ${type}`);
-  if (type === "array") Object.freeze(desc.value);
-
-  const updateAttr =
-    type === "boolean"
-      ? (host, value) => {
-          if (value) {
-            host.setAttribute(attrName, "");
-          } else {
-            host.removeAttribute(attrName);
-          }
-        }
-      : (host, value) => {
-          if (!value && value !== 0) {
-            host.removeAttribute(attrName);
-          } else {
-            host.setAttribute(attrName, fn.to(value));
-          }
-        };
+  const setAttr = (host, value) => {
+    if (!value && value !== 0) {
+      host.removeAttribute(attrName);
+    } else {
+      host.setAttribute(attrName, type === "boolean" ? "" : value);
+    }
+    return value;
+  };
 
   return {
-    value: (host, value) => {
+    get: (host, value) => {
       if (value === undefined) {
         if (host.hasAttribute(attrName)) {
-          return fn.from(type === "boolean" || host.getAttribute(attrName));
+          value = transform(type === "boolean" || host.getAttribute(attrName));
+        } else {
+          return defaultValue;
         }
-        return desc.value;
+      }
+      return value;
+    },
+    set: (host, value) => setAttr(host, transform(value)),
+    connect(host, _, invalidate) {
+      if (host[key] === defaultValue) {
+        setAttr(host, defaultValue);
       }
 
-      return fn.from(value);
+      return desc.connect && desc.connect(host, _, invalidate);
     },
-    connect: desc.connect,
-    observe: desc.observe
-      ? (host, value, lastValue) => {
-          updateAttr(host, value);
-          desc.observe(host, value, lastValue);
-        }
-      : updateAttr,
-    writable: true,
+    observe: desc.observe,
   };
 }
 
@@ -216,24 +148,54 @@ function compile(hybrids, HybridsElement) {
   props.forEach(key => {
     if (key === "tag") return;
 
-    const desc = translate(key, hybrids[key]);
+    let desc = hybrids[key];
+    const type = typeof desc;
+
+    if (type === "function") {
+      if (key === "render") {
+        desc = render(desc, true);
+      } else if (key === "content") {
+        desc = render(desc);
+      } else {
+        desc = { get: desc };
+      }
+    } else if (type !== "object" || desc === null) {
+      desc = { value: desc };
+    } else if (desc.set) {
+      const attrName = camelToDash(key);
+      const get = desc.get || ((host, value) => value);
+      desc.get = (host, value) => {
+        if (value === undefined) {
+          value = desc.set(host, host.getAttribute(attrName) || value);
+        }
+        return get(host, value);
+      };
+    }
+
+    if (hasOwnProperty.call(desc, "value")) {
+      desc = property(key, desc);
+    } else if (!desc.get) {
+      throw TypeError(
+        `Invalid descriptor for '${key}' property - it must contain 'value' or 'get' option`,
+      );
+    }
 
     Object.defineProperty(HybridsElement.prototype, key, {
       get: function get() {
-        return cache.get(this, key, desc.value);
+        return cache.get(this, key, desc.get);
       },
-      set: desc.writable
-        ? function set(newValue) {
-            cache.set(this, key, setter, newValue);
-          }
-        : undefined,
+      set:
+        desc.set &&
+        function set(newValue) {
+          cache.set(this, key, desc.set, newValue);
+        },
       enumerable: true,
       configurable: true,
     });
 
     if (desc.observe) {
       callbacks.unshift(host =>
-        cache.observe(host, key, desc.value, desc.observe),
+        cache.observe(host, key, desc.get, desc.observe),
       );
     }
 

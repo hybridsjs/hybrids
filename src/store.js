@@ -1439,60 +1439,47 @@ function store(Model, options = {}) {
     options.draft = draft;
   }
 
-  let desc;
-  if (options.draft) {
-    desc = {
-      value: options.id
-        ? host => get(Model, options.id(host))
-        : (host, value) => {
-            const valueConfig = definitions.get(value);
-            const id = valueConfig !== undefined ? value.id : value;
+  const writable = !options.id && config.enumerable;
 
-            if (
-              !id &&
-              (config.enumerable ||
-                (config.external && valueConfig === undefined))
-            ) {
-              const draftModel = options.draft.create({});
-              syncCache(options.draft, draftModel.id, draftModel, false);
-              value = get(Model, draftModel.id);
-            } else {
-              value = get(Model, id);
-            }
-
-            return value;
-          },
-      writable: !options.id,
-    };
-  } else if (!options.id && config.enumerable) {
-    desc = {
-      value: (host, value) => {
-        if (!value) return undefined;
-
+  if (writable) {
+    return {
+      get(host, value) {
         const valueConfig = definitions.get(value);
+        let id = valueConfig !== undefined ? value.id : value;
 
-        return store.get(Model, valueConfig !== undefined ? value.id : value);
-      },
-      writable: true,
-    };
-  } else {
-    desc = {
-      value: (host, value) => {
-        const nextValue = get(Model, options.id && options.id(host));
-
-        if (nextValue !== value && ready(value) && !ready(nextValue)) {
-          const tempValue = config.create(value);
-          cache.set(tempValue, "state", () => getModelState(nextValue));
-          return tempValue;
+        if (!id && options.draft) {
+          const draftModel = options.draft.create({});
+          syncCache(options.draft, draftModel.id, draftModel, false);
+          id = draftModel.id;
         }
 
-        return nextValue;
+        return id ? get(Model, id) : undefined;
       },
-      writable: false,
+      set: (_, v) => v,
     };
   }
 
-  return desc;
+  return {
+    get: (host, value) => {
+      let id = (options.id && options.id(host)) || (value && value.id);
+
+      if (!id && options.draft) {
+        const draftModel = options.draft.create({});
+        syncCache(options.draft, draftModel.id, draftModel, false);
+        id = draftModel.id;
+      }
+
+      const nextValue = get(Model, id);
+
+      if (nextValue !== value && ready(value) && !ready(nextValue)) {
+        const tempValue = config.create(value);
+        cache.set(tempValue, "state", () => getModelState(nextValue));
+        return tempValue;
+      }
+
+      return nextValue;
+    },
+  };
 }
 
 export default Object.freeze(

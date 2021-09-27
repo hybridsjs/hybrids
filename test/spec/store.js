@@ -989,7 +989,7 @@ describe("store:", () => {
 
       const desc = store(Model, { draft: true });
       const host = {};
-      const model = desc.value(host);
+      const model = desc.get(host);
 
       store
         .set(model, { one: "" })
@@ -1014,7 +1014,7 @@ describe("store:", () => {
 
       const desc = store(Model, { draft: true });
       const host = {};
-      const model = desc.value(host);
+      const model = desc.get(host);
 
       store
         .set(model, { number: 0 })
@@ -1420,8 +1420,12 @@ describe("store:", () => {
           },
         };
 
-        const desc = store(Model, { draft: true });
-        expect(desc.value({})).toEqual({ value: "test" });
+        define({
+          tag: "test-store-factory-singleton-draft",
+          draft: store(Model, { draft: true }),
+        });
+        el = document.createElement("test-store-factory-singleton-draft");
+        expect(el.draft).toEqual({ value: "test" });
       });
     });
 

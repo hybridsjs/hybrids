@@ -1021,7 +1021,7 @@ function router(views, options) {
   };
 
   const desc = {
-    value: host => {
+    get: host => {
       const stack = stacks.get(host) || [];
       return stack
         .slice(0, stack.findIndex(el => !configs.get(el).dialog) + 1)

@@ -24,7 +24,7 @@ export default function children(
       : hybrids => hybrids === hybridsOrFn;
 
   return {
-    value: host => walk(host, fn, options),
+    get: host => walk(host, fn, options),
     connect(host, key, invalidate) {
       const observer = new MutationObserver(invalidate);
 
