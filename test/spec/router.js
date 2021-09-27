@@ -595,38 +595,45 @@ describe("router:", () => {
                   "#@test-router-nested-view-one",
                 );
 
-                host.querySelector("#RootView").click();
+                host.children[0].views[0].param = true;
 
                 return resolveTimeout(() => {
-                  expect(hybrids(host.children[0])).toBe(RootView);
-                  expect(window.history.state.length).toBe(1);
+                  expect(host.children[0].views[0].param).toBe(true);
+                  expect(window.location.search).toBe("?param=1");
 
-                  host.querySelector("#Dialog").click();
+                  host.querySelector("#RootView").click();
 
                   return resolveTimeout(() => {
                     expect(hybrids(host.children[0])).toBe(RootView);
-                    expect(hybrids(host.children[1])).toBe(Dialog);
-                    expect(window.history.state.length).toBe(2);
+                    expect(window.history.state.length).toBe(1);
 
-                    host.querySelector("#DialogCurrent").click();
+                    host.querySelector("#Dialog").click();
 
                     return resolveTimeout(() => {
                       expect(hybrids(host.children[0])).toBe(RootView);
                       expect(hybrids(host.children[1])).toBe(Dialog);
                       expect(window.history.state.length).toBe(2);
 
-                      const keyEventEsc = new KeyboardEvent("keydown", {
-                        key: "Escape",
-                      });
-                      const keyEventEnter = new KeyboardEvent("keydown", {
-                        key: "Enter",
-                      });
-                      host.children[1].dispatchEvent(keyEventEnter);
-                      host.children[1].dispatchEvent(keyEventEsc);
+                      host.querySelector("#DialogCurrent").click();
 
                       return resolveTimeout(() => {
                         expect(hybrids(host.children[0])).toBe(RootView);
-                        expect(window.history.state.length).toBe(1);
+                        expect(hybrids(host.children[1])).toBe(Dialog);
+                        expect(window.history.state.length).toBe(2);
+
+                        const keyEventEsc = new KeyboardEvent("keydown", {
+                          key: "Escape",
+                        });
+                        const keyEventEnter = new KeyboardEvent("keydown", {
+                          key: "Enter",
+                        });
+                        host.children[1].dispatchEvent(keyEventEnter);
+                        host.children[1].dispatchEvent(keyEventEsc);
+
+                        return resolveTimeout(() => {
+                          expect(hybrids(host.children[0])).toBe(RootView);
+                          expect(window.history.state.length).toBe(1);
+                        });
                       });
                     });
                   });

@@ -1426,6 +1426,12 @@ describe("store:", () => {
         });
         el = document.createElement("test-store-factory-singleton-draft");
         expect(el.draft).toEqual({ value: "test" });
+
+        return store.set(el.draft, { value: "other" }).then(() => {
+          expect(el.draft).toEqual({ value: "other" });
+          el.draft = undefined;
+          expect(el.draft).toEqual({ value: "test" });
+        });
       });
     });
 

@@ -329,24 +329,25 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           _,
           connect,
           host =>
-            browserUrl.url(
-              browserUrl.paramsKeys.reduce((acc, key) => {
-                acc[key] = host[key];
-                return acc;
-              }, {}),
-              true,
-            ),
-          (host, url) => {
+            browserUrl.paramsKeys.reduce((acc, key) => {
+              acc[key] = String(mapUrlParam(host[key]));
+              return acc;
+            }, {}),
+          (host, params, lastParams) => {
+            if (!lastParams) return;
+
             const state = window.history.state;
             let entry = state[0];
             while (entry.nested) entry = entry.nested;
 
-            entry.params = browserUrl.paramsKeys.reduce((acc, key) => {
-              acc[key] = String(host[key] || "");
-              return acc;
-            }, {});
-
-            window.history.replaceState(state, "", url);
+            window.history.replaceState(
+              [
+                config.getEntry({ ...entry.params, ...params }),
+                ...state.slice(1),
+              ],
+              "",
+              config.url(params, true),
+            );
           },
         ),
       );

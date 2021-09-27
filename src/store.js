@@ -1436,9 +1436,7 @@ function store(Model, options = {}) {
     options.draft = draft;
   }
 
-  const writable = !options.id && config.enumerable;
-
-  if (writable) {
+  if (!options.id && config.enumerable) {
     return {
       get(host, value) {
         const valueConfig = definitions.get(value);
@@ -1460,7 +1458,7 @@ function store(Model, options = {}) {
     get: (host, value) => {
       let id = (options.id && options.id(host)) || (value && value.id);
 
-      if (!id && options.draft) {
+      if (!id && !value && options.draft) {
         const draftModel = options.draft.create({});
         syncCache(options.draft, draftModel.id, draftModel, false);
         id = draftModel.id;
@@ -1476,6 +1474,7 @@ function store(Model, options = {}) {
 
       return nextValue;
     },
+    set: options.draft && !config.enumerable ? (_, v) => v : undefined,
   };
 }
 
