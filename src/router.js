@@ -1015,7 +1015,7 @@ function connectNestedRouter(host, invalidate, options) {
 
 function router(views, options) {
   options = {
-    url: window.location.pathname,
+    url: window.location.href,
     params: [],
     ...options,
     views,
