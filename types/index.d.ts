@@ -187,15 +187,18 @@ declare module "hybrids" {
   }
 
   function router<E>(
-    views: HybridsBase[] | (() => HybridsBase[]),
+    views: HybridsBase | HybridsBase[] | (() => HybridsBase | HybridsBase[]),
     options?: {
       url?: string;
       params?: Array<keyof E>;
+      debug?: boolean;
     },
   ): Descriptor<E, HTMLElement[]>;
 
   namespace router {
     const connect = "__router__connect__";
+
+    function debug(): void;
 
     type UrlParams<E> = {
       [property in keyof E]?: E[property];

@@ -12,6 +12,11 @@ const routers = new WeakMap();
 let rootRouter = null;
 const entryPoints = new Set();
 
+let debug = false;
+function setDebug() {
+  debug = true;
+}
+
 const scrollMap = new WeakMap();
 const focusMap = new WeakMap();
 function saveLayout(target) {
@@ -187,12 +192,7 @@ function addEntryPoint(config) {
 
 function setupViews(views, options, parent = null, nestedParent = null) {
   if (typeof views === "function") views = views();
-
-  if (!Array.isArray(views) || !views.length) {
-    throw TypeError(
-      `Router requires non-empty array of views (tagged component definitions)`,
-    );
-  }
+  views = [].concat(views);
 
   return views.map(hybrids => {
     const config = configs.get(hybrids);
@@ -1045,6 +1045,46 @@ function router(views, options) {
 
       return connectRootRouter(host, invalidate, options);
     },
+    observe:
+      debug &&
+      ((host, value, lastValue) => {
+        if (value && value.length) {
+          const index = value.length - 1;
+          const view = value[index];
+
+          if (lastValue && view === lastValue[index]) return;
+
+          let config = configs.get(host);
+          let entry = window.history.state[0];
+          let key = 0;
+          let prefix = "nested";
+
+          while (config) {
+            key += 1;
+            entry = entry.nested;
+            config = config.nestedParent;
+          }
+
+          if (key === 0) {
+            console.clear();
+            prefix = "root";
+          }
+
+          console.group(
+            `[${host.tagName.toLowerCase()}]: ${prefix} router navigated ($$${key})`,
+          );
+
+          console.log(`%cid:`, "font-weight: bold", entry.id);
+
+          Object.entries(entry.params).forEach(([k, v]) =>
+            console.log(`%c${k}:`, "font-weight: bold", v),
+          );
+
+          console.groupEnd();
+
+          window[`$$${key}`] = view;
+        }
+      }),
   };
 
   routers.set(desc, options);
@@ -1054,6 +1094,7 @@ function router(views, options) {
 export default Object.freeze(
   Object.assign(router, {
     connect,
+    debug: setDebug,
     url: getUrl,
     backUrl: getBackUrl,
     guardUrl: getGuardUrl,
