@@ -264,8 +264,11 @@ describe("router:", () => {
       Dialog = define({
         [router.connect]: { dialog: true },
         tag: "test-router-dialog",
+        param: 1,
         content: () => html`
-          <a href="${router.currentUrl()}" id="DialogCurrent">DialogCurrent</a>
+          <a href="${router.currentUrl({ param: 2 })}" id="DialogCurrent"
+            >DialogCurrent</a
+          >
         `,
       });
 
@@ -1250,6 +1253,61 @@ describe("router:", () => {
               expect(hybrids(host.views[0])).toBe(ChildView);
             });
           });
+        });
+      });
+    });
+  });
+
+  describe("debug()", () => {
+    let app;
+    afterEach(() => {
+      if (app) document.body.removeChild(app);
+    });
+
+    it("when called turns on logging", () => {
+      router.debug();
+
+      const OtherNestedDebug = define({
+        tag: "test-router-other-nested-debug-view",
+        param: "",
+      });
+
+      const NestedDebug = define({
+        tag: "test-router-nested-debug-view",
+        content: () => html`
+          <a
+            href="${router.url(OtherNestedDebug, { param: "test" })}"
+            id="other-nested-debug"
+            >OtherNestedDebug</a
+          >
+        `,
+      });
+
+      const HomeDebug = define({
+        tag: "test-router-home-debug-view",
+        stack: router([NestedDebug, OtherNestedDebug]),
+        content: ({ stack }) => html`${stack}` // prettier-ignore
+      });
+
+      define({
+        tag: "test-router-debug",
+        stack: router(HomeDebug),
+        content: ({ stack }) => html`${stack}` // prettier-ignore
+      });
+
+      app = document.createElement("test-router-debug");
+      expect(app.stack).toEqual([]);
+
+      document.body.appendChild(app);
+
+      const spy = spyOn(console, "log");
+
+      return resolveTimeout(() => {
+        expect(spy).toHaveBeenCalled();
+        app.querySelector("#other-nested-debug").click();
+
+        return resolveTimeout(() => {
+          expect(spy).toHaveBeenCalled();
         });
       });
     });

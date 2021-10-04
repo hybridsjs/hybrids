@@ -324,34 +324,6 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       }
       browserUrl = setupBrowserUrl(options.url, id);
 
-      callbacksMap.get(Constructor).unshift(_ =>
-        cache.observe(
-          _,
-          connect,
-          host =>
-            browserUrl.paramsKeys.reduce((acc, key) => {
-              acc[key] = String(mapUrlParam(host[key]));
-              return acc;
-            }, {}),
-          (host, params, lastParams) => {
-            if (!lastParams) return;
-
-            const state = window.history.state;
-            let entry = state[0];
-            while (entry.nested) entry = entry.nested;
-
-            window.history.replaceState(
-              [
-                config.getEntry({ ...entry.params, ...params }),
-                ...state.slice(1),
-              ],
-              "",
-              config.url(params, true),
-            );
-          },
-        ),
-      );
-
       browserUrl.paramsKeys.forEach(key => {
         const desc = Object.getOwnPropertyDescriptor(
           Constructor.prototype,
@@ -366,6 +338,38 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         }
       });
     }
+
+    const stateParams = writableParams.filter(
+      k => !routerOptions.params.includes(k) && !metaParams.includes(k),
+    );
+
+    callbacksMap.get(Constructor).unshift(_ =>
+      cache.observe(
+        _,
+        connect,
+        host =>
+          stateParams.reduce((acc, key) => {
+            const value = String(mapUrlParam(host[key]));
+            if (value !== hybrids[key]) acc[key] = value;
+            return acc;
+          }, {}),
+        (host, params, lastParams) => {
+          if (!lastParams) return;
+
+          const state = window.history.state;
+          let entry = state[0];
+          while (entry.id !== id && entry.nested) entry = entry.nested;
+
+          params = { ...entry.params, ...params };
+
+          window.history.replaceState(
+            [config.getEntry(params), ...state.slice(1)],
+            "",
+            browserUrl ? config.url(params) : "",
+          );
+        },
+      ),
+    );
 
     let guard;
     if (options.guard) {
@@ -1048,42 +1052,40 @@ function router(views, options) {
     observe:
       debug &&
       ((host, value, lastValue) => {
-        if (value && value.length) {
-          const index = value.length - 1;
-          const view = value[index];
+        const index = value.length - 1;
+        const view = value[index];
 
-          if (lastValue && view === lastValue[index]) return;
+        if (lastValue && view === lastValue[index]) return;
 
-          let config = configs.get(host);
-          let entry = window.history.state[0];
-          let key = 0;
-          let prefix = "nested";
+        let config = configs.get(host);
+        let entry = window.history.state[0];
+        let key = 0;
 
-          while (config) {
-            key += 1;
-            entry = entry.nested;
-            config = config.nestedParent;
-          }
-
-          if (key === 0) {
-            console.clear();
-            prefix = "root";
-          }
-
-          console.group(
-            `[${host.tagName.toLowerCase()}]: ${prefix} router navigated ($$${key})`,
-          );
-
-          console.log(`%cid:`, "font-weight: bold", entry.id);
-
-          Object.entries(entry.params).forEach(([k, v]) =>
-            console.log(`%c${k}:`, "font-weight: bold", v),
-          );
-
-          console.groupEnd();
-
-          window[`$$${key}`] = view;
+        while (config) {
+          key += 1;
+          entry = entry.nested;
+          config = config.nestedParent;
         }
+
+        let prefix = `nested[${key}]`;
+        if (key === 0) {
+          console.clear();
+          prefix = "root";
+        }
+
+        console.group(
+          `[${host.tagName.toLowerCase()}]: ${prefix} router navigated ($$${key})`,
+        );
+
+        console.log(`%cid:`, "font-weight: bold", entry.id);
+
+        Object.entries(entry.params).forEach(([k, v]) =>
+          console.log(`%c${k}:`, "font-weight: bold", v),
+        );
+
+        console.groupEnd();
+
+        window[`$$${key}`] = view;
       }),
   };
 
