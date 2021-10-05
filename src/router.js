@@ -13,8 +13,8 @@ let rootRouter = null;
 const entryPoints = new Set();
 
 let debug = false;
-function setDebug() {
-  debug = true;
+function setDebug(value = true) {
+  debug = !!value;
 }
 
 const scrollMap = new WeakMap();
@@ -1067,17 +1067,13 @@ function router(views, options) {
           config = config.nestedParent;
         }
 
-        let prefix = `nested[${key}]`;
-        if (key === 0) {
-          console.clear();
-          prefix = "root";
-        }
+        if (key === 0) console.clear();
 
         console.group(
-          `[${host.tagName.toLowerCase()}]: ${prefix} router navigated ($$${key})`,
+          `[${host.tagName.toLowerCase()}]: navigated to %c<${entry.id}>`,
+          "color: blue",
+          `($$${key})`,
         );
-
-        console.log(`%cid:`, "font-weight: bold", entry.id);
 
         Object.entries(entry.params).forEach(([k, v]) =>
           console.log(`%c${k}:`, "font-weight: bold", v),

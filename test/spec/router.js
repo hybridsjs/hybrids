@@ -1262,6 +1262,7 @@ describe("router:", () => {
     let app;
     afterEach(() => {
       if (app) document.body.removeChild(app);
+      router.debug(false);
     });
 
     it("when called turns on logging", () => {
@@ -1300,7 +1301,7 @@ describe("router:", () => {
 
       document.body.appendChild(app);
 
-      const spy = spyOn(console, "log");
+      const spy = spyOn(console, "group");
 
       return resolveTimeout(() => {
         expect(spy).toHaveBeenCalled();

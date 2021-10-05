@@ -198,7 +198,7 @@ declare module "hybrids" {
   namespace router {
     const connect = "__router__connect__";
 
-    function debug(): void;
+    function debug(value?: boolean): void;
 
     type UrlParams<E> = {
       [property in keyof E]?: E[property];
