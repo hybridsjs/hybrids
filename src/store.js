@@ -1283,12 +1283,11 @@ function error(model, property) {
   if (model === null || typeof model !== "object") return false;
   const state = getModelState(model);
 
-  if (
-    property !== undefined &&
-    typeof state.error === "object" &&
-    state.error
-  ) {
-    return state.error.errors && state.error.errors[property];
+  if (property !== undefined) {
+    const errors =
+      typeof state.error === "object" && state.error && state.error.errors;
+
+    return property === null ? !errors && state.error : errors[property];
   }
 
   return state.error;

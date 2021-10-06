@@ -1111,6 +1111,8 @@ describe("store:", () => {
         .then(model => {
           store.set(model, { value: "" }).catch(() => {});
           expect(store.error(model, "value")).toBe("value is required");
+          expect(store.error(model, null)).toBe(false);
+          expect(store.error(model)).toBeDefined();
         })
         .then(done);
     });
@@ -1133,6 +1135,7 @@ describe("store:", () => {
 
       expect(store.pending(pendingModel)).toBeInstanceOf(Promise);
       expect(store.error(pendingModel)).toBeInstanceOf(Error);
+      expect(store.error(pendingModel, null)).toBeInstanceOf(Error);
 
       return store.pending(pendingModel).then(newModel => {
         expect(store.pending(newModel)).toBe(false);

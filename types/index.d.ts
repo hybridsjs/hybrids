@@ -150,7 +150,10 @@ declare module "hybrids" {
     function pending<M>(model: M): false | Promise<M>;
     function pending(...models: Array<object>): false | Promise<typeof models>;
 
-    function error<M>(model: M, propertyName?: keyof M): false | Error | any;
+    function error<M>(
+      model: M,
+      propertyName?: keyof M | null,
+    ): false | Error | any;
 
     function ready<M>(model: M): boolean;
     function ready(...models: Array<object>): boolean;
