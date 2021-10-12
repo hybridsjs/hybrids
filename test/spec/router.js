@@ -97,6 +97,28 @@ describe("router:", () => {
     ).toThrow();
   });
 
+  it("throws when url option duplicates parameter in pathname", () => {
+    expect(() =>
+      router([
+        define({
+          [router.connect]: { url: "/test/:asd/:asd" },
+          tag: "test-router-url-throw",
+        }),
+      ]).connect(document.createElement("div")),
+    ).toThrow();
+  });
+
+  it("throws when url option duplicates parameter in search params", () => {
+    expect(() =>
+      router([
+        define({
+          [router.connect]: { url: "/test/:asd?asd" },
+          tag: "test-router-url-throw",
+        }),
+      ]).connect(document.createElement("div")),
+    ).toThrow();
+  });
+
   it("throws for more than one nested router in the definition", () => {
     const NestedView = define({ tag: "test-router-nested-root-nested-view" });
     define({
@@ -231,15 +253,27 @@ describe("router:", () => {
         `,
       });
 
+      const OtherChildWithSharedUrl = define({
+        [router.connect]: {
+          url: "/a/:value",
+        },
+        value: "",
+        tag: "test-router-other-child-with-shared-url",
+      });
+
       OtherChildWithLongerUrl = define({
-        [router.connect]: { url: "/:value/other" },
+        [router.connect]: { url: "/a/:value/other" },
         value: "",
         tag: "test-router-other-child-view-longer",
       });
 
       ChildView = define({
         [router.connect]: {
-          stack: [OtherChildWithLongerUrl, OtherChildView],
+          stack: [
+            OtherChildWithSharedUrl,
+            OtherChildWithLongerUrl,
+            OtherChildView,
+          ],
         },
         tag: "test-router-child-view",
         globalA: "",
@@ -940,22 +974,22 @@ describe("router:", () => {
         expect(router.currentUrl()).toBe("");
       });
 
-      it("returns an url to the current stack view", () => {
-        window.history.replaceState(null, "", "/other_url_child/other");
+      it("returns an url to the current OtherChildWithLongerUrl view", () => {
+        window.history.replaceState(null, "", "/a/other_url_child/other");
 
         host = document.createElement("test-router-app");
         document.body.appendChild(host);
 
         return resolveTimeout(() => {
           expect(hybrids(host.views[0])).toBe(OtherChildWithLongerUrl);
-          expect(router.currentUrl().pathname).toBe("/other_url_child/other");
+          expect(router.currentUrl().pathname).toBe("/a/other_url_child/other");
           expect(router.currentUrl({ param: true }).search).toBe("?param=1");
 
           document.body.removeChild(host);
         });
       });
 
-      it("returns an url to the current stack view", () => {
+      it("returns an url to the current OtherChild view", () => {
         window.history.replaceState(null, "", "/other_url_child?param=1");
 
         host = document.createElement("test-router-app");

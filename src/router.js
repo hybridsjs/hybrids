@@ -90,41 +90,44 @@ function mapUrlParam(value) {
 }
 
 const metaParams = ["scrollToTop"];
-const placeholder = Date.now();
 
 function setupBrowserUrl(browserUrl, id) {
   const [pathname, search = ""] = browserUrl.split("?");
 
   const searchParams = search ? search.split(",") : [];
-  const pathnameParams = [];
-  const normalizedPathname = pathname.replace(/:([^/]+)/g, (_, key) => {
-    if (searchParams.includes(key)) {
-      throw TypeError(`The '${key}' property already set in search parameters`);
+  const normalizedPathname = pathname.replace(/^\//, "").split("/");
+  const pathnameParams = normalizedPathname.reduce((params, name) => {
+    if (name.startsWith(":")) {
+      const key = name.slice(1);
+      if (searchParams.includes(key)) {
+        throw Error(`The '${key}' already used in search params`);
+      }
+      if (params.includes(key)) {
+        throw Error(`The '${key}' already used in pathname`);
+      }
+      params.push(key);
     }
-    pathnameParams.push(key);
-    return placeholder;
-  });
-
-  const parts = normalizedPathname.substr(1).split(placeholder);
+    return params;
+  }, []);
 
   return {
     browserUrl,
     pathnameParams,
     paramsKeys: [...searchParams, ...pathnameParams],
     url(params, strict = false) {
-      let temp = normalizedPathname;
-
-      if (pathnameParams.length) {
-        temp = temp.split(placeholder).reduce((acc, part, index) => {
-          const key = pathnameParams[index - 1];
+      const temp = normalizedPathname.reduce((acc, part) => {
+        if (part.startsWith(":")) {
+          const key = part.slice(1);
 
           if (!hasOwnProperty.call(params, key)) {
             throw Error(`The '${key}' parameter must be defined for <${id}>`);
           }
 
-          return `${acc}${mapUrlParam(params[key])}${part}`;
-        });
-      }
+          part = mapUrlParam(params[key]);
+        }
+
+        return `${acc}/${part}`;
+      });
 
       const url = new URL(temp, window.location.origin);
 
@@ -143,28 +146,20 @@ function setupBrowserUrl(browserUrl, id) {
     },
     match(url) {
       const params = {};
-      let temp = url.pathname;
+      const temp = url.pathname.replace(/^\//, "").split("/");
 
-      if (pathnameParams.length) {
-        for (let i = 0; i < parts.length; i += 1) {
-          if (temp === parts[i]) break;
-          if (!temp.length || temp[0] !== "/") return null;
+      if (temp.length !== normalizedPathname.length) return null;
 
-          temp = temp.substr(1);
+      for (let i = 0; i < temp.length; i += 1) {
+        const part = temp[i];
+        const normalizedPart = normalizedPathname[i];
 
-          if (parts[i] && temp.substr(0, parts[i].length) !== parts[i]) {
-            return null;
-          }
-
-          temp = temp
-            .substr(parts[i].length)
-            .replace(/^([^/]+)/, (_, value) => {
-              params[pathnameParams[i]] = value;
-              return "";
-            });
+        if (normalizedPart.startsWith(":")) {
+          const key = normalizedPart.slice(1);
+          params[key] = part;
+        } else if (part !== normalizedPart) {
+          return null;
         }
-      } else if (temp !== pathname) {
-        return null;
       }
 
       url.searchParams.forEach((value, key) => {
@@ -365,7 +360,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           window.history.replaceState(
             [config.getEntry(params), ...state.slice(1)],
             "",
-            browserUrl ? config.url(params) : "",
+            browserUrl ? config.url(params, true) : "",
           );
         },
       ),
