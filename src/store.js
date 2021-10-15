@@ -448,7 +448,7 @@ function setupModel(Model, nested) {
       if (key === "id") {
         if (Model[key] !== true) {
           throw TypeError(
-            "The 'id' property in model definition must be set to 'true' or not be defined",
+            "The 'id' property in the model definition must be set to 'true' or not defined",
           );
         }
         return (model, data, lastModel) => {
@@ -874,7 +874,7 @@ function get(Model, id) {
   if (config.enumerable) {
     stringId = stringifyId(id);
 
-    if (!config.list && !stringId) {
+    if (!stringId && !config.list && !draftMap.get(config)) {
       throw TypeError(
         stringifyModel(
           Model,
@@ -1439,15 +1439,15 @@ function store(Model, options = {}) {
     return {
       get(host, value) {
         const valueConfig = definitions.get(value);
-        let id = valueConfig !== undefined ? value.id : value;
+        const id = valueConfig !== undefined ? value.id : value;
 
-        if (!id && options.draft) {
-          const draftModel = options.draft.create({});
-          syncCache(options.draft, draftModel.id, draftModel, false);
-          id = draftModel.id;
+        if (options.draft && (value === undefined || value === null)) {
+          const draftModel = options.draft.create({}, { id: undefined });
+          syncCache(options.draft, undefined, draftModel, false);
+          return get(Model, undefined);
         }
 
-        return id ? get(Model, id) : undefined;
+        return value ? get(Model, id) : undefined;
       },
       set: (_, v) => v,
     };
@@ -1455,13 +1455,15 @@ function store(Model, options = {}) {
 
   return {
     get: (host, value) => {
-      let id = (options.id && options.id(host)) || (value && value.id);
+      const id = (options.id && options.id(host)) || (value && value.id);
 
-      if (!id && !value && options.draft) {
+      if (options.draft && !id && (value === undefined || value === null)) {
         const draftModel = options.draft.create({});
-        syncCache(options.draft, draftModel.id, draftModel, false);
-        id = draftModel.id;
+        syncCache(options.draft, undefined, draftModel, false);
+        return get(Model, undefined);
       }
+
+      if (config.enumerable && id === undefined) return undefined;
 
       const nextValue = get(Model, id);
 

@@ -1196,6 +1196,7 @@ describe("store:", () => {
         define({
           tag: "test-store-factory-enumerable",
           modelId: "1",
+          byundefined: store(Model, { id: () => undefined }),
           byprop: store(Model, { id: "modelId" }),
           byfn: store(Model, { id: ({ modelId }) => modelId }),
           withoutid: store(Model),
@@ -1214,6 +1215,10 @@ describe("store:", () => {
           expect(() => {
             el.byprop = "1";
           }).toThrow();
+        });
+
+        it("returns undefined when id resolves to undefined", () => {
+          expect(el.byundefined).toBe(undefined);
         });
 
         it("gets and updates store model instance", () => {
