@@ -1335,7 +1335,7 @@ describe("router:", () => {
 
       document.body.appendChild(app);
 
-      const spy = spyOn(console, "group");
+      const spy = spyOn(console, "groupCollapsed");
 
       return resolveTimeout(() => {
         expect(spy).toHaveBeenCalled();

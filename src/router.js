@@ -345,7 +345,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         host =>
           stateParams.reduce((acc, key) => {
             const value = String(mapUrlParam(host[key]));
-            if (value !== hybrids[key]) acc[key] = value;
+            if (value !== undefined && value !== hybrids[key]) acc[key] = value;
             return acc;
           }, {}),
         (host, params, lastParams) => {
@@ -1014,7 +1014,7 @@ function connectNestedRouter(host, invalidate, options) {
 
 function router(views, options) {
   options = {
-    url: window.location.href,
+    url: window.location.href.replace(/#.*$/, ""),
     params: [],
     ...options,
     views,
@@ -1062,9 +1062,7 @@ function router(views, options) {
           config = config.nestedParent;
         }
 
-        if (key === 0) console.clear();
-
-        console.group(
+        console.groupCollapsed(
           `[${host.tagName.toLowerCase()}]: navigated to %c<${entry.id}>`,
           "color: blue",
           `($$${key})`,
