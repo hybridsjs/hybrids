@@ -344,8 +344,10 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         connect,
         host =>
           stateParams.reduce((acc, key) => {
-            const value = String(mapUrlParam(host[key]));
-            if (value !== undefined && value !== hybrids[key]) acc[key] = value;
+            const value = mapUrlParam(host[key]).toString();
+            if (value !== undefined && value !== hybrids[key]) {
+              acc[key] = String(value);
+            }
             return acc;
           }, {}),
         (host, params, lastParams) => {
@@ -1063,9 +1065,9 @@ function router(views, options) {
         }
 
         console.groupCollapsed(
-          `[${host.tagName.toLowerCase()}]: navigated to %c<${entry.id}>`,
-          "color: blue",
-          `($$${key})`,
+          `[${host.tagName.toLowerCase()}]: navigated to <${
+            entry.id
+          }> ($$${key})`,
         );
 
         Object.entries(entry.params).forEach(([k, v]) =>
