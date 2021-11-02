@@ -624,7 +624,7 @@ function getEntryFromURL(url) {
   let config;
 
   const [pathname, search] = url.hash.split("?");
-  if (pathname) {
+  if (pathname && pathname.match(/^#@.+-.+/)) {
     config = getConfigById(pathname.split("@")[1]);
     url = new URL(`?${search}`, window.location.origin);
   }
