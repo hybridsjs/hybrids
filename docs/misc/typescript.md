@@ -24,6 +24,7 @@ export function increaseCount(host: SimpleCounter) {
 
 export default define<SimpleCounter>({
   count: 0,
+  tag: 'simple-counter',
   render: ({ count }) => html`
     <button onclick="${increaseCount}">
       Count: ${count}
