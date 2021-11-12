@@ -1204,10 +1204,10 @@ describe("store:", () => {
           draftwithoutid: store(Model, { draft: true }),
         });
 
-        el = document.createElement("test-store-factory-enumerable");
-        document.body.appendChild(el);
-
-        return resolveRaf(() => {});
+        return resolveRaf(() => {
+          el = document.createElement("test-store-factory-enumerable");
+          document.body.appendChild(el);
+        });
       });
 
       describe("with id", () => {

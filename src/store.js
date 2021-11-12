@@ -1390,7 +1390,6 @@ function valueWithValidation(
   return defaultValue;
 }
 
-const draftConfigs = new WeakMap();
 function store(Model, options = {}) {
   const config = bootstrap(Model);
 
@@ -1405,6 +1404,7 @@ function store(Model, options = {}) {
     );
   }
 
+  let draft;
   if (options.draft) {
     if (config.list) {
       throw TypeError(
@@ -1412,27 +1412,21 @@ function store(Model, options = {}) {
       );
     }
 
-    let draft = draftConfigs.get(config);
-    if (!draft) {
-      draft = bootstrap({
-        ...Model,
-        [connect]: {
-          get(id) {
-            const model = get(config.model, id);
-            return pending(model) || model;
-          },
-          set(id, values) {
-            return values === null ? { id } : values;
-          },
+    draft = bootstrap({
+      ...Model,
+      [connect]: {
+        get(id) {
+          const model = get(config.model, id);
+          return pending(model) || model;
         },
-      });
+        set(id, values) {
+          return values === null ? { id } : values;
+        },
+      },
+    });
 
-      draftConfigs.set(config, draft);
-      draftMap.set(draft, config);
-    }
-
+    draftMap.set(draft, config);
     Model = draft.model;
-    options.draft = draft;
   }
 
   if (!options.id && config.enumerable) {
@@ -1441,15 +1435,21 @@ function store(Model, options = {}) {
         const valueConfig = definitions.get(value);
         const id = valueConfig !== undefined ? value.id : value;
 
-        if (options.draft && (value === undefined || value === null)) {
-          const draftModel = options.draft.create({}, { id: undefined });
-          syncCache(options.draft, undefined, draftModel, false);
+        if (draft && (value === undefined || value === null)) {
+          const draftModel = draft.create({}, { id: undefined });
+          syncCache(draft, undefined, draftModel, false);
           return get(Model, undefined);
         }
 
         return value ? get(Model, id) : undefined;
       },
       set: (_, v) => v,
+      connect: draft
+        ? (host, key) => () => {
+            const model = host[key];
+            if (model && model.id) clear(model, true);
+          }
+        : undefined,
     };
   }
 
@@ -1457,9 +1457,9 @@ function store(Model, options = {}) {
     get: (host, value) => {
       const id = (options.id && options.id(host)) || (value && value.id);
 
-      if (options.draft && !id && (value === undefined || value === null)) {
-        const draftModel = options.draft.create({});
-        syncCache(options.draft, undefined, draftModel, false);
+      if (draft && !id && (value === undefined || value === null)) {
+        const draftModel = draft.create({});
+        syncCache(draft, undefined, draftModel, false);
         return get(Model, undefined);
       }
 
@@ -1475,7 +1475,14 @@ function store(Model, options = {}) {
 
       return nextValue;
     },
-    set: options.draft && !config.enumerable ? (_, v) => v : undefined,
+    set: draft && !config.enumerable ? (_, v) => v : undefined,
+    connect:
+      draft && config.enumerable
+        ? (host, key) => () => {
+            const model = host[key];
+            if (model && model.id) clear(model, true);
+          }
+        : undefined,
   };
 }
 
