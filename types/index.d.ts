@@ -185,7 +185,7 @@ declare module "hybrids" {
     multiple?: boolean;
     dialog?: boolean;
     replace?: boolean;
-    stack?: HybridsBase[];
+    stack?: HybridsBase[] | (() => HybridsBase[]);
     guard?: () => boolean;
   }
 
