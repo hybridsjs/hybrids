@@ -587,7 +587,17 @@ function setupModel(Model, nested) {
                     }
                     resultModel = nestedData;
                   } else {
-                    resultModel = nestedConfig.create(nestedData);
+                    const lastNestedModel = cache.getEntry(
+                      nestedConfig,
+                      data[key].id,
+                    ).value;
+                    resultModel = nestedConfig.create(
+                      nestedData,
+                      lastNestedModel &&
+                        nestedConfig.isInstance(lastNestedModel)
+                        ? lastNestedModel
+                        : undefined,
+                    );
                     syncCache(nestedConfig, resultModel.id, resultModel);
                   }
                 }
@@ -775,7 +785,15 @@ function setupListModel(Model, nested) {
                 throw TypeError("Model instance must match the definition");
               }
             } else {
-              model = modelConfig.create(data);
+              const lastModel =
+                modelConfig.enumerable &&
+                cache.getEntry(modelConfig, data.id).value;
+              model = modelConfig.create(
+                data,
+                lastModel && modelConfig.isInstance(lastModel)
+                  ? lastModel
+                  : undefined,
+              );
               if (modelConfig.enumerable) {
                 id = model.id;
                 syncCache(modelConfig, id, model, invalidate);
