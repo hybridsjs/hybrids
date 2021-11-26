@@ -117,7 +117,7 @@ function property(key, desc) {
     },
     set: (host, value) => setAttr(host, transform(value)),
     connect(host, _, invalidate) {
-      if (host[key] === defaultValue) {
+      if (!host.hasAttribute(attrName) && host[key] === defaultValue) {
         setAttr(host, defaultValue);
       }
 
