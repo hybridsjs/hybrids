@@ -1,47 +1,102 @@
+<center>
 <h1>
   <img alt="hybrids - the web components" src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-full-logo.svg?sanitize=true" width="350" align="center">
-  <br/>
 </h1>
+</center>
 
 [![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
 [![build status](https://img.shields.io/travis/hybridsjs/hybrids/master.svg?style=flat)](https://app.travis-ci.com/github/hybridsjs/hybrids)
 [![coverage status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=master)
 
-**hybrids** is a UI library for creating [web components](https://www.webcomponents.org/) with unique declarative and functional approach based on plain objects and pure functions.
-
-* **The simplest definition** — just plain objects and pure functions - no `class` and `this` syntax
-* **No global lifecycle** — independent properties with own simplified lifecycle methods
-* **Composition over inheritance** — easy re-use, merge or split property descriptors
-* **Super fast recalculation** — smart cache and change detection mechanisms
-* **Global state management** - model definitions with support for external storages
-* **Templates without external tooling** — template engine based on tagged template literals
-* **Developer tools included** — HMR support out of the box for a fast and pleasant development
+A JavaScript framework for creating fully-featured web applications, components libraries, or even single web components with unique declarative and functional architecture.
 
 ## Quick Look
 
-```html
-<script type="module">
-  import { html, define } from 'https://unpkg.com/hybrids@^6';
+### Component Model
+
+The component model is based on plain objects and pure functions*, still using the [Web Components API](https://developer.mozilla.org/en-US/docs/Web/Web_Components) under the hood:
+
+```javascript
+import { html, define } from "hybrids";
   
-  function increaseCount(host) {
-    host.count += 1;
-  }
+function increaseCount(host) {
+  host.count += 1;
+}
 
-  define({
-    tag: "simple-counter",
-    count: 0,
-    render: ({ count }) => html`
-      <button onclick="${increaseCount}">
-        Count: ${count}
-      </button>
-    `,
-  });
-</script>
-
-<simple-counter count="10"></simple-counter>
+export default define({
+  tag: "simple-counter",
+  count: 0,
+  render: ({ count }) => html`
+    <button onclick="${increaseCount}">
+      Count: ${count}
+    </button>
+  `,
+});
 ```
 
 [![Edit <simple-counter> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/simple-counter-web-component-built-with-hybrids-library-co2ow?file=/src/SimpleCounter.js)
+
+<small>\* Pure functions only apply to the component definition. Side effects attached to event listeners might mutate the host element.</small>
+
+You can read more in the [Component Model](/component-model/definition.md) section of the documentation.
+
+### Store
+
+The store provides global state management based on declarative model definitions with built-in support for async external storage, relations, offline caching, and many more.
+
+It follows the declarative architecture to simplify the process of defining and using data structures in the component definition:
+
+```javascript
+import { define, store, html } from "hybrids";
+
+const User = {
+  id: true,
+  firstName: "",
+  lastName: "",
+  [store.connect] : {
+    get: id => fetch(`/users/${id}`).then(res => res.json()),
+  },
+};
+
+define({
+  tag: "my-user-details",
+  user: store(User),
+  render: ({ user }) => html`
+    <div>
+      ${store.pending(user) && `Loading...`}
+      ${store.error(user) && `Something went wrong...`}
+
+      ${store.ready(user) && html`
+        <p>${user.firstName} ${user.lastName}</p>
+      `}
+    </div>
+  `,
+});
+```
+
+You can read more in the [Store](/store/overview.md) section of the documentation.
+
+### Router
+
+The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the component definitions.
+
+```javascript
+import { define, html, router } from "hybrids";
+
+import Home from "./views/Home.js";
+
+export define({
+  tag: "my-app",
+  views: router(Home),
+  content: ({ views }) => html`
+    <my-app-layout>
+      ${views}
+    </my-app-layout>
+  `,
+});
+```
+
+You can read more in the [Router](/router/usage.md) section of the documentation.
 
 ## Community
 

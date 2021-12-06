@@ -1,2 +1,2 @@
-- [API Reference](/misc/api-reference.md)
+- [API Reference](/other/api-reference.md)
 - [Changelog](/CHANGELOG.md)

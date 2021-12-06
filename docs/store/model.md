@@ -1,12 +1,12 @@
 # Model
 
-The model definition is based on plain object with a JSON-like structure of default values for the instances. Each definition creates its own global space for the data. The store identifies the space by the reference to the definition, so no register step is required, which should be done programmatically. You just define the model structure, and start using it with the store.
+The model definition is based on a plain object with a JSON-like structure of default values for the instances. Each definition creates its own global space for the data. The store identifies the space by reference to the definition, so no register step is required, which should be done programmatically. You just define the model structure and start using it with the store.
 
-The model can represents a singleton with only one instance, or it can have multiple instances with unique identifiers. Each instance of the model is immutable, so updating its state always produces a new version of the model. However, models can reference each other. The instance itself does not have to be updated if its related model changes - the immutable are only the bounds, not the values.
+The model can represent a singleton with only one instance, or it can have multiple instances with unique identifiers. Each instance of the model is immutable, so updating its state always produces a new version of the model. However, models can reference each other. The instance itself does not have to be updated if its related model changes - the immutable is only the bound, not the value.
 
 ## Type
 
-The store supports three types of the models:
+The store supports three types of models:
 
 * Singleton with only one instance
 * Enumerables with multiple instances
@@ -23,7 +23,7 @@ const Model = {
 }
 ```
 
-The `id` property indicates if the model has multiple instances, or it is a singleton. The only valid value for the `id` field is `true`. Otherwise, it should not be defined. For example, you may need only one instance of the `Profile` model of the current logged in user, but it can reference an enumerable `User` model.
+The `id` property indicates if the model has multiple instances, or it is a singleton. The only valid value for the `id` field is `true`. Otherwise, it should not be defined. For example, you may need only one instance of the `Profile` model of the currently logged-in user, but it can reference an enumerable `User` model.
 
 ```javascript
 const User = {
@@ -46,7 +46,7 @@ The value for the identifier can be a `string`, or an `object` record (a map of 
 const result = store.get(SearchResult, { query: "some", order: "desc" });
 ```
 
-By default, the store generates identifier for enumerable models by the UUIDv4 generator. It means that memory-based models have unique ids out of the box. The external storage can use client-side generated id or return own identifier.
+By default, the store generates an identifier for enumerable models by the UUIDv4 generator. It means that memory-based models have unique ids out of the box. The external storage can use client-side generated id or return own identifier.
 
 ```javascript
 const Model = {
@@ -63,9 +63,9 @@ store.set(Model, { value: "test" }).then(model => {
 
 ### Listing Enumerables
 
-The model definition must be a plain object by the design. However, the store supports a special type, which returns an array with a list of model instances. This type is represented by the enumerable model wrapped in the array - `[Model]`. It creates own space for the data, and it can have multiple instances identified by a `string` or an `object` record just like other model definitions. For memory-based models it always returns all instances of the definition, but it can be also used for models with external storage where the result depends on `list` action (read more in [Storage](./storage.md) section).
+The model definition must be a plain object by the design. However, the store supports a special type, which returns an array with a list of model instances. This type is represented by the enumerable model wrapped in the array - `[Model]`. It creates its own space for the data, and it can have multiple instances identified by a `string` or an `object` record just like other model definitions. For memory-based models, it always returns all instances of the definition, but it can be also used for models with external storage where the result depends on the `list` action (read more in [Storage](./storage.md) section).
 
-Wrapped definition creates the reference, so the listing does not have to be defined before usage. It will always reference the same definition:
+The wrapped definition creates the reference, so the listing does not have to be defined before usage. It will always reference the same definition:
 
 ```javascript
 store.get([Model]) === store.get([Model])
@@ -102,7 +102,7 @@ The listing type respects `cache` and `loose` options of the storage. By default
 
 #### Metadata
 
-If the listing requires additional metadata (like pagination, offset, etc.), you should create a separate model definition with a nested array of required models. It's likely that you should set `loose` option for the relation to the base model, as a change of the model instance might invalidate order or appearance in the result list.
+If the listing requires additional metadata (like pagination, offset, etc.), you should create a separate model definition with a nested array of required models. You should likely set the `loose` option for the relation to the base model, as a change of the model instance might invalidate the order of appearance in the result list.
 
 ```javascript
 const TodoList = {
@@ -115,7 +115,7 @@ const TodoList = {
 
 ## Structure
 
-The model definition allows subset of the JSON standard with minor changes. The model instance serializes to a form, which can be sent over the network without additional modification.
+The model definition allows a subset of the JSON standard with minor changes. The model instance serializes to a form, which can be sent over the network without additional modification.
 
 ### Primitive Value
 
@@ -132,9 +132,9 @@ The model definition supports primitive values of `string`, `number`, or `boolea
 
 #### Validation
 
-The store supports client-side validation for `string` and `number` primitive values, which is called for `store.set()` action. If it fails, the instance won't be updated, and error will be attached to the instance. The rejected `Error` instance contains `err.errors` object, where all of the validation errors are listed by the property names (you can read more about how to use it in the [Usage](./usage.md#draft-mode) section).
+The store supports client-side validation for `string` and `number` primitive values, which is called for `store.set()` action. If it fails, the instance won't be updated, and an error will be attached to the instance. The rejected `Error` instance contains the `err.errors` object, where all of the validation errors are listed by the property names (you can read more about how to use it in the [Usage](./usage.md#draft-mode) section).
 
-To set property with the validation use `store.value()` method instead of passing the default value directly:
+To set the property with the validation use the` store.value()` method instead of passing the default value directly:
 
 ```javascript
 const Model = {
@@ -211,15 +211,15 @@ const Model = {
 };
 ```
 
-If the nested object is a model definition with `id` property or it is connected to the storage, the store creates a dynamic binding to the model instance. Instead of setting value in-place, the property is set as a getter, which calls the store for a model instance by the id (for singletons, the identifier is always set to `undefined`). Keep in mind that it is a one way relation. Only the parent model creates a connection to the nested model. The related model does not know about the connection out of the box - it has only properties defined in its definition.
+If the nested object is a model definition with `id` property or it is connected to the storage, the store creates a dynamic binding to the model instance. Instead of setting value in-place, the property is set as a getter, which calls the store for a model instance by the id (for singletons, the identifier is always set to `undefined`). Keep in mind that it is a one-way relation. Only the parent model creates a connection to the nested model. The related model does not know about the connection out of the box - it has only properties defined in its definition.
 
-The parent model storage can provide a model instance data or a valid identifier (object records are not supported for nested objects - they are interpreted as data source). Object data will update nested model instance. Otherwise, the identifier will be saved in the parent model. After all, calling that property will invoke the store to get a proper model instance by its definition. It means that you can create relations between storages, which don't share data. The store will take care to get the model instance for you.
+The parent model storage can provide a model instance data or a valid identifier (object records are not supported for nested objects - they are interpreted as data sources). Object data will update the nested model instance. Otherwise, the identifier will be saved in the parent model. After all, calling that property will invoke the store to get a proper model instance by its definition. It means that you can create relations between storages, which don't share data. The store will take care to get the model instance for you.
 
 To remove the relation, set the property to `null` or `undefined` (it only removes the relation, not the related model). In that case, the value of the nested external object will be set to `undefined`.
 
 ### Nested Array
 
-The store supports nested arrays in a similar way to the nested objects described above. The first item of the array represents the type of structure - internal (primitives or object structures), or external reference to enumerable model definitions (by the `id` property). Updating the nested array must provide a new version of the array. You cannot change a single item from the array in-place.
+The store supports nested arrays in a similar way to the nested objects described above. The first item of the array represents the type of structure - internal (primitives or object structures), or external reference to enumerable model definitions (by the `id` property). Updating the nested array must provide a new version of the array. You cannot change a single item from the array in place.
 
 #### Primitives or Nested Objects (Internal)
 
@@ -247,7 +247,7 @@ const Model = {
 };
 ```
 
-If the first item of the array is an enumerable model definition, the property represents a list of external model instances mapped by their ids. The second item is an optional options object with `loose` option.
+If the first item of the array is an enumerable model definition, the property represents a list of external model instances mapped by their ids. The second item is the optional options object with the `loose` option.
 
 The parent model's storage may provide a list of data for model instances or a list of identifiers. The update process and binding between models work the same as for a single external nested object.
 
@@ -255,7 +255,7 @@ The parent model's storage may provide a list of data for model instances or a l
 
 By default, the store does not invalidate the cached value of the model instance when nested in the array external model changes. Because of the nature of the binding between models, when the nested model updates its state, the change will be reflected without a need to update the parent model's state.
 
-However, the list value might be related to the current state of nested models. For example, the model definition representing a paginated structure ordered by name must update when one of the nested model changes. After the change, the result pages might have a different content. To support that case, you can pass a second object to the nested array definition with `loose` option:
+However, the list value might be related to the current state of nested models. For example, the model definition representing a paginated structure ordered by name must update when one of the nested models changes. After the change, the result pages might have different content. To support that case, you can pass a second object to the nested array definition with the `loose` option:
 
 ```javascript
 import { store } from 'hybrids';
@@ -274,11 +274,11 @@ const pageOne = store.get(UserList, { page: 1, query: '' });
 store.set(pageOne.users[0], { name: 'New name' });
 ```
 
-To prevent an endless loop of fetching data, the cached value of the parent model instance only invalidates if the `store.set` method is used. Updating the state of the nested model definition by fetching new values with `store.get` action won't invalidate the parent model. Get action still respects the `cache` option of the parent storage. If you need a high rate of accuracy of the external data, you should set a very low value of the `cache` option in the storage, or even set it to `false`.
+To prevent an endless loop of fetching data, the cached value of the parent model instance only invalidates if the `store.set` method is used. Updating the state of the nested model definition by fetching new values with the `store.get` action won't invalidate the parent model. Get action still respects the `cache` option of the parent storage. If you need a high rate of accuracy of the external data, you should set a very low value of the `cache` option in the storage, or even set it to `false`.
 
 ### Self Reference & Import Cycles
 
-The model definition is based on the plain object definition, so by the JavaScript constraints, it is not possible to create property, which is a model definition of itself, or use definition from another ES module, which depends on the source file. In those situations you can use `store.ref(fn)` method, which sets property to the result of passed function in time of the definition (when model definition is used for the first time).
+The model definition is based on the plain object definition, so by the JavaScript constraints, it is not possible to create a property, which is a model definition of itself, or use the definition from another ES module, which depends on the source file. In those situations, you can use the `store.ref(fn)` method, which sets a property to the result of the passed function in time of the definition (when the model definition is used for the first time).
 
 ```typescript
 store.ref(fn: () => Property): fn;
@@ -297,4 +297,4 @@ const Model = {
 };
 ```
 
-In the above example, the `Model` defines a connected list structure, where each instance can reference to the same definition.
+In the above example, the `Model` defines a connected list structure, where each instance can reference the same definition.

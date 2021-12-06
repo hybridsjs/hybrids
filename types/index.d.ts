@@ -52,20 +52,20 @@ declare module "hybrids" {
 
   /* Define */
 
-  function define<E>(hybrids: Hybrids<E>): typeof hybrids;
+  function define<E>(component: Hybrids<E>): typeof component;
 
   namespace define {
-    function compile<E>(hybrids: Hybrids<E>): HybridElement<E>;
+    function compile<E>(component: Hybrids<E>): HybridElement<E>;
   }
 
   /* Factories */
 
   function parent<E, V>(
-    hybridsOrFn: Hybrids<V> | ((hybrids: Hybrids<E>) => boolean),
+    componentOrFn: Hybrids<V> | ((component: Hybrids<E>) => boolean),
   ): Descriptor<E, V>;
 
   function children<E, V>(
-    hybridsOrFn: Hybrids<V> | ((hybrids: Hybrids<E>) => boolean),
+    componentOrFn: Hybrids<V> | ((component: Hybrids<E>) => boolean),
     options?: { deep?: boolean; nested?: boolean },
   ): Descriptor<E, V>;
 
@@ -194,7 +194,6 @@ declare module "hybrids" {
     options?: {
       url?: string;
       params?: Array<keyof E>;
-      debug?: boolean;
     },
   ): Descriptor<E, HTMLElement[]>;
 

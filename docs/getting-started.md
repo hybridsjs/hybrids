@@ -1,6 +1,6 @@
-# Installation
+# Getting Started
 
-The recommended way is to add [npm package](https://www.npmjs.com/package/hybrids) to your application:
+The recommended way to use the library is to add [npm package](https://www.npmjs.com/package/hybrids) to your application:
 
 ```bash
 npm i hybrids
