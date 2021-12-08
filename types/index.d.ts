@@ -25,12 +25,12 @@ declare module "hybrids" {
     (host: E & HTMLElement): UpdateFunction<E>;
   }
 
-  type HybridsBase = {
+  type ComponentBase = {
     tag: string;
     __router__connect__?: ViewOptions;
   };
 
-  type Hybrids<E> = HybridsBase &
+  type Component<E> = ComponentBase &
     {
       [property in Extract<
         keyof Omit<E, keyof HTMLElement>,
@@ -52,20 +52,20 @@ declare module "hybrids" {
 
   /* Define */
 
-  function define<E>(component: Hybrids<E>): typeof component;
+  function define<E>(component: Component<E>): typeof component;
 
   namespace define {
-    function compile<E>(component: Hybrids<E>): HybridElement<E>;
+    function compile<E>(component: Component<E>): HybridElement<E>;
   }
 
   /* Factories */
 
   function parent<E, V>(
-    componentOrFn: Hybrids<V> | ((component: Hybrids<E>) => boolean),
+    componentOrFn: Component<V> | ((component: Component<E>) => boolean),
   ): Descriptor<E, V>;
 
   function children<E, V>(
-    componentOrFn: Hybrids<V> | ((component: Hybrids<E>) => boolean),
+    componentOrFn: Component<V> | ((component: Component<E>) => boolean),
     options?: { deep?: boolean; nested?: boolean },
   ): Descriptor<E, V>;
 
@@ -185,12 +185,15 @@ declare module "hybrids" {
     multiple?: boolean;
     dialog?: boolean;
     replace?: boolean;
-    stack?: HybridsBase[] | (() => HybridsBase[]);
+    stack?: ComponentBase[] | (() => ComponentBase[]);
     guard?: () => boolean;
   }
 
   function router<E>(
-    views: HybridsBase | HybridsBase[] | (() => HybridsBase | HybridsBase[]),
+    views:
+      | ComponentBase
+      | ComponentBase[]
+      | (() => ComponentBase | ComponentBase[]),
     options?: {
       url?: string;
       params?: Array<keyof E>;
@@ -211,7 +214,7 @@ declare module "hybrids" {
     };
 
     function url<E>(
-      view: HybridsBase,
+      view: ComponentBase,
       params?: UrlParams<E> & UrlOptions,
     ): URL | "";
 
@@ -220,7 +223,7 @@ declare module "hybrids" {
     function currentUrl<E>(params?: UrlParams<E> & UrlOptions): URL | "";
 
     function active(
-      views: HybridsBase | HybridsBase[],
+      views: ComponentBase | ComponentBase[],
       options?: { stack?: boolean },
     ): boolean;
 
