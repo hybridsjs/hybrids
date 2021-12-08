@@ -1,6 +1,6 @@
 <center>
 <h1>
-  <img alt="hybrids - the web components" src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-full-logo.svg?sanitize=true" width="350" align="center">
+  <img alt="hybrids" src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-full-logo.svg?sanitize=true" align="center">
 </h1>
 </center>
 

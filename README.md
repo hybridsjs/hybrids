@@ -1,6 +1,7 @@
+
 <center>
 <h1>
-  <img alt="hybrids - A JavaScript framework for creating fully-featured web applications, components libraries, or single web components with unique declarative and functional architecture" src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-full-logo.svg?sanitize=true" width="350" align="center">
+  <img alt="" src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-full-logo.svg?sanitize=true" align="center">
 </h1>
 </center>
 
