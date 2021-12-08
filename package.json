@@ -1,6 +1,6 @@
 {
   "name": "hybrids",
-  "version": "6.1.0",
+  "version": "7.0.0",
   "description": "The simplest way to create web components with plain objects and pure functions!",
   "type": "module",
   "sideEffects": false,

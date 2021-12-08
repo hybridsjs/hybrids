@@ -2,6 +2,59 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.0.0](https://github.com/hybridsjs/hybrids/compare/v6.1.0...v7.0.0) (2021-12-08)
+
+### ⚠ BREAKING CHANGES
+
+This major release comes with several breaking changes, which may affect your code. Follow the instructions from the [Migration to 7.x](/migration-to-7.md) section in the documentation.
+
+### Features
+
+* **router:** add debug mode ([991e46b](https://github.com/hybridsjs/hybrids/commit/991e46bbc5de1b22d6197efaa2c8f0607e256ecb))
+* simplify component structure by multiple refactors ([#179](https://github.com/hybridsjs/hybrids/issues/179)) ([6b7b412](https://github.com/hybridsjs/hybrids/commit/6b7b41219dc2bf03980ad3ff5648615ed9e45453))
+* **router:** router factory ([#136](https://github.com/hybridsjs/hybrids/issues/136)) ([f6bcb24](https://github.com/hybridsjs/hybrids/commit/f6bcb241ff9d3298ef1e76d88f34e574f955b71c))
+
+
+### Bug Fixes
+
+* **cache:** don't clear cached values when clean context ([f0cd683](https://github.com/hybridsjs/hybrids/commit/f0cd683c369eaa726f66a569aaca9f083ca91a53))
+* **define:** add attr check in condition for perf. improv. ([7f969bf](https://github.com/hybridsjs/hybrids/commit/7f969bfe522a01df4911deaf1ac55fd87f8cae15))
+* **define:** add strict mapping for array of strings ([28a4d5a](https://github.com/hybridsjs/hybrids/commit/28a4d5a49bfcae2d4822c1b25ff73ab2bb1ec79a))
+* **define:** remove suppor for undefined value ([6664c5b](https://github.com/hybridsjs/hybrids/commit/6664c5bfbf0640b13869a31ddd0e0550e1ef7621))
+* **define:** revert support for undefined value ([892c1ab](https://github.com/hybridsjs/hybrids/commit/892c1ab8cd971d25a183bec5f54b1f4fa7927b2c))
+* **define:** simplify values and use get/set methods for computed properties ([5452a9f](https://github.com/hybridsjs/hybrids/commit/5452a9fd61bbe970ca8abff82ae9b1acbf2c3a52))
+* **html:** clean unused condition for node resolver ([740395b](https://github.com/hybridsjs/hybrids/commit/740395b924829cbd460f96e813ea4a0657348b39))
+* **router:** apply all params in url for nested entries ([6793d09](https://github.com/hybridsjs/hybrids/commit/6793d092e09cb8477020024f27b8fef21a271a70))
+* **router:** avoid setting undefined in history state, clearer debug message ([f3bf387](https://github.com/hybridsjs/hybrids/commit/f3bf387c0b082b5d5cc0c7a2f6be5f08cb0d05ec))
+* **router:** collapsed debug, clear hash from url, update not defaults ([d067560](https://github.com/hybridsjs/hybrids/commit/d06756037774c13e8f80c7bd4785285431291798))
+* **router:** debug method with value, cleaner debug logs ([a98b16a](https://github.com/hybridsjs/hybrids/commit/a98b16a9b513179df568f7e98d3060c875aaaa4e))
+* **router:** delay the scroll restoration for the render process ([cecab42](https://github.com/hybridsjs/hybrids/commit/cecab42763e06ce23d37028a0e973dbe6ff46f88))
+* **router:** observe writable props and update entry state ([4a49192](https://github.com/hybridsjs/hybrids/commit/4a49192eaf36abc5da9c044b12272d245488f5d8))
+* **router:** refactor matching browser url function ([438c74c](https://github.com/hybridsjs/hybrids/commit/438c74c5c58c9daf3d12cc3042c0ac5ba5d1e0a1))
+* **router:** resolve event  returns passed promise ([cda672d](https://github.com/hybridsjs/hybrids/commit/cda672db72bfbd1fef68b035925fe96f098cbc90))
+* **router:** update url and state only when needed ([ddded3b](https://github.com/hybridsjs/hybrids/commit/ddded3b69c3de9b6cec44a27ea7f5a2128a748df))
+* **router:** use full url as a default option value ([47d302d](https://github.com/hybridsjs/hybrids/commit/47d302d7e83ab826e1c10659b17eccd22df7f78e))
+* **router:** use hash from url only when view id is detected ([1755736](https://github.com/hybridsjs/hybrids/commit/1755736fa740fc7646e581ffcb2d1f2a5f30f7a4))
+* **store:** correct prototype for mapping state of the model in store factory ([a7eb601](https://github.com/hybridsjs/hybrids/commit/a7eb601f96098280632d9a21c90682d0365bfb5b))
+* **store:** detect circular references in offline serialization ([6902784](https://github.com/hybridsjs/hybrids/commit/69027849bc69b9bde0fc99d95bad7fb20110705e))
+* **store:** factory with id resolving to undefined, draft models without id ([83bcc1d](https://github.com/hybridsjs/hybrids/commit/83bcc1da60847e6ab443287c1fd4e783de2c47c2))
+* **store:** freeze default export ([1f555d1](https://github.com/hybridsjs/hybrids/commit/1f555d15665ea41c6ab983ee764c172e61d53883))
+* **store:** make factory writable only for enumerables with `id` option ([c220efc](https://github.com/hybridsjs/hybrids/commit/c220efc358f25ce834a6801f7c4e5f92b7b32c64))
+* **store:** merge nested model data when it is updated ([cc3c735](https://github.com/hybridsjs/hybrids/commit/cc3c735450c5ae9eee6257a7e52092aa1c107228))
+* **store:** remove support for shorter options syntax ([ee6ff70](https://github.com/hybridsjs/hybrids/commit/ee6ff7024e44aa2c5b450a4ca87a5786162673cc))
+* **store:** return null for enumerables without id ([82b0c9a](https://github.com/hybridsjs/hybrids/commit/82b0c9a146e86be1372e1dc96162cef63bca75c2))
+* **store:** show only nested error if the property is set ([f9ddd5c](https://github.com/hybridsjs/hybrids/commit/f9ddd5cefb1a06f5662734386876d45710e0f944))
+* **store:** use attribute fallback for enumerables in factory without options ([c06b0ba](https://github.com/hybridsjs/hybrids/commit/c06b0bab11ed5639256df26ff5bde60be005ded9))
+* **store:** use cache layer for computed property to ensure correct value when related model has changed ([1524161](https://github.com/hybridsjs/hybrids/commit/1524161f592a34bebfb6702ea0bd195746c3325c))
+* **store:** use correctly the value from singleton draft model ([11ff0e1](https://github.com/hybridsjs/hybrids/commit/11ff0e131c59d5a676fbaa389c2fc1b30837076f))
+* **store:** use predefined error message over the result of validate function ([0ecf6da](https://github.com/hybridsjs/hybrids/commit/0ecf6da344e7a56c85083b2666789f42c8f2b95b))
+* **store:** use saparate space for drafts, clear models with id ([de18b0e](https://github.com/hybridsjs/hybrids/commit/de18b0e24f99149f13ba6726989040a67def185c))
+* **store:** use undefined over the null value for factory ([9f58c99](https://github.com/hybridsjs/hybrids/commit/9f58c991ba8e1e3ecb0d6047293335febfcc9d40))
+* **types:** add missing function resolver for stack option ([d199d94](https://github.com/hybridsjs/hybrids/commit/d199d941c5cec6f543728f2f26ba5e36c218eb81))
+* **types:** Rename Hybrids type to Component ([cf15619](https://github.com/hybridsjs/hybrids/commit/cf1561935f5faedd12c3b443be1e2eb8d60558a3))
+* **types:** store storage result with optional fields and id references ([de96721](https://github.com/hybridsjs/hybrids/commit/de967218e58156394c9fd10df48ca26051f2ddd6))
+* **types:** update types according to redefine refactor ([a2f4921](https://github.com/hybridsjs/hybrids/commit/a2f4921bdb265a610d481a0737a0501d2b4e1559))
+
 ## [6.1.0](https://github.com/hybridsjs/hybrids/compare/v6.0.0...v6.1.0) (2021-08-30)
 
 
