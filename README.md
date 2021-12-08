@@ -1,6 +1,6 @@
 <center>
 <h1>
-  <img alt="hybrids - A JavaScript framework for creating fully-featured web applications, components libraries, or even single web components with unique declarative and functional architecture" src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-full-logo.svg?sanitize=true" width="350" align="center">
+  <img alt="hybrids - A JavaScript framework for creating fully-featured web applications, components libraries, or single web components with unique declarative and functional architecture" src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-full-logo.svg?sanitize=true" width="350" align="center">
 </h1>
 </center>
 
@@ -8,7 +8,7 @@
 [![build status](https://img.shields.io/travis/hybridsjs/hybrids/master.svg?style=flat)](https://app.travis-ci.com/github/hybridsjs/hybrids)
 [![coverage status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=master)
 
-A JavaScript framework for creating fully-featured web applications, components libraries, or even single web components with unique declarative and functional architecture.
+A JavaScript framework for creating fully-featured web applications, components libraries, or single web components with unique declarative and functional architecture.
 
 ## Quick Look
 
@@ -38,7 +38,7 @@ export default define({
 
 <small>\* Pure functions only apply to the component definition. Side effects attached to event listeners might mutate the host element.</small>
 
-You can read more in the [Component Model](/component-model/definition.md) section of the documentation.
+You can read more in the [Component Model](https://hybrids.js.org/#/component-model/definition.md) section of the documentation.
 
 ### Store
 
@@ -74,7 +74,7 @@ define({
 });
 ```
 
-You can read more in the [Store](/store/overview.md) section of the documentation.
+You can read more in the [Store](https://hybrids.js.org/#/store/overview.md) section of the documentation.
 
 ### Router
 
@@ -96,16 +96,7 @@ export define({
 });
 ```
 
-You can read more in the [Router](/router/usage.md) section of the documentation.
-
-## Community
-
-* Follow on [Twitter](https://twitter.com/hybridsjs)
-* Chat on [Gitter](https://gitter.im/hybridsjs)
-
-## License
-
-`hybrids` is released under the [MIT License](LICENSE).
+You can read more in the [Router](https://hybrids.js.org/#/router/usage.md) section of the documentation.
 
 ## Documentation
 
