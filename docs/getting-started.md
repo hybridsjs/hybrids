@@ -12,7 +12,7 @@ You can use the library directly from the [unpkg.com/hybrids](https://unpkg.com/
 
 ```html
 <script type="module">
-  import { html, define } from 'https://unpkg.com/hybrids@^5';
+  import { html, define } from 'https://unpkg.com/hybrids@^7';
   ...
 </script>
 ```

@@ -13,8 +13,6 @@ define(component: object & { tag: string }): component;
 
 The `tag` property only describes a custom element tag name, and it is not added to the constructor prototype. However, the `HTMLElement` prototype provides a `tagName` computed property, which returns an uppercase version of the tag name.
 
-## File Structure
-
 The `define` function returns the passed definition object, so the following slick structure of the file is possible:
 
 ```javascript
