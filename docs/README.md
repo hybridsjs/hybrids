@@ -74,7 +74,7 @@ define({
 });
 ```
 
-You can read more in the [Store](/store/overview.md) section of the documentation.
+You can read more in the [Store](/store/usage.md) section of the documentation.
 
 ### Router
 

@@ -75,7 +75,7 @@ define({
 });
 ```
 
-You can read more in the [Store](https://hybrids.js.org/#/store/overview.md) section of the documentation.
+You can read more in the [Store](https://hybrids.js.org/#/store/usage.md) section of the documentation.
 
 ### Router
 
