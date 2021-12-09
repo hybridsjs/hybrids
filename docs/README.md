@@ -8,7 +8,7 @@
 [![build status](https://img.shields.io/travis/hybridsjs/hybrids/master.svg?style=flat)](https://app.travis-ci.com/github/hybridsjs/hybrids)
 [![coverage status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=master)
 
-A JavaScript framework for creating fully-featured web applications, components libraries, or single web components with unique declarative and functional architecture.
+A JavaScript framework for creating fully-featured web applications, components libraries, and single web components with unique declarative and functional architecture.
 
 ## Quick Look
 

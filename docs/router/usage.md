@@ -1,20 +1,12 @@
 # Usage
 
-The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the definitions.
+The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the definition.
 
 ## Factory
 
-```typescript
-router(views: component | component[] | () => ..., options?: object): object
-```
+The router represents the stack of views. If a user go deeper in the tree, the view is pushed to the stack. If the navigation goes backward, the stack is cleared. However, the result array returns only the current view and dialogs (on the top of the current view). The rest of the views on the stack are kept in the memory with the current state, scroll positions and the last focused element.
 
-* **arguments**:
-  * `views` - a defined component or an array of defined components. You can wrap `views` in a function to avoid using imports from uninitialized ES modules
-  * `options` - an object with following options:
-    * `url` - a string base URL used for views without own `url` option, defaults to current URL
-    * `params` - an array of property names of the element, which are passed to every view as a parameter
-* **returns**:
-  * a hybrid property descriptor, which resolves to an array of elements
+The router connects the structure of the views with the browser history, so the current stack and browser history is always in-sync. Because of the relations between the views, the router knows when to navigate forward or backward to reflect the structure.
 
 Add a property defined with the router factory to your main component of the application to display the current stack of views:
 
@@ -34,9 +26,23 @@ export define({
 });
 ```
 
-### Options
+```typescript
+router(views: component | component[] | () => ..., options?: object): object
+```
 
-#### `url`
+* **arguments**:
+  * `views` - a defined component or an array of defined components. You can wrap `views` in a function to avoid using imports from uninitialized ES modules
+  * `options` - an object with following options:
+    * `url` - a string base URL used for views without own `url` option, defaults to current URL
+    * `params` - an array of property names of the element, which are passed to every view as a parameter
+* **returns**:
+  * a hybrid property descriptor, which resolves to an array of elements
+
+### `views`
+
+Views passed to the router factory are the roots of the view structures. Usually, there is only one root view, but can be more. Deeper explanation of the view concept is in the [View](/router/view.md) section
+
+### `url`
 
 If your application uses a mixed approach - views with and without URLs, you should specify a base URL to avoid not deterministic behavior of the router for views without the URL.
 
@@ -48,7 +54,7 @@ define({
 })
 ```
 
-#### `params`
+### `params`
 
 Regardless of the explicit parameters when navigating to the view, you can specify an array of properties of the component, which are passed to every view as a parameter. They bypass the URL generation, so they contain objects, and they are not included in the URL.
 
@@ -73,15 +79,7 @@ define({
 <my-app user="123"></my-app>
 ```
 
-### Stack
-
-The current state of the router represents the stack of views. If users go deeper in the tree, the view is pushed to the stack. If the navigation goes backward, the stack is cleared. However, the result array returns only the current view and dialogs (on the top of the current view). The rest of the views on the stack are kept in the memory with the current state and scroll position of the DOM elements. Additionally, the router saves the last focused element, so it is restored when backward navigation is performed.
-
-The router connects the structure of the views with the browser history, so the current stack and browser history is always in-sync. Because of the relations between the views, the router knows when to navigate forward or backward to reflect the structure without the need to provide `navigate` or `redirect` methods.
-
-> Views, which should be put on the stack and make forward navigation, are connected to the router by the `stack` option in the `[router.connect]` configuration object in the view definition
-
-### Nesting
+### Nested Routers
 
 For complex app structures, the router factory can be used inside of the views already connected to the parent router. This feature differs from setting views in the `stack` option of the view. The nested router displays content inside of the host view as content, not a separate view in the stack.
 
