@@ -29,11 +29,11 @@ interface MyElement {
   user?: User;
 }
 
-export default define({
+export default define<MyElement>({
   tag: "my-element",
   user: store(User),
   render: ({ user }) => html`
-    ${store.ready(user) && ...}
+    ${store.ready(user) && user.name}
   `,
 });
 ```
