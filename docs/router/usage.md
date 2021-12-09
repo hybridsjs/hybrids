@@ -2,8 +2,6 @@
 
 The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the definition.
 
-## Factory
-
 The router represents the stack of views. If a user go deeper in the tree, the view is pushed to the stack. If the navigation goes backward, the stack is cleared. However, the result array returns only the current view and dialogs (on the top of the current view). The rest of the views on the stack are kept in the memory with the current state, scroll positions and the last focused element.
 
 The router connects the structure of the views with the browser history, so the current stack and browser history is always in-sync. Because of the relations between the views, the router knows when to navigate forward or backward to reflect the structure.
@@ -26,6 +24,8 @@ export define({
 });
 ```
 
+## Factory
+
 ```typescript
 router(views: component | component[] | () => ..., options?: object): object
 ```
@@ -40,7 +40,7 @@ router(views: component | component[] | () => ..., options?: object): object
 
 ### `views`
 
-Views passed to the router factory are the roots of the view structures. Usually, there is only one root view, but can be more. Deeper explanation of the view concept is in the [View](/router/view.md) section
+Views passed to the router factory create the roots of the view structures. Usually, there is only one root view, but you can pass more (navigating between roots always replaces the whole stack). You can find a deeper explanation of the view concept in the [View](/router/view.md) section.
 
 ### `url`
 
