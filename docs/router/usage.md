@@ -1,12 +1,12 @@
 # Usage
 
-The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the definition.
+The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the component definition.
 
-The router represents the stack of views. If a user go deeper in the tree, the view is pushed to the stack. If the navigation goes backward, the stack is cleared. However, the result array returns only the current view and dialogs (on the top of the current view). The rest of the views on the stack are kept in the memory with the current state, scroll positions and the last focused element.
+The router state is represented by the stack of views. If a user go deeper in the tree, the view is pushed to the stack. If the navigation goes up, the stack is cleared. However, the result stack array returns only the current view and dialogs (on the top of the current view). The rest of the views on the stack are kept in the memory with the current state, scroll positions and the last focused element.
 
-The router connects the structure of the views with the browser history, so the current stack and browser history is always in-sync. Because of the relations between the views, the router knows when to navigate forward or backward to reflect the structure.
+The stack of views is connected with the browser history, so the current stack and browser history is always in-sync. Because of the relations between the views, the router knows when to navigate forward or backward to reflect the structure.
 
-Add a property defined with the router factory to your main component of the application to display the current stack of views:
+To start using the router, just add a property defined with the router factory to your main component of the application, and display the current stack of views:
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -40,11 +40,11 @@ router(views: component | component[] | () => ..., options?: object): object
 
 ### `views`
 
-Views passed to the router factory create the roots of the view structures. Usually, there is only one root view, but you can pass more (navigating between roots always replaces the whole stack). You can find a deeper explanation of the view concept in the [View](/router/view.md) section.
+Views passed to the router factory create the roots of the view structures. Usually, there is only one root view, but you can pass a list of them (navigating between roots always replaces the whole stack). You can find a deeper explanation of the view concept in the [View](/router/view.md) section.
 
 ### `url`
 
-If your application uses a mixed approach - views with and without URLs, you should specify a base URL to avoid not deterministic behavior of the router for views without the URL.
+If your application uses a mixed approach - views with and without URLs, you should specify a base URL to avoid not deterministic behavior of the router for views without the URL. Otherwise, the router will use an entry point as a base URL (which can be different according to the use case).
 
 ```javascript
 define({
@@ -56,7 +56,7 @@ define({
 
 ### `params`
 
-Regardless of the explicit parameters when navigating to the view, you can specify an array of properties of the component, which are passed to every view as a parameter. They bypass the URL generation, so they contain objects, and they are not included in the URL.
+Regardless of the explicit parameters when navigating to the view, you can specify an array of properties of the component, which are passed to every view as a parameter. They bypass the URL generation, so they are set by the reference, and they are not included in the URL.
 
 ```javascript
 import { define, store, router } from "hybrids";
@@ -81,7 +81,7 @@ define({
 
 ### Nested Routers
 
-For complex app structures, the router factory can be used inside of the views already connected to the parent router. This feature differs from setting views in the `stack` option of the view. The nested router displays content inside of the host view as content, not a separate view in the stack.
+For complex layouts, the router factory can be used inside of the views already connected to the parent router. This feature differs from setting views in the `stack` option of the view. The nested router displays content inside of the host view as content, not a separate view in the stack.
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -118,13 +118,15 @@ app.addEventListener("navigate", onNavigate);
 
 ## Navigating
 
-The router provides a set of methods to navigate to the views. Generally, those methods generate an URL instance, which can be used in anchors as `href` attribute and form elements as an `action` attribute.
+The router provides a set of methods to navigate to the views. Generally, those methods generate an URL instance, which can be used in anchors as `href` attribute and forms as an `action` attribute.
 
 The component with the router listens to `click` and `submit` events, so when a user clicks on an anchor or submits the form, the router resolves the URL and navigates to the target view (going forward or backward in the history using the structure of views).
 
-> The `submit` event does not cross the Shadow DOM boundary, so the recommended way is to use the `content` property in component definitions for the app structure
+> The `submit` event does not cross the Shadow DOM boundary, so the recommended way is to use the `content` property in component definitions for the templates.
 
-Besides specific parameters for the view, the router navigation methods support the `scrollToTop` option in the params, which clears the main scroll position of the view when it is navigated. As the views on the stack hold scroll positions, it might be useful, if you want to force the view to scroll to the top, but it is a parent view, and it might be already in the memory.
+### `scrollToTop`
+
+Besides specific parameters for the view, the router navigation methods support the `scrollToTop` option in the params, which clears the main scroll position of the view when it is navigated. As the views on the stack hold scroll positions, it might be useful, if you want to force the view to scroll to the top, but it is a parent view, which might be already in the memory. However, if the new view is pushed to the stack, the main vertical scroll position is cleared automatically, so you don't need to use this option then.
 
 ### `router.url()`
 
@@ -190,7 +192,7 @@ router.currentUrl(params?: object): URL | ""
 * **returns**:
   * an URL instance or an empty string
 
-The `currentUrl` method generates an URL for the current view without using the definition explicitly. The parameters are the same as in the `url` method. It can be useful for reusable components, which then are used in multiple views, or for avoiding a need to create a reference to the definition in the module.
+The `currentUrl` method generates an URL for the current view without using the definition explicitly. The parameters are the same as in the `url` method. It can be useful for reusable components, which are used in multiple views, or for avoiding a need to create a reference to the definition in the module.
 
 ### `router.guardUrl()`
 
@@ -204,6 +206,8 @@ router.guardUrl(params?: object): URL | ""
   * an URL instance or an empty string
 
 The `guardUrl` method should be used in guarded views (with the `guard` function in the configuration). It dynamically chooses the target view. If the user failed to navigate to some view from the stack, this view is used. Otherwise, it defaults to the first view from the stack.
+
+You can read more about the `guard` option in the [View](./view.md#guard) section.
 
 ### `router.resolve()`
 
@@ -249,7 +253,7 @@ export default define({
 });
 ```
 
-The above dialog uses the `resolve` method when a user clicks on the `Yes` link. The router will navigate to the Users view only if the user model is successfully deleted. Otherwise, we can display an error message.
+The above dialog uses the `resolve` method when a user clicks on the `Yes` link. The router will navigate to the Users view only if the user model is successfully deleted. Otherwise, the dialog displays an error message.
 
 ### `router.active()`
 

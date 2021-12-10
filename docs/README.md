@@ -34,6 +34,10 @@ export default define({
 });
 ```
 
+```html
+<simple-counter count="42"></simple-counter>
+```
+
 [![Edit <simple-counter> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/simple-counter-web-component-built-with-hybrids-library-co2ow?file=/src/SimpleCounter.js)
 
 <small>\* Pure functions only apply to the component definition. Side effects attached to event listeners might mutate the host element.</small>
@@ -74,11 +78,15 @@ define({
 });
 ```
 
+```html
+<my-user-details user="2"></my-user-details>
+```
+
 You can read more in the [Store](/store/usage.md) section of the documentation.
 
 ### Router
 
-The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the component definitions.
+The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the component definition.
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -94,6 +102,10 @@ export define({
     </my-app-layout>
   `,
 });
+```
+
+```html
+<my-app></my-app>
 ```
 
 You can read more in the [Router](/router/usage.md) section of the documentation.

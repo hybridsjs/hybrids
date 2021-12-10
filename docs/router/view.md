@@ -22,7 +22,7 @@ export default define({
 The router uses an optional `[router.connect]` configuration property to set a number of options, including other views:
 
 ```typescript
-[router.connect]: {
+[router.connect]?: {
   stack?: component[] | () => component[];
   url?: string;
   dialog?: boolean;
@@ -92,7 +92,7 @@ The `url` option supports the following syntax:
 * The query parameters must be set explicitly by a comma-separated list: `/users?one,two,three`
 * The `*` character for wildcards is not supported, use path parameter instead
 
-Besides the parameters from the `url` option, you can pass any writable property of the view when navigating to it. However, the URL in the address bar is only updated for those from the `url` option. This behavior allows deciding which parameters can be copied and used for the entry point of the application.
+Besides the parameters from the `url` option, you can pass any writable property of the view when navigating to it. However, the URL in the address bar is only updated for those from the `url` option. This behavior allows deciding which parameters can be copied and used for the entry point of the application (all parameters are saved in the `history.state` object).
 
 The matching algorithm goes from the roots of the view structures, going from right to left in their stacks. The first matched view is used.
 
@@ -100,7 +100,7 @@ The matching algorithm goes from the roots of the view structures, going from ri
 
 If the `dialog` option is set to `true`, the view becomes a dialog, which is displayed on the top of the full-screen views rather than replacing them (still the memory stack contains all of the views). Like ordinary views, it supports using backward browser navigation. Also, the dialog can be closed by pressing the escape key. Additionally, the router traps the focus from a keyboard on the current dialog.
 
-Dialogs should be used for prompts, alerts, and messages displayed in the context of the parent view. As they don't exist standalone, the router protects from running the application with the dialog as an entry point and resolves the state to the parent view.
+Dialogs should be used for prompts, alerts, and messages displayed in the context of the parent view. As they don't exist standalone, the router protects from running the application with the dialog as an entry point and resolves the state to the parent view (it clears out the stack to the top view).
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -185,9 +185,9 @@ export default define({
 
 ### `replace`
 
-When the router navigates to the view, which is already in the stack, it only updates the instance with the new parameters. It might have a different result than loading the view from scratch because the view might have some state, which is not updated. 
+When the router navigates to the view, which is already in the stack, it only updates the instance with the new parameters. It might have a different result than loading the view from scratch because the view might have some state, which is not updated. For example, the updated store model holds the previous state until the new one is ready.
 
-For example, the updated store model holds the previous state until the new one is ready. In some cases, you might want to make a full reload of the view, still replacing the history entry. To do this, you can set the `replace` option to `true`.
+In some cases, you might want to make a full reload of the view, still replacing the history entry. To do this, you can set the `replace` option to `true`.
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -210,13 +210,15 @@ In the above example, the history entry is still replaced, but the view is loade
 
 ### `guard`
 
-The `guard` option allows specifying a function, which is called when the router is navigating to the view or children from the view's `stack`.
+The `guard` option allows specifying a synchronous function, which is called when the router is navigating to the view or children from the view's `stack`.
 
-If the user navigates directly to the view and a function returns a truthy value, the first view from the `stack` option is used, otherwise, the view itself is displayed (the `guard` can throw an error, or return falsy value).
+If the user navigates directly to the view and a function returns a truthy value, the first view from the `stack` option is used. Otherwise, the view itself is displayed (the `guard` can throw an error, or return falsy value).
 
-If the user navigates to the view from the stack, the guard function is also called, and if the condition is not met, the router navigates to the guarded view. However, the target view is saved in the history entry, so you can use the [`router.guardUrl()`](/router/usage.md#routerguardurl) method to generate the URL to the target view in guarded view content. There can be multiple guarded views on the path from the target view to the root. In that case, the router resolves guards from the deepest going up in the tree.
+If the user navigates to the view from the stack, the guard function is also called, and if the condition is not met, the router navigates to the guarded view. However, the target view is saved in the history entry, so you can use the [`router.guardUrl()`](/router/usage.md#routerguardurl) method to generate the URL to the target view in guarded view content.
 
-The `guard` function is only called while the navigation happens. The router does not call it when the view is rendered or updated. Because of that, it does not support the `host` argument, as the function is called outside of the element context. If the condition is related to some external APIs, the recommended way is to wrap it into the [store](/store/usage.md) model definition.
+There can be multiple guarded views on the path from the target view to the root. In that case, the router resolves guards from the deepest going up in the tree.
+
+The `guard` function is only called while the navigation happens. The router does not call it when the view is rendered or updated. Because of that, it does not support the `host` argument, as the function is called outside of the element context.
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -246,4 +248,32 @@ export default define({
 });
 ```
 
-To protect the application from the above example, in the main app component, the router factory should use the `Login` view as a root, instead of `Home`. The result views structure will have a new root node, which protects access to all of the stacked views.
+To protect the application from the above example, in the main app component, the router factory should use the `Login` view as a root, instead of `Home`. The views structure will have a new root node, which protects access to all of the stacked views. The rest of the structure, including the `Home` view, is untouched, so the login feature is added on top of the existing application.
+
+#### Async APIs
+
+The function requires returning the value synchronously. If your guard function relates on async calls, you must wrap the main app element with the corresponding condition, which is displayed after the calls resolve:
+
+```javascript
+import { define, html } from "hybrids";
+
+export const Session = {
+  ...,
+  [store.connect]: {
+    get() => fetch("/me").then(res => res.json()),
+    set(id, values) => ...,
+  },
+};
+
+export default define({
+  tag: "my-async-app",
+  session: store(Session),
+  content: ({ session }) => 
+    store.ready(session) || store.error(session) 
+    ? html`<my-app></my-app>`
+    : html`<app-loader>...</app-loader>`
+  ,
+});
+```
+
+When the `session` is fetched for the first time, the `<app-loader>` will be displayed instead of `<my-app>`. After the session is ready or an error occurs, the app can be rendered, so the `guard` function can synchronously check if the session is ready.
