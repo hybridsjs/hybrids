@@ -96,7 +96,10 @@ function property(key, desc) {
   const attrName = camelToDash(key);
 
   const setAttr = (host, value) => {
-    if (!value && value !== 0) {
+    if (
+      (!value && value !== 0) ||
+      (typeof value === "object" && value.toString() === undefined)
+    ) {
       host.removeAttribute(attrName);
     } else {
       host.setAttribute(attrName, type === "boolean" ? "" : value);
@@ -115,7 +118,10 @@ function property(key, desc) {
       }
       return value;
     },
-    set: (host, value) => setAttr(host, transform(value)),
+    set:
+      type !== "undefined"
+        ? (host, value) => setAttr(host, transform(value))
+        : (host, value) => value,
     connect(host, _, invalidate) {
       if (!host.hasAttribute(attrName) && host[key] === defaultValue) {
         setAttr(host, defaultValue);

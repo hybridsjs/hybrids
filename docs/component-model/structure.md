@@ -14,7 +14,7 @@ The property is accessed automatically only if it is explicitly observed by the 
 
 ### Primitives
 
-If the property value is a `string`, `boolean`, `number` or `undefined`, the library creates a writable property with a default value (using [property descriptor](#descriptors) implicitly with the `value` option).
+If the property value is a `string`, `boolean`, `number` or `undefined`, the library creates a writable property with a default value (using [property descriptor](#descriptor) implicitly with the `value` option).
 
 Except for the `undefined`, the value type is protected and proper conversion is performed when a new value is set.
 
@@ -29,11 +29,9 @@ define({
 });
 ```
 
-### Attributes
+#### Attributes
 
 All writable properties (not only primitives) use a corresponding dashed-cased attribute from the element for setting the initial value. Use the attribute only to define static values in the templates or the document, as the attribute changes are not being watched, and updating the attribute does not set the property.
-
-Still, the attribute reflects the current value of the property. It allows using its value in CSS selectors in Shadow DOM, like `:host([first-name="John"])`.
 
 Set static values in templates:
 
@@ -50,6 +48,8 @@ el.firstName = "George";
 // returns "George"
 el.getAttribute("first-name"); 
 ```
+
+However, only properties set by the primitive or the `value` descriptor with  `string`, `boolean` or `number` reflects back the current value of the property to the corresponding attribute. You can use this feature to create CSS selectors in Shadow DOM, like `:host([is-admin])`.
 
 #### Booleans
 
@@ -75,7 +75,7 @@ html`
 
 ### Computed Values
 
-If the property value is a function, the library creates a read-only property with the function as a getter (using [property descriptor](#descriptors) implicitly with `get` option), except a special behavior of the `render` and `content` properties described below.
+If the property value is a function, the library creates a read-only property with the function as a getter (using [property descriptor](#descriptor) implicitly with `get` option), except a special behavior of the `render` and `content` properties described below.
 
 The function is called with the custom element instance and last cached value of the property (read more in [`get and set`](#get-amp-set) section). Usually, the first argument is sufficient, which also can be destructured:
 
@@ -92,7 +92,7 @@ define({
 
 ### `render` & `content`
 
-If the value of the `render` or `content` property is a function, the library creates a read-only property (using [property descriptor](#descriptors) implicitly with `get` and `observe` options), which returns a function for updating the Shadow DOM or content of the custom element.
+If the value of the `render` or `content` property is a function, the library creates a read-only property (using [property descriptor](#descriptor) implicitly with `get` and `observe` options), which returns a function for updating the Shadow DOM or content of the custom element.
 
 The function is called automatically when dependencies change, but it can also be called manually, by `el.render()` or `el.content()`.
 
@@ -242,11 +242,11 @@ Regardless of the property name, for full custom control over the property behav
 
 The descriptor can be defined with the `value` option, or with `get` and `set` methods. Additionally, it supports the `connect` method for the initial setup and the `observe` method for observing changes in the property value.
 
-> All writable properties (defined with `value` option, or with `set` method) support initial value from corresponding dashed-cased attribute described in [Attributes](#attributes) section of the primitive values
+All writable properties (defined with `value` option, or with `set` method) support initial value from corresponding dashed-cased attribute described in [Attributes](#attributes) section of the primitive values.
 
 ### `value`
 
-The `value` defines a writable property, which value type must be a `string`, `boolean`, `number` or `undefined`.
+The `value` defines a writable property, which value type must be a `string`, `boolean`, `number` or `undefined`. The property uses the dashed-cased attribute for the initial value, and reflects back the value to attribute if the value is not a `undefined`.
 
 ```javascript
 import { define } from "hybrids";

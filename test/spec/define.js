@@ -174,6 +174,7 @@ describe("define:", () => {
         fullDescReadonly: {
           get: () => 0,
         },
+        notDefined: undefined,
         render: ({ prop1 }) =>
           html`<div>${prop1}</div>`, // prettier-ignore
         content: ({ prop1 }) =>
@@ -192,18 +193,21 @@ describe("define:", () => {
       expect(el.computed).toBe("0 false");
       expect(el.fullDesc).toBe("fullDesc");
       expect(el.fullDescWritable).toBe(0);
+      expect(el.notDefined).toBe(undefined);
     });
 
-    it("sets values from corresponding attributes", () => {
+    it("sets initial values from corresponding attributes", () => {
       el.setAttribute("prop1", "a");
       el.setAttribute("prop2", "2");
       el.setAttribute("prop3", "");
       el.setAttribute("full-desc-writable", "2");
+      el.setAttribute("not-defined", "abc");
 
       expect(el.prop1).toBe("a");
       expect(el.prop2).toBe(2);
       expect(el.prop3).toBe(true);
       expect(el.fullDescWritable).toEqual(4);
+      expect(el.notDefined).toEqual("abc");
     });
 
     it("updates writable properties", () => {
@@ -219,12 +223,15 @@ describe("define:", () => {
       el.fullDescWritable = 1;
       expect(el.fullDescWritable).toBe(2);
 
+      el.notDefined = "abc";
+
       document.body.appendChild(el);
 
       return resolveRaf(() => {
         expect(el.getAttribute("prop1")).toBe("a");
         expect(el.getAttribute("prop2")).toBe("1");
         expect(el.getAttribute("prop3")).toBe("");
+        expect(el.hasAttribute("not-defined")).toBe(false);
       });
     });
 
@@ -247,10 +254,23 @@ describe("define:", () => {
     it("sets corresponding attribute value for primitives properties", () => {
       document.body.appendChild(el);
 
+      el.notDefined = {};
+
       return resolveRaf(() => {
         expect(el.getAttribute("prop1")).toBe(null);
         expect(el.getAttribute("prop2")).toBe("0");
         expect(el.getAttribute("prop3")).toBe(null);
+        expect(el.getAttribute("not-defined")).toBe(null);
+      });
+    });
+
+    it("does not update property when attribute changes", () => {
+      document.body.appendChild(el);
+
+      el.setAttribute("not-defined", "abc");
+
+      return resolveRaf(() => {
+        expect(el.notDefined).toBe(undefined);
       });
     });
 
