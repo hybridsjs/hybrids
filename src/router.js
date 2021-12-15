@@ -56,28 +56,25 @@ function focusElement(target) {
 
 function restoreLayout(target) {
   const activeEl = document.activeElement;
-  const focusEl =
-    focusMap.get(target) ||
-    (rootRouter.contains(activeEl) ? activeEl : rootRouter);
 
-  focusElement(focusEl);
+  focusElement(
+    focusMap.get(target) ||
+      (rootRouter.contains(activeEl) ? activeEl : rootRouter),
+  );
 
   const map = scrollMap.get(target);
-
   if (map) {
-    Promise.resolve().then(() => {
-      const config = configs.get(target);
-      const state = window.history.state;
-      const entry = state.find(e => e.id === config.id);
-      const clear = entry && entry.params.scrollToTop;
+    const config = configs.get(target);
+    const state = window.history.state;
+    const entry = state.find(e => e.id === config.id);
+    const clear = entry && entry.params.scrollToTop;
 
-      map.forEach((pos, el) => {
-        el.scrollLeft = clear ? 0 : pos.left;
-        el.scrollTop = clear ? 0 : pos.top;
-      });
-
-      scrollMap.delete(target);
+    map.forEach((pos, el) => {
+      el.scrollLeft = clear ? 0 : pos.left;
+      el.scrollTop = clear ? 0 : pos.top;
     });
+
+    scrollMap.delete(target);
   } else {
     const rootEl = document.scrollingElement;
     rootEl.scrollLeft = 0;
