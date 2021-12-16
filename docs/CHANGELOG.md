@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.1](https://github.com/hybridsjs/hybrids/compare/v7.0.0...v7.0.1) (2021-12-16)
+
+
+### Bug Fixes
+
+* **define:** reflect back properties only for primitives ([398d92c](https://github.com/hybridsjs/hybrids/commit/398d92cbb1e459f24f40a165135f291e670ab205))
+* **router:** scroll to top on push navigation on iOS ([8a99f68](https://github.com/hybridsjs/hybrids/commit/8a99f6863accefc5fca4dc1abe6aee3b6c53c795))
+
 ## [7.0.0](https://github.com/hybridsjs/hybrids/compare/v6.1.0...v7.0.0) (2021-12-08)
 
 ### ⚠ BREAKING CHANGES
