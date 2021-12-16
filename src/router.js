@@ -855,12 +855,17 @@ function connectRootRouter(host, invalidate, options) {
       const nextState = [entry, ...state.slice(pushOffset ? 0 : 1)];
 
       window.history[method](nextState, "", nextUrl);
+      window.history.scrollRestoration = "auto";
+
       flush();
     };
+
+    window.history.scrollRestoration = "manual";
 
     if (offset) {
       window.removeEventListener("popstate", flush);
       window.addEventListener("popstate", replace);
+
       window.history.go(offset);
     } else {
       replace();
@@ -889,7 +894,6 @@ function connectRootRouter(host, invalidate, options) {
         cache.suspend(stack[0]);
         stack = stacks.get(stack[0]);
       }
-
       window.history.pushState([entry, ...state], "", url);
       flush();
     }
@@ -922,6 +926,7 @@ function connectRootRouter(host, invalidate, options) {
   if (!state) {
     const entry =
       getEntryFromURL(new URL(window.location.href)) || roots[0].getEntry();
+
     window.history.replaceState([entry], "", options.url);
     flush();
   } else {
