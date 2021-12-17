@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.3](https://github.com/hybridsjs/hybrids/compare/v7.0.2...v7.0.3) (2021-12-17)
+
+
+### Bug Fixes
+
+* **router:** restore scroll restoration when navigate ([9a6e46b](https://github.com/hybridsjs/hybrids/commit/9a6e46b423ce62bba7c73e5830352d6ceeb916a5))
+
 ### [7.0.2](https://github.com/hybridsjs/hybrids/compare/v7.0.1...v7.0.2) (2021-12-16)
 
 
