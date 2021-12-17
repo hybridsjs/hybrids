@@ -828,9 +828,17 @@ function getEntryOffset(entry) {
 }
 
 function connectRootRouter(host, invalidate, options) {
+  function restoreScrollRestoration() {
+    if (window.history.scrollRestoration === "manual") {
+      window.history.scrollRestoration = "auto";
+    }
+  }
+
   function flush() {
     resolveStack(host, window.history.state, options);
     invalidate();
+
+    requestAnimationFrame(restoreScrollRestoration);
   }
 
   function navigateBack(offset, entry, nextUrl) {
@@ -854,13 +862,14 @@ function connectRootRouter(host, invalidate, options) {
       const method = pushOffset ? "pushState" : "replaceState";
       const nextState = [entry, ...state.slice(pushOffset ? 0 : 1)];
 
+      if (pushOffset) {
+        window.history.scrollRestoration = "manual";
+      }
+
       window.history[method](nextState, "", nextUrl);
-      window.history.scrollRestoration = "auto";
 
       flush();
     };
-
-    window.history.scrollRestoration = "manual";
 
     if (offset) {
       window.removeEventListener("popstate", flush);
@@ -894,7 +903,10 @@ function connectRootRouter(host, invalidate, options) {
         cache.suspend(stack[0]);
         stack = stacks.get(stack[0]);
       }
+
+      window.history.scrollRestoration = "manual";
       window.history.pushState([entry, ...state], "", url);
+
       flush();
     }
   }
