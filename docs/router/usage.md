@@ -157,9 +157,9 @@ router.backUrl(options?: { nested?: boolean, scrollToTop?: boolean }): URL | ""
 
 The `backUrl` method is useful if you have views, which can be navigated from multiple points (the target view is listed in more than one `stack` option in the view definitions), or you create a shared layout element for the views. Then, you can use this method to generate an URL to the previous view from the stack.
 
-If the current view is the only one on the stack, the first parent of the target view is used (going from left to right in the view hierarchy). The root views return an empty string.
+If the current view is the only one on the stack, the last parent of the target view is used (going from left to right in the view hierarchy). The root views always return an empty string.
 
-The `nested` option only applies if the previous and current views use nested routing. By default, the method will skip entries in the stack, where the main router view is the same, so it always returns the URL for another view. If the `nested` option is set to `true`, it generates the URL for the views from the deepest nested router.
+The `nested` option only applies if the previous and current view uses nested routing. By default, the method will skip entries in the stack, where the main router view is the same, so it always returns the URL for another view. If the `nested` option is set to `true`, it generates the URL for another view from the deepest nested router.
 
 ```javascript
 import { define, html, router } from "hybrids";
