@@ -20,7 +20,7 @@ export default define<MyView>({
 
 ## Factory
 
-If you want to use the property with the router factory directly, you can set the type of the property to `HTMLElement[]`:
+The property with the router factory must have set the type of the property at least to `HTMLElement[]`:
 
 ```typescript
 import { define, html, router } from "hybrids";
@@ -34,8 +34,11 @@ interface MyApp {
 export default define<MyApp>({
   tag: "my-app",
   views: router(Home),
-  ...
-})
+  render: ({ views }) => html`
+    ${views}
+    ...
+  `,
+});
 ...
 ```
 
