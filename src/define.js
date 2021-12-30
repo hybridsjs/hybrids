@@ -122,13 +122,16 @@ function property(key, desc) {
       type !== "undefined"
         ? (host, value) => setAttr(host, transform(value))
         : (host, value) => value,
-    connect(host, _, invalidate) {
-      if (!host.hasAttribute(attrName) && host[key] === defaultValue) {
-        setAttr(host, defaultValue);
-      }
+    connect:
+      type !== "undefined"
+        ? (host, _, invalidate) => {
+            if (!host.hasAttribute(attrName) && host[key] === defaultValue) {
+              setAttr(host, defaultValue);
+            }
 
-      return desc.connect && desc.connect(host, _, invalidate);
-    },
+            return desc.connect && desc.connect(host, _, invalidate);
+          }
+        : desc.connect,
     observe: desc.observe,
   };
 }

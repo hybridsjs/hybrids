@@ -186,6 +186,22 @@ describe("define:", () => {
       el = document.createElement("test-define-default");
     });
 
+    it("throws when updating readonly computed property", () => {
+      expect(() => {
+        el.computed = "a";
+      }).toThrow();
+      expect(() => {
+        el.fullDesc = "a";
+      }).toThrow();
+    });
+
+    it("throws when assert readonly full description", () => {
+      expect(el.fullDescReadonly).toBe(0);
+      expect(() => {
+        el.fullDescReadonly = 1;
+      }).toThrow();
+    });
+
     it("returns an element with defined properties", () => {
       expect(el.prop1).toBe("");
       expect(el.prop2).toBe(0);
@@ -235,22 +251,6 @@ describe("define:", () => {
       });
     });
 
-    it("throws when updating readonly computed property", () => {
-      expect(() => {
-        el.computed = "a";
-      }).toThrow();
-      expect(() => {
-        el.fullDesc = "a";
-      }).toThrow();
-    });
-
-    it("throws when assert readonly full description", () => {
-      expect(el.fullDescReadonly).toBe(0);
-      expect(() => {
-        el.fullDescReadonly = 1;
-      }).toThrow();
-    });
-
     it("sets corresponding attribute value for primitives properties", () => {
       document.body.appendChild(el);
 
@@ -259,18 +259,20 @@ describe("define:", () => {
       return resolveRaf(() => {
         expect(el.getAttribute("prop1")).toBe(null);
         expect(el.getAttribute("prop2")).toBe("0");
-        expect(el.getAttribute("prop3")).toBe(null);
-        expect(el.getAttribute("not-defined")).toBe(null);
+        expect(el.hasAttribute("prop3")).toBe(false);
+        expect(el.hasAttribute("not-defined")).toBe(false);
       });
     });
 
     it("does not update property when attribute changes", () => {
       document.body.appendChild(el);
 
-      el.setAttribute("not-defined", "abc");
+      el.setAttribute("prop-1", "abc");
+      el.setAttribute("prop-2", "200");
 
       return resolveRaf(() => {
-        expect(el.notDefined).toBe(undefined);
+        expect(el.prop1).toBe("");
+        expect(el.prop2).toBe(0);
       });
     });
 
