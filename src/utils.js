@@ -56,3 +56,4 @@ export function walkInShadow(target, cb) {
 
 export const deferred = Promise.resolve();
 export const storePointer = new WeakMap();
+export const probablyDevMode = walkInShadow.name === "walkInShadow";

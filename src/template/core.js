@@ -1,4 +1,4 @@
-import { stringifyElement, shadyCSS } from "../utils.js";
+import { stringifyElement, shadyCSS, probablyDevMode } from "../utils.js";
 import { dataMap, removeTemplate } from "./utils.js";
 
 import resolveValue from "./resolvers/value.js";
@@ -206,6 +206,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
   replaceComments(template.content);
 
   const compileWalker = createWalker(template.content);
+  const notDefinedElements = [];
   let compileIndex = 0;
 
   while (compileWalker.nextNode()) {
@@ -250,6 +251,18 @@ export function compileTemplate(rawParts, isSVG, styles) {
     } else {
       /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
       if (node.nodeType === Node.ELEMENT_NODE) {
+        /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
+        if (probablyDevMode) {
+          const tagName = node.tagName.toLowerCase();
+          if (
+            tagName.match(/.+-.+/) &&
+            !window.customElements.get(tagName) &&
+            !notDefinedElements.includes(tagName)
+          ) {
+            notDefinedElements.push(tagName);
+          }
+        }
+
         Array.from(node.attributes).forEach(attr => {
           const value = attr.value.trim();
           /* istanbul ignore next */
@@ -304,6 +317,14 @@ export function compileTemplate(rawParts, isSVG, styles) {
     }
 
     compileIndex += 1;
+  }
+
+  if (probablyDevMode && notDefinedElements.length) {
+    console.warn(
+      `Not defined ${notDefinedElements.map(e => `<${e}>`).join(", ")} element${
+        notDefinedElements.length > 1 ? "s" : ""
+      } found in the template:\n${beautifyTemplateLog(signature, -1)}`,
+    );
   }
 
   return function updateTemplateInstance(host, target, args, styleSheets) {

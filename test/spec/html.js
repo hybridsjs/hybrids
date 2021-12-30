@@ -84,6 +84,23 @@ describe("html:", () => {
     }).toThrow();
   });
 
+  it("warns when not defined element is found", () => {
+    const spy = spyOn(console, "warn");
+
+    html`
+      <not-defined-element></not-defined-element>
+    `({}, fragment);
+
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    html`
+      <not-defined-element></not-defined-element>
+      <not-defined-element-other></not-defined-element-other>
+    `({}, fragment);
+
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
   it("clears arguments cache when template changes", () => {
     html`
       <div>${10}</div>
