@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.4](https://github.com/hybridsjs/hybrids/compare/v7.0.3...v7.0.4) (2021-12-31)
+
+
+### Bug Fixes
+
+* **define:** omit setting attribute on connect when not reuqired ([8565822](https://github.com/hybridsjs/hybrids/commit/8565822462d581ff78a36796012e5a42e8d5f369))
+* **html:** warning message for not defined elements in the template ([b000b23](https://github.com/hybridsjs/hybrids/commit/b000b23e95c201f2e6ea284f2b7b030b3655dbec))
+
 ### [7.0.3](https://github.com/hybridsjs/hybrids/compare/v7.0.2...v7.0.3) (2021-12-17)
 
 
