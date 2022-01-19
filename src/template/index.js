@@ -16,7 +16,7 @@ const methods = {
   style(...styles) {
     stylesMap.set(
       this,
-      (stylesMap.get(this) || []).concat(styles.filter(style => style)),
+      (stylesMap.get(this) || []).concat(styles.filter((style) => style)),
     );
     return this;
   },

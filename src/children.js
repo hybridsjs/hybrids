@@ -1,5 +1,5 @@
 function walk(node, fn, options, items = []) {
-  Array.from(node.children).forEach(child => {
+  Array.from(node.children).forEach((child) => {
     const hybrids = child.constructor.hybrids;
     if (hybrids && fn(hybrids)) {
       items.push(child);
@@ -21,10 +21,10 @@ export default function children(
   const fn =
     typeof hybridsOrFn === "function"
       ? hybridsOrFn
-      : hybrids => hybrids === hybridsOrFn;
+      : (hybrids) => hybrids === hybridsOrFn;
 
   return {
-    get: host => walk(host, fn, options),
+    get: (host) => walk(host, fn, options),
     connect(host, key, invalidate) {
       const observer = new MutationObserver(invalidate);
 

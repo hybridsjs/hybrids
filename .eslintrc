@@ -1,27 +1,19 @@
 {
-  "extends": ["airbnb-base", "prettier"],
   "env": {
+    "es2020": true,
     "browser": true,
+    "node": true,
     "jasmine": true
   },
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:prettier/recommended",
+    "plugin:import/recommended"
+  ],
   "rules": {
-    "no-debugger": 0,
-    "no-param-reassign": 0,
-    "no-new-func": 0,
-    "no-loop-func": 0,
-    "no-restricted-syntax": 0,
-    "new-cap": 0,
-    "prefer-destructuring": 0,
-    "block-scoped-var": 0,
-    "max-classes-per-file": 0,
-    "import/no-extraneous-dependencies": [
-      "error",
-      {
-        "devDependencies": [
-          "test/**/*.js"
-        ]
-      }
-    ],
     "import/extensions": [2, "always"]
   }
 }

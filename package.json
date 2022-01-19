@@ -15,38 +15,37 @@
   "license": "MIT",
   "keywords": [
     "framework",
-    "web applications",
+    "state management",
+    "router",
     "web components",
     "web-components",
     "custom elements",
     "shadow dom",
-    "template engine",
-    "user interface",
-    "ui library",
-    "pwa"
+    "template engine"
   ],
   "scripts": {
     "dev": "karma start karma.conf.cjs",
     "dev:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run dev",
-    "test": "karma start karma.conf.cjs --single-run",
+    "lint": "eslint ./src",
+    "test": "npm run lint && karma start karma.conf.cjs --single-run",
     "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run test",
     "coveralls": "npm run test:coverage && cat ./coverage/lcov.info | coveralls",
     "release": "npm run test && standard-version -a"
   },
   "devDependencies": {
     "coveralls": "^3.1.0",
-    "eslint": "^7.19.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-config-prettier": "^7.2.0",
-    "eslint-plugin-import": "^2.22.1",
-    "jasmine-core": "^3.6.0",
-    "karma": "^6.1.0",
+    "eslint": "^8.7.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jasmine-core": "^4.0.0",
+    "karma": "^6.3.11",
     "karma-chrome-launcher": "^3.1.0",
-    "karma-coverage": "^2.0.3",
+    "karma-coverage": "^2.1.0",
     "karma-jasmine": "^4.0.1",
     "karma-sauce-launcher": "^4.3.5",
-    "prettier": "^1.19.1",
-    "standard-version": "^9.1.0"
+    "prettier": "^2.5.1",
+    "standard-version": "^9.3.2"
   },
   "standard-version": {
     "scripts": {

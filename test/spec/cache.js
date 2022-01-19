@@ -211,7 +211,7 @@ describe("cache:", () => {
       }).not.toThrow();
     });
 
-    it("calls observe callback after initial get before setup", done => {
+    it("calls observe callback after initial get before setup", (done) => {
       set(target, "dep", () => "value");
       const getter = () => get(target, "dep", _);
       get(target, "key", getter);
@@ -227,7 +227,7 @@ describe("cache:", () => {
       });
     });
 
-    it("runs callback when value changes", done => {
+    it("runs callback when value changes", (done) => {
       observe(target, "key", _, spy);
       set(target, "key", _, "value");
 
@@ -238,7 +238,7 @@ describe("cache:", () => {
       });
     });
 
-    it("does not run callback for the first time when value is undefined", done => {
+    it("does not run callback for the first time when value is undefined", (done) => {
       observe(target, "key", _, spy);
 
       requestAnimationFrame(() => {
@@ -247,7 +247,7 @@ describe("cache:", () => {
       });
     });
 
-    it("runs callback when dependency changes", done => {
+    it("runs callback when dependency changes", (done) => {
       const getter = () =>
         get(target, "otherKey", () => get(target, "deepKey", _));
       observe(target, "key", getter, spy);
@@ -264,7 +264,7 @@ describe("cache:", () => {
       });
     });
 
-    it("runs callback when deep value changes", done => {
+    it("runs callback when deep value changes", (done) => {
       const getDeepDeep = () => get(target, "deepDeep", _);
       const getDeepDep = () => get(target, "deep", getDeepDeep);
       const getDep = () => get(target, "dep", getDeepDep);
@@ -297,7 +297,7 @@ describe("cache:", () => {
       });
     });
 
-    it("cleans emitter when unobserve", done => {
+    it("cleans emitter when unobserve", (done) => {
       const unobserve = observe(target, "key", _, spy);
 
       requestAnimationFrame(() => {
@@ -310,7 +310,7 @@ describe("cache:", () => {
       });
     });
 
-    it("cleans dependencies contexts when unobserve", done => {
+    it("cleans dependencies contexts when unobserve", (done) => {
       const getter = () =>
         get(target, "otherKey", () => get(target, "deepKey", _));
       const unobserve = observe(target, "key", getter, spy);
@@ -326,7 +326,7 @@ describe("cache:", () => {
       });
     });
 
-    it("cleans contexts when getter throws", done => {
+    it("cleans contexts when getter throws", (done) => {
       const getKey = () =>
         get(target, "key", () =>
           get(target, "otherKey", () => {
@@ -366,7 +366,7 @@ describe("cache:", () => {
       expect(entry.deps.size).toBe(0);
     });
 
-    it("disables observe callback", done => {
+    it("disables observe callback", (done) => {
       get(target, "key", () => "value");
       suspend(target);
       observe(target, "key", (_, v) => v, spy);
@@ -382,12 +382,12 @@ describe("cache:", () => {
       });
     });
 
-    it("removes references from deps when dep is set", done => {
+    it("removes references from deps when dep is set", (done) => {
       const dep = {};
       get(target, "key", () => get(dep, "value", () => "value"));
       const hasTarget = () =>
         [...getEntry(dep, "value").contexts].some(
-          entry => entry.target === target,
+          (entry) => entry.target === target,
         );
       expect(hasTarget()).toBe(true);
 

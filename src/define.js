@@ -51,7 +51,7 @@ class HybridsRootElement extends HTMLElement {
 function render(fn, useShadow) {
   return {
     get: useShadow
-      ? host => {
+      ? (host) => {
           const updateDOM = fn(host);
           const target =
             host.shadowRoot ||
@@ -64,14 +64,14 @@ function render(fn, useShadow) {
             return target;
           };
         }
-      : host => {
+      : (host) => {
           const updateDOM = fn(host);
           return () => {
             updateDOM(host, host);
             return host;
           };
         },
-    observe(host, flush) { flush(); } // prettier-ignore
+    observe(host, flush) { flush(); }, // prettier-ignore
   };
 }
 
@@ -79,7 +79,7 @@ const transforms = {
   string: String,
   number: Number,
   boolean: Boolean,
-  undefined: v => v,
+  undefined: (v) => v,
 };
 
 function property(key, desc) {
@@ -139,7 +139,7 @@ function property(key, desc) {
 function compile(hybrids, HybridsElement) {
   if (HybridsElement) {
     if (hybrids === HybridsElement.hybrids) return HybridsElement;
-    propsMap.get(HybridsElement).forEach(key => {
+    propsMap.get(HybridsElement).forEach((key) => {
       delete HybridsElement.prototype[key];
     });
   } else {
@@ -154,7 +154,7 @@ function compile(hybrids, HybridsElement) {
   callbacksMap.set(HybridsElement, callbacks);
   propsMap.set(HybridsElement, props);
 
-  props.forEach(key => {
+  props.forEach((key) => {
     if (key === "tag") return;
 
     let desc = hybrids[key];
@@ -203,13 +203,13 @@ function compile(hybrids, HybridsElement) {
     });
 
     if (desc.observe) {
-      callbacks.unshift(host =>
+      callbacks.unshift((host) =>
         cache.observe(host, key, desc.get, desc.observe),
       );
     }
 
     if (desc.connect) {
-      callbacks.push(host => {
+      callbacks.push((host) => {
         function invalidate(options) {
           cache.invalidate(host, key, {
             force: typeof options === "object" && options.force === true,
@@ -227,13 +227,13 @@ const updateQueue = new Map();
 function update(HybridsElement) {
   if (!updateQueue.size) {
     deferred.then(() => {
-      walkInShadow(document.body, node => {
+      walkInShadow(document.body, (node) => {
         if (updateQueue.has(node.constructor)) {
           const prevHybrids = updateQueue.get(node.constructor);
           const hybrids = node.constructor.hybrids;
           node.disconnectedCallback();
 
-          Object.keys(hybrids).forEach(key => {
+          Object.keys(hybrids).forEach((key) => {
             const type = typeof hybrids[key];
             const clearValue =
               type !== "object" &&
@@ -278,5 +278,5 @@ function define(hybrids) {
 }
 
 export default Object.freeze(
-  Object.assign(define, { compile: hybrids => compile(hybrids) }),
+  Object.assign(define, { compile: (hybrids) => compile(hybrids) }),
 );

@@ -425,7 +425,7 @@ describe("router:", () => {
         globalA: "value",
         globalB: "value",
         views: router([RootView], { params: ["globalA", "globalB"] }),
-        content: ({ views }) => html`${views}` // prettier-ignore
+        content: ({ views }) => html`${views}`, // prettier-ignore
       });
 
       return resolveTimeout(() => {});
@@ -484,7 +484,7 @@ describe("router:", () => {
                   define({
                     tag: "test-router-app-another",
                     views: router([Another]),
-                    content: ({ views }) => html`${views}` // prettier-ignore
+                    content: ({ views }) => html`${views}`, // prettier-ignore
                   });
 
                   host = document.createElement("test-router-app-another");
@@ -782,7 +782,7 @@ describe("router:", () => {
       });
 
       it("skips navigation when ctrl or shift key is pressed", () => {
-        const preventClick = e => e.preventDefault();
+        const preventClick = (e) => e.preventDefault();
         const anchor = host.querySelector("#ChildView");
 
         document.addEventListener("click", preventClick);
@@ -813,7 +813,7 @@ describe("router:", () => {
       });
 
       it("skips navigation by form with outer action", () => {
-        const preventFormSubmit = e => e.preventDefault();
+        const preventFormSubmit = (e) => e.preventDefault();
 
         document.addEventListener("submit", preventFormSubmit);
 
@@ -1083,10 +1083,7 @@ describe("router:", () => {
         Child = define({
           tag: "test-router-child-back-url",
           nestedViews: router([NestedOne]),
-          content: () =>
-            html`
-              <a href="${router.url(Home)}">Home</a>
-            `,
+          content: () => html` <a href="${router.url(Home)}">Home</a> `,
         });
 
         NestedTwo = define({
@@ -1107,15 +1104,13 @@ describe("router:", () => {
         Home = define({
           [router.connect]: { stack: [Child, OtherChild] },
           tag: "test-router-home-back-url",
-          content: () => html`
-            <a href="${router.guardUrl()}">Child</a>
-          `,
+          content: () => html` <a href="${router.guardUrl()}">Child</a> `,
         });
 
         define({
           tag: "test-router-app-back-url",
           views: router([Home]),
-          content: ({ views }) => html`${views}` // prettier-ignore
+          content: ({ views }) => html`${views}`, // prettier-ignore
         });
       });
 
@@ -1181,7 +1176,7 @@ describe("router:", () => {
               tag: "test-router-home-view-unguarded",
             }),
           ]),
-          content: ({ views }) => html`${views}` // prettier-ignore
+          content: ({ views }) => html`${views}`, // prettier-ignore
         });
 
         const guardedHost = document.createElement("test-router-app-unguarded");
@@ -1245,7 +1240,7 @@ describe("router:", () => {
         define({
           tag: "test-router-app-guard-url",
           views: router([RootView]),
-          content: ({ views }) => html`${views}` // prettier-ignore
+          content: ({ views }) => html`${views}`, // prettier-ignore
         });
 
         host = document.createElement("test-router-app-guard-url");
@@ -1321,13 +1316,13 @@ describe("router:", () => {
       const HomeDebug = define({
         tag: "test-router-home-debug-view",
         stack: router([NestedDebug, OtherNestedDebug]),
-        content: ({ stack }) => html`${stack}` // prettier-ignore
+        content: ({ stack }) => html`${stack}`, // prettier-ignore
       });
 
       define({
         tag: "test-router-debug",
         stack: router(HomeDebug),
-        content: ({ stack }) => html`${stack}` // prettier-ignore
+        content: ({ stack }) => html`${stack}`, // prettier-ignore
       });
 
       app = document.createElement("test-router-debug");

@@ -34,7 +34,7 @@ export function getEntries(target) {
   const result = [];
   const targetMap = entries.get(target);
   if (targetMap) {
-    targetMap.forEach(entry => {
+    targetMap.forEach((entry) => {
       result.push(entry);
     });
   }
@@ -42,7 +42,7 @@ export function getEntries(target) {
 }
 
 function cleanContexts(entry) {
-  entry.contexts.forEach(contextEntry => {
+  entry.contexts.forEach((contextEntry) => {
     if (suspense.has(contextEntry.target)) {
       Object.assign(contextEntry, {
         depState: 0,
@@ -113,7 +113,7 @@ export function get(target, key, getter) {
       throw Error(`Circular get invocation is forbidden: '${key}'`);
     }
 
-    entry.deps.forEach(depEntry => {
+    entry.deps.forEach((depEntry) => {
       depEntry.contexts.delete(entry);
     });
 
@@ -131,7 +131,7 @@ export function get(target, key, getter) {
     }
 
     let depState = entry.state;
-    entry.deps.forEach(depEntry => {
+    entry.deps.forEach((depEntry) => {
       depState += depEntry.state;
     });
 
@@ -173,9 +173,9 @@ const gcList = new Set();
 function deleteEntry(entry) {
   if (!gcList.size) {
     requestAnimationFrame(() => {
-      gcList.forEach(e => {
+      gcList.forEach((e) => {
         if (e.contexts.size === 0) {
-          e.deps.forEach(depEntry => {
+          e.deps.forEach((depEntry) => {
             depEntry.contexts.delete(e);
           });
 
@@ -228,7 +228,7 @@ export function invalidateAll(target, options = {}) {
 
   const targetMap = entries.get(target);
   if (targetMap) {
-    targetMap.forEach(entry => {
+    targetMap.forEach((entry) => {
       invalidateEntry(entry, options);
     });
   }

@@ -3,7 +3,7 @@ const queue = new Set();
 
 function execute() {
   try {
-    queue.forEach(target => {
+    queue.forEach((target) => {
       try {
         callbacks.get(target)();
         queue.delete(target);

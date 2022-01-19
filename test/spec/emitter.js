@@ -9,7 +9,7 @@ describe("emitter:", () => {
     target = {};
   });
 
-  it("subscribe saves fn and dispatch target in next animation frame", done => {
+  it("subscribe saves fn and dispatch target in next animation frame", (done) => {
     subscribe(target, spy);
     requestAnimationFrame(() => {
       expect(spy).toHaveBeenCalledTimes(1);
@@ -42,7 +42,7 @@ describe("emitter:", () => {
       window.requestAnimationFrame = origRAF;
     });
 
-    it("calls fn for target", done => {
+    it("calls fn for target", (done) => {
       subscribe(target, spy);
       requestAnimationFrame(() => {
         dispatch(target);
@@ -53,7 +53,7 @@ describe("emitter:", () => {
       });
     });
 
-    it("catches error", done => {
+    it("catches error", (done) => {
       subscribe(target, () => {
         throw new Error("asd");
       });
@@ -64,7 +64,7 @@ describe("emitter:", () => {
       });
     });
 
-    it("catches error and calls next target", done => {
+    it("catches error and calls next target", (done) => {
       const target2 = {};
 
       subscribe(target, () => {

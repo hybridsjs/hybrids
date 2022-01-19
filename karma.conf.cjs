@@ -37,7 +37,7 @@ const reporters = ["dots"];
 if (IS_COVERAGE) reporters.push("coverage");
 if (IS_SAUCE_LABS) reporters.push("saucelabs");
 
-module.exports = config => {
+module.exports = (config) => {
   config.set({
     basePath: "./",
     frameworks: ["jasmine"],

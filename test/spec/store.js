@@ -121,7 +121,7 @@ describe("store:", () => {
     it("calls computed property function only once", () => {
       const spy = jasmine.createSpy();
       Model = {
-        computed: model => {
+        computed: (model) => {
           spy(model);
           return "value";
         },
@@ -157,13 +157,13 @@ describe("store:", () => {
             value: "other value",
             nested: { value: "other value", other: { value: "great" } },
           })
-          .then(nextModel => {
+          .then((nextModel) => {
             expect(nextModel.value).toBe("other value");
             expect(nextModel.nested).toEqual({
               value: "other value",
               other: { value: "great" },
             });
-            store.set(nextModel, null).then(targetModel => {
+            store.set(nextModel, null).then((targetModel) => {
               expect(targetModel.value).toBe("test");
               expect(targetModel.nested).toEqual(Model.nested);
             });
@@ -177,9 +177,9 @@ describe("store:", () => {
         promise = store.set(Model, {});
       });
 
-      it("returns default values", done =>
+      it("returns default values", (done) =>
         promise
-          .then(model => {
+          .then((model) => {
             expect(model).toEqual({
               id: model.id,
               string: "value",
@@ -197,8 +197,8 @@ describe("store:", () => {
           })
           .then(done));
 
-      it("returns cached model", done =>
-        promise.then(model => {
+      it("returns cached model", (done) =>
+        promise.then((model) => {
           expect(store.get(Model, model.id)).toBe(model);
           done();
         }));
@@ -237,7 +237,7 @@ describe("store:", () => {
         expect(() => model.message).not.toThrow();
       });
 
-      it("returns an array with updated models", done => {
+      it("returns an array with updated models", (done) => {
         expect(store.get([Model])).toEqual([]);
 
         promise
@@ -254,7 +254,7 @@ describe("store:", () => {
         expect(store.get([Model])).toBe(store.get([Model]));
       });
 
-      it("returns an array without deleted model", done =>
+      it("returns an array without deleted model", (done) =>
         promise
           .then(([model]) => store.set(model, null))
           .then(() => {
@@ -263,7 +263,7 @@ describe("store:", () => {
           })
           .then(done));
 
-      it("returns the same array when loose option is set to false", done => {
+      it("returns the same array when loose option is set to false", (done) => {
         Model = {
           id: true,
           value: "",
@@ -299,10 +299,10 @@ describe("store:", () => {
       ).toThrow();
     });
 
-    it("throws when model has expired", done => {
+    it("throws when model has expired", (done) => {
       promise
-        .then(model =>
-          store.set(model, { string: "" }).then(newModel => {
+        .then((model) =>
+          store.set(model, { string: "" }).then((newModel) => {
             store.set(newModel, { string: "other" }).then(() => {
               expect(() => store.set(model, { string: "" })).toThrow();
             });
@@ -322,9 +322,9 @@ describe("store:", () => {
       expect(() => store.set(model, { value: "test" })).toThrow();
     });
 
-    it("throws when updates a nested object directly", done => {
+    it("throws when updates a nested object directly", (done) => {
       promise
-        .then(model => {
+        .then((model) => {
           expect(() => {
             store.set(model.nestedObject, {});
           }).toThrow();
@@ -332,79 +332,79 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("rejects an error when values are not an object or null", done =>
+    it("rejects an error when values are not an object or null", (done) =>
       store
         .set(Model, false)
-        .catch(e => expect(e).toBeInstanceOf(Error))
+        .catch((e) => expect(e).toBeInstanceOf(Error))
         .then(done));
 
-    it("rejects an error when model definition is used with null", done =>
+    it("rejects an error when model definition is used with null", (done) =>
       store
         .set(Model, null)
-        .catch(e => expect(e).toBeInstanceOf(Error))
+        .catch((e) => expect(e).toBeInstanceOf(Error))
         .then(done));
 
-    it("rejects an error when model instance is used with not an object", done =>
+    it("rejects an error when model instance is used with not an object", (done) =>
       promise
-        .then(model => store.set(model, false))
-        .catch(e => expect(e).toBeInstanceOf(Error))
+        .then((model) => store.set(model, false))
+        .catch((e) => expect(e).toBeInstanceOf(Error))
         .then(done));
 
-    it("rejects an error when values contain 'id' property", done =>
+    it("rejects an error when values contain 'id' property", (done) =>
       promise
-        .then(model => store.set(model, model))
-        .catch(e => expect(e).toBeInstanceOf(Error))
+        .then((model) => store.set(model, model))
+        .catch((e) => expect(e).toBeInstanceOf(Error))
         .then(done));
 
-    it("rejects an error when array with primitives is set with wrong type", done => {
+    it("rejects an error when array with primitives is set with wrong type", (done) => {
       promise
-        .then(model => {
+        .then((model) => {
           store
             .set(model, {
               nestedArrayOfPrimitives: "test",
             })
             .catch(() => {});
         })
-        .catch(e => {
+        .catch((e) => {
           expect(e).toBeInstanceOf(Error);
         })
         .then(done);
     });
 
-    it("rejects an error when array with objects is set with wrong type", done => {
+    it("rejects an error when array with objects is set with wrong type", (done) => {
       promise
-        .then(model =>
+        .then((model) =>
           store.set(model, {
             nestedArrayOfObjects: "test",
           }),
         )
-        .catch(e => expect(e).toBeInstanceOf(Error))
+        .catch((e) => expect(e).toBeInstanceOf(Error))
         .then(done);
     });
 
-    it("rejects an error when array with external objects is set with wrong type", done => {
+    it("rejects an error when array with external objects is set with wrong type", (done) => {
       promise
-        .then(model =>
+        .then((model) =>
           store.set(model, {
             nestedArrayOfExternalObjects: "test",
           }),
         )
-        .catch(e => expect(e).toBeInstanceOf(Error))
+        .catch((e) => expect(e).toBeInstanceOf(Error))
         .then(done);
     });
 
-    it("rejects an error when array with nested objects are set with wrong type", done => {
+    it("rejects an error when array with nested objects are set with wrong type", (done) => {
       promise
-        .then(model =>
+        .then((model) =>
           store.set(model, {
             nestedArrayOfObjects: [{}, "test"],
           }),
         )
-        .catch(e => expect(e).toBeInstanceOf(Error))
+        .catch((e) => expect(e).toBeInstanceOf(Error))
         .then(done);
     });
 
-    it("returns a placeholder in error state for not found singleton model", done => {
+    it("returns a placeholder in error state for not found singleton model", (done) => {
       Model = {
         value: "test",
         [store.connect]: {
@@ -415,26 +415,26 @@ describe("store:", () => {
 
       store
         .set(Model, null)
-        .then(model => {
+        .then((model) => {
           expect(store.error(model)).toBeInstanceOf(Error);
         })
         .then(done);
     });
 
-    it('creates uuid for objects with "id" key', done =>
+    it('creates uuid for objects with "id" key', (done) =>
       store
         .set(Model, { nestedArrayOfObjects: [{}] })
-        .then(model => {
+        .then((model) => {
           expect(model.id).toBeDefined();
           expect(model.nestedObject.id).not.toBeDefined();
           expect(model.nestedArrayOfObjects[0].id).not.toBeDefined();
         })
         .then(done));
 
-    it("updates single property", done =>
+    it("updates single property", (done) =>
       promise
-        .then(model =>
-          store.set(model, { string: "new value" }).then(newModel => {
+        .then((model) =>
+          store.set(model, { string: "new value" }).then((newModel) => {
             expect(newModel.string).toBe("new value");
             expect(newModel.number).toBe(1);
             expect(newModel.bool).toBe(false);
@@ -449,7 +449,7 @@ describe("store:", () => {
         )
         .then(done));
 
-    it("updates string value to empty string from null and undefined", done => {
+    it("updates string value to empty string from null and undefined", (done) => {
       Model = {
         one: "one",
         two: "two",
@@ -458,40 +458,40 @@ describe("store:", () => {
       const model = store.get(Model);
       store
         .set(model, { one: null, two: undefined })
-        .then(newModel => {
+        .then((newModel) => {
           expect(newModel).toEqual({ one: "", two: "" });
         })
         .then(done);
     });
 
-    it("updates nested object", done =>
-      promise.then(model =>
+    it("updates nested object", (done) =>
+      promise.then((model) =>
         store
           .set(model, { nestedObject: { value: "other" } })
-          .then(newModel => {
+          .then((newModel) => {
             expect(newModel.nestedObject).toEqual({ value: "other" });
             done();
           }),
       ));
 
-    it("rejects an error when updates nested object with different model", done =>
-      promise.then(model =>
+    it("rejects an error when updates nested object with different model", (done) =>
+      promise.then((model) =>
         store
           .set({ test: "value" })
-          .then(otherModel =>
+          .then((otherModel) =>
             store.set(model, { nestedExternalObject: otherModel }),
           )
-          .catch(e => e)
-          .then(e => expect(e).toBeInstanceOf(Error))
+          .catch((e) => e)
+          .then((e) => expect(e).toBeInstanceOf(Error))
           .then(done),
       ));
 
-    it("updates nested external object with proper model", done =>
-      promise.then(model =>
-        store.set(Model.nestedExternalObject, {}).then(newExternal =>
+    it("updates nested external object with proper model", (done) =>
+      promise.then((model) =>
+        store.set(Model.nestedExternalObject, {}).then((newExternal) =>
           store
             .set(model, { nestedExternalObject: newExternal })
-            .then(newModel => {
+            .then((newModel) => {
               expect(newModel).not.toBe(model);
               expect(newModel.nestedExternalObject).toBe(newExternal);
               done();
@@ -499,11 +499,11 @@ describe("store:", () => {
         ),
       ));
 
-    it("updates nested external object with data", done =>
-      promise.then(model =>
+    it("updates nested external object with data", (done) =>
+      promise.then((model) =>
         store
           .set(model, { nestedExternalObject: { value: "one", a: "b" } })
-          .then(newModel => {
+          .then((newModel) => {
             expect(newModel).not.toBe(model);
             expect(newModel.nestedExternalObject).toEqual({
               id: newModel.nestedExternalObject.id,
@@ -513,12 +513,12 @@ describe("store:", () => {
           }),
       ));
 
-    it("updates nested external object with model id", done =>
-      promise.then(model =>
-        store.set(Model.nestedExternalObject, {}).then(newExternal =>
+    it("updates nested external object with model id", (done) =>
+      promise.then((model) =>
+        store.set(Model.nestedExternalObject, {}).then((newExternal) =>
           store
             .set(model, { nestedExternalObject: newExternal.id })
-            .then(newModel => {
+            .then((newModel) => {
               expect(newModel).not.toBe(model);
               expect(newModel.nestedExternalObject).toBe(newExternal);
               done();
@@ -526,33 +526,33 @@ describe("store:", () => {
         ),
       ));
 
-    it("clears nested external object", done =>
-      promise.then(model =>
+    it("clears nested external object", (done) =>
+      promise.then((model) =>
         store
           .set(model, { nestedExternalObject: null })
-          .then(newModel => {
+          .then((newModel) => {
             expect(newModel).not.toBe(model);
             expect(newModel.nestedExternalObject).toBe(undefined);
           })
           .then(done),
       ));
 
-    it("updates nested array of primitives", done =>
-      promise.then(model =>
+    it("updates nested array of primitives", (done) =>
+      promise.then((model) =>
         store
           .set(model, { nestedArrayOfPrimitives: [1, 2, 3] })
-          .then(newModel => {
+          .then((newModel) => {
             expect(newModel.nestedArrayOfPrimitives).toEqual(["1", "2", "3"]);
             done();
           }),
       ));
 
-    it("create model with nested array of objects", done => {
+    it("create model with nested array of objects", (done) => {
       store
         .set(Model, {
           nestedArrayOfObjects: [{ one: "two" }, { two: "three", one: "four" }],
         })
-        .then(model => {
+        .then((model) => {
           expect(model.nestedArrayOfObjects).toEqual([
             { one: "two" },
             { one: "four" },
@@ -561,35 +561,35 @@ describe("store:", () => {
         });
     });
 
-    it("updates nested array of objects", done =>
-      promise.then(model =>
+    it("updates nested array of objects", (done) =>
+      promise.then((model) =>
         store
           .set(model, { nestedArrayOfObjects: [{ one: "three" }] })
-          .then(newModel => {
+          .then((newModel) => {
             expect(newModel.nestedArrayOfObjects).toEqual([{ one: "three" }]);
             done();
           }),
       ));
 
-    it("rejects an error when model in nested array does not match model", done => {
+    it("rejects an error when model in nested array does not match model", (done) => {
       store
         .set({ myValue: "text" })
-        .then(model =>
+        .then((model) =>
           store.set(Model, {
             nestedArrayOfExternalObjects: [model],
           }),
         )
-        .catch(e => e)
-        .then(e => expect(e).toBeInstanceOf(Error))
+        .catch((e) => e)
+        .then((e) => expect(e).toBeInstanceOf(Error))
         .then(done);
     });
 
-    it("creates model with nested external object from raw data", done => {
+    it("creates model with nested external object from raw data", (done) => {
       store
         .set(Model, {
           nestedArrayOfExternalObjects: [{ id: "1", value: "1" }],
         })
-        .then(model => {
+        .then((model) => {
           expect(model.nestedArrayOfExternalObjects[0].id).toEqual("1");
           expect(model.nestedArrayOfExternalObjects).toEqual([
             { id: "1", value: "1" },
@@ -598,29 +598,29 @@ describe("store:", () => {
         });
     });
 
-    it("creates model with nested external object from model instance", done => {
-      store.set(Model.nestedArrayOfExternalObjects[0]).then(nestedModel =>
+    it("creates model with nested external object from model instance", (done) => {
+      store.set(Model.nestedArrayOfExternalObjects[0]).then((nestedModel) =>
         store
           .set(Model, {
             nestedArrayOfExternalObjects: [nestedModel],
           })
-          .then(model => {
+          .then((model) => {
             expect(model.nestedArrayOfExternalObjects[0]).toBe(nestedModel);
             done();
           }),
       );
     });
 
-    it("updates in schedule on pending model instance", done => {
+    it("updates in schedule on pending model instance", (done) => {
       promise
-        .then(model => {
-          store.set(model, { string: "a" }).then(m => {
+        .then((model) => {
+          store.set(model, { string: "a" }).then((m) => {
             expect(m.string).toBe("a");
           });
-          store.set(model, { string: "b" }).then(m => {
+          store.set(model, { string: "b" }).then((m) => {
             expect(m.string).toBe("b");
           });
-          return store.set(model, { string: "c" }).then(m => {
+          return store.set(model, { string: "c" }).then((m) => {
             expect(m.string).toBe("c");
           });
         })
@@ -632,13 +632,13 @@ describe("store:", () => {
       const model = store.get(Model);
 
       store.set(Model, { value: "new value" });
-      store.pending(model).then(nextModel => {
+      store.pending(model).then((nextModel) => {
         expect(nextModel).toBe(store.get(Model));
       });
     });
 
-    it("deletes model", done =>
-      promise.then(model =>
+    it("deletes model", (done) =>
+      promise.then((model) =>
         store.set(model, null).then(() => {
           const currentModel = store.get(Model, model.id);
           expect(currentModel).toBeInstanceOf(Object);
@@ -647,10 +647,10 @@ describe("store:", () => {
         }),
       ));
 
-    it("updates model using stale instance", done => {
-      promise.then(model => {
+    it("updates model using stale instance", (done) => {
+      promise.then((model) => {
         store.set(model, { string: "test" }).then(() => {
-          store.set(model, { string: "other" }).then(finalModel => {
+          store.set(model, { string: "other" }).then((finalModel) => {
             expect(finalModel.string).toBe("other");
             done();
           });
@@ -666,18 +666,18 @@ describe("store:", () => {
     });
 
     describe("for model instance", () => {
-      it("throws for wrong values", done => {
+      it("throws for wrong values", (done) => {
         promise
-          .then(model => {
+          .then((model) => {
             expect(() => store.sync(model, undefined)).toThrow();
             expect(() => store.sync(model, { id: 123 })).toThrow();
           })
           .then(done);
       });
 
-      it("throws for syncing deep stale model instance", done => {
+      it("throws for syncing deep stale model instance", (done) => {
         promise
-          .then(model => {
+          .then((model) => {
             store.sync(model, { string: "other" });
             store.sync(model, { string: "two" });
             expect(() => store.sync(model, { string: "three" })).toThrow();
@@ -685,9 +685,9 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("updates memory cache of the model instance synchronously", done => {
+      it("updates memory cache of the model instance synchronously", (done) => {
         promise
-          .then(model => {
+          .then((model) => {
             const nextModel = store.sync(model, { string: "other" });
             expect(store.get(Model, nextModel.id).string).toBe("other");
             expect(store.ready(model)).toBe(false);
@@ -695,9 +695,9 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("updates stale model instance", done => {
+      it("updates stale model instance", (done) => {
         promise
-          .then(model => {
+          .then((model) => {
             const nextModel = store.sync(model, { string: "other" });
             store.sync(model, { string: "two" });
             expect(store.get(Model, model.id).string).toBe("two");
@@ -706,9 +706,9 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("deletes model instance", done => {
+      it("deletes model instance", (done) => {
         promise
-          .then(model => {
+          .then((model) => {
             const nextModel = store.sync(model, null);
             expect(store.error(nextModel)).toBeInstanceOf(Error);
           })
@@ -767,9 +767,9 @@ describe("store:", () => {
       expect(() => store.clear(Error("Some error"))).toThrow();
     });
 
-    it("throws when model has expired", done => {
+    it("throws when model has expired", (done) => {
       promise
-        .then(model =>
+        .then((model) =>
           store.set(model, { string: "other" }).then(() => {
             expect(() => store.clear(model)).toThrow();
           }),
@@ -777,34 +777,34 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("removes model instance by reference", done => {
+    it("removes model instance by reference", (done) => {
       promise
-        .then(model => {
+        .then((model) => {
           store.clear(model);
           expect(store.error(store.get(Model, model.id))).toBeInstanceOf(Error);
         })
         .then(done);
     });
 
-    it("removes model instance by id", done => {
+    it("removes model instance by id", (done) => {
       promise
-        .then(model => {
+        .then((model) => {
           store.clear(Model, model.id);
           expect(store.error(store.get(Model, model.id))).toBeInstanceOf(Error);
         })
         .then(done);
     });
 
-    it("removes all model instances by definition", done => {
+    it("removes all model instances by definition", (done) => {
       promise
-        .then(model => {
+        .then((model) => {
           store.clear(Model);
           expect(store.error(store.get(Model, model.id))).toBeInstanceOf(Error);
         })
         .then(done);
     });
 
-    it("only invalidates with clearValue option set to false", done => {
+    it("only invalidates with clearValue option set to false", (done) => {
       const spy = jasmine.createSpy();
       Model = {
         id: true,
@@ -824,7 +824,7 @@ describe("store:", () => {
 
       store
         .pending(model)
-        .then(resolvedModel => {
+        .then((resolvedModel) => {
           store.clear(resolvedModel, false);
           const pendingModel = store.get(Model, 1);
           expect(spy).toHaveBeenCalledTimes(2);
@@ -869,24 +869,24 @@ describe("store:", () => {
       expect(() => store.get(Model)).toThrow();
     });
 
-    it("requires not empty string for new model", done => {
+    it("requires not empty string for new model", (done) => {
       Model = { id: true, value: store.value("test") };
 
       store
         .set(Model, { value: "" })
-        .catch(e => {
+        .catch((e) => {
           expect(e.errors.value).toBeDefined();
         })
         .then(done);
     });
 
-    it("requires not empty string for updated model", done => {
+    it("requires not empty string for updated model", (done) => {
       Model = { id: true, value: store.value("test") };
 
       store
         .set(Model, {})
-        .then(model =>
-          store.set(model, { value: "" }).catch(e => {
+        .then((model) =>
+          store.set(model, { value: "" }).catch((e) => {
             expect(e.errors.value).toBeDefined();
             expect(store.error(model)).toBe(e);
           }),
@@ -894,24 +894,24 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("requires non-zero value for new model", done => {
+    it("requires non-zero value for new model", (done) => {
       Model = { id: true, value: store.value(100) };
 
       store
         .set(Model, { value: 0 })
-        .catch(e => {
+        .catch((e) => {
           expect(e.errors.value).toBeDefined();
         })
         .then(done);
     });
 
-    it("requires non-zero value for updated model", done => {
+    it("requires non-zero value for updated model", (done) => {
       Model = { id: true, value: store.value(100) };
 
       store
         .set(Model, {})
-        .then(model =>
-          store.set(model, { value: 0 }).catch(e => {
+        .then((model) =>
+          store.set(model, { value: 0 }).catch((e) => {
             expect(e.errors.value).toBeDefined();
             expect(store.error(model)).toBe(e);
           }),
@@ -919,21 +919,21 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("uses custom validation function", done => {
+    it("uses custom validation function", (done) => {
       Model = {
         id: true,
-        value: store.value("", v => v !== "test", "custom message"),
+        value: store.value("", (v) => v !== "test", "custom message"),
       };
 
       store
         .set(Model, { value: "test" })
-        .catch(e => {
+        .catch((e) => {
           expect(e.errors.value).toBe("custom message");
         })
         .then(done);
     });
 
-    it("uses a regexp as a validation function", done => {
+    it("uses a regexp as a validation function", (done) => {
       Model = {
         id: true,
         value: store.value("", /[a-z]+/, "custom message"),
@@ -941,32 +941,32 @@ describe("store:", () => {
 
       store
         .set(Model, { value: "123" })
-        .catch(e => {
+        .catch((e) => {
           expect(e.errors.value).toBe("custom message");
         })
         .then(done);
     });
 
-    it("allows throwing an error in validation function", done => {
+    it("allows throwing an error in validation function", (done) => {
       Model = {
         id: true,
-        value: store.value("", v => {
+        value: store.value("", (v) => {
           if (v === "test") throw Error("Some error");
         }),
       };
 
       store
         .set(Model, { value: "test" })
-        .catch(e => {
+        .catch((e) => {
           expect(e.errors.value).toBeInstanceOf(Error);
         })
         .then(done);
     });
 
-    it("allows returning false value in validation function", done => {
+    it("allows returning false value in validation function", (done) => {
       Model = {
         id: true,
-        value: store.value("", v => {
+        value: store.value("", (v) => {
           if (v === "test") return false;
           return true;
         }),
@@ -974,13 +974,13 @@ describe("store:", () => {
 
       store
         .set(Model, { value: "test" })
-        .catch(e => {
+        .catch((e) => {
           expect(e.errors.value).toBe(true);
         })
         .then(done);
     });
 
-    it("for a draft it aggregates errors when updating properties one by one", done => {
+    it("for a draft it aggregates errors when updating properties one by one", (done) => {
       Model = {
         id: true,
         one: store.value("one"),
@@ -993,14 +993,14 @@ describe("store:", () => {
 
       store
         .set(model, { one: "" })
-        .then(nextModel => {
+        .then((nextModel) => {
           const error = store.error(nextModel);
           expect(error).toBeDefined();
           expect(error.errors.one).toBeDefined();
 
           return store.set(nextModel, { two: "" });
         })
-        .then(nextModel => {
+        .then((nextModel) => {
           const error = store.error(nextModel);
           expect(error).toBeDefined();
           expect(error.errors.one).toBeDefined();
@@ -1009,7 +1009,7 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("for a draft it allows default value, which does not pass validation", done => {
+    it("for a draft it allows default value, which does not pass validation", (done) => {
       Model = { id: true, value: store.value(""), number: store.value(100) };
 
       const desc = store(Model, { draft: true });
@@ -1018,7 +1018,7 @@ describe("store:", () => {
 
       store
         .set(model, { number: 0 })
-        .then(nextModel => {
+        .then((nextModel) => {
           const error = store.error(nextModel);
           expect(error.errors.value).not.toBeDefined();
         })
@@ -1038,7 +1038,7 @@ describe("store:", () => {
         model: store.ref(() => Model),
       };
 
-      store.set(Model, { value: "a", model: { value: "b" } }).then(model => {
+      store.set(Model, { value: "a", model: { value: "b" } }).then((model) => {
         expect(model.value).toBe("a");
         expect(model.model.value).toBe("b");
       });
@@ -1056,31 +1056,31 @@ describe("store:", () => {
       expect(store.ready(123)).toBe(false);
     });
 
-    it("ready() returns truth for ready model instance", done => {
+    it("ready() returns truth for ready model instance", (done) => {
       Model = { id: true };
       store
         .set(Model)
-        .then(model => {
+        .then((model) => {
           expect(store.ready(model)).toBe(true);
         })
         .then(done);
     });
 
-    it("ready() returns false if one of the argument is not resolved model instance", done => {
+    it("ready() returns false if one of the argument is not resolved model instance", (done) => {
       Model = { id: true };
       store
         .set(Model)
-        .then(model => {
+        .then((model) => {
           expect(store.ready(model, null)).toBe(false);
         })
         .then(done);
     });
 
-    it("pending() returns a promise for a list of pending models", done => {
+    it("pending() returns a promise for a list of pending models", (done) => {
       Model = {
         id: true,
         value: "",
-        [store.connect]: id => Promise.resolve({ id, value: "test" }),
+        [store.connect]: (id) => Promise.resolve({ id, value: "test" }),
       };
 
       store
@@ -1103,12 +1103,12 @@ describe("store:", () => {
       expect(store.ready(list)).toBe(true);
     });
 
-    it("error() returns validation message", done => {
+    it("error() returns validation message", (done) => {
       Model = { id: true, value: store.value("test") };
 
       store
         .set(Model, {})
-        .then(model => {
+        .then((model) => {
           store.set(model, { value: "" }).catch(() => {});
           expect(store.error(model, "value")).toBe("value is required");
           expect(store.error(model, null)).toBe(false);
@@ -1137,23 +1137,23 @@ describe("store:", () => {
       expect(store.error(pendingModel)).toBeInstanceOf(Error);
       expect(store.error(pendingModel, null)).toBeInstanceOf(Error);
 
-      return store.pending(pendingModel).then(newModel => {
+      return store.pending(pendingModel).then((newModel) => {
         expect(store.pending(newModel)).toBe(false);
         expect(store.error(newModel)).toBe(false);
         expect(store.ready(newModel)).toBe(true);
       });
     });
 
-    it("resolve() returns the latest model instance", done => {
+    it("resolve() returns the latest model instance", (done) => {
       store
         .set(Model)
-        .then(model =>
-          store.resolve(model).then(m => {
+        .then((model) =>
+          store.resolve(model).then((m) => {
             expect(m).toBe(model);
 
             store.set(m, { string: "my value" });
             store.set(m, { string: "latest value" });
-            return store.resolve(m).then(nm => {
+            return store.resolve(m).then((nm) => {
               expect(nm).not.toBe(m);
               expect(nm.string).toBe("latest value");
             });
@@ -1162,11 +1162,11 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("resolve() rejects an error from the model instance", done => {
+    it("resolve() rejects an error from the model instance", (done) => {
       const model = store.get(Model, "test");
       store
         .resolve(model)
-        .catch(e => {
+        .catch((e) => {
           expect(e).toBeInstanceOf(Error);
         })
         .then(done);
@@ -1188,7 +1188,7 @@ describe("store:", () => {
           id: true,
           value: "test",
           [store.connect]: {
-            get: id => Promise.resolve({ id, value: "test" }),
+            get: (id) => Promise.resolve({ id, value: "test" }),
             set: (id, values) => ({ ...values, id: id || idCount++ }), // eslint-disable-line no-plusplus
           },
         };
@@ -1224,7 +1224,7 @@ describe("store:", () => {
         it("gets and updates store model instance", () => {
           let pendingModel = el.byprop;
           expect(store.pending(pendingModel)).toBeTruthy();
-          return store.pending(pendingModel).then(resultModel => {
+          return store.pending(pendingModel).then((resultModel) => {
             expect(el.byprop).toBe(resultModel);
             expect(el.byfn).toBe(resultModel);
 
@@ -1233,7 +1233,7 @@ describe("store:", () => {
             pendingModel = el.byprop;
             expect(store.pending(pendingModel)).toBeTruthy();
 
-            return store.pending(pendingModel).then(anotherResultModel => {
+            return store.pending(pendingModel).then((anotherResultModel) => {
               expect(el.byprop).toBe(anotherResultModel);
               expect(el.byfn).toBe(anotherResultModel);
             });
@@ -1263,7 +1263,7 @@ describe("store:", () => {
           });
 
           it("returns the first draft of the original model after model changes", () =>
-            store.pending(el.draft).then(model =>
+            store.pending(el.draft).then((model) =>
               store.set(model, { value: "new value" }).then(() => {
                 expect(el.draft.value).toBe("new value");
                 expect(store.get(Model, el.modelId).value).toBe("test");
@@ -1271,7 +1271,7 @@ describe("store:", () => {
             ));
 
           it("throws when submit not a draft", () =>
-            store.pending(store.get(Model, "1")).then(model => {
+            store.pending(store.get(Model, "1")).then((model) => {
               expect(() => store.submit(model)).toThrow();
             }));
 
@@ -1282,7 +1282,7 @@ describe("store:", () => {
           it("submits changes from draft to the original model", () =>
             store
               .pending(el.draft)
-              .then(model => store.set(model, { value: "new value" }))
+              .then((model) => store.set(model, { value: "new value" }))
               .then(() => store.submit(el.draft))
               .then(() => {
                 expect(el.draft.value).toBe("new value");
@@ -1292,7 +1292,7 @@ describe("store:", () => {
           it("clears draft cache when disconnected", () =>
             store
               .pending(el.draft)
-              .then(model => store.set(model, { string: "new value" }))
+              .then((model) => store.set(model, { string: "new value" }))
               .then(() => {
                 document.body.removeChild(el);
 
@@ -1336,7 +1336,9 @@ describe("store:", () => {
           el.withoutid = model;
           return store
             .pending(model)
-            .then(resultModel => store.set(resultModel, { value: "new value" }))
+            .then((resultModel) =>
+              store.set(resultModel, { value: "new value" }),
+            )
             .then(() => {
               expect(el.withoutid.value).toBe("new value");
             });
@@ -1358,19 +1360,19 @@ describe("store:", () => {
           it("updates not initialized draft new model instance", () =>
             store
               .set(el.draftwithoutid, { value: "new value" })
-              .then(targetModel => {
+              .then((targetModel) => {
                 expect(el.draftwithoutid).toBe(targetModel);
                 expect(targetModel.value).toBe("new value");
               }));
 
           it("submits new model and updates values to resolved model", () =>
-            store.submit(el.draftwithoutid).then(resultModel => {
+            store.submit(el.draftwithoutid).then((resultModel) => {
               expect(resultModel.id).toBe("2");
               expect(el.draftwithoutid).toEqual(resultModel);
 
               el.draftwithoutid = null;
               expect(el.draftwithoutid).not.toEqual(resultModel);
-              return store.submit(el.draftwithoutid).then(otherModel => {
+              return store.submit(el.draftwithoutid).then((otherModel) => {
                 expect(otherModel.id).toBe("3");
               });
             }));
@@ -1449,7 +1451,7 @@ describe("store:", () => {
           id: true,
           value: "test",
           [store.connect]: {
-            list: id => (id === "default" ? [{ id: "1" }, { id: "2" }] : []),
+            list: (id) => (id === "default" ? [{ id: "1" }, { id: "2" }] : []),
           },
         };
 
@@ -1493,7 +1495,7 @@ describe("store:", () => {
           id: true,
           value: "test",
           [store.connect]: {
-            get: id => Promise[mode]().then(() => storage[id]),
+            get: (id) => Promise[mode]().then(() => storage[id]),
             set: (id, values) => Promise[mode]().then(() => values),
           },
         };
@@ -1513,7 +1515,7 @@ describe("store:", () => {
       it("returns pending placeholder with prototype to model", () =>
         store
           .pending(el.model)
-          .then(model => {
+          .then((model) => {
             expect(el.model).toBe(model);
             el.modelId = "2";
             expect(el.model).not.toBe(model);
@@ -1522,7 +1524,7 @@ describe("store:", () => {
 
             return store.pending(el.model);
           })
-          .then(model => {
+          .then((model) => {
             expect(model.id).toBe("2");
             expect(el.model).toBe(model);
           }));
@@ -1531,7 +1533,7 @@ describe("store:", () => {
         it("always returns the first draft of the original model", () =>
           store
             .pending(store.get(Model, "1"))
-            .then(model => {
+            .then((model) => {
               expect(el.draft.value).toBe("one");
               return store.set(model, { value: "other" });
             })
@@ -1540,9 +1542,9 @@ describe("store:", () => {
             }));
 
         it("sets error state when submit fails", () =>
-          store.pending(el.draft).then(draftModel => {
+          store.pending(el.draft).then((draftModel) => {
             mode = "reject";
-            return store.submit(draftModel).catch(error => {
+            return store.submit(draftModel).catch((error) => {
               expect(store.error(draftModel)).toBe(error);
             });
           }));
@@ -1564,7 +1566,7 @@ describe("store:", () => {
         id: true,
         value: "",
         [store.connect]: {
-          get: id => storage[id],
+          get: (id) => storage[id],
           set: (id, values) => {
             if (!id) {
               maxId += 1;
@@ -1581,7 +1583,7 @@ describe("store:", () => {
             delete storage[id];
             return null;
           },
-          list: () => Object.keys(storage).map(key => storage[key]),
+          list: () => Object.keys(storage).map((key) => storage[key]),
           loose: true,
         },
       };
@@ -1598,12 +1600,12 @@ describe("store:", () => {
       ).toThrow();
     });
 
-    it("rejects an error when id does not match", done => {
+    it("rejects an error when id does not match", (done) => {
       Model = {
         id: true,
         value: "",
         [store.connect]: {
-          get: id => storage[id],
+          get: (id) => storage[id],
           set: (id, values) => ({ ...values, id: parseInt(id, 10) + 1 }),
         },
       };
@@ -1611,8 +1613,8 @@ describe("store:", () => {
       const model = store.get(Model, 1);
       store
         .set(model, { value: "test" })
-        .catch(e => e)
-        .then(e => expect(e).toBeInstanceOf(Error))
+        .catch((e) => e)
+        .then((e) => expect(e).toBeInstanceOf(Error))
         .then(done);
     });
 
@@ -1623,7 +1625,7 @@ describe("store:", () => {
       expect(store.get(Model, 1)).toBe(model);
     });
 
-    it("does not cache set action when it rejects an error", done => {
+    it("does not cache set action when it rejects an error", (done) => {
       const origStorage = storage;
       storage = null;
       store
@@ -1635,11 +1637,11 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("returns a promise rejecting an error instance when set throws", done => {
+    it("returns a promise rejecting an error instance when set throws", (done) => {
       storage = null;
       store
         .set(Model, { value: "test" })
-        .catch(e => {
+        .catch((e) => {
           expect(e).toBeInstanceOf(Error);
         })
         .then(done);
@@ -1691,7 +1693,7 @@ describe("store:", () => {
       ]);
     });
 
-    it("adds item to list of models", done => {
+    it("adds item to list of models", (done) => {
       expect(store.get([Model]).length).toBe(2);
       store
         .set(Model, { value: "new value" })
@@ -1703,7 +1705,7 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("removes item form list of models", done => {
+    it("removes item form list of models", (done) => {
       store
         .set(store.get([Model])[0], null)
         .then(() => {
@@ -1713,7 +1715,7 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("returns new list when modifies already existing item", done => {
+    it("returns new list when modifies already existing item", (done) => {
       const list = store.get([Model]);
       store
         .set(list[0], { value: "new value" })
@@ -1724,7 +1726,7 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("calls observed properties once", done => {
+    it("calls observed properties once", (done) => {
       const spy = jasmine.createSpy("observe callback");
       const getter = () => store.get([Model]);
       const unobserve = cache.observe({}, "key", getter, spy);
@@ -1742,13 +1744,13 @@ describe("store:", () => {
       expect(store.error(model)).toBe(false);
     });
 
-    it("for cache set to 'false' calls storage each time", done => {
+    it("for cache set to 'false' calls storage each time", (done) => {
       Model = {
         id: true,
         value: "",
         [store.connect]: {
           cache: false,
-          get: id => storage[id],
+          get: (id) => storage[id],
         },
       };
 
@@ -1763,18 +1765,18 @@ describe("store:", () => {
       }).then(done);
     });
 
-    it("for cache set to 'false' does not call get for single item", done => {
+    it("for cache set to 'false' does not call get for single item", (done) => {
       const spy = jasmine.createSpy("get");
       Model = {
         id: true,
         value: "",
         [store.connect]: {
           cache: false,
-          get: id => {
+          get: (id) => {
             spy(id);
             return storage[id];
           },
-          list: () => Object.keys(storage).map(key => storage[key]),
+          list: () => Object.keys(storage).map((key) => storage[key]),
           loose: true,
         },
       };
@@ -1787,13 +1789,13 @@ describe("store:", () => {
       });
     });
 
-    it("for cache set to number get calls storage after timeout", done => {
+    it("for cache set to number get calls storage after timeout", (done) => {
       Model = {
         id: true,
         value: "",
         [store.connect]: {
           cache: 100,
-          get: id => storage[id],
+          get: (id) => storage[id],
         },
       };
 
@@ -1806,13 +1808,13 @@ describe("store:", () => {
       }).then(done);
     });
 
-    it("uses id returned from set action", done => {
+    it("uses id returned from set action", (done) => {
       let count = 2;
       Model = {
         id: true,
         value: "",
         [store.connect]: {
-          get: id => storage[id],
+          get: (id) => storage[id],
           set: (id, values) => {
             if (!id) {
               id = count + 1;
@@ -1827,13 +1829,13 @@ describe("store:", () => {
 
       store
         .set(Model, { value: "test" })
-        .then(model => {
+        .then((model) => {
           expect(store.get(Model, model.id)).toBe(model);
         })
         .then(done);
     });
 
-    it("clear forces call for model again", done => {
+    it("clear forces call for model again", (done) => {
       const model = store.get(Model, 1);
       store.clear(model);
       requestAnimationFrame(() => {
@@ -1857,10 +1859,10 @@ describe("store:", () => {
     });
 
     describe("with nested array options", () => {
-      const setupDep = options => ({
+      const setupDep = (options) => ({
         items: [Model, options],
         [store.connect]: () => ({
-          items: Object.keys(storage).map(key => storage[key]),
+          items: Object.keys(storage).map((key) => storage[key]),
         }),
       });
 
@@ -1868,7 +1870,7 @@ describe("store:", () => {
         expect(() => store.get({ items: [Model, true] })).toThrow();
       });
 
-      it("returns updated list when loose option is set", done => {
+      it("returns updated list when loose option is set", (done) => {
         const DepModel = setupDep({ loose: true });
         store.get(Model, 1);
 
@@ -1884,7 +1886,7 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("returns the same list if loose options are not set", done => {
+      it("returns the same list if loose options are not set", (done) => {
         const DepModel = setupDep();
         store.get(Model, 1);
 
@@ -1901,7 +1903,7 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("returns the same list if loose options are not set", done => {
+      it("returns the same list if loose options are not set", (done) => {
         const DepModel = setupDep({ loose: false });
         store.get(Model, 1);
 
@@ -1918,15 +1920,15 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("returns updated list if one of many loose arrays changes", done => {
+      it("returns updated list if one of many loose arrays changes", (done) => {
         const otherStorage = {
-          "1": { id: "1", value: "test" },
+          1: { id: "1", value: "test" },
         };
         const NewModel = {
           id: true,
           value: "",
           [store.connect]: {
-            get: id => otherStorage[id],
+            get: (id) => otherStorage[id],
             set: (id, values) => {
               if (values === null) {
                 delete otherStorage[id];
@@ -1943,8 +1945,10 @@ describe("store:", () => {
           items: [Model, { loose: true }],
           otherItems: [NewModel, { loose: true }],
           [store.connect]: () => ({
-            items: Object.keys(storage).map(key => storage[key]),
-            otherItems: Object.keys(otherStorage).map(key => otherStorage[key]),
+            items: Object.keys(storage).map((key) => storage[key]),
+            otherItems: Object.keys(otherStorage).map(
+              (key) => otherStorage[key],
+            ),
           }),
         };
 
@@ -1959,7 +1963,7 @@ describe("store:", () => {
       });
     });
 
-    it("set action receives list of updated keys", done => {
+    it("set action receives list of updated keys", (done) => {
       const spy = jasmine.createSpy();
       Model = {
         one: "one",
@@ -1988,15 +1992,15 @@ describe("store:", () => {
   describe("connected to async storage -", () => {
     let fn;
     beforeEach(() => {
-      fn = id => Promise.resolve({ id, value: "true" });
+      fn = (id) => Promise.resolve({ id, value: "true" });
       Model = {
         id: true,
         value: "",
-        [store.connect]: id => fn(id),
+        [store.connect]: (id) => fn(id),
       };
     });
 
-    it("rejects an error when promise resolves with other type than object", done => {
+    it("rejects an error when promise resolves with other type than object", (done) => {
       fn = () => Promise.resolve("value");
 
       store.get(Model, 1);
@@ -2016,7 +2020,7 @@ describe("store:", () => {
       expect(() => placeholder.value).toThrow();
     });
 
-    it("returns a placeholder in error state for not found singleton model", done => {
+    it("returns a placeholder in error state for not found singleton model", (done) => {
       Model = {
         value: "test",
         [store.connect]: {
@@ -2028,7 +2032,7 @@ describe("store:", () => {
       const pendingModel = store.get(Model);
       store
         .pending(pendingModel)
-        .then(model => {
+        .then((model) => {
           expect(store.error(model)).toBeInstanceOf(Error);
         })
         .then(done);
@@ -2036,7 +2040,7 @@ describe("store:", () => {
 
     it("calls storage get action once for permanent cache", () => {
       const spy = jasmine.createSpy();
-      fn = id => {
+      fn = (id) => {
         spy(id);
         return Promise.resolve({ id, value: "test" });
       };
@@ -2053,7 +2057,7 @@ describe("store:", () => {
         value: "",
         [store.connect]: {
           cache: 100,
-          get: id => {
+          get: (id) => {
             spy(id);
             return Promise.resolve({ id, value: "test" });
           },
@@ -2066,7 +2070,7 @@ describe("store:", () => {
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
-    it("calls observe method twice (pending & ready states)", done => {
+    it("calls observe method twice (pending & ready states)", (done) => {
       const spy = jasmine.createSpy();
       cache.observe({}, "key", () => store.get(Model, "1"), spy);
 
@@ -2075,7 +2079,7 @@ describe("store:", () => {
       }).then(done);
     });
 
-    it("returns cached external nested object in pending state", done => {
+    it("returns cached external nested object in pending state", (done) => {
       Model = {
         id: true,
         value: "",
@@ -2084,12 +2088,12 @@ describe("store:", () => {
           value: "test",
           [store.connect]: {
             cache: false,
-            get: id => Promise.resolve({ id, value: "one" }),
+            get: (id) => Promise.resolve({ id, value: "one" }),
           },
         },
         [store.connect]: {
           cache: false,
-          get: id =>
+          get: (id) =>
             Promise.resolve({
               id,
               value: "test",
@@ -2116,13 +2120,13 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("returns cached item of list in pending state", done => {
+    it("returns cached item of list in pending state", (done) => {
       Model = {
         id: true,
         value: "",
         [store.connect]: {
           cache: false,
-          get: id =>
+          get: (id) =>
             Promise.resolve({
               id,
               value: "test",
@@ -2135,11 +2139,11 @@ describe("store:", () => {
 
       store
         .pending(store.get([Model]))
-        .then(models => store.pending(models[0]).then(() => models))
-        .then(models => {
+        .then((models) => store.pending(models[0]).then(() => models))
+        .then((models) => {
           const model = models[0];
 
-          store.set(model, { value: "new value" }).then(nextModel => {
+          store.set(model, { value: "new value" }).then((nextModel) => {
             const nextModels = store.get([Model]);
             expect(nextModels[0]).toBe(nextModel);
           });
@@ -2147,7 +2151,7 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("returns the same list after timestamp changes", done => {
+    it("returns the same list after timestamp changes", (done) => {
       Model = {
         id: true,
         value: "",
@@ -2159,7 +2163,7 @@ describe("store:", () => {
         },
       };
 
-      store.pending(store.get([Model])).then(resolvedModel => {
+      store.pending(store.get([Model])).then((resolvedModel) => {
         setTimeout(() => {
           expect(store.get([Model])).toBe(resolvedModel);
           done();
@@ -2167,7 +2171,7 @@ describe("store:", () => {
       });
     });
 
-    it("returns a list with parameters", done => {
+    it("returns a list with parameters", (done) => {
       Model = {
         id: true,
         value: "",
@@ -2176,21 +2180,21 @@ describe("store:", () => {
         },
       };
 
-      store.pending(store.get([Model], { page: 1 })).then(resolvedModel => {
+      store.pending(store.get([Model], { page: 1 })).then((resolvedModel) => {
         expect(resolvedModel).toEqual([{ id: "1", value: "test" }]);
         done();
       });
     });
 
-    it("returns placeholder in async calls for long fetching model", done => {
+    it("returns placeholder in async calls for long fetching model", (done) => {
       let resolvePromise;
       Model = {
         id: true,
         value: "",
         [store.connect]: {
           cache: false,
-          get: id =>
-            new Promise(resolve => {
+          get: (id) =>
+            new Promise((resolve) => {
               resolvePromise = () => resolve({ id, value: "test" });
             }),
         },
@@ -2225,7 +2229,7 @@ describe("store:", () => {
     });
 
     describe("for success", () => {
-      it("sets pending state", done => {
+      it("sets pending state", (done) => {
         expect(store.pending(store.get(Model, 1))).toBeInstanceOf(Promise);
 
         Promise.resolve()
@@ -2235,7 +2239,7 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("sets ready state", done => {
+      it("sets ready state", (done) => {
         expect(store.ready(store.get(Model, 1))).toBe(false);
 
         Promise.resolve()
@@ -2245,7 +2249,7 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("sets error state", done => {
+      it("sets error state", (done) => {
         expect(store.error(store.get(Model, 1))).toBe(false);
 
         Promise.resolve()
@@ -2261,7 +2265,7 @@ describe("store:", () => {
         fn = () => Promise.reject(Error("some error"));
       });
 
-      it("caches an error result", done => {
+      it("caches an error result", (done) => {
         store.get(Model, 1);
         Promise.resolve()
           .then(() => {})
@@ -2271,7 +2275,7 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("sets pending state", done => {
+      it("sets pending state", (done) => {
         expect(store.pending(store.get(Model, 1))).toBeInstanceOf(Promise);
 
         Promise.resolve()
@@ -2282,7 +2286,7 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("sets ready state", done => {
+      it("sets ready state", (done) => {
         expect(store.ready(store.get(Model, 1))).toBe(false);
 
         Promise.resolve()
@@ -2293,7 +2297,7 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("sets error state", done => {
+      it("sets error state", (done) => {
         expect(store.error(store.get(Model, 1))).toBe(false);
 
         Promise.resolve()
@@ -2304,7 +2308,7 @@ describe("store:", () => {
           .then(done);
       });
 
-      it("sets pending state for singleton", done => {
+      it("sets pending state for singleton", (done) => {
         Model = {
           value: "test",
           [store.connect]: {
@@ -2380,7 +2384,7 @@ describe("store:", () => {
         [store.connect]: {
           cache: false,
           offline: true,
-          get: id => {
+          get: (id) => {
             if (isOffline) throw Error("Offline");
             return Promise.resolve().then(() => ({ id, value: "test" }));
           },
@@ -2429,7 +2433,7 @@ describe("store:", () => {
         [store.connect]: {
           cache: 0,
           offline: true,
-          get: id => {
+          get: (id) => {
             if (isOffline) throw Error("Offline");
             return { value: "test", model: id };
           },
@@ -2452,11 +2456,11 @@ describe("store:", () => {
         [store.connect]: {
           offline: 1,
           cache: 1,
-          get: id => Promise.resolve().then(() => ({ id })),
+          get: (id) => Promise.resolve().then(() => ({ id })),
         },
       };
 
-      return store.pending(store.get(Model, "1")).then(model =>
+      return store.pending(store.get(Model, "1")).then((model) =>
         resolveTimeout(() => {
           store.get(Model, "2");
           store.clear(model);
@@ -2476,11 +2480,12 @@ describe("store:", () => {
         [store.connect]: {
           offline: 100,
           cache: false,
-          get: id => Promise.resolve().then(() => ({ id, value: Date.now() })),
+          get: (id) =>
+            Promise.resolve().then(() => ({ id, value: Date.now() })),
         },
       };
 
-      return store.pending(store.get(Model, "1")).then(model => {
+      return store.pending(store.get(Model, "1")).then((model) => {
         cache.invalidateAll(storeConfigs.get(Model), {
           clearValue: true,
         });
@@ -2495,7 +2500,7 @@ describe("store:", () => {
           });
           const pendingModel = store.get(Model, "1");
           expect(store.ready(pendingModel)).toBe(false);
-          return store.pending(pendingModel).then(resultModel => {
+          return store.pending(pendingModel).then((resultModel) => {
             expect(resultModel.value).not.toBe(model.value);
           });
         });
@@ -2508,13 +2513,13 @@ describe("store:", () => {
         value: "clears values for instance",
         [store.connect]: {
           offline: true,
-          get: id => Promise.resolve().then(() => ({ id })),
+          get: (id) => Promise.resolve().then(() => ({ id })),
         },
       };
 
       store.get(Model, "2");
 
-      return store.pending(store.get(Model, "1")).then(model => {
+      return store.pending(store.get(Model, "1")).then((model) => {
         store.clear(model);
         expect(() => store.get(Model, "1").value).toThrow();
       });
@@ -2526,7 +2531,7 @@ describe("store:", () => {
         value: "clears values for definition",
         [store.connect]: {
           offline: true,
-          get: id => Promise.resolve().then(() => ({ id })),
+          get: (id) => Promise.resolve().then(() => ({ id })),
         },
       };
 
@@ -2543,7 +2548,7 @@ describe("store:", () => {
         id: true,
         value: "other model",
         [store.connect]: {
-          get: id => ({ id }),
+          get: (id) => ({ id }),
         },
       };
 
@@ -2552,7 +2557,7 @@ describe("store:", () => {
         value: "offline model",
         [store.connect]: {
           offline: true,
-          get: id => ({ id }),
+          get: (id) => ({ id }),
         },
       };
 
@@ -2576,7 +2581,7 @@ describe("store:", () => {
         },
       };
 
-      return store.pending(store.get(Model)).then(model => {
+      return store.pending(store.get(Model)).then((model) => {
         expect(model.offlineModel.value).toBe("offline model");
       });
     });
@@ -2605,7 +2610,7 @@ describe("store:", () => {
         },
       };
 
-      return store.pending(store.get(Model, 1)).then(model => {
+      return store.pending(store.get(Model, 1)).then((model) => {
         expect(store.error(model)).toBeInstanceOf(Error);
       });
     });
@@ -2616,7 +2621,7 @@ describe("store:", () => {
         value: "updates cache",
         [store.connect]: {
           offline: true,
-          get: id => {
+          get: (id) => {
             if (isOffline) throw Error("Offline");
             return { id };
           },

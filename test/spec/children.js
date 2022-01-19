@@ -33,23 +33,20 @@ describe("children:", () => {
         tag: "test-children-direct",
         direct: children(child),
         customName: ({ direct }) => direct && direct[0] && direct[0].customName,
-        render: ({ customName }) =>
-          html`
-            ${customName}
-          `,
+        render: ({ customName }) => html` ${customName} `,
       });
     });
 
     it(
       "returns list",
-      tree(el => {
+      tree((el) => {
         expect(el.direct).toEqual([el.children[0], el.children[1]]);
       }),
     );
 
     it(
       "removes item from list",
-      tree(el => {
+      tree((el) => {
         el.removeChild(el.children[1]);
 
         return resolveRaf(() => {
@@ -62,7 +59,7 @@ describe("children:", () => {
 
     it(
       "adds item to list",
-      tree(el => {
+      tree((el) => {
         const newItem = document.createElement("test-children-child");
         newItem.customName = "four";
 
@@ -80,7 +77,7 @@ describe("children:", () => {
 
     it(
       "reorder list items",
-      tree(el => {
+      tree((el) => {
         el.insertBefore(el.children[1], el.children[0]);
 
         return resolveRaf(() => {
@@ -94,7 +91,7 @@ describe("children:", () => {
 
     it(
       "updates parent computed property",
-      tree(el =>
+      tree((el) =>
         resolveTimeout(() => {
           expect(el.customName).toBe("one");
           el.children[0].customName = "four";
@@ -117,13 +114,13 @@ describe("children:", () => {
     beforeAll(() => {
       define({
         tag: "test-children-fn",
-        direct: children(hybrids => hybrids === child),
+        direct: children((hybrids) => hybrids === child),
       });
     });
 
     it(
       "returns item list",
-      tree(el => {
+      tree((el) => {
         expect(el.direct.length).toBe(1);
         expect(el.direct[0]).toBe(el.children[0]);
       }),
@@ -152,7 +149,7 @@ describe("children:", () => {
 
     it(
       "returns item list",
-      tree(el => {
+      tree((el) => {
         expect(el.deep).toEqual([
           jasmine.objectContaining({ customName: "one" }),
           jasmine.objectContaining({ customName: "two" }),
@@ -163,7 +160,7 @@ describe("children:", () => {
 
     it(
       "removes item from list",
-      tree(el => {
+      tree((el) => {
         el.children[2].innerHTML = "";
 
         return resolveRaf(() => {
@@ -177,7 +174,7 @@ describe("children:", () => {
 
     it(
       "does not update if other children element is invalidated",
-      tree(el =>
+      tree((el) =>
         resolveRaf(() => {
           el.children[0].children[0].customName = "test";
           return resolveRaf(() => {
@@ -214,7 +211,7 @@ describe("children:", () => {
 
     it(
       "returns item list",
-      tree(el => {
+      tree((el) => {
         expect(el.nested).toEqual([
           jasmine.objectContaining({ customName: "one" }),
           jasmine.objectContaining({ customName: "five" }),
@@ -226,7 +223,7 @@ describe("children:", () => {
 
     it(
       "removes item from list",
-      tree(el => {
+      tree((el) => {
         el.children[0].innerHTML = "";
 
         return resolveRaf(() => {
@@ -254,11 +251,7 @@ describe("children:", () => {
         items: children(TestDynamicChild),
         render: ({ items }) => html`
           <div>
-            ${items.map(({ name }) =>
-              html`
-                <div>${name}</div>
-              `.key(name),
-            )}
+            ${items.map(({ name }) => html` <div>${name}</div> `.key(name))}
           </div>
           <slot></slot>
         `,
@@ -272,11 +265,11 @@ describe("children:", () => {
             <test-dynamic-parent>
               <test-dynamic-child name="one"></test-dynamic-child>
               ${items &&
-                items.map(name =>
-                  html`
-                    <test-dynamic-child name="${name}"></test-dynamic-child>
-                  `.key(name),
-                )}
+              items.map((name) =>
+                html`
+                  <test-dynamic-child name="${name}"></test-dynamic-child>
+                `.key(name),
+              )}
             </test-dynamic-parent>
           `,
       });
@@ -288,7 +281,7 @@ describe("children:", () => {
 
     it(
       "adds dynamic item",
-      tree(el =>
+      tree((el) =>
         resolveTimeout(() => {
           el.items = ["two"];
           return resolveTimeout(() => {

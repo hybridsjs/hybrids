@@ -62,7 +62,7 @@ export function set(property, valueOrPath) {
     }
 
     return (host, event) => {
-      resolveValue(event, value => {
+      resolveValue(event, (value) => {
         const values = storeValues.get(property);
 
         if (!values) {
@@ -85,7 +85,7 @@ export function set(property, valueOrPath) {
   }
 
   if (arguments.length === 2) {
-    return host => {
+    return (host) => {
       host[property] = valueOrPath;
     };
   }
@@ -94,7 +94,7 @@ export function set(property, valueOrPath) {
 
   if (!fn) {
     fn = (host, event) => {
-      resolveValue(event, value => {
+      resolveValue(event, (value) => {
         host[property] = value;
       });
     };
@@ -122,7 +122,7 @@ export function resolve(promise, placeholder, delay = 200) {
 
     promiseMap.set(target, promise);
 
-    promise.then(value => {
+    promise.then((value) => {
       if (timeout) clearTimeout(timeout);
 
       if (promiseMap.get(target) === promise) {

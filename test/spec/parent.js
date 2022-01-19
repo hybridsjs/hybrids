@@ -14,12 +14,12 @@ describe("parent:", () => {
     define({
       tag: "test-parent-child",
       parent: parent(parentHybrids),
-      computed: host => `${host.parent.customProperty} other value`,
+      computed: (host) => `${host.parent.customProperty} other value`,
     });
 
     define({
       tag: "test-parent-child-fn",
-      parent: parent(hybrids => hybrids === parentHybrids),
+      parent: parent((hybrids) => hybrids === parentHybrids),
     });
   });
 
@@ -49,7 +49,7 @@ describe("parent:", () => {
 
   it(
     "connects with direct parent element",
-    directParentTree(el => {
+    directParentTree((el) => {
       const child = el.children[0];
       expect(child.parent).toBe(el);
     }),
@@ -57,7 +57,7 @@ describe("parent:", () => {
 
   it(
     "disconnects from parent element",
-    directParentTree(el => {
+    directParentTree((el) => {
       const child = el.children[0];
       expect(child.parent).toBe(el);
 
@@ -72,7 +72,7 @@ describe("parent:", () => {
 
   it(
     "connects to indirect parent element",
-    indirectParentTree(el => {
+    indirectParentTree((el) => {
       const child = el.children[0].children[0];
       expect(child.parent).toBe(el);
     }),
@@ -80,7 +80,7 @@ describe("parent:", () => {
 
   it(
     "connects to out of the shadow parent element",
-    shadowParentTree(el => {
+    shadowParentTree((el) => {
       const shadowRoot = el.attachShadow({ mode: "open" });
       const child = document.createElement("test-parent-child");
       const wrapper = document.createElement("div");
@@ -93,7 +93,7 @@ describe("parent:", () => {
 
   it(
     "connects to parent by a function argument",
-    fnParentTree(el => {
+    fnParentTree((el) => {
       const child = el.children[0];
       expect(child.parent).toBe(el);
     }),
@@ -101,14 +101,14 @@ describe("parent:", () => {
 
   it(
     "returns null for no parent",
-    noParentTree(el => {
+    noParentTree((el) => {
       expect(el.parent).toBe(null);
     }),
   );
 
   it(
     "updates child computed property",
-    directParentTree(el =>
+    directParentTree((el) =>
       Promise.resolve().then(() => {
         const child = el.children[0];
 

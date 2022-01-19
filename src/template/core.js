@@ -18,7 +18,7 @@ const preparedTemplates = new WeakMap();
 function applyShadyCSS(template, tagName) {
   if (!tagName) return template;
 
-  return shadyCSS(shady => {
+  return shadyCSS((shady) => {
     let map = preparedTemplates.get(template);
     if (!map) {
       map = new Map();
@@ -35,7 +35,7 @@ function applyShadyCSS(template, tagName) {
 
       const styles = clone.content.querySelectorAll("style");
 
-      Array.from(styles).forEach(style => {
+      Array.from(styles).forEach((style) => {
         const count = style.childNodes.length + 1;
         for (let i = 0; i < count; i += 1) {
           style.parentNode.insertBefore(
@@ -158,7 +158,7 @@ function normalizeWhitespace(input, startIndent = 0) {
     for (i += 1; input[i] === " " && i < input.length; i += 1) {
       indent += 1;
     }
-    return input.replace(/\n +/g, t =>
+    return input.replace(/\n +/g, (t) =>
       t.substr(0, Math.max(t.length - indent, 1)),
     );
   }
@@ -171,8 +171,8 @@ function beautifyTemplateLog(input, index) {
 
   const output = normalizeWhitespace(input)
     .split("\n")
-    .filter(i => i)
-    .map(line => {
+    .filter((i) => i)
+    .map((line) => {
       const startIndex = line.indexOf(placeholder);
 
       if (startIndex > -1) {
@@ -198,7 +198,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
   if (isSVG) {
     const svgRoot = template.content.firstChild;
     template.content.removeChild(svgRoot);
-    Array.from(svgRoot.childNodes).forEach(node =>
+    Array.from(svgRoot.childNodes).forEach((node) =>
       template.content.appendChild(node),
     );
   }
@@ -263,7 +263,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
           }
         }
 
-        Array.from(node.attributes).forEach(attr => {
+        Array.from(node.attributes).forEach((attr) => {
           const value = attr.value.trim();
           /* istanbul ignore next */
           const name = attr.name;
@@ -321,7 +321,9 @@ export function compileTemplate(rawParts, isSVG, styles) {
 
   if (probablyDevMode && notDefinedElements.length) {
     console.warn(
-      `Not defined ${notDefinedElements.map(e => `<${e}>`).join(", ")} element${
+      `Not defined ${notDefinedElements
+        .map((e) => `<${e}>`)
+        .join(", ")} element${
         notDefinedElements.length > 1 ? "s" : ""
       } found in the template:\n${beautifyTemplateLog(signature, -1)}`,
     );
@@ -385,7 +387,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
     if (styleSheets) {
       let isEqual = false;
 
-      styleSheets = styleSheets.map(style => {
+      styleSheets = styleSheets.map((style) => {
         if (style instanceof CSSStyleSheet) return style;
 
         let styleSheet = styleSheetsMap.get(style);
@@ -433,7 +435,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
     }
 
     if (target.nodeType !== Node.TEXT_NODE) {
-      shadyCSS(shady => {
+      shadyCSS((shady) => {
         if (host.shadowRoot) {
           if (prevArgs) {
             shady.styleSubtree(host);

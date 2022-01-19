@@ -28,7 +28,7 @@ function saveLayout(target) {
   const rootEl = document.scrollingElement;
   map.set(rootEl, { left: rootEl.scrollLeft, top: rootEl.scrollTop });
 
-  walkInShadow(target, el => {
+  walkInShadow(target, (el) => {
     if (el.scrollLeft || el.scrollTop) {
       map.set(el, { left: el.scrollLeft, top: el.scrollTop });
     }
@@ -66,7 +66,7 @@ function restoreLayout(target) {
   if (map) {
     const config = configs.get(target);
     const state = window.history.state;
-    const entry = state.find(e => e.id === config.id);
+    const entry = state.find((e) => e.id === config.id);
     const clear = entry && entry.params.scrollToTop;
 
     map.forEach((pos, el) => {
@@ -128,7 +128,7 @@ function setupBrowserUrl(browserUrl, id) {
 
       const url = new URL(temp, window.location.origin);
 
-      Object.keys(params).forEach(key => {
+      Object.keys(params).forEach((key) => {
         if (
           pathnameParams.includes(key) ||
           (strict && (metaParams.includes(key) || !searchParams.includes(key)))
@@ -169,7 +169,7 @@ function setupBrowserUrl(browserUrl, id) {
 }
 
 function hasInStack(config, target) {
-  return config.stack.some(temp => {
+  return config.stack.some((temp) => {
     if (temp === target) return true;
     return hasInStack(temp, target);
   });
@@ -186,7 +186,7 @@ function setupViews(views, options, parent = null, nestedParent = null) {
   if (typeof views === "function") views = views();
   views = [].concat(views);
 
-  return views.map(hybrids => {
+  return views.map((hybrids) => {
     const config = configs.get(hybrids);
 
     if (config && hasInStack(config, parent)) {
@@ -202,8 +202,8 @@ function setupViews(views, options, parent = null, nestedParent = null) {
 
 function getNestedRouterOptions(hybrids, config) {
   const nestedRouters = Object.values(hybrids)
-    .map(desc => routers.get(desc))
-    .filter(d => d);
+    .map((desc) => routers.get(desc))
+    .filter((d) => d);
 
   if (nestedRouters.length) {
     if (nestedRouters.length > 1) {
@@ -266,8 +266,8 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
     }
 
     if (options.dialog) {
-      callbacks.push(host => {
-        const goBackOnEscKey = event => {
+      callbacks.push((host) => {
+        const goBackOnEscKey = (event) => {
           if (event.key === "Escape") {
             event.stopPropagation();
             window.history.go(-1);
@@ -298,7 +298,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
     }
 
     const writableParams = [];
-    Object.keys(Constructor.prototype).forEach(key => {
+    Object.keys(Constructor.prototype).forEach((key) => {
       const desc = Object.getOwnPropertyDescriptor(Constructor.prototype, key);
       if (desc.set) writableParams.push(key);
     });
@@ -316,7 +316,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       }
       browserUrl = setupBrowserUrl(options.url, id);
 
-      browserUrl.paramsKeys.forEach(key => {
+      browserUrl.paramsKeys.forEach((key) => {
         const desc = Object.getOwnPropertyDescriptor(
           Constructor.prototype,
           key,
@@ -332,14 +332,14 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
     }
 
     const stateParams = writableParams.filter(
-      k => !routerOptions.params.includes(k) && !metaParams.includes(k),
+      (k) => !routerOptions.params.includes(k) && !metaParams.includes(k),
     );
 
-    callbacksMap.get(Constructor).unshift(_ =>
+    callbacksMap.get(Constructor).unshift((_) =>
       cache.observe(
         _,
         connect,
-        host =>
+        (host) =>
           stateParams.reduce((acc, key) => {
             const value = mapUrlParam(host[key]).toString();
             if (value !== undefined && value !== hybrids[key]) {
@@ -393,7 +393,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         url(params) {
           const url = new URL("", window.location.origin);
 
-          Object.keys(params).forEach(key => {
+          Object.keys(params).forEach((key) => {
             url.searchParams.append(key, mapUrlParam(params[key]));
           });
 
@@ -428,7 +428,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         }, {});
 
         const entry = { id, params: entryParams, ...other };
-        const guardConfig = config.parentsWithGuards.find(c => !c.guard());
+        const guardConfig = config.parentsWithGuards.find((c) => !c.guard());
 
         if (guardConfig) {
           return guardConfig.getEntry(params, { from: entry });
@@ -442,7 +442,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           return config.nestedParent.getEntry(params, { nested: entry });
         }
 
-        metaParams.forEach(key => {
+        metaParams.forEach((key) => {
           if (hasOwnProperty.call(params, key)) {
             entry.params[key] = params[key];
           }
@@ -598,7 +598,7 @@ function active(views, { stack = false } = {}) {
 
   views = [].concat(views);
 
-  return views.some(view => {
+  return views.some((view) => {
     const config = configs.get(view);
     if (!config) {
       throw TypeError(`Provided view is not connected to the router: ${view}`);
@@ -647,7 +647,7 @@ function handleNavigate(event) {
     if (event.ctrlKey || event.metaKey) return;
     const anchorEl = event
       .composedPath()
-      .find(el => el instanceof HTMLAnchorElement);
+      .find((el) => el instanceof HTMLAnchorElement);
 
     if (anchorEl) {
       url = new URL(anchorEl.href, window.location.origin);
@@ -746,7 +746,7 @@ function resolveStack(host, state, options) {
     if (key in view) view[key] = value;
   });
 
-  options.params.forEach(key => {
+  options.params.forEach((key) => {
     if (key in view) view[key] = host[key];
   });
 
@@ -785,7 +785,7 @@ function getEntryOffset(entry) {
           if (
             (config.pathnameParams &&
               config.pathnameParams.every(
-                key => entry.params[key] === e.params[key],
+                (key) => entry.params[key] === e.params[key],
               )) ||
             Object.entries(entry.params).every(
               ([key, value]) => e.params[key] === value,
@@ -852,7 +852,7 @@ function connectRootRouter(host, invalidate, options) {
 
     offset = -(offset + pushOffset);
 
-    const replace = popStateEvent => {
+    const replace = (popStateEvent) => {
       if (popStateEvent) {
         window.removeEventListener("popstate", replace);
         window.addEventListener("popstate", flush);
@@ -952,7 +952,7 @@ function connectRootRouter(host, invalidate, options) {
         if (
           !config ||
           (config.dialog && stack.length === 0) ||
-          (!roots.includes(config) && !roots.some(c => hasInStack(c, config)))
+          (!roots.includes(config) && !roots.some((c) => hasInStack(c, config)))
         ) {
           break;
         }
@@ -1001,14 +1001,14 @@ function connectNestedRouter(host, invalidate, options) {
 
   function getNestedState() {
     return window.history.state
-      .map(entry => {
+      .map((entry) => {
         while (entry) {
           if (entry.id === config.id) return entry.nested;
           entry = entry.nested;
         }
         return entry;
       })
-      .filter(e => e);
+      .filter((e) => e);
   }
 
   function flush() {
@@ -1037,14 +1037,14 @@ function router(views, options) {
   };
 
   const desc = {
-    get: host => {
+    get: (host) => {
       const stack = stacks.get(host) || [];
       return stack
-        .slice(0, stack.findIndex(el => !configs.get(el).dialog) + 1)
+        .slice(0, stack.findIndex((el) => !configs.get(el).dialog) + 1)
         .reverse();
     },
     connect: (host, key, invalidate) => {
-      options.params.forEach(param => {
+      options.params.forEach((param) => {
         if (!(param in host)) {
           throw Error(
             `Property '${param}' for global parameters is not defined in <${host.tagName.toLowerCase()}>`,

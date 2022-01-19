@@ -20,7 +20,7 @@ function resolve(config, model, lastModel) {
 }
 
 function shallowEqual(target, compare) {
-  return Object.keys(target).every(key => target[key] === compare[key]);
+  return Object.keys(target).every((key) => target[key] === compare[key]);
 }
 
 function resolveWithInvalidate(config, model, lastModel) {
@@ -103,7 +103,7 @@ function setupOfflineKey(config, threshold) {
         JSON.parse(window.localStorage.getItem(offlinePrefix)) || {};
       const timestamp = getCurrentTimestamp();
 
-      Object.keys(previousKeys).forEach(k => {
+      Object.keys(previousKeys).forEach((k) => {
         /* istanbul ignore next */
         if (!offlineKeys[k] && previousKeys[k] < timestamp) {
           window.localStorage.removeItem(k);
@@ -128,10 +128,10 @@ function setupStorage(config, options) {
   const result = { cache: true, loose: false, ...options };
 
   if (result.cache === false || result.cache === 0) {
-    result.validate = cachedModel =>
+    result.validate = (cachedModel) =>
       !cachedModel || getTimestamp(cachedModel) === getCurrentTimestamp();
   } else if (typeof result.cache === "number") {
-    result.validate = cachedModel =>
+    result.validate = (cachedModel) =>
       !cachedModel ||
       getTimestamp(cachedModel) + result.cache > getCurrentTimestamp();
   } else if (result.cache !== true) {
@@ -141,7 +141,7 @@ function setupStorage(config, options) {
   }
 
   if (!result.get) {
-    result.get = id => {
+    result.get = (id) => {
       throw notFoundError(stringifyId(id));
     };
   }
@@ -162,13 +162,13 @@ function setupStorage(config, options) {
         key: offlineKey,
         threshold,
         get: isBool
-          ? id => {
+          ? (id) => {
               if (hasOwnProperty.call(items, id)) {
                 return JSON.parse(items[id][1]);
               }
               return null;
             }
-          : id => {
+          : (id) => {
               if (hasOwnProperty.call(items, id)) {
                 const item = items[id];
                 if (item[0] + threshold < getCurrentTimestamp()) {
@@ -195,7 +195,7 @@ function setupStorage(config, options) {
                   const offline = valueConfig && valueConfig.storage.offline;
                   if (offline) {
                     if (valueConfig.list) {
-                      return value.map(model => {
+                      return value.map((model) => {
                         configs
                           .get(valueConfig.model)
                           .storage.offline.set(model.id, model);
@@ -219,7 +219,7 @@ function setupStorage(config, options) {
             flush = Promise.resolve().then(() => {
               const timestamp = getCurrentTimestamp();
 
-              Object.keys(items).forEach(key => {
+              Object.keys(items).forEach((key) => {
                 if (items[key][0] + threshold < timestamp) {
                   delete items[key];
                 }
@@ -275,7 +275,7 @@ function bootstrap(Model, nested) {
 function getTypeConstructor(type, key) {
   switch (type) {
     case "string":
-      return v => (v !== undefined && v !== null ? String(v) : "");
+      return (v) => (v !== undefined && v !== null ? String(v) : "");
     case "number":
       return Number;
     case "boolean":
@@ -407,7 +407,7 @@ function setupModel(Model, nested) {
       external,
       enumerable,
       nested: !enumerable && !external && nested,
-      placeholder: id => {
+      placeholder: (id) => {
         const model = Object.create(placeholder);
         definitions.set(model, config);
 
@@ -415,7 +415,7 @@ function setupModel(Model, nested) {
 
         return Object.freeze(model);
       },
-      isInstance: model => Object.getPrototypeOf(model) !== placeholder,
+      isInstance: (model) => Object.getPrototypeOf(model) !== placeholder,
       invalidate: () => {
         if (!invalidatePromise) {
           invalidatePromise = resolvedPromise.then(() => {
@@ -431,7 +431,7 @@ function setupModel(Model, nested) {
 
     config.storage = setupStorage(config, storage || memoryStorage(config));
 
-    const transform = Object.keys(Object.freeze(Model)).map(key => {
+    const transform = Object.keys(Object.freeze(Model)).map((key) => {
       if (key !== "id") {
         Object.defineProperty(placeholder, key, {
           get() {
@@ -469,7 +469,7 @@ function setupModel(Model, nested) {
 
       switch (type) {
         case "function":
-          return model => {
+          return (model) => {
             Object.defineProperty(model, key, {
               get() {
                 return cache.get(this, key, () => defaultValue(this));
@@ -740,22 +740,22 @@ function setupListModel(Model, nested) {
       storage: Object.freeze({
         ...setupStorage(config, {
           cache: modelConfig.storage.cache,
-          get: !nested && (id => modelConfig.storage.list(id)),
+          get: !nested && ((id) => modelConfig.storage.list(id)),
         }),
         offline: modelConfig.storage.offline && {
           threshold: modelConfig.storage.offline.threshold,
-          get: id => {
+          get: (id) => {
             const result = modelConfig.storage.offline.get(
               hashCode(String(stringifyId(id))),
             );
             return result
-              ? result.map(item => modelConfig.storage.offline.get(item))
+              ? result.map((item) => modelConfig.storage.offline.get(item))
               : null;
           },
           set: (id, values) => {
             modelConfig.storage.offline.set(
               hashCode(String(stringifyId(id))),
-              values.map(item => {
+              values.map((item) => {
                 modelConfig.storage.offline.set(item.id, item);
                 return item.id;
               }),
@@ -769,7 +769,7 @@ function setupListModel(Model, nested) {
 
         return Object.freeze(model);
       },
-      isInstance: model =>
+      isInstance: (model) =>
         Object.getPrototypeOf(model) !== listPlaceholderPrototype,
       create(items, invalidate = false) {
         if (items === null) return null;
@@ -922,7 +922,7 @@ function get(Model, id) {
 
     let validContexts = true;
     if (config.contexts) {
-      config.contexts.forEach(context => {
+      config.contexts.forEach((context) => {
         if (
           cache.get(context, context, resolveTimestamp) ===
           getCurrentTimestamp()
@@ -955,7 +955,7 @@ function get(Model, id) {
 
       if (result instanceof Promise) {
         result = result
-          .then(data => {
+          .then((data) => {
             if (typeof data !== "object" || data === null) {
               if (offline) offline.set(stringId, null);
               throw notFoundError(Model, stringId);
@@ -968,7 +968,7 @@ function get(Model, id) {
 
             return syncCache(config, stringId, setTimestamp(model));
           })
-          .catch(e => syncCache(config, stringId, mapError(fallback(), e)));
+          .catch((e) => syncCache(config, stringId, mapError(fallback(), e)));
 
         return setModelState(fallback(), "pending", result);
       }
@@ -1050,7 +1050,7 @@ function set(model, values = {}) {
   if (isInstance) {
     const promise = pending(model);
     if (promise) {
-      return promise.then(m => set(m, values));
+      return promise.then((m) => set(m, values));
     }
   }
 
@@ -1124,7 +1124,7 @@ function set(model, values = {}) {
     const result = Promise.resolve(
       config.storage.set(isInstance ? id : undefined, localModel, keys),
     )
-      .then(data => {
+      .then((data) => {
         const resultModel =
           data === localModel ? localModel : config.create(data);
 
@@ -1163,7 +1163,7 @@ function set(model, values = {}) {
           true,
         );
       })
-      .catch(err => {
+      .catch((err) => {
         err = err !== undefined ? err : Error("Undefined error");
         setState("error", err);
         throw err;
@@ -1259,7 +1259,7 @@ function clear(model, clearValue = true) {
     config = bootstrap(model);
     const offline = clearValue && config.storage.offline;
 
-    cache.getEntries(config).forEach(entry => {
+    cache.getEntries(config).forEach((entry) => {
       if (offline) offline.set(entry.key, null);
       if (entry.value) invalidateTimestamp(entry.value);
     });
@@ -1269,7 +1269,7 @@ function clear(model, clearValue = true) {
 
 function pending(...models) {
   let isPending = false;
-  const result = models.map(model => {
+  const result = models.map((model) => {
     try {
       const { state, value } = getModelState(model);
       if (state === "pending") {
@@ -1294,7 +1294,7 @@ function resolveToLatest(model) {
     return e ? Promise.reject(e) : Promise.resolve(model);
   }
 
-  return promise.then(m => resolveToLatest(m));
+  return promise.then((m) => resolveToLatest(m));
 }
 
 function error(model, property) {
@@ -1314,7 +1314,7 @@ function error(model, property) {
 function ready(...models) {
   return (
     models.length > 0 &&
-    models.every(model => {
+    models.every((model) => {
       const config = definitions.get(model);
       return !!(config && config.isInstance(model));
     })
@@ -1342,7 +1342,7 @@ function submit(draft, values = {}) {
 
   if (cache.getEntry(modelConfig, draft.id).value) {
     const model = get(modelConfig.model, draft.id);
-    result = Promise.resolve(pending(model) || model).then(resolvedModel =>
+    result = Promise.resolve(pending(model) || model).then((resolvedModel) =>
       set(resolvedModel, getValuesFromModel(draft, values)),
     );
   } else {
@@ -1350,11 +1350,11 @@ function submit(draft, values = {}) {
   }
 
   result = result
-    .then(resultModel => {
+    .then((resultModel) => {
       setModelState(draft, "ready");
       return set(draft, resultModel).then(() => resultModel);
     })
-    .catch(e => {
+    .catch((e) => {
       setModelState(draft, "error", e);
       return Promise.reject(e);
     });
@@ -1390,7 +1390,7 @@ function valueWithValidation(
 
   let fn;
   if (validate instanceof RegExp) {
-    fn = value => validate.test(value) || errorMessage;
+    fn = (value) => validate.test(value) || errorMessage;
   } else if (typeof validate === "function") {
     fn = (...args) => {
       const result = validate(...args);
@@ -1413,7 +1413,7 @@ function store(Model, options = {}) {
 
   if (options.id !== undefined && typeof options.id !== "function") {
     const id = options.id;
-    options.id = host => host[id];
+    options.id = (host) => host[id];
   }
 
   if (options.id && !config.enumerable) {

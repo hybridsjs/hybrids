@@ -17,13 +17,11 @@ describe("html:", () => {
     document.body.removeChild(fragment);
   });
 
-  const getArrayValues = f =>
-    Array.from(f.children).map(child => child.textContent);
+  const getArrayValues = (f) =>
+    Array.from(f.children).map((child) => child.textContent);
 
   it("renders static content", () => {
-    const render = html`
-      <div>static content<!-- some comment --></div>
-    `;
+    const render = html` <div>static content<!-- some comment --></div> `;
     render({}, fragment);
     expect(fragment.children[0].outerHTML).toBe(
       "<div>static content<!-- some comment --></div>",
@@ -31,12 +29,8 @@ describe("html:", () => {
   });
 
   it("creates template unique id", () => {
-    const renderOne = () => html`
-      <div>value:</div>
-    `;
-    const renderTwo = value => html`
-      <div>value:${value}</div>
-    `;
+    const renderOne = () => html` <div>value:</div> `;
+    const renderTwo = (value) => html` <div>value:${value}</div> `;
 
     renderOne()({}, fragment);
     renderTwo(0)({}, fragment);
@@ -45,7 +39,7 @@ describe("html:", () => {
   });
 
   it("reuses the same elements when re-render", () => {
-    const render = value => html`
+    const render = (value) => html`
       <!-- some comment -->
       <div>${value}</div>
     `;
@@ -63,7 +57,7 @@ describe("html:", () => {
       model: () => "value",
     });
 
-    const renderWithNewLines = value => html`
+    const renderWithNewLines = (value) => html`
       <test-html-object-property model=${value}>
         <div></div>
       </test-html-object-property>
@@ -87,9 +81,7 @@ describe("html:", () => {
   it("warns when not defined element is found", () => {
     const spy = spyOn(console, "warn");
 
-    html`
-      <not-defined-element></not-defined-element>
-    `({}, fragment);
+    html` <not-defined-element></not-defined-element> `({}, fragment);
 
     expect(spy).toHaveBeenCalledTimes(1);
 
@@ -102,28 +94,20 @@ describe("html:", () => {
   });
 
   it("clears arguments cache when template changes", () => {
-    html`
-      <div>${10}</div>
-    `(fragment);
-    html`
-      <span>${10}</span>
-    `(fragment);
+    html` <div>${10}</div> `(fragment);
+    html` <span>${10}</span> `(fragment);
     expect(fragment.children[0].innerHTML).toBe("10");
   });
 
-  it("replaces resolved nested custom element template", done => {
+  it("replaces resolved nested custom element template", (done) => {
     define({
       tag: "test-replace-trigger",
-      content: () => html`
-        content
-      `,
+      content: () => html` content `,
     });
 
-    const render = flag => html`
-      ${flag &&
-        html`
-          <test-replace-trigger></test-replace-trigger>
-        `}<button></button>
+    const render = (flag) => html`
+      ${flag && html` <test-replace-trigger></test-replace-trigger> `}<button
+      ></button>
     `;
     render(true)(fragment);
 
@@ -172,9 +156,7 @@ describe("html:", () => {
   });
 
   describe("attribute expression with non existing property", () => {
-    const render = value => html`
-      <div text-property="${value}"></div>
-    `;
+    const render = (value) => html` <div text-property="${value}"></div> `;
 
     beforeEach(() => render("value")(fragment));
 
@@ -203,17 +185,17 @@ describe("html:", () => {
 
   describe("attribute expression with existing property", () => {
     it("sets input properties", () => {
-      html`
-        <input type="checkbox" checked="  ${true}  " value=${"asd"} />
-      `(fragment);
+      html` <input type="checkbox" checked="  ${true}  " value=${"asd"} /> `(
+        fragment,
+      );
       expect(fragment.children[0].checked).toBe(true);
       expect(fragment.children[0].value).toBe("asd");
     });
 
     it("sets div hidden property", () => {
-      html`
-        <div hidden="${false}" dsa="${"one"}" asd="${"two"}"></div>
-      `(fragment);
+      html` <div hidden="${false}" dsa="${"one"}" asd="${"two"}"></div> `(
+        fragment,
+      );
       expect(fragment.children[0].hidden).toBe(false);
       expect(fragment.children[0].getAttribute("dsa")).toBe("one");
       expect(fragment.children[0].getAttribute("asd")).toBe("two");
@@ -237,10 +219,8 @@ describe("html:", () => {
   });
 
   describe("class expression attribute", () => {
-    const render = classList => html`
-      <div class=${classList}></div>
-    `;
-    const hasClass = className =>
+    const render = (classList) => html` <div class=${classList}></div> `;
+    const hasClass = (className) =>
       fragment.children[0].classList.contains(className);
 
     it("sets string value", () => {
@@ -278,10 +258,10 @@ describe("html:", () => {
   });
 
   describe("style expression attribute", () => {
-    const renderObject = styleList => html`
+    const renderObject = (styleList) => html`
       <div style="${styleList}"></div>
     `;
-    const renderAttr = text => html`
+    const renderAttr = (text) => html`
       <div style="color: red; ${text}" asd="<>/">
         <div style="color: red; ${text}"></div>
       </div>
@@ -328,10 +308,10 @@ describe("html:", () => {
   });
 
   describe("event attribute expression", () => {
-    const render = value => html`
+    const render = (value) => html`
       <button onclick=${value}></button><button onclick=${value}></button>
     `;
-    const renderWithQuotes = value => html`
+    const renderWithQuotes = (value) => html`
       <button onclick="${value}"></button>
     `;
 
@@ -437,14 +417,8 @@ describe("html:", () => {
   });
 
   describe("template content expression", () => {
-    const render = flag => html`
-      <div>
-        value:
-        ${flag &&
-          html`
-            <span>${"one"}</span>
-          `}
-      </div>
+    const render = (flag) => html`
+      <div>value: ${flag && html` <span>${"one"}</span> `}</div>
     `;
 
     beforeEach(() => render(true)({}, fragment));
@@ -462,7 +436,7 @@ describe("html:", () => {
   });
 
   describe("flat array content expression with primitive values", () => {
-    const render = items =>
+    const render = (items) =>
       // prettier-ignore
       html`${items}`;
 
@@ -491,13 +465,8 @@ describe("html:", () => {
   });
 
   describe("flat array content expression", () => {
-    const render = items => html`
-      ${items &&
-        items.map(v =>
-          html`
-            <span>${v}</span>
-          `.key(v),
-        )}
+    const render = (items) => html`
+      ${items && items.map((v) => html` <span>${v}</span> `.key(v))}
     `;
 
     beforeEach(() => {
@@ -562,21 +531,19 @@ describe("html:", () => {
 
     it("does not throw for duplicated id from key method", () => {
       expect(() => {
-        html`
-          ${[1, 2, 3].map(() => html``.key(1))}
-        `(fragment);
+        html` ${[1, 2, 3].map(() => html``.key(1))} `(fragment);
       }).not.toThrow();
     });
   });
 
   describe("nested array content expression", () => {
-    const renderItem = item =>
+    const renderItem = (item) =>
       // prettier-ignore
       html`<span>${item}</span>`.key(item);
-    const renderArray = array =>
+    const renderArray = (array) =>
       // prettier-ignore
       html`${array.map(renderItem)}`.key(array.join(''));
-    const render = items => html`
+    const render = (items) => html`
       ${items && items.map(renderArray)} static value
     `;
 
@@ -651,15 +618,13 @@ describe("html:", () => {
   });
 
   describe("multiple nested array content expression", () => {
-    const render = array =>
+    const render = (array) =>
       html`
-        ${array.map(item => {
+        ${array.map((item) => {
           if (Array.isArray(item)) {
             return render(item);
           }
-          return html`
-            <span>${item}</span>
-          `.key(item);
+          return html` <span>${item}</span> `.key(item);
         })}
       `.key(array.join());
 
@@ -699,15 +664,13 @@ describe("html:", () => {
     it("clears root array and re-render elements", () => {
       const dataStart = [{ id: 1 }, { id: 2 }];
       const dataFiltered = [{ id: 1, children: [{ id: 3 }] }, { id: 2 }];
-      const renderData = item =>
+      const renderData = (item) =>
         html`
           <span>${item.id}</span>
           ${item.children && item.children.map(renderData)}
         `.key(item.id);
 
-      const renderWrapper = list => html`
-        ${list.map(renderData)}
-      `;
+      const renderWrapper = (list) => html` ${list.map(renderData)} `;
 
       renderWrapper(dataFiltered)(fragment);
       renderWrapper(dataStart)(fragment);
@@ -717,7 +680,7 @@ describe("html:", () => {
 
   describe("table", () => {
     it("should render table with rows", () => {
-      const renderRow = v =>
+      const renderRow = (v) =>
         html`
           <tr>
             <td>${v}</td>
@@ -726,7 +689,8 @@ describe("html:", () => {
       const renderTable = html`
         <table>
           <tbody>
-            ${[1, 2].map(v => renderRow(v))} ${[3, 4].map(v => renderRow(v))}
+            ${[1, 2].map((v) => renderRow(v))}
+            ${[3, 4].map((v) => renderRow(v))}
           </tbody>
         </table>
       `;
@@ -788,10 +752,7 @@ describe("html:", () => {
   });
 
   describe("element value expression", () => {
-    const render = value =>
-      html`
-        <div>${value}</div>
-      `;
+    const render = (value) => html` <div>${value}</div> `;
 
     let el1;
     let el2;
@@ -846,9 +807,7 @@ describe("html:", () => {
     });
 
     it("uses value property from text input", () => {
-      const render = html`
-        <input type="text" oninput=${html.set("value")} />
-      `;
+      const render = html` <input type="text" oninput=${html.set("value")} /> `;
       render(host, fragment);
 
       const input = fragment.children[0];
@@ -920,7 +879,7 @@ describe("html:", () => {
       }).toThrow();
     });
 
-    it("set property of the store model instance", done => {
+    it("set property of the store model instance", (done) => {
       const model = store.get({ value: "test" });
 
       const render = html`
@@ -936,14 +895,14 @@ describe("html:", () => {
       requestAnimationFrame(() => {
         store
           .pending(model)
-          .then(nextModel => {
+          .then((nextModel) => {
             expect(nextModel).toEqual({ value: "John" });
           })
           .then(done);
       });
     });
 
-    it("set multiple properties of the store model instance", done => {
+    it("set multiple properties of the store model instance", (done) => {
       const model = store.get({ value: "test", other: "test" });
 
       const render = html`
@@ -959,14 +918,14 @@ describe("html:", () => {
       requestAnimationFrame(() => {
         store
           .pending(model)
-          .then(nextModel => {
+          .then((nextModel) => {
             expect(nextModel).toEqual({ value: "John", other: "Smith" });
           })
           .then(done);
       });
     });
 
-    it("set nested property of the store model instance", done => {
+    it("set nested property of the store model instance", (done) => {
       const model = store.get({ nested: { value: "test" } });
 
       const render = html`
@@ -982,19 +941,19 @@ describe("html:", () => {
       requestAnimationFrame(() => {
         store
           .pending(model)
-          .then(nextModel => {
+          .then((nextModel) => {
             expect(nextModel).toEqual({ nested: { value: "John" } });
           })
           .then(done);
       });
     });
 
-    it("reset store model instance by setting null", done => {
+    it("reset store model instance by setting null", (done) => {
       const model = store.get({ value: "test" });
 
       store
         .set(model, { value: "other" })
-        .then(nextModel => {
+        .then((nextModel) => {
           const render = html`
             <button type="text" onclick=${html.set(nextModel, null)}></button>
           `;
@@ -1002,7 +961,7 @@ describe("html:", () => {
           render(host, fragment);
           fragment.children[0].click();
 
-          return store.pending(nextModel).then(finalModel => {
+          return store.pending(nextModel).then((finalModel) => {
             expect(finalModel).toEqual({ value: "test" });
           });
         })
@@ -1022,9 +981,7 @@ describe("html:", () => {
     });
 
     it("uses value from event detail.value", () => {
-      const render = html`
-        <div oncustomevent=${html.set("value")} />
-      `;
+      const render = html` <div oncustomevent=${html.set("value")} /> `;
       render(host, fragment);
       const div = fragment.children[0];
       dispatch(div, "customevent", { detail: { value: "test" } });
@@ -1045,16 +1002,12 @@ describe("html:", () => {
   describe("resolve helper", () => {
     const render = (promise, value, placeholder) => html`
       ${html.resolve(
-        promise.then(
-          () => html`
-            <div>${value}</div>
-          `,
-        ),
+        promise.then(() => html` <div>${value}</div> `),
         placeholder,
       )}
     `;
 
-    it("reuses DOM element", done => {
+    it("reuses DOM element", (done) => {
       const promise = Promise.resolve();
       render(promise, "one")(fragment);
 
@@ -1071,13 +1024,11 @@ describe("html:", () => {
       }, 100);
     });
 
-    it("shows placeholder after delay", done => {
+    it("shows placeholder after delay", (done) => {
       render(
-        new Promise(resolve => setTimeout(resolve, 500)),
+        new Promise((resolve) => setTimeout(resolve, 500)),
         "value",
-        html`
-          <div>loading...</div>
-        `,
+        html` <div>loading...</div> `,
       )(fragment);
 
       setTimeout(() => {
@@ -1090,14 +1041,8 @@ describe("html:", () => {
       }, 300);
     });
 
-    it("cancel render previous value", done => {
-      render(
-        Promise.resolve(),
-        "one",
-        html`
-          <div>loading...</div>
-        `,
-      )(fragment);
+    it("cancel render previous value", (done) => {
+      render(Promise.resolve(), "one", html` <div>loading...</div> `)(fragment);
       render(Promise.resolve(), "two")(fragment);
 
       requestAnimationFrame(() => {
@@ -1106,7 +1051,7 @@ describe("html:", () => {
       });
     });
 
-    it("supports passing values", done => {
+    it("supports passing values", (done) => {
       const promise = Promise.resolve(["a", "b"]);
       // prettier-ignore
       const flush = html`${html.resolve(promise)}`;
@@ -1121,9 +1066,7 @@ describe("html:", () => {
   });
 
   describe("style method", () => {
-    const render = () => html`
-      <div>content</div>
-    `;
+    const render = () => html` <div>content</div> `;
 
     it("adds single style with text content", () => {
       const container = fragment.attachShadow({ mode: "open" });
@@ -1152,9 +1095,10 @@ describe("html:", () => {
     it("adds multiple styles with text content by multiple call", () => {
       const container = fragment.attachShadow({ mode: "open" });
 
-      render()
-        .style("div { color: red }")
-        .style("div { padding-top: 20px }")(fragment, container);
+      render().style("div { color: red }").style("div { padding-top: 20px }")(
+        fragment,
+        container,
+      );
 
       expect(getComputedStyle(container.children[0]).color).toBe(
         "rgb(255, 0, 0)",
@@ -1162,7 +1106,7 @@ describe("html:", () => {
       expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
     });
 
-    it("adds styles to the shadowRoot by adoptedStyleSheets or style tags", done => {
+    it("adds styles to the shadowRoot by adoptedStyleSheets or style tags", (done) => {
       const container = fragment.attachShadow({ mode: "open" });
       render().style("div { color: red }")({}, container);
 
@@ -1175,9 +1119,7 @@ describe("html:", () => {
           "rgb(255, 0, 0)",
         );
 
-        html`
-          <div>content</div>
-        `({}, container);
+        html` <div>content</div> `({}, container);
         return setTimeout(() => {
           if (document.adoptedStyleSheets) {
             expect(getComputedStyle(container.children[0]).color).toBe(
@@ -1191,7 +1133,7 @@ describe("html:", () => {
       }, 500);
     });
 
-    it("adds async styles by style tags to the shadowRoot", done => {
+    it("adds async styles by style tags to the shadowRoot", (done) => {
       const container = fragment.attachShadow({ mode: "open" });
       render().style("@import 'style.css'; div { color: red }")({}, container);
 
@@ -1203,9 +1145,7 @@ describe("html:", () => {
           "rgb(255, 0, 0)",
         );
 
-        html`
-          <div>content</div>
-        `({}, container);
+        html` <div>content</div> `({}, container);
 
         expect(getComputedStyle(container.children[0]).color).toBe(
           "rgb(0, 0, 0)",
@@ -1254,9 +1194,7 @@ describe("html:", () => {
   });
 
   describe("css method", () => {
-    const render = () => html`
-      <div>content</div>
-    `;
+    const render = () => html` <div>content</div> `;
 
     it("adds styles with text content", () => {
       const container = fragment.attachShadow({ mode: "open" });
@@ -1352,7 +1290,7 @@ describe("html:", () => {
 
     it(
       "should set custom property",
-      shadyTree(el =>
+      shadyTree((el) =>
         resolveTimeout(() => {
           const { color } = window.getComputedStyle(
             el.shadowRoot.children[0].shadowRoot.children[0],
@@ -1364,7 +1302,7 @@ describe("html:", () => {
 
     it(
       "should update custom property",
-      shadyTree(el =>
+      shadyTree((el) =>
         resolveTimeout(() => {
           el.active = true;
           return resolveTimeout(() => {
@@ -1379,7 +1317,7 @@ describe("html:", () => {
   });
 
   describe("ShadyCSS encapsulation", () => {
-    const render = text => html`
+    const render = (text) => html`
       <div>${text}</div>
       <style>
         div {
@@ -1440,7 +1378,7 @@ describe("html:", () => {
     beforeEach(() => {
       if (!shadyCSSApplied) {
         window.ShadyCSS = {
-          prepareTemplate: template => template,
+          prepareTemplate: (template) => template,
           styleElement: jasmine.createSpy(),
           styleSubtree: jasmine.createSpy(),
         };
@@ -1491,12 +1429,10 @@ describe("html:", () => {
 
     customElements.define("test-external-element", TestExternalElement);
 
-    const render = value =>
-      html`
-        <test-external-element>${value}</test-external-element>
-      `;
+    const render = (value) =>
+      html` <test-external-element>${value}</test-external-element> `;
 
-    it("renders external element with slotted value", done => {
+    it("renders external element with slotted value", (done) => {
       const el = document.createElement("div");
       el.attachShadow({ mode: "open" });
 
@@ -1514,18 +1450,14 @@ describe("html:", () => {
 
   describe("svg element", () => {
     it("sets attribute from an expression", () => {
-      const render = html`
-        <svg viewBox="${"0 0 100 100"}"></svg>
-      `;
+      const render = html` <svg viewBox="${"0 0 100 100"}"></svg> `;
       render({}, fragment);
 
       expect(fragment.children[0].getAttribute("viewBox")).toBe("0 0 100 100");
     });
 
     it("sets attribute from string with an expression", () => {
-      const render = html`
-        <svg viewBox="0 0 ${"100"} ${"100"}"></svg>
-      `;
+      const render = html` <svg viewBox="0 0 ${"100"} ${"100"}"></svg> `;
       render({}, fragment);
 
       expect(fragment.children[0].getAttribute("viewBox")).toBe("0 0 100 100");

@@ -70,10 +70,7 @@ describe("define:", () => {
     define({
       tag: "test-define-same",
       prop1: "test",
-      render: () =>
-        html`
-          <test-define-same-deep></test-define-same-deep>
-        `,
+      render: () => html` <test-define-same-deep></test-define-same-deep> `,
     });
 
     el = document.createElement("test-define-same");
@@ -83,10 +80,7 @@ describe("define:", () => {
       define({
         tag: "test-define-same",
         prop2: "test",
-        render: () =>
-          html`
-            <test-define-same-deep></test-define-same-deep>
-          `,
+        render: () => html` <test-define-same-deep></test-define-same-deep> `,
       });
 
       define({
@@ -178,7 +172,7 @@ describe("define:", () => {
         render: ({ prop1 }) =>
           html`<div>${prop1}</div>`, // prettier-ignore
         content: ({ prop1 }) =>
-          html`<div>${prop1}</div>` // prettier-ignore
+          html`<div>${prop1}</div>`, // prettier-ignore
       });
     });
 
@@ -311,13 +305,9 @@ describe("define:", () => {
     it("uses fn options for render in shadowRoot", () => {
       define({
         tag: "test-define-render-options",
-        render: Object.assign(
-          () =>
-            html`
-              <div>test</div>
-            `,
-          { delegatesFocus: true },
-        ),
+        render: Object.assign(() => html` <div>test</div> `, {
+          delegatesFocus: true,
+        }),
       });
 
       el = document.createElement("test-define-render-options");

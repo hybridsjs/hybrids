@@ -1,8 +1,8 @@
 function normalizeValue(value, set = new Set()) {
   if (Array.isArray(value)) {
-    value.forEach(className => set.add(className));
+    value.forEach((className) => set.add(className));
   } else if (value !== null && typeof value === "object") {
-    Object.keys(value).forEach(key => value[key] && set.add(key));
+    Object.keys(value).forEach((key) => value[key] && set.add(key));
   } else {
     set.add(value);
   }
@@ -18,12 +18,12 @@ export default function resolveClassList(host, target, value) {
 
   classMap.set(target, list);
 
-  list.forEach(className => {
+  list.forEach((className) => {
     target.classList.add(className);
     previousList.delete(className);
   });
 
-  previousList.forEach(className => {
+  previousList.forEach((className) => {
     target.classList.remove(className);
   });
 }

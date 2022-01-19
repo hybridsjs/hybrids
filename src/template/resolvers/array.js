@@ -32,9 +32,9 @@ export default function resolveArray(host, target, value, resolveValue) {
 
   if (lastEntries) {
     const ids = new Set();
-    entries.forEach(entry => ids.add(entry.id));
+    entries.forEach((entry) => ids.add(entry.id));
 
-    lastEntries = lastEntries.filter(entry => {
+    lastEntries = lastEntries.filter((entry) => {
       if (!ids.has(entry.id)) {
         removeTemplate(entry.placeholder);
         entry.placeholder.parentNode.removeChild(entry.placeholder);
@@ -89,7 +89,7 @@ export default function resolveArray(host, target, value, resolveValue) {
   }
 
   if (lastEntries) {
-    lastEntries.forEach(entry => {
+    lastEntries.forEach((entry) => {
       if (entry.available) {
         removeTemplate(entry.placeholder);
         entry.placeholder.parentNode.removeChild(entry.placeholder);
