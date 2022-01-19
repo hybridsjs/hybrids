@@ -1,9 +1,8 @@
 declare module "hybrids" {
   type Property<E, V> =
-    | (V extends string | number | boolean ? V : never)
+    | (V extends string | number | boolean | undefined ? V : never)
     | ((host: E & HTMLElement, lastValue: V) => V)
-    | Descriptor<E, V>
-    | undefined;
+    | Descriptor<E, V>;
 
   interface Descriptor<E, V> {
     value?: V;
@@ -234,6 +233,49 @@ declare module "hybrids" {
     function resolve<P>(event: Event, promise: Promise<P>): Promise<P>;
   }
 
+  /* Localize */
+  type Messages = {
+    [key: string]: {
+      message:
+        | string
+        | {
+            zero?: string;
+            one?: string;
+            two?: string;
+            few?: string;
+            many?: string;
+            other?: string;
+          };
+      description?: string;
+    };
+  };
+
+  function localize(lang: string, messages: Messages): void;
+  function localize(
+    translate: (
+      key: string,
+      context: string,
+    ) => string | ((num: number) => string),
+  ): void;
+
+  namespace localize {
+    const languages: string[];
+  }
+
+  function msg(parts: TemplateStringsArray, ...args: unknown[]): string;
+
+  namespace msg {
+    function html<E>(
+      parts: TemplateStringsArray,
+      ...args: unknown[]
+    ): UpdateFunction<E>;
+
+    function svg<E>(
+      parts: TemplateStringsArray,
+      ...args: unknown[]
+    ): UpdateFunction<E>;
+  }
+
   /* Utils */
 
   function dispatch(
@@ -271,6 +313,8 @@ declare module "hybrids" {
       placeholder?: UpdateFunction<E>,
       delay?: number,
     ): UpdateFunction<E>;
+
+    function msg(parts: TemplateStringsArray, ...args: unknown[]): string;
   }
 
   function svg<E>(

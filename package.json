@@ -8,6 +8,7 @@
   "module": "./src/index.js",
   "exports": "./src/index.js",
   "types": "types/index.d.ts",
+  "bin": "./scripts/cli.js",
   "homepage": "https://hybrids.js.org",
   "repository": "https://github.com/hybridsjs/hybrids",
   "bugs": "https://github.com/hybridsjs/hybrids/issues",

@@ -4,6 +4,7 @@
   - [Definition](/component-model/definition.md)
   - [Structure](/component-model/structure.md)
   - [Templates](/component-model/templates.md)
+  - [Localization](/component-model/localization.md)
   - [Events](/component-model/events.md)
   - [Parent & Children](/component-model/parent-children.md)
   - [TypeScript](/component-model/typescript.md)

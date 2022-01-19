@@ -5,7 +5,8 @@
     "jasmine": true
   },
   "parserOptions": {
-    "sourceType": "module"
+    "sourceType": "module",
+    "ecmaVersion": 2020
   },
   "extends": [
     "eslint:recommended",
@@ -14,8 +15,5 @@
   ],
   "rules": {
     "import/extensions": [2, "always"]
-  },
-  "globals": {
-    "window": true
-  }
+  } 
 }

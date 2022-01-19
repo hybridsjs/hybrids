@@ -1,5 +1,7 @@
 import global from "../global.js";
 import { stringifyElement, shadyCSS, probablyDevMode } from "../utils.js";
+import { get as getMessage } from "../localize.js";
+
 import { dataMap, removeTemplate } from "./utils.js";
 
 import resolveValue from "./resolvers/value.js";
@@ -7,11 +9,12 @@ import resolveProperty from "./resolvers/property.js";
 
 const TIMESTAMP = Date.now();
 
-export const getPlaceholder = (id = 0) => `{{h-${TIMESTAMP}-${id}}}`;
+export const getPlaceholder = (id = 0) => `H-${TIMESTAMP}-${id}`;
 
 const PLACEHOLDER_REGEXP_TEXT = getPlaceholder("(\\d+)");
 const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
 const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, "g");
+const PLACEHOLDER_REGEXP_ONLY = /^[${}0-9 \t\n\f\r]+$/;
 
 const preparedTemplates = new WeakMap();
 
@@ -189,7 +192,7 @@ function beautifyTemplateLog(input, index) {
   return `${output}`;
 }
 
-export function compileTemplate(rawParts, isSVG, styles) {
+export function compileTemplate(rawParts, isSVG, styles, translate = true) {
   const template = global.document.createElement("template");
   const parts = [];
 
@@ -209,14 +212,50 @@ export function compileTemplate(rawParts, isSVG, styles) {
   const compileWalker = createWalker(template.content);
   const notDefinedElements = [];
   let compileIndex = 0;
+  let noTranslate = null;
 
   while (compileWalker.nextNode()) {
     const node = compileWalker.currentNode;
 
+    if (noTranslate && !noTranslate.contains(node)) {
+      noTranslate = null;
+    }
+
     if (node.nodeType === global.Node.TEXT_NODE) {
-      const text = node.textContent;
+      let text = node.textContent;
 
       if (!text.match(PLACEHOLDER_REGEXP_EQUAL)) {
+        if (translate && !noTranslate && !text.match(/^\s*$/)) {
+          let offset = -1;
+          const key = text.trim();
+          const compiledKey = key.replace(
+            PLACEHOLDER_REGEXP_ALL,
+            (_, index) => {
+              if (offset === -1) offset = Number(index);
+              return `\${${Number(index) - offset}}`;
+            },
+          );
+
+          if (!compiledKey.match(PLACEHOLDER_REGEXP_ONLY)) {
+            let context =
+              node.previousSibling &&
+              node.previousSibling.nodeType === global.Node.COMMENT_NODE
+                ? node.previousSibling
+                : "";
+            if (context) {
+              context.parentNode.removeChild(context);
+              context = (context.textContent.split("|")[1] || "").trim();
+            }
+
+            const value = getMessage(compiledKey, context).replace(
+              /\${(\d+)}/g,
+              (_, index) => getPlaceholder(Number(index) + offset),
+            );
+            text = text.replace(key, value);
+            node.textContent = text;
+          }
+        }
+
         const results = text.match(PLACEHOLDER_REGEXP_ALL);
         if (results) {
           let currentNode = node;
@@ -239,19 +278,39 @@ export function compileTemplate(rawParts, isSVG, styles) {
                   global.document.createTextNode(part),
                   currentNode.nextSibling,
                 );
+
+                compileWalker.currentNode = currentNode;
+                compileIndex += 1;
+              }
+
+              const equal = currentNode.textContent.match(
+                PLACEHOLDER_REGEXP_EQUAL,
+              );
+              if (equal) {
+                currentNode.textContent = "";
+                parts[equal[1]] = [compileIndex, resolveValue];
               }
             });
         }
-      }
-
-      const equal = node.textContent.match(PLACEHOLDER_REGEXP_EQUAL);
-      if (equal) {
-        node.textContent = "";
-        parts[equal[1]] = [compileIndex, resolveValue];
+      } else {
+        const equal = node.textContent.match(PLACEHOLDER_REGEXP_EQUAL);
+        if (equal) {
+          node.textContent = "";
+          parts[equal[1]] = [compileIndex, resolveValue];
+        }
       }
     } else {
       /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
       if (node.nodeType === global.Node.ELEMENT_NODE) {
+        if (
+          !noTranslate &&
+          (node.getAttribute("translate") === "no" ||
+            node.tagName.toLowerCase() === "script" ||
+            node.tagName.toLowerCase() === "style")
+        ) {
+          noTranslate = node;
+        }
+
         /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
         if (probablyDevMode) {
           const tagName = node.tagName.toLowerCase();
