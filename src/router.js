@@ -1,3 +1,4 @@
+import global from "./global.js";
 import { callbacksMap } from "./define.js";
 import * as cache from "./cache.js";
 import { dispatch, walkInShadow } from "./utils.js";
@@ -20,12 +21,12 @@ function setDebug(value = true) {
 const scrollMap = new WeakMap();
 const focusMap = new WeakMap();
 function saveLayout(target) {
-  const focusEl = document.activeElement;
+  const focusEl = global.document.activeElement;
   focusMap.set(target, rootRouter.contains(focusEl) && focusEl);
 
   const map = new Map();
 
-  const rootEl = document.scrollingElement;
+  const rootEl = global.document.scrollingElement;
   map.set(rootEl, { left: rootEl.scrollLeft, top: rootEl.scrollTop });
 
   walkInShadow(target, (el) => {
@@ -55,7 +56,7 @@ function focusElement(target) {
 }
 
 function restoreLayout(target) {
-  const activeEl = document.activeElement;
+  const activeEl = global.document.activeElement;
 
   focusElement(
     focusMap.get(target) ||
@@ -65,7 +66,7 @@ function restoreLayout(target) {
   const map = scrollMap.get(target);
   if (map) {
     const config = configs.get(target);
-    const state = window.history.state;
+    const state = global.history.state;
     const entry = state.find((e) => e.id === config.id);
     const clear = entry && entry.params.scrollToTop;
 
@@ -76,7 +77,7 @@ function restoreLayout(target) {
 
     scrollMap.delete(target);
   } else {
-    const rootEl = document.scrollingElement;
+    const rootEl = global.document.scrollingElement;
     rootEl.scrollLeft = 0;
     rootEl.scrollTop = 0;
   }
@@ -126,7 +127,7 @@ function setupBrowserUrl(browserUrl, id) {
         return `${acc}/${part}`;
       });
 
-      const url = new URL(temp, window.location.origin);
+      const url = new URL(temp, global.location.origin);
 
       Object.keys(params).forEach((key) => {
         if (
@@ -228,7 +229,7 @@ function getNestedRouterOptions(hybrids, config) {
 }
 
 function getConfigById(id) {
-  const Constructor = customElements.get(id);
+  const Constructor = global.customElements.get(id);
   return configs.get(Constructor);
 }
 
@@ -241,7 +242,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
   }
 
   if (!config) {
-    const Constructor = customElements.get(id);
+    const Constructor = global.customElements.get(id);
 
     if (!Constructor || Constructor.hybrids !== hybrids) {
       throw Error(
@@ -270,7 +271,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         const goBackOnEscKey = (event) => {
           if (event.key === "Escape") {
             event.stopPropagation();
-            window.history.go(-1);
+            global.history.go(-1);
           }
         };
 
@@ -278,7 +279,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           focusElement(host);
         };
 
-        const prevActiveEl = document.activeElement;
+        const prevActiveEl = global.document.activeElement;
         const root = rootRouter;
 
         root.addEventListener("focusin", focusDialog);
@@ -350,13 +351,13 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         (host, params, lastParams) => {
           if (!lastParams) return;
 
-          const state = window.history.state;
+          const state = global.history.state;
           let entry = state[0];
           while (entry.id !== id && entry.nested) entry = entry.nested;
 
           params = { ...entry.params, ...params };
 
-          window.history.replaceState(
+          global.history.replaceState(
             [config.getEntry(params), ...state.slice(1)],
             "",
             browserUrl ? config.url(params, true) : "",
@@ -391,7 +392,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       stack: [],
       ...(browserUrl || {
         url(params) {
-          const url = new URL("", window.location.origin);
+          const url = new URL("", global.location.origin);
 
           Object.keys(params).forEach((key) => {
             url.searchParams.append(key, mapUrlParam(params[key]));
@@ -399,7 +400,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
 
           return new URL(
             `${routerOptions.url}#@${id}${url.search}`,
-            window.location.origin,
+            global.location.origin,
           );
         },
         match(url) {
@@ -514,7 +515,7 @@ function getAllEntryParams(entry) {
 }
 
 function getBackUrl({ nested = false, scrollToTop = false } = {}) {
-  const state = window.history.state;
+  const state = global.history.state;
   if (!state) return "";
 
   if (state.length > 1) {
@@ -567,7 +568,7 @@ function getBackUrl({ nested = false, scrollToTop = false } = {}) {
 }
 
 function getGuardUrl(params = {}) {
-  const state = window.history.state;
+  const state = global.history.state;
   if (!state) return "";
 
   const entry = state[0];
@@ -582,7 +583,7 @@ function getGuardUrl(params = {}) {
 }
 
 function getCurrentUrl(params) {
-  const state = window.history.state;
+  const state = global.history.state;
   if (!state) return "";
 
   let entry = state[0];
@@ -593,7 +594,7 @@ function getCurrentUrl(params) {
 }
 
 function active(views, { stack = false } = {}) {
-  const state = window.history.state;
+  const state = global.history.state;
   if (!state) return false;
 
   views = [].concat(views);
@@ -623,7 +624,7 @@ function getEntryFromURL(url) {
   const [pathname, search] = url.hash.split("?");
   if (pathname && pathname.match(/^#@.+-.+/)) {
     config = getConfigById(pathname.split("@")[1]);
-    url = new URL(`?${search}`, window.location.origin);
+    url = new URL(`?${search}`, global.location.origin);
   }
 
   if (!config) {
@@ -647,16 +648,16 @@ function handleNavigate(event) {
     if (event.ctrlKey || event.metaKey) return;
     const anchorEl = event
       .composedPath()
-      .find((el) => el instanceof HTMLAnchorElement);
+      .find((el) => el instanceof global.HTMLAnchorElement);
 
     if (anchorEl) {
-      url = new URL(anchorEl.href, window.location.origin);
+      url = new URL(anchorEl.href, global.location.origin);
     }
   } else {
-    url = new URL(event.target.action, window.location.origin);
+    url = new URL(event.target.action, global.location.origin);
   }
 
-  if (url && url.origin === window.location.origin) {
+  if (url && url.origin === global.location.origin) {
     const entry = getEntryFromURL(url);
     if (entry) {
       event.preventDefault();
@@ -687,7 +688,7 @@ function resolveEvent(event, promise) {
 
   return promise.then(() => {
     if (promise === activePromise) {
-      requestAnimationFrame(() => {
+      global.requestAnimationFrame(() => {
         handleNavigate(pseudoEvent);
       });
       activePromise = null;
@@ -754,7 +755,7 @@ function resolveStack(host, state, options) {
 }
 
 function getEntryOffset(entry) {
-  const state = window.history.state.reduce((acc, e, index) => {
+  const state = global.history.state.reduce((acc, e, index) => {
     let i = 0;
 
     while (e) {
@@ -829,21 +830,21 @@ function getEntryOffset(entry) {
 
 function connectRootRouter(host, invalidate, options) {
   function restoreScrollRestoration() {
-    if (window.history.scrollRestoration === "manual") {
-      window.history.scrollRestoration = "auto";
+    if (global.history.scrollRestoration === "manual") {
+      global.history.scrollRestoration = "auto";
     }
   }
 
   function flush() {
-    resolveStack(host, window.history.state, options);
+    resolveStack(host, global.history.state, options);
     invalidate();
 
-    requestAnimationFrame(restoreScrollRestoration);
+    global.requestAnimationFrame(restoreScrollRestoration);
   }
 
   function navigateBack(offset, entry, nextUrl) {
-    const stateLength = window.history.state.length;
-    const targetEntry = window.history.state[offset];
+    const stateLength = global.history.state.length;
+    const targetEntry = global.history.state[offset];
     const pushOffset = offset < stateLength - 1 && stateLength > 2 ? 1 : 0;
 
     if (targetEntry && entry.id === targetEntry.id) {
@@ -854,35 +855,35 @@ function connectRootRouter(host, invalidate, options) {
 
     const replace = (popStateEvent) => {
       if (popStateEvent) {
-        window.removeEventListener("popstate", replace);
-        window.addEventListener("popstate", flush);
+        global.removeEventListener("popstate", replace);
+        global.addEventListener("popstate", flush);
       }
 
-      const state = window.history.state;
+      const state = global.history.state;
       const method = pushOffset ? "pushState" : "replaceState";
       const nextState = [entry, ...state.slice(pushOffset ? 0 : 1)];
 
       if (pushOffset) {
-        window.history.scrollRestoration = "manual";
+        global.history.scrollRestoration = "manual";
       }
 
-      window.history[method](nextState, "", nextUrl);
+      global.history[method](nextState, "", nextUrl);
 
       flush();
     };
 
     if (offset) {
-      window.removeEventListener("popstate", flush);
-      window.addEventListener("popstate", replace);
+      global.removeEventListener("popstate", flush);
+      global.addEventListener("popstate", replace);
 
-      window.history.go(offset);
+      global.history.go(offset);
     } else {
       replace();
     }
   }
 
   function navigate(entry) {
-    const state = window.history.state;
+    const state = global.history.state;
 
     let nestedEntry = entry;
     while (nestedEntry.nested) nestedEntry = nestedEntry.nested;
@@ -904,8 +905,8 @@ function connectRootRouter(host, invalidate, options) {
         stack = stacks.get(stack[0]);
       }
 
-      window.history.scrollRestoration = "manual";
-      window.history.pushState([entry, ...state], "", url);
+      global.history.scrollRestoration = "manual";
+      global.history.pushState([entry, ...state], "", url);
 
       flush();
     }
@@ -933,13 +934,13 @@ function connectRootRouter(host, invalidate, options) {
     throw e;
   }
 
-  const state = window.history.state;
+  const state = global.history.state;
 
   if (!state) {
     const entry =
-      getEntryFromURL(new URL(window.location.href)) || roots[0].getEntry();
+      getEntryFromURL(new URL(global.location.href)) || roots[0].getEntry();
 
-    window.history.replaceState([entry], "", options.url);
+    global.history.replaceState([entry], "", options.url);
     flush();
   } else {
     const stack = stacks.get(host);
@@ -978,14 +979,14 @@ function connectRootRouter(host, invalidate, options) {
     }
   }
 
-  window.addEventListener("popstate", flush);
+  global.addEventListener("popstate", flush);
 
   host.addEventListener("click", handleNavigate);
   host.addEventListener("submit", handleNavigate);
   host.addEventListener("navigate", executeNavigate);
 
   return () => {
-    window.removeEventListener("popstate", flush);
+    global.removeEventListener("popstate", flush);
 
     host.removeEventListener("click", handleNavigate);
     host.removeEventListener("submit", handleNavigate);
@@ -1000,7 +1001,7 @@ function connectNestedRouter(host, invalidate, options) {
   const config = configs.get(host);
 
   function getNestedState() {
-    return window.history.state
+    return global.history.state
       .map((entry) => {
         while (entry) {
           if (entry.id === config.id) return entry.nested;
@@ -1017,8 +1018,8 @@ function connectNestedRouter(host, invalidate, options) {
   }
 
   if (!getNestedState()[0]) {
-    const state = window.history.state;
-    window.history.replaceState(
+    const state = global.history.state;
+    global.history.replaceState(
       [config.nestedRoots[0].getEntry(state[0].params), ...state.slice(1)],
       "",
     );
@@ -1030,7 +1031,7 @@ function connectNestedRouter(host, invalidate, options) {
 
 function router(views, options) {
   options = {
-    url: window.location.href.replace(/#.*$/, ""),
+    url: global.location.href.replace(/#.*$/, ""),
     params: [],
     ...options,
     views,
@@ -1069,7 +1070,7 @@ function router(views, options) {
         if (lastValue && view === lastValue[index]) return;
 
         let config = configs.get(host);
-        let entry = window.history.state[0];
+        let entry = global.history.state[0];
         let key = 0;
 
         while (config) {
@@ -1090,7 +1091,7 @@ function router(views, options) {
 
         console.groupEnd();
 
-        window[`$$${key}`] = view;
+        global[`$$${key}`] = view;
       }),
   };
 

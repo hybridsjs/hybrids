@@ -1,7 +1,6 @@
 {
   "env": {
     "es2020": true,
-    "browser": true,
     "node": true,
     "jasmine": true
   },
@@ -15,5 +14,8 @@
   ],
   "rules": {
     "import/extensions": [2, "always"]
+  },
+  "globals": {
+    "window": true
   }
 }

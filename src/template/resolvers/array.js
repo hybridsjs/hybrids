@@ -1,3 +1,4 @@
+import global from "../../global.js";
 import { dataMap, removeTemplate, getTemplateEnd } from "../utils.js";
 
 export const arrayMap = new WeakMap();
@@ -72,7 +73,7 @@ export default function resolveArray(host, target, value, resolveValue) {
         resolveValue(host, entry.placeholder, entry.value, matchedEntry.value);
       }
     } else {
-      entry.placeholder = document.createTextNode("");
+      entry.placeholder = global.document.createTextNode("");
       previousSibling.parentNode.insertBefore(
         entry.placeholder,
         previousSibling.nextSibling,

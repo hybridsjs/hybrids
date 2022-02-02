@@ -1,3 +1,5 @@
+import global from "./global.js";
+
 const callbacks = new WeakMap();
 const queue = new Set();
 
@@ -21,7 +23,7 @@ function execute() {
 export function dispatch(target) {
   if (callbacks.has(target)) {
     if (!queue.size) {
-      requestAnimationFrame(execute);
+      global.requestAnimationFrame(execute);
     }
     queue.add(target);
   }

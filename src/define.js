@@ -1,3 +1,4 @@
+import global from "./global.js";
 import * as cache from "./cache.js";
 import { deferred, camelToDash, walkInShadow } from "./utils.js";
 
@@ -6,7 +7,7 @@ const disconnects = new WeakMap();
 
 export const callbacksMap = new WeakMap();
 
-class HybridsRootElement extends HTMLElement {
+class HybridsRootElement extends global.HTMLElement {
   constructor() {
     super();
 
@@ -227,7 +228,7 @@ const updateQueue = new Map();
 function update(HybridsElement) {
   if (!updateQueue.size) {
     deferred.then(() => {
-      walkInShadow(document.body, (node) => {
+      walkInShadow(global.document.body, (node) => {
         if (updateQueue.has(node.constructor)) {
           const prevHybrids = updateQueue.get(node.constructor);
           const hybrids = node.constructor.hybrids;
@@ -258,7 +259,7 @@ function define(hybrids) {
     );
   }
 
-  const HybridsElement = window.customElements.get(hybrids.tag);
+  const HybridsElement = global.customElements.get(hybrids.tag);
 
   if (HybridsElement) {
     if (HybridsElement.hybrids) {
@@ -273,7 +274,7 @@ function define(hybrids) {
     );
   }
 
-  customElements.define(hybrids.tag, compile(hybrids));
+  global.customElements.define(hybrids.tag, compile(hybrids));
   return Object.freeze(hybrids);
 }
 

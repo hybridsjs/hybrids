@@ -1,3 +1,5 @@
+import global from "./global.js";
+
 function walk(node, fn, options, items = []) {
   Array.from(node.children).forEach((child) => {
     const hybrids = child.constructor.hybrids;
@@ -26,7 +28,7 @@ export default function children(
   return {
     get: (host) => walk(host, fn, options),
     connect(host, key, invalidate) {
-      const observer = new MutationObserver(invalidate);
+      const observer = new global.MutationObserver(invalidate);
 
       observer.observe(host, {
         childList: true,

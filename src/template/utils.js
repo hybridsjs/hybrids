@@ -1,3 +1,5 @@
+import global from "../global.js";
+
 const map = new WeakMap();
 export const dataMap = {
   get(key, defaultValue) {
@@ -27,7 +29,7 @@ export function getTemplateEnd(node) {
 }
 
 export function removeTemplate(target) {
-  if (target.nodeType !== Node.TEXT_NODE) {
+  if (target.nodeType !== global.Node.TEXT_NODE) {
     let child = target.childNodes[0];
     while (child) {
       target.removeChild(child);

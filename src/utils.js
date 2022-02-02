@@ -1,3 +1,5 @@
+import global from "./global.js";
+
 const camelToDashMap = new Map();
 export function camelToDash(str) {
   let result = camelToDashMap.get(str);
@@ -10,12 +12,12 @@ export function camelToDash(str) {
 
 export function dispatch(host, eventType, options = {}) {
   return host.dispatchEvent(
-    new CustomEvent(eventType, { bubbles: false, ...options }),
+    new global.CustomEvent(eventType, { bubbles: false, ...options }),
   );
 }
 
 export function shadyCSS(fn, fallback) {
-  const shady = window.ShadyCSS;
+  const shady = global.ShadyCSS;
 
   /* istanbul ignore next */
   if (shady && !shady.nativeShadow) {
@@ -30,7 +32,7 @@ export function stringifyElement(target) {
 }
 
 export function walkInShadow(target, cb) {
-  if (target.nodeType === Node.ELEMENT_NODE) {
+  if (target.nodeType === global.Node.ELEMENT_NODE) {
     cb(target);
 
     if (target.shadowRoot) {
@@ -38,9 +40,9 @@ export function walkInShadow(target, cb) {
     }
   }
 
-  const walker = document.createTreeWalker(
+  const walker = global.document.createTreeWalker(
     target,
-    NodeFilter.SHOW_ELEMENT,
+    global.NodeFilter.SHOW_ELEMENT,
     null,
     false,
   );

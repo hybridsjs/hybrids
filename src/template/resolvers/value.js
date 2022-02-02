@@ -1,3 +1,4 @@
+import global from "../../global.js";
 import { dataMap, removeTemplate } from "../utils.js";
 import resolveArray, { arrayMap } from "./array.js";
 import resolveNode from "./node.js";
@@ -6,7 +7,7 @@ export default function resolveValue(host, target, value, lastValue) {
   let type = typeof value;
   if (Array.isArray(value)) {
     type = "array";
-  } else if (value instanceof Node) {
+  } else if (value instanceof global.Node) {
     type = "node";
   }
 

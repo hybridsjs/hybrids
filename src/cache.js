@@ -1,3 +1,4 @@
+import global from "./global.js";
 import * as emitter from "./emitter.js";
 
 const entries = new WeakMap();
@@ -172,7 +173,7 @@ export function set(target, key, setter, value) {
 const gcList = new Set();
 function deleteEntry(entry) {
   if (!gcList.size) {
-    requestAnimationFrame(() => {
+    global.requestAnimationFrame(() => {
       gcList.forEach((e) => {
         if (e.contexts.size === 0) {
           e.deps.forEach((depEntry) => {

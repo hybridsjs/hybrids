@@ -1,4 +1,5 @@
 /* eslint-disable no-use-before-define */
+import global from "./global.js";
 import * as cache from "./cache.js";
 import { storePointer } from "./utils.js";
 
@@ -48,7 +49,7 @@ let currentTimestamp;
 function getCurrentTimestamp() {
   if (!currentTimestamp) {
     currentTimestamp = Date.now();
-    requestAnimationFrame(() => {
+    global.requestAnimationFrame(() => {
       currentTimestamp = undefined;
     });
   }
@@ -79,7 +80,7 @@ function invalidateTimestamp(model) {
 }
 
 function hashCode(str) {
-  return window.btoa(
+  return global.btoa(
     Array.from(str).reduce(
       // eslint-disable-next-line no-bitwise
       (s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0,
@@ -100,18 +101,18 @@ function setupOfflineKey(config, threshold) {
   if (!clearPromise) {
     clearPromise = Promise.resolve().then(() => {
       const previousKeys =
-        JSON.parse(window.localStorage.getItem(offlinePrefix)) || {};
+        JSON.parse(global.localStorage.getItem(offlinePrefix)) || {};
       const timestamp = getCurrentTimestamp();
 
       Object.keys(previousKeys).forEach((k) => {
         /* istanbul ignore next */
         if (!offlineKeys[k] && previousKeys[k] < timestamp) {
-          window.localStorage.removeItem(k);
+          global.localStorage.removeItem(k);
           delete previousKeys[k];
         }
       });
 
-      window.localStorage.setItem(
+      global.localStorage.setItem(
         offlinePrefix,
         JSON.stringify({ ...previousKeys, ...offlineKeys }),
       );
@@ -154,7 +155,7 @@ function setupStorage(config, options) {
     const offlineKey = setupOfflineKey(config, threshold);
 
     try {
-      const items = JSON.parse(window.localStorage.getItem(offlineKey)) || {};
+      const items = JSON.parse(global.localStorage.getItem(offlineKey)) || {};
 
       let flush;
 
@@ -225,7 +226,7 @@ function setupStorage(config, options) {
                 }
               });
 
-              window.localStorage.setItem(offlineKey, JSON.stringify(items));
+              global.localStorage.setItem(offlineKey, JSON.stringify(items));
               flush = null;
             });
           }

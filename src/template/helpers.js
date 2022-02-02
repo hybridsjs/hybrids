@@ -1,3 +1,4 @@
+import global from "../global.js";
 import { storePointer } from "../utils.js";
 import resolveTemplateValue from "./resolvers/value.js";
 
@@ -66,7 +67,7 @@ export function set(property, valueOrPath) {
         const values = storeValues.get(property);
 
         if (!values) {
-          requestAnimationFrame(() => {
+          global.requestAnimationFrame(() => {
             const result = storeValues.get(property);
             storeValues.delete(property);
 
@@ -114,7 +115,7 @@ export function resolve(promise, placeholder, delay = 200) {
       timeout = setTimeout(() => {
         timeout = undefined;
 
-        requestAnimationFrame(() => {
+        global.requestAnimationFrame(() => {
           placeholder(host, target);
         });
       }, delay);

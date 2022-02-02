@@ -1,3 +1,4 @@
+import global from "../global.js";
 import { stringifyElement, shadyCSS, probablyDevMode } from "../utils.js";
 import { dataMap, removeTemplate } from "./utils.js";
 
@@ -28,7 +29,7 @@ function applyShadyCSS(template, tagName) {
     let clone = map.get(tagName);
 
     if (!clone) {
-      clone = document.createElement("template");
+      clone = global.document.createElement("template");
       clone.content.appendChild(template.content.cloneNode(true));
 
       map.set(tagName, clone);
@@ -39,7 +40,7 @@ function applyShadyCSS(template, tagName) {
         const count = style.childNodes.length + 1;
         for (let i = 0; i < count; i += 1) {
           style.parentNode.insertBefore(
-            document.createTextNode(getPlaceholder()),
+            global.document.createTextNode(getPlaceholder()),
             style,
           );
         }
@@ -83,9 +84,9 @@ function getPropertyName(string) {
 }
 
 function replaceComments(fragment) {
-  const iterator = document.createNodeIterator(
+  const iterator = global.document.createNodeIterator(
     fragment,
-    NodeFilter.SHOW_COMMENT,
+    global.NodeFilter.SHOW_COMMENT,
     null,
     false,
   );
@@ -94,7 +95,7 @@ function replaceComments(fragment) {
   while ((node = iterator.nextNode())) {
     if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
       node.parentNode.insertBefore(
-        document.createTextNode(node.textContent),
+        global.document.createTextNode(node.textContent),
         node,
       );
       node.parentNode.removeChild(node);
@@ -132,10 +133,10 @@ export function createInternalWalker(context) {
 }
 
 function createExternalWalker(context) {
-  return document.createTreeWalker(
+  return global.document.createTreeWalker(
     context,
     // eslint-disable-next-line no-bitwise
-    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+    global.NodeFilter.SHOW_ELEMENT | global.NodeFilter.SHOW_TEXT,
     null,
     false,
   );
@@ -143,7 +144,7 @@ function createExternalWalker(context) {
 
 /* istanbul ignore next */
 const createWalker =
-  typeof window.ShadyDOM === "object" && window.ShadyDOM.inUse
+  typeof global.ShadyDOM === "object" && global.ShadyDOM.inUse
     ? createInternalWalker
     : createExternalWalker;
 
@@ -189,7 +190,7 @@ function beautifyTemplateLog(input, index) {
 }
 
 export function compileTemplate(rawParts, isSVG, styles) {
-  const template = document.createElement("template");
+  const template = global.document.createElement("template");
   const parts = [];
 
   const signature = createSignature(rawParts, styles);
@@ -212,7 +213,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
   while (compileWalker.nextNode()) {
     const node = compileWalker.currentNode;
 
-    if (node.nodeType === Node.TEXT_NODE) {
+    if (node.nodeType === global.Node.TEXT_NODE) {
       const text = node.textContent;
 
       if (!text.match(PLACEHOLDER_REGEXP_EQUAL)) {
@@ -235,7 +236,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
                 currentNode.textContent = part;
               } else {
                 currentNode = currentNode.parentNode.insertBefore(
-                  document.createTextNode(part),
+                  global.document.createTextNode(part),
                   currentNode.nextSibling,
                 );
               }
@@ -250,13 +251,13 @@ export function compileTemplate(rawParts, isSVG, styles) {
       }
     } else {
       /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
-      if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.nodeType === global.Node.ELEMENT_NODE) {
         /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
         if (probablyDevMode) {
           const tagName = node.tagName.toLowerCase();
           if (
             tagName.match(/.+-.+/) &&
-            !window.customElements.get(tagName) &&
+            !global.customElements.get(tagName) &&
             !notDefinedElements.includes(tagName)
           ) {
             notDefinedElements.push(tagName);
@@ -296,7 +297,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
                       isProp =
                         isProp ||
                         (!isSVG &&
-                          !(target instanceof SVGElement) &&
+                          !(target instanceof global.SVGElement) &&
                           name in target);
                       if (isProp) {
                         target[name] = data[partialName];
@@ -333,13 +334,13 @@ export function compileTemplate(rawParts, isSVG, styles) {
     const data = dataMap.get(target, { type: "function" });
 
     if (template !== data.template) {
-      if (data.template || target.nodeType !== Node.TEXT_NODE) {
+      if (data.template || target.nodeType !== global.Node.TEXT_NODE) {
         removeTemplate(target);
       }
 
       data.prevArgs = null;
 
-      const fragment = document.importNode(
+      const fragment = global.document.importNode(
         applyShadyCSS(template, host.tagName).content,
         true,
       );
@@ -366,7 +367,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
         renderIndex += 1;
       }
 
-      if (target.nodeType === Node.TEXT_NODE) {
+      if (target.nodeType === global.Node.TEXT_NODE) {
         data.startNode = fragment.childNodes[0];
         data.endNode = fragment.childNodes[fragment.childNodes.length - 1];
 
@@ -388,11 +389,11 @@ export function compileTemplate(rawParts, isSVG, styles) {
       let isEqual = false;
 
       styleSheets = styleSheets.map((style) => {
-        if (style instanceof CSSStyleSheet) return style;
+        if (style instanceof global.CSSStyleSheet) return style;
 
         let styleSheet = styleSheetsMap.get(style);
         if (!styleSheet) {
-          styleSheet = new CSSStyleSheet();
+          styleSheet = new global.CSSStyleSheet();
           styleSheet.replaceSync(style);
           styleSheetsMap.set(style, styleSheet);
         }
@@ -434,7 +435,7 @@ export function compileTemplate(rawParts, isSVG, styles) {
       }
     }
 
-    if (target.nodeType !== Node.TEXT_NODE) {
+    if (target.nodeType !== global.Node.TEXT_NODE) {
       shadyCSS((shady) => {
         if (host.shadowRoot) {
           if (prevArgs) {
