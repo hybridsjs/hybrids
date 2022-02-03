@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.5](https://github.com/hybridsjs/hybrids/compare/v7.0.4...v7.0.5) (2022-02-03)
+
+
+### Bug Fixes
+
+* **store:** support using store in service workers ([a23bfd9](https://github.com/hybridsjs/hybrids/commit/a23bfd907ca6297f26d7658b421bfaed10cabe85))
+
 ### [7.0.4](https://github.com/hybridsjs/hybrids/compare/v7.0.3...v7.0.4) (2021-12-31)
 
 
