@@ -127,6 +127,30 @@ describe("children:", () => {
     );
   });
 
+  describe("context defined children", () => {
+    tree = test(`
+      <test-children-fn>
+        <test-children-child></test-children-child>
+      </test-children-fn>
+    `);
+
+    beforeAll(() => {
+      define({
+        tag: "test-children-fn",
+        childTag: "test-children-child",
+        direct: children((hybrids, { childTag }) => hybrids.tag === childTag),
+      });
+    });
+
+    it(
+      "returns the correct child element",
+      tree((el) => {
+        expect(el.direct.length).toBe(1);
+        expect(el.direct[0]).toBe(el.children[0]);
+      }),
+    );
+  });
+
   describe("deep children", () => {
     tree = test(`
       <test-children-deep>

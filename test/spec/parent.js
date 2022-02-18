@@ -21,6 +21,12 @@ describe("parent:", () => {
       tag: "test-parent-child-fn",
       parent: parent((hybrids) => hybrids === parentHybrids),
     });
+
+    define({
+      tag: "test-parent-child-context",
+      parentTag: "test-parent-parent",
+      parent: parent((hybrids, { parentTag }) => hybrids.tag === parentTag),
+    });
   });
 
   const directParentTree = test(`
@@ -44,6 +50,12 @@ describe("parent:", () => {
   const fnParentTree = test(`
     <test-parent-parent>
       <test-parent-child-fn></test-parent-child-fn>
+    </test-parent-parent>
+  `);
+
+  const contextParentTree = test(`
+    <test-parent-parent>
+      <test-parent-child-context></test-parent-child-context>
     </test-parent-parent>
   `);
 
@@ -94,6 +106,14 @@ describe("parent:", () => {
   it(
     "connects to parent by a function argument",
     fnParentTree((el) => {
+      const child = el.children[0];
+      expect(child.parent).toBe(el);
+    }),
+  );
+
+  it(
+    "connects to parent using the host context",
+    contextParentTree((el) => {
       const child = el.children[0];
       expect(child.parent).toBe(el);
     }),
