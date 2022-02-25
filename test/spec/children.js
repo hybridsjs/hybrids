@@ -149,6 +149,14 @@ describe("children:", () => {
         expect(el.direct[0]).toBe(el.children[0]);
       }),
     );
+
+    it(
+      "updates the children when the host changes",
+      tree((el) => {
+        el.childTag = "tag-does-not-exist";
+        expect(el.direct.length).toBe(0);
+      }),
+    );
   });
 
   describe("deep children", () => {

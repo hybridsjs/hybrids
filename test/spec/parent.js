@@ -116,6 +116,9 @@ describe("parent:", () => {
     contextParentTree((el) => {
       const child = el.children[0];
       expect(child.parent).toBe(el);
+
+      child.parentTag = "";
+      expect(child.parent).toBe(null);
     }),
   );
 
