@@ -4,7 +4,7 @@ function walk(node, fn) {
   while (parentElement) {
     const hybrids = parentElement.constructor.hybrids;
 
-    if (hybrids && fn(hybrids)) {
+    if (hybrids && fn(hybrids, node)) {
       return parentElement;
     }
 

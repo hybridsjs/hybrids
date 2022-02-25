@@ -9,7 +9,7 @@ The relation can be created only between custom elements defined by the library.
 ## Parent
 
 ```typescript
-parent(componentOrFn: Object | Function: (component) => {...}: Boolean): Object
+parent(componentOrFn: Object | Function: (component, host) => {...}: Boolean): Object
 ```
 
 * **arguments**:
@@ -47,7 +47,7 @@ define({
 ## Children
 
 ```typescript
-children(componentOrFn: Object | Function: (component) => {...}: Boolean, [options: Object]): Object
+children(componentOrFn: Object | Function: (component, host) => {...}: Boolean, [options: Object]): Object
 ```
 
 * **arguments**:
@@ -93,7 +93,7 @@ const MyElement = define({
   tag: "my-element"
   // reference self - useful for tree-like structures
   parent: parent(component => component === MyElement),
-  
+
   // any children, that has `value` property
   items: children(component => component.hasOwnProperty("value")),
 });
