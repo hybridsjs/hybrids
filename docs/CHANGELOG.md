@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.6](https://github.com/hybridsjs/hybrids/compare/v7.0.5...v7.0.6) (2022-04-15)
+
+
+### Bug Fixes
+
+* **parent/child:** Add host argument to parent and child factories. ([#188](https://github.com/hybridsjs/hybrids/issues/188)) ([3d0dc3a](https://github.com/hybridsjs/hybrids/commit/3d0dc3ac23b49a5b7936580a06e69acf1f39c2f8))
+* **store:** clear should invalidate models with cache set to true ([55ca7fa](https://github.com/hybridsjs/hybrids/commit/55ca7fa0283d6f33f6057008085852547646605f))
+
 ### [7.0.5](https://github.com/hybridsjs/hybrids/compare/v7.0.4...v7.0.5) (2022-02-03)
 
 
