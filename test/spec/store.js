@@ -804,7 +804,7 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("only invalidates with clearValue option set to false", (done) => {
+    it("only invalidates enumerable model with clearValue option set to false", (done) => {
       const spy = jasmine.createSpy();
       Model = {
         id: true,
@@ -833,7 +833,7 @@ describe("store:", () => {
         .then(done);
     });
 
-    it("only invalidates with clearValue option set to false", () => {
+    it("only invalidates enumerable model with clearValue option set to false", () => {
       Model = {
         id: true,
         value: "",
@@ -851,6 +851,21 @@ describe("store:", () => {
         expect(list).not.toBe(clearList);
         expect(clearList.length).toBe(1);
       });
+    });
+
+    it("only invalidates singleton model with clearValue option set to false", () => {
+      Model = {
+        value: "",
+        [store.connect]: {
+          get: () => ({ value: Date.now() }),
+        },
+      };
+
+      const model = store.get(Model);
+
+      store.clear(Model, false);
+      const clearModel = store.get(Model);
+      expect(model).not.toBe(clearModel);
     });
   });
 

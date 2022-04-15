@@ -135,10 +135,13 @@ function setupStorage(config, options) {
     result.validate = (cachedModel) =>
       !cachedModel ||
       getTimestamp(cachedModel) + result.cache > getCurrentTimestamp();
-  } else if (result.cache !== true) {
-    throw TypeError(
-      `Storage cache property must be a boolean or number: ${typeof result.cache}`,
-    );
+  } else {
+    if (result.cache !== true) {
+      throw TypeError(
+        `Storage cache property must be a boolean or number: ${typeof result.cache}`,
+      );
+    }
+    result.validate = (cachedModel) => getTimestamp(cachedModel) !== 1;
   }
 
   if (!result.get) {
@@ -933,11 +936,7 @@ function get(Model, id) {
       });
     }
 
-    if (
-      validContexts &&
-      cachedModel &&
-      (config.storage.cache === true || config.storage.validate(cachedModel))
-    ) {
+    if (validContexts && cachedModel && config.storage.validate(cachedModel)) {
       return cachedModel;
     }
 
