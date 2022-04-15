@@ -1171,11 +1171,11 @@ describe("html:", () => {
       it("replaces adoptedStyleSheets array when styles are not equal", () => {
         const container = fragment.attachShadow({ mode: "open" });
         render().style("div { color: red }")({}, container);
-        const adoptedStyleSheets = container.adoptedStyleSheets;
+        const StyleSheet = container.adoptedStyleSheets[0];
 
         render().style("div { color: blue }")({}, container);
 
-        expect(container.adoptedStyleSheets[0]).not.toBe(adoptedStyleSheets[0]);
+        expect(container.adoptedStyleSheets[0]).not.toBe(StyleSheet);
       });
 
       it("adds styles using CSSStyleSheet instance", () => {
