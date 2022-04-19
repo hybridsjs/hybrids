@@ -30,20 +30,19 @@ declare module "hybrids" {
     __router__connect__?: ViewOptions;
   };
 
-  type Component<E> = ComponentBase &
-    {
-      [property in Extract<
-        keyof Omit<E, keyof HTMLElement>,
-        string
-      >]: property extends "render" | "content"
-        ? E[property] extends () => HTMLElement
-          ? RenderFunction<E>
-          : Property<E, E[property]>
-        : Property<E, E[property]>;
-    } & {
-      render?: RenderFunction<E>;
-      content?: RenderFunction<E>;
-    };
+  type Component<E> = ComponentBase & {
+    [property in Extract<
+      keyof Omit<E, keyof HTMLElement>,
+      string
+    >]: property extends "render" | "content"
+      ? E[property] extends () => HTMLElement
+        ? RenderFunction<E>
+        : Property<E, E[property]>
+      : Property<E, E[property]>;
+  } & {
+    render?: RenderFunction<E>;
+    content?: RenderFunction<E>;
+  };
 
   interface HybridElement<E> {
     new (): E & HTMLElement;
@@ -114,6 +113,11 @@ declare module "hybrids" {
       keys: [keyof M],
     ) => StorageResult<M>;
     list?: (id: ModelIdentifier) => StorageResult<Array<M>>;
+    observe?: (
+      id: ModelIdentifier,
+      model: M | null,
+      lastModel: M | null,
+    ) => void;
     cache?: boolean | number;
     offline?: boolean | number;
     loose?: boolean;

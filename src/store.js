@@ -17,6 +17,17 @@ function resolve(config, model, lastModel) {
 
   definitions.set(model, config);
 
+  if (config.storage.observe) {
+    const modelValue = model && config.isInstance(model) ? model : null;
+
+    const lastModelValue =
+      lastModel && config.isInstance(lastModel) ? lastModel : null;
+
+    if (modelValue !== lastModelValue) {
+      config.storage.observe(modelValue, lastModelValue);
+    }
+  }
+
   return model;
 }
 
@@ -123,10 +134,39 @@ function setupOfflineKey(config, threshold) {
   return key;
 }
 
+const JSON_LIKE_REGEX = /^\{.+\}$/;
 function setupStorage(config, options) {
   if (typeof options === "function") options = { get: options };
 
-  const result = { cache: true, loose: false, ...options };
+  const result = {
+    cache: true,
+    loose: false,
+    ...options,
+  };
+
+  if (result.observe) {
+    const fn = result.observe;
+    if (typeof fn !== "function") {
+      throw TypeError(
+        `Storage 'observe' property must be a function: ${typeof result.observe}`,
+      );
+    }
+    result.observe = (model, lastModel) => {
+      try {
+        let id = lastModel ? lastModel.id : model.id;
+        if (JSON_LIKE_REGEX.test(id)) {
+          try {
+            id = JSON.parse(id);
+            // istanbul ignore next
+          } catch (e) {} // eslint-disable-line no-empty
+        }
+
+        fn(id, model, lastModel);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+  }
 
   if (result.cache === false || result.cache === 0) {
     result.validate = (cachedModel) =>
@@ -138,7 +178,7 @@ function setupStorage(config, options) {
   } else {
     if (result.cache !== true) {
       throw TypeError(
-        `Storage cache property must be a boolean or number: ${typeof result.cache}`,
+        `Storage 'cache' property must be a boolean or number: ${typeof result.cache}`,
       );
     }
     result.validate = (cachedModel) => getTimestamp(cachedModel) !== 1;
@@ -741,32 +781,6 @@ function setupListModel(Model, nested) {
       contexts,
       enumerable: modelConfig.enumerable,
       external: modelConfig.external,
-      storage: Object.freeze({
-        ...setupStorage(config, {
-          cache: modelConfig.storage.cache,
-          get: !nested && ((id) => modelConfig.storage.list(id)),
-        }),
-        offline: modelConfig.storage.offline && {
-          threshold: modelConfig.storage.offline.threshold,
-          get: (id) => {
-            const result = modelConfig.storage.offline.get(
-              hashCode(String(stringifyId(id))),
-            );
-            return result
-              ? result.map((item) => modelConfig.storage.offline.get(item))
-              : null;
-          },
-          set: (id, values) => {
-            modelConfig.storage.offline.set(
-              hashCode(String(stringifyId(id))),
-              values.map((item) => {
-                modelConfig.storage.offline.set(item.id, item);
-                return item.id;
-              }),
-            );
-          },
-        },
-      }),
       placeholder: () => {
         const model = Object.create(listPlaceholderPrototype);
         definitions.set(model, config);
@@ -829,6 +843,33 @@ function setupListModel(Model, nested) {
         return Object.freeze(result);
       },
     };
+
+    config.storage = Object.freeze({
+      ...setupStorage(config, {
+        cache: modelConfig.storage.cache,
+        get: !nested && ((id) => modelConfig.storage.list(id)),
+      }),
+      offline: modelConfig.storage.offline && {
+        threshold: modelConfig.storage.offline.threshold,
+        get: (id) => {
+          const result = modelConfig.storage.offline.get(
+            hashCode(String(stringifyId(id))),
+          );
+          return result
+            ? result.map((item) => modelConfig.storage.offline.get(item))
+            : null;
+        },
+        set: (id, values) => {
+          modelConfig.storage.offline.set(
+            hashCode(String(stringifyId(id))),
+            values.map((item) => {
+              modelConfig.storage.offline.set(item.id, item);
+              return item.id;
+            }),
+          );
+        },
+      },
+    });
 
     lists.set(Model, Object.freeze(config));
   }
@@ -973,7 +1014,6 @@ function get(Model, id) {
         return setModelState(fallback(), "pending", result);
       }
 
-      if (cachedModel) definitions.set(cachedModel, null);
       if (result.id !== stringId) result.id = stringId;
       const model = config.create(result);
 
@@ -983,7 +1023,7 @@ function get(Model, id) {
         });
       }
 
-      return setTimestamp(model);
+      return resolve(config, setTimestamp(model), cachedModel);
     } catch (e) {
       return setTimestamp(mapError(fallback(), e));
     }
@@ -1217,15 +1257,7 @@ function sync(model, values) {
     config,
     id,
     resultModel ||
-      mapError(
-        config.placeholder(id),
-        Error(
-          `Model instance ${
-            id !== undefined ? ` with '${id}' id` : ""
-          }does not exist`,
-        ),
-        false,
-      ),
+      mapError(config.placeholder(id), notFoundError(config.model, id), false),
   );
 }
 

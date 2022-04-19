@@ -2654,4 +2654,197 @@ describe("store:", () => {
       });
     });
   });
+
+  describe("observe callback", () => {
+    it("throws when setup model with observe property set as not a function", () => {
+      Model = {
+        id: true,
+        [store.connect]: {
+          offline: true,
+          get: (id) => ({ id }),
+          observe: "not a function",
+        },
+      };
+
+      expect(() => store.get(Model, 1)).toThrow();
+    });
+
+    let spy;
+    describe("for sync storage", () => {
+      beforeEach(() => {
+        spy = jasmine.createSpy();
+        Model = {
+          id: true,
+          value: "",
+          [store.connect]: {
+            get: (id) => ({ id, value: Date.now() }),
+            set: (id, values) => values,
+            list: () => [
+              { id: 1, value: Date.now() },
+              { id: 2, value: Date.now() },
+            ],
+            observe: spy,
+          },
+        };
+      });
+
+      it("calls observe method when model is get and set", () => {
+        const model = store.get(Model, 1);
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledOnceWith("1", model, null);
+        return store.set(model, { value: "other value" }).then((nextModel) => {
+          expect(spy).toHaveBeenCalledTimes(2);
+          expect(spy).toHaveBeenCalledWith("1", nextModel, model);
+        });
+      });
+
+      it("calls observe method when list", () => {
+        store.get([Model]);
+        expect(spy).toHaveBeenCalledTimes(2);
+      });
+
+      it("calls observe method when model is deleted", () => {
+        const model = store.get(Model, 1);
+        return store.set(model, null).then(() => {
+          expect(spy).toHaveBeenCalledTimes(2);
+          expect(spy).toHaveBeenCalledWith("1", null, model);
+        });
+      });
+
+      it("calls observe method with object id", () => {
+        const model = store.get(Model, { a: "b" });
+        expect(spy).toHaveBeenCalledWith({ a: "b" }, model, null);
+      });
+
+      it("does not call observe when error occurs", () => {
+        let error = false;
+        Model = {
+          id: true,
+          [store.connect]: {
+            get: () => {
+              if (error) throw Error("Error");
+              return {};
+            },
+            set: (values) => {
+              if (error) throw Error("Error");
+              return values;
+            },
+            observe: spy,
+          },
+        };
+
+        const model = store.get(Model, 1);
+        expect(spy).toHaveBeenCalled();
+
+        error = true;
+
+        return store.set(model, { value: "other value" }).catch(() => {
+          expect(spy).toHaveBeenCalledTimes(1);
+        });
+      });
+
+      it("returns model correctly when an error is thrown in observe callback", () => {
+        spyOn(console, "error");
+        Model = {
+          value: "some",
+          [store.connect]: {
+            get: () => ({}),
+            observe: () => {
+              throw Error("Error");
+            },
+          },
+        };
+
+        const model = store.get(Model);
+        expect(model.value).toBe("some");
+      });
+    });
+
+    describe("for async storage", () => {
+      beforeEach(() => {
+        spy = jasmine.createSpy();
+
+        Model = {
+          id: true,
+          value: "",
+          [store.connect]: {
+            get: (id) =>
+              Promise.resolve().then(() => ({ id, value: Date.now() })),
+            set: (id, values) => Promise.resolve().then(() => values),
+            list: () =>
+              Promise.resolve().then(() => [
+                { id: 1, value: Date.now() },
+                { id: 2, value: Date.now() },
+              ]),
+            observe: spy,
+          },
+        };
+      });
+
+      it("calls observe method when model is get and set", () => {
+        const model = store.get(Model, 1);
+        expect(spy).toHaveBeenCalledTimes(0);
+
+        return store.pending(model).then((nextModel) => {
+          expect(spy).toHaveBeenCalledTimes(1);
+          expect(spy).toHaveBeenCalledWith("1", nextModel, null);
+
+          return store
+            .set(model, { value: "other value" })
+            .then((resultModel) => {
+              expect(spy).toHaveBeenCalledTimes(2);
+              expect(spy).toHaveBeenCalledWith("1", resultModel, nextModel);
+            });
+        });
+      });
+
+      it("calls observe method when list", () => {
+        const list = store.get([Model]);
+        expect(spy).toHaveBeenCalledTimes(0);
+        return store.pending(list).then(() => {
+          expect(spy).toHaveBeenCalledTimes(2);
+        });
+      });
+
+      it("calls observe method when model is deleted", () => {
+        const model = store.get(Model, 1);
+        expect(spy).toHaveBeenCalledTimes(0);
+        return store.pending(model).then((resultModel) => {
+          return store.set(resultModel, null).then(() => {
+            expect(spy).toHaveBeenCalledTimes(2);
+            expect(spy).toHaveBeenCalledWith("1", null, resultModel);
+          });
+        });
+      });
+
+      it("does not call observe when error occurs", (done) => {
+        Model = {
+          id: true,
+          [store.connect]: {
+            async get() {
+              await Promise.resolve();
+              throw Error("Error");
+            },
+            async set() {
+              await Promise.resolve();
+              throw Error("Error");
+            },
+            observe: spy,
+          },
+        };
+
+        const model = store.get(Model, 1);
+        expect(spy).not.toHaveBeenCalled();
+
+        return store.pending(model).then(() => {
+          expect(spy).not.toHaveBeenCalled();
+
+          return store.set(Model, { value: "other value" }).catch(() => {
+            expect(spy).not.toHaveBeenCalled();
+            done();
+          });
+        });
+      });
+    });
+  });
 });

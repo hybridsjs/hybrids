@@ -57,6 +57,7 @@ const Model = {
     get?: (id) => {...},
     set?: (id, values, keys) => {...},
     list?: (id) => {...},
+    observe?: (id, model) => {...},
     cache?: boolean | number [ms] = true,
     offline?: boolean | number [ms] = false,
     loose?: boolean = false,
@@ -168,6 +169,40 @@ const MovieSearchResult = {
     get: ({ query, year }) => movieApi.search({ query, year }),
   };
 };
+```
+
+### observe
+
+```typescript
+observe: (id: string | object | undefined, model: object | null, lastModel: object | null) => void
+```
+
+Use `observe` method for invoking side effects related to the model changes, for example to notify third party code that model has changed. It is called synchronously at the end of the `get` and `set` actions, just before the model value is passed to the memory cache layer. If the model is set for the first time, the `lastModel` argument is `null`. Similarly, if the model is deleted, the `model` argument is null.
+
+!> Do not call the `store.get()` or `store.set()` methods related to the model itself from the `observe` method, as it may lead to the endless loop and throw the stack overflow error.
+
+```javascript
+const Model = {
+  id: true,
+  value, 0,
+  [store.connect]: {
+    async get(id) {
+      const { model } = await chrome.storage.local.get(["model"]);
+      return model[id];
+    },
+    async set(id, values) {... },
+    observe(id, model) {
+      // send message to another context in web extension
+      chrome.runtime.sendMessage({ type: "model-changed", id, model });
+    }
+  }
+}
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === "model-changed") {
+    store.clear(Model, false);
+  }
+});
 ```
 
 ### cache
