@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.1.0](https://github.com/hybridsjs/hybrids/compare/v7.0.6...v7.1.0) (2022-04-19)
+
+
+### Features
+
+* **store:** observe callback for calling side-effect ([a925d30](https://github.com/hybridsjs/hybrids/commit/a925d30ee56478fe3d2fbefa4aba6344a719ceda))
+
 ### [7.0.6](https://github.com/hybridsjs/hybrids/compare/v7.0.5...v7.0.6) (2022-04-15)
 
 
