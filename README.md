@@ -9,11 +9,15 @@
 [![build status](https://img.shields.io/travis/hybridsjs/hybrids/master.svg?style=flat)](https://app.travis-ci.com/github/hybridsjs/hybrids)
 [![coverage status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=master)
 
-A JavaScript framework for creating fully-featured web applications, components libraries, and single web components with unique declarative and functional architecture.
+**hybrids** is a JavaScript UI framework for creating fully-featured web applications, components libraries, or single web components with unique mixed declarative and functional architecture.
+
+The main goal of the library is to provide a complete set of tools for building UI components, managing complex data sources, creating app flows with the client-side structural routing, and localizing it for the worldwide markets. Everything without external dependencies.
+
+All of the parts of the library follow the same unique concepts making it easy to understand and use.
 
 ## Quick Look
 
-### Component Model
+### The Simplest Component Structure
 
 The component model is based on plain objects and pure functions*, still using the [Web Components API](https://developer.mozilla.org/en-US/docs/Web/Web_Components) under the hood:
 
@@ -45,11 +49,35 @@ export default define({
 
 You can read more in the [Component Model](https://hybrids.js.org/#/component-model/definition.md) section of the documentation.
 
-### Store
+### Seamless Localization
 
-The store provides global state management based on declarative model definitions with built-in support for async external storage, relations, offline caching, and many more.
+The library has built-in support for automatic translation of the component's content. Additionally, the library provides a simple way to add dynamic messages with plural forms, HTML content, and finally handy CLI tool to extract messages from the source code.
 
-It follows the declarative architecture to simplify the process of defining and using data structures in the component definition:
+```javascript
+import { define, html, localize } from "hybrids";
+
+export default define({
+  tag: "my-element",
+  name: "",
+  render: ({ name }) => html`
+    <div>Hello ${name}!</div>
+  `,
+});
+
+localize("pl", {
+  "Hello ${0}!": {
+    message: "Witaj #{0}!",
+  },
+});
+```
+
+To translate the component content, you just need to provide the correct message, but the component structure is not changed.
+
+You can read more in the [Localization](https://hybrids.js.org/#/component-model/localization.md) section of the documentation.
+
+### Complex State Management
+
+The store module provides a global state management based on declarative model definitions with built-in support for async external storages, relations, offline caching, and many more. It follows the declarative architecture to simplify the process of defining and using data structures:
 
 ```javascript
 import { define, store, html } from "hybrids";
@@ -85,9 +113,9 @@ define({
 
 You can read more in the [Store](https://hybrids.js.org/#/store/usage.md) section of the documentation.
 
-### Router
+### Structural Client-Side Routing
 
-The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the component definition.
+The router module provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the component definition. It makes the URLs optional, have out-the-box support for dialogs, protected views, and many more.
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -122,4 +150,4 @@ The project documentation is available at the [hybrids.js.org](https://hybrids.j
 
 ## License
 
-`hybrids` is released under the [MIT License](LICENSE).
+**hybrids** is released under the [MIT License](LICENSE).
