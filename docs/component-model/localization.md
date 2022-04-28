@@ -21,7 +21,7 @@ export default define({
 
 localize("pl", {
   "Hello ${0}!": {
-    message: "Witaj #{0}!",
+    message: "Witaj ${0}!",
   },
 });
 ```

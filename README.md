@@ -17,7 +17,7 @@ All of the parts of the library follow the same unique concepts making it easy t
 
 ## Quick Look
 
-### The Simplest Component Structure
+### The Simplest Structure
 
 The component model is based on plain objects and pure functions*, still using the [Web Components API](https://developer.mozilla.org/en-US/docs/Web/Web_Components) under the hood:
 
@@ -66,7 +66,7 @@ export default define({
 
 localize("pl", {
   "Hello ${0}!": {
-    message: "Witaj #{0}!",
+    message: "Witaj ${0}!",
   },
 });
 ```
