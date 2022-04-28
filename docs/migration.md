@@ -1,10 +1,18 @@
-# Migration to 7.x
+# Migration Guide
+
+## v8.0.0
+
+### Browser Support
+
+The `v8` release drops support for the webcomponents polyfill. Currently, all of the modern browsers support Shadow DOM, so we can safely remove the support for the polyfill. Legacy Edge is no longer supported by the Microsoft, and support for the IE was already dropped in `v5.0.0`.
+
+## v7.0.0
 
 The `v7` major release focuses on cleaning up and removing rarely used features. There are several breaking changes, but usually updating from earlier versions should not require code changes if you followed the translation rules in the component definition. Otherwise, use the instructions to update your code.
 
-## Component Model
+### Component Model
 
-### Property Factory
+#### Property Factory
 
 The `property` factory is replaced by the `value` option in the object descriptor. If you use property factory explicitly, you must update your code.
 
@@ -79,7 +87,7 @@ The `property` factory is replaced by the `value` option in the object descripto
   }
   ```
 
-### Render Factory
+#### Render Factory
 
 The `render` factory is no longer supported - you must set `render` or `content` property to a function to get the rendering feature from the library.
 
@@ -87,7 +95,7 @@ If you update the DOM using another property name, you must create a custom fact
 
 https://github.com/hybridsjs/hybrids/blob/v6.1.0/src/render.js
 
-### Templates
+#### Templates
 
 The `define` helper method in the result of the `html` and `svg` function is no longer supported - define each element explicitly:
 
@@ -115,7 +123,7 @@ define({
 });
 ```
 
-### Definition
+#### Definition
 
 The definition without explicit tag name by the `define` function is replaced with the `define.compile()` method:
 
@@ -129,7 +137,7 @@ const MyElementConstructor = define(null, { ... });
 const MyElementConstructor = define.compile({ ... });
 ```
 
-### TypeScript
+#### TypeScript
 
 The `Hybrids<E>` type is replaced with the `Component<E>` type:
 
@@ -147,9 +155,9 @@ import { Component } from "hybrids";
 const MyElement: Component<MyElement> = { ... };
 ```
 
-## Store
+### Store
 
-### Identifier
+#### Identifier
 
 The shorter syntax of the store factory options argument is no longer supported - the `id` must be set explicitly in the options object:
 

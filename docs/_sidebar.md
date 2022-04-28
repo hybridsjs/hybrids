@@ -1,5 +1,5 @@
 - [Getting Started](/getting-started.md)
-- [Migration to 7.x](/migration-to-7.md)
+- [Migration Guide](/migration.md)
 - **Component Model**
   - [Definition](/component-model/definition.md)
   - [Structure](/component-model/structure.md)

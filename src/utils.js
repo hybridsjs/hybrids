@@ -16,17 +16,6 @@ export function dispatch(host, eventType, options = {}) {
   );
 }
 
-export function shadyCSS(fn, fallback) {
-  const shady = global.ShadyCSS;
-
-  /* istanbul ignore next */
-  if (shady && !shady.nativeShadow) {
-    return fn(shady);
-  }
-
-  return fallback;
-}
-
 export function stringifyElement(target) {
   return `<${String(target.tagName).toLowerCase()}>`;
 }

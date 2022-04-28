@@ -58,7 +58,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### ⚠ BREAKING CHANGES
 
-This major release comes with several breaking changes, which may affect your code. Follow the instructions from the [Migration to 7.x](/migration-to-7.md) section in the documentation.
+This major release comes with several breaking changes, which may affect your code. Follow the instructions from the [Migration Guide](/migration.md) section in the documentation.
 
 ### Features
 

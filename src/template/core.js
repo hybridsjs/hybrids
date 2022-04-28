@@ -1,5 +1,5 @@
 import global from "../global.js";
-import { stringifyElement, shadyCSS, probablyDevMode } from "../utils.js";
+import { stringifyElement, probablyDevMode } from "../utils.js";
 import { get as getMessage } from "../localize.js";
 
 import { dataMap, removeTemplate } from "./utils.js";
@@ -15,45 +15,6 @@ const PLACEHOLDER_REGEXP_TEXT = getPlaceholder("(\\d+)");
 const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
 const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, "g");
 const PLACEHOLDER_REGEXP_ONLY = /^[${}0-9 \t\n\f\r]+$/;
-
-const preparedTemplates = new WeakMap();
-
-/* istanbul ignore next */
-function applyShadyCSS(template, tagName) {
-  if (!tagName) return template;
-
-  return shadyCSS((shady) => {
-    let map = preparedTemplates.get(template);
-    if (!map) {
-      map = new Map();
-      preparedTemplates.set(template, map);
-    }
-
-    let clone = map.get(tagName);
-
-    if (!clone) {
-      clone = global.document.createElement("template");
-      clone.content.appendChild(template.content.cloneNode(true));
-
-      map.set(tagName, clone);
-
-      const styles = clone.content.querySelectorAll("style");
-
-      Array.from(styles).forEach((style) => {
-        const count = style.childNodes.length + 1;
-        for (let i = 0; i < count; i += 1) {
-          style.parentNode.insertBefore(
-            global.document.createTextNode(getPlaceholder()),
-            style,
-          );
-        }
-      });
-
-      shady.prepareTemplate(clone, tagName.toLowerCase());
-    }
-    return clone;
-  }, template);
-}
 
 function createSignature(parts, styles) {
   let signature = parts.reduce((acc, part, index) => {
@@ -106,36 +67,7 @@ function replaceComments(fragment) {
   }
 }
 
-export function createInternalWalker(context) {
-  let node;
-
-  return {
-    get currentNode() {
-      return node;
-    },
-    nextNode() {
-      if (node === undefined) {
-        node = context.childNodes[0];
-      } else if (node.childNodes.length) {
-        node = node.childNodes[0];
-      } else if (node.nextSibling) {
-        node = node.nextSibling;
-      } else {
-        let parentNode = node.parentNode;
-        node = parentNode.nextSibling;
-
-        while (!node && parentNode !== context) {
-          parentNode = parentNode.parentNode;
-          node = parentNode.nextSibling;
-        }
-      }
-
-      return !!node;
-    },
-  };
-}
-
-function createExternalWalker(context) {
+function createWalker(context) {
   return global.document.createTreeWalker(
     context,
     // eslint-disable-next-line no-bitwise
@@ -144,12 +76,6 @@ function createExternalWalker(context) {
     false,
   );
 }
-
-/* istanbul ignore next */
-const createWalker =
-  typeof global.ShadyDOM === "object" && global.ShadyDOM.inUse
-    ? createInternalWalker
-    : createExternalWalker;
 
 const styleSheetsMap = new Map();
 
@@ -399,10 +325,7 @@ export function compileTemplate(rawParts, isSVG, styles, translate = true) {
 
       data.prevArgs = null;
 
-      const fragment = global.document.importNode(
-        applyShadyCSS(template, host.tagName).content,
-        true,
-      );
+      const fragment = global.document.importNode(template.content, true);
 
       const renderWalker = createWalker(fragment);
       const clonedParts = parts.slice(0);
@@ -492,18 +415,6 @@ export function compileTemplate(rawParts, isSVG, styles, translate = true) {
         );
         throw error;
       }
-    }
-
-    if (target.nodeType !== global.Node.TEXT_NODE) {
-      shadyCSS((shady) => {
-        if (host.shadowRoot) {
-          if (prevArgs) {
-            shady.styleSubtree(host);
-          } else {
-            shady.styleElement(host);
-          }
-        }
-      });
     }
   };
 }
