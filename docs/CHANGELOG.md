@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.0.0](https://github.com/hybridsjs/hybrids/compare/v7.1.0...v8.0.0) (2022-04-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **html:** Legacy Edge and other browsers which does not support Shadow DOM are no longer supported
+
+### Features
+
+* **localize:** Add support for localization process ([828e3c9](https://github.com/hybridsjs/hybrids/commit/828e3c989e4c7acefedb3a79f6ccf839124a25f5))
+
+
+### Bug Fixes
+
+* **html:** Drop support for the Shadow DOM polyfill ([961922b](https://github.com/hybridsjs/hybrids/commit/961922b1ca6f08cd87e2b6c8801a8aa45f71a4e5))
+
 ## [7.1.0](https://github.com/hybridsjs/hybrids/compare/v7.0.6...v7.1.0) (2022-04-19)
 
 
