@@ -1,20 +1,18 @@
 # Getting Started
 
-## Bundlers
+## Installation
 
-Add [npm package](https://www.npmjs.com/package/hybrids) to your application:
+If your application uses a bundler (like [Vite](https://vitejs.dev/) or [Snowpack](https://www.snowpack.dev/)), just add the [npm package](https://www.npmjs.com/package/hybrids) to your application:
 
 ```bash
 npm i hybrids
 ```
 
-## Direct Usage
-
-You can use the library directly from many CDNs, which provides packages from the NPM:
+Otherwise, you can use it directly from a number of CDNs, which provides packages from the registry:
 
 * [https://esm.sh/hybrids@^8](https://esm.sh/hybrids@^8) (2 requests, minified)
 * [https://cdn.skypack.dev/hybrids@^8?min](https://cdn.skypack.dev/hybrids@^8?min) (2 request, minified)
-* [https://unpkg.com/hybrids@^8](https://unpkg.com/hybrids@^8) (multiple request, not minified)
+* [https://unpkg.com/hybrids@^8](https://unpkg.com/hybrids@^8) (multiple requests, not minified)
 
 ```html
 <script type="module">
@@ -23,7 +21,7 @@ You can use the library directly from many CDNs, which provides packages from th
 </script>
 ```
 
-## Hot Module Replacement
+### Hot Module Replacement
 
 HMR works out of the box, but your bundler setup may require indication that an entry point can be replaced on the fly. For example, for bundlers using ES module syntax, you can use the following code:
 
