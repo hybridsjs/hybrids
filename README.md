@@ -11,9 +11,7 @@
 
 **hybrids** is a JavaScript UI framework for creating fully-featured web applications, components libraries, or single web components with unique mixed declarative and functional architecture.
 
-The main goal of the library is to provide a complete set of tools for building UI components, managing complex data sources, creating app flows with the client-side structural routing, and localizing it for the worldwide markets. Everything without external dependencies.
-
-All of the parts of the library follow the same unique concepts making it easy to understand and use.
+The main goal of the framework is to provide a complete set of tools for the web platform - everything without external dependencies. It supports building UI components, managing complex states, creating app flows with client-side routing, and localizing its content for the worldwide markets. All of the parts follow the same unique concepts making it easy to understand and use!
 
 ## Quick Look
 
@@ -51,7 +49,7 @@ You can read more in the [Component Model](https://hybrids.js.org/#/component-mo
 
 ### Seamless Localization
 
-The library has built-in support for automatic translation of the component's content. Additionally, the library provides a simple way to add dynamic messages with plural forms, HTML content, and finally handy CLI tool to extract messages from the source code.
+Built-in support for automatic translation of the component's content makes translation seamless and easy to integrate. Additionally, the framework provides a way to add dynamic messages with plural forms, HTML content, or use messages outside of the template context. Also, it comes with handy CLI tool to extract messages from the source code!
 
 ```javascript
 import { define, html, localize } from "hybrids";
@@ -70,8 +68,6 @@ localize("pl", {
   },
 });
 ```
-
-To translate the component content, you just need to provide the correct message, but the component structure is not changed.
 
 You can read more in the [Localization](https://hybrids.js.org/#/component-model/localization.md) section of the documentation.
 
