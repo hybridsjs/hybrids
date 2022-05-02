@@ -18,6 +18,8 @@ function moveIndex(content, i, start, end, escape = true) {
     ) {
       i++;
     }
+
+    return i + end.length;
   }
 
   return i;
@@ -27,12 +29,13 @@ function skip(content, i) {
   // strings
   i = moveIndex(content, i, "'", "'", false);
   i = moveIndex(content, i, '"', '"', true);
-  // regexp
-  i = moveIndex(content, i, "/", "/", true);
 
   // comments
   i = moveIndex(content, i, "//", "\n", false);
   i = moveIndex(content, i, "/*", "*/", false);
+
+  // regexp
+  i = moveIndex(content, i, "/", "/", true);
 
   return i;
 }
