@@ -52,3 +52,6 @@ export function removeTemplate(target) {
     }
   }
 }
+
+const TIMESTAMP = Date.now();
+export const getPlaceholder = (id = 0) => `H-${TIMESTAMP}-${id}`;

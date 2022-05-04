@@ -2,14 +2,10 @@ import global from "../global.js";
 import { stringifyElement, probablyDevMode } from "../utils.js";
 import { get as getMessage } from "../localize.js";
 
-import { dataMap, removeTemplate } from "./utils.js";
+import { dataMap, removeTemplate, getPlaceholder } from "./utils.js";
 
 import resolveValue from "./resolvers/value.js";
 import resolveProperty from "./resolvers/property.js";
-
-const TIMESTAMP = Date.now();
-
-export const getPlaceholder = (id = 0) => `H-${TIMESTAMP}-${id}`;
 
 const PLACEHOLDER_REGEXP_TEXT = getPlaceholder("(\\d+)");
 const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);

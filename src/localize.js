@@ -1,4 +1,5 @@
-import { compileTemplate, getPlaceholder } from "./template/core.js";
+import { compileTemplate } from "./template/core.js";
+import { getPlaceholder } from "./template/utils.js";
 
 import global from "./global.js";
 import { probablyDevMode } from "./utils.js";

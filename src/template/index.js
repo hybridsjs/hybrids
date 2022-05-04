@@ -1,4 +1,5 @@
-import { compileTemplate, getPlaceholder } from "./core.js";
+import { compileTemplate } from "./core.js";
+import { getPlaceholder } from "./utils.js";
 import * as helpers from "./helpers.js";
 
 const PLACEHOLDER = getPlaceholder();
