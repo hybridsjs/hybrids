@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.0.1](https://github.com/hybridsjs/hybrids/compare/v8.0.0...v8.0.1) (2022-05-04)
+
+
+### Bug Fixes
+
+* **cli:** multiline comments and regexp skip reorder ([08d3412](https://github.com/hybridsjs/hybrids/commit/08d3412b7c187298501df606b00064401e7fbc10))
+* **localize:** remove circural dependncies in files ([3d7353a](https://github.com/hybridsjs/hybrids/commit/3d7353aed52d8c520e1fc4998a5155cc66e5b54d))
+
 ## [8.0.0](https://github.com/hybridsjs/hybrids/compare/v7.1.0...v8.0.0) (2022-04-28)
 
 
