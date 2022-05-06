@@ -9,12 +9,16 @@ const cache = new Map();
 let translate = null;
 
 const languages = (() => {
+  let list;
+
   // istanbul ignore next
-  return (
-    global.navigator
-      ? global.navigator.languages || [global.navigator.language]
-      : []
-  ).reduce((set, code) => {
+  try {
+    list = global.navigator.languages || [global.navigator.language];
+  } catch (e) {
+    list = [];
+  }
+
+  return list.reduce((set, code) => {
     const codeWithoutRegion = code.split("-")[0];
     set.add(code);
     if (code !== codeWithoutRegion) set.add(codeWithoutRegion);
