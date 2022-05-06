@@ -2,7 +2,8 @@ declare module "hybrids" {
   type Property<E, V> =
     | (V extends string | number | boolean | undefined ? V : never)
     | ((host: E & HTMLElement, lastValue: V) => V)
-    | Descriptor<E, V>;
+    | Descriptor<E, V>
+    | undefined;
 
   interface Descriptor<E, V> {
     value?: V;
