@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.0.2](https://github.com/hybridsjs/hybrids/compare/v8.0.1...v8.0.2) (2022-05-06)
+
+
+### Bug Fixes
+
+* **types:** Allow setting property as undefined for complex types ([b7dd680](https://github.com/hybridsjs/hybrids/commit/b7dd6805679e5a54185a1d10bac667b3d31adc94))
+
 ### [8.0.1](https://github.com/hybridsjs/hybrids/compare/v8.0.0...v8.0.1) (2022-05-04)
 
 
