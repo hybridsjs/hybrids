@@ -7,6 +7,7 @@ import {
   readdirSync,
   existsSync,
   lstatSync,
+  realpathSync,
 } from "fs";
 import { resolve } from "path";
 
@@ -41,10 +42,11 @@ function resolveFileOrDir(path, cb) {
     process.exit(1);
   }
 
+  path = realpathSync(path);
   const stats = lstatSync(path);
 
   if (stats.isDirectory()) {
-    readdirSync(path).forEach((file) =>
+    readdirSync(path).forEach((file) => 
       resolveFileOrDir(resolve(path, file), cb),
     );
   } else if (path.endsWith(".js") || path.endsWith(".ts")) {
