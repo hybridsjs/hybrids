@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.0.3](https://github.com/hybridsjs/hybrids/compare/v8.0.2...v8.0.3) (2022-05-06)
+
+
+### Bug Fixes
+
+* **cli:** follow the symlinks in extractor command ([12b6201](https://github.com/hybridsjs/hybrids/commit/12b62011367c4afb46b37c22db9cb544f6fad5aa))
+* **localize:** add options to support chrome.i18n custom translate function ([7127c9d](https://github.com/hybridsjs/hybrids/commit/7127c9dc356d60ce133eca74c000acaec37aca31))
+* **localize:** support service workers context ([6a9e890](https://github.com/hybridsjs/hybrids/commit/6a9e890676b68a35636052c2470a98a456678f72))
+
 ### [8.0.2](https://github.com/hybridsjs/hybrids/compare/v8.0.1...v8.0.2) (2022-05-06)
 
 
