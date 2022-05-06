@@ -75,9 +75,10 @@ export function get(key, context, args = []) {
     if (!msg) {
       if (translate) {
         msg = translate(key, context);
-      } else {
+      }
+      if (!msg) {
         msg = key;
-        if (dictionary.size && probablyDevMode) {
+        if ((dictionary.size || translate) && probablyDevMode) {
           console.warn(
             `Missing translation: "${key}"${context ? ` [${context}]` : ""}`,
           );
@@ -91,11 +92,37 @@ export function get(key, context, args = []) {
   return typeof msg === "function" ? msg(args[0]) : msg;
 }
 
+function getKeyInChromeI18nFormat(key) {
+  return key
+    .replace("$", "@")
+    .replace(/[^a-zA-Z0-9_@]/g, "_")
+    .toLowerCase();
+}
+
 export function localize(lang, messages) {
   switch (typeof lang) {
-    case "function":
-      translate = lang;
+    case "function": {
+      const options = messages || {};
+
+      if (options.format === "chrome.i18n") {
+        const cachedKeys = new Map();
+        translate = (key, context) => {
+          key = context ? `${key} | ${context}` : key;
+
+          let cachedKey = cachedKeys.get(key);
+          if (!cachedKey) {
+            cachedKey = getKeyInChromeI18nFormat(key);
+            cachedKeys.set(key, cachedKey);
+          }
+
+          return lang(cachedKey, context);
+        };
+      } else {
+        translate = lang;
+      }
+
       break;
+    }
     case "string": {
       if (!messages || typeof messages !== "object") {
         throw TypeError("Messages must be an object");

@@ -257,6 +257,9 @@ declare module "hybrids" {
       key: string,
       context: string,
     ) => string | ((num: number) => string),
+    options?: {
+      format?: "chrome.i18n";
+    },
   ): void;
 
   namespace localize {

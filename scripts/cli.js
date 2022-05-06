@@ -46,12 +46,19 @@ function resolveFileOrDir(path, cb) {
   const stats = lstatSync(path);
 
   if (stats.isDirectory()) {
-    readdirSync(path).forEach((file) => 
+    readdirSync(path).forEach((file) =>
       resolveFileOrDir(resolve(path, file), cb),
     );
   } else if (path.endsWith(".js") || path.endsWith(".ts")) {
     cb(readFileSync(path, "utf8"), path.replace(cwd, ""));
   }
+}
+
+function getKeyInChromeI18nFormat(key) {
+  return key
+    .replace("$", "@")
+    .replace(/[^a-zA-Z0-9_@]/g, "_")
+    .toLowerCase();
 }
 
 function extractCommand(args) {
@@ -72,30 +79,35 @@ function extractCommand(args) {
       }${text}`;
     };
 
+    const touched = new Set();
     const body = messages.reduce(
       (acc, m) => {
-        const c = acc[m.key];
-        acc[m.key] = {
+        const key =
+          options.format === "chrome.i18n"
+            ? getKeyInChromeI18nFormat(m.key)
+            : m.key;
+        const c = acc[key];
+        let description = m.description && getDesc(m.description, m.path);
+
+        if (m.description) {
+          if (touched.has(key)) {
+            description = `${c.description}\n${getDesc(m.description, m.path)}`;
+          } else {
+            touched.add(key);
+            description = m.description;
+          }
+        }
+
+        acc[key] = {
           message: options.e || options["empty-message"] ? "" : m.message,
           ...c,
-          description: c?.description
-            ? `${c.description}\n${getDesc(m.description, m.path)}`
-            : m.description && getDesc(m.description, m.path),
+          description,
         };
 
         return acc;
       },
       !(options.f || options.force) && targetPath && existsSync(targetPath)
-        ? Object.fromEntries(
-            Object.entries(JSON.parse(readFileSync(targetPath, "utf8"))).map(
-              ([key, value]) => [
-                key,
-                {
-                  message: value.message,
-                },
-              ],
-            ),
-          )
+        ? JSON.parse(readFileSync(targetPath, "utf8"))
         : {},
     );
 
@@ -129,7 +141,10 @@ Options:
 -e, --empty-message\t Set default message body to empty string
 -f, --force\t\t Overwrite output file instead of merge it with existing messages
 -p, --include-path\t Include path in message description
--h, --help\t\t Show this help`,
+-h, --help\t\t Show this help
+
+--format=type\t\t Transform messages to the desired format; supported types: chrome.i18n
+`,
     );
 
     process.exit(1);

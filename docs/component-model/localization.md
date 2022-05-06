@@ -270,7 +270,7 @@ The main `<app-root>` component will be rendered after the translation is loaded
 For a custom translation method, or integration with third party libraries, pass a custom function to the `localize` function.
 
 ```typescript
-localize(translate: function): void
+localize(translate: function, options?: object): void
 ```
 
 * **arguments**:
@@ -280,21 +280,30 @@ localize(translate: function): void
   (key: string, context: string): string | (number) => string
   ```
 
+  * `options` - an optional object with the following fields:
+    * `format` - expected custom format of the message (for now, it only supports `"chrome.i18n"` value)
+
 The translate function bypass the translation process, so the language detection is not applied and it should be done manually. The translate function is global, and it can be only one at the time (still, you can overwrite it).
 
 The function is called if the message is not found in the dictionary. If you relay only on the external translation process, you can skip passing messages in built-in format entirely, or mix both approaches.
 
-The translate function should return a string with the translation or a function that receives the number and returns the translation.
+The translate function should return a string with the translation or a function that receives a number and returns the translation.
+
+#### `options.format`
+
+The `chrome.i18n` API puts a number of restrictions into the key naming. The library supports automatic transform of the key with its context value into the supported format. Set the setting `options.format` to `"chrome.i18n"` and pass the transform function, which takes a key as the first argument.
 
 ```javascript
 import { localize } from "hybrids";
 
-localize((key, context) => {
-  return chrome.i18n.getMessage(`${key}${context ? ` | ${context}` : ""}`);
-});
+localize(chrome.i18n.getMessage, { format: "chrome.i18n" });
 ```
 
-The above example shows how to integrate the `chrome.i18n` API in the web extension context to translate messages. The API provides built-in language detection and dictionary, so we can skip the built-in messages format entirely.
+Use the corresponding option in the extracting tool to generate files with transformed keys:
+
+```bash
+npx hybrids extract --format=chrome.i18n ./src ./src/_locales/en/messages.json
+```
 
 ## Extracting
 
@@ -306,7 +315,7 @@ Run `npx hybrids extract ./src` or add it to the `package.json` as a one of the 
 
 Run the command without additional arguments to see the usage:
 
-```
+```text
 hybrids - message extractor from source files
 
 Pass a single file or a directory, which will be recursively scanned 
@@ -321,4 +330,6 @@ Options:
 -f, --force              Overwrite output file instead of merge it with existing messages
 -p, --include-path       Include path in message description
 -h, --help               Show this help
+
+--format=type            Transform messages to the desired format; supported types: chrome.i18n
 ```

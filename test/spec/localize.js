@@ -29,6 +29,23 @@ describe("localize:", () => {
       expect(msg`text only`).toBe("text only");
       expect(spy).toHaveBeenCalledWith("text only", "");
     });
+
+    it("uses translate function in chrome.i18n format", () => {
+      const spy = jasmine.createSpy();
+      spyOn(console, "warn");
+
+      localize(
+        (...args) => {
+          spy(...args);
+          return "";
+        },
+        { format: "chrome.i18n" },
+      );
+      expect(msg`text only ${0}`).toBe("text only 0");
+      expect(msg`text only ${0} | desc | context`).toBe("text only 0");
+      expect(console.warn).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenCalledWith("text_only_@_0_", "");
+    });
   });
 
   describe("with dictionary -", () => {
