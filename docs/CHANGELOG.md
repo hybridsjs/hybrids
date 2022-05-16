@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.0.4](https://github.com/hybridsjs/hybrids/compare/v8.0.3...v8.0.4) (2022-05-16)
+
+
+### Bug Fixes
+
+* **cli:** add espace character for chrome.i18n message ([81431dd](https://github.com/hybridsjs/hybrids/commit/81431ddf2527aa6e6815508f309fc9bcb999ab33))
+
 ### [8.0.3](https://github.com/hybridsjs/hybrids/compare/v8.0.2...v8.0.3) (2022-05-06)
 
 
