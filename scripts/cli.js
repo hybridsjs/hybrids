@@ -54,13 +54,6 @@ function resolveFileOrDir(path, cb) {
   }
 }
 
-function getKeyInChromeI18nFormat(key) {
-  return key
-    .replace("$", "@")
-    .replace(/[^a-zA-Z0-9_@]/g, "_")
-    .toLowerCase();
-}
-
 function extractCommand(args) {
   const { rest, options } = resolveOptions(args);
 
@@ -70,7 +63,9 @@ function extractCommand(args) {
 
     const messages = [];
     resolveFileOrDir(fileOrDirPath, (content, path) => {
-      messages.push(...extract(content).map((m) => ({ ...m, path })));
+      messages.push(
+        ...extract(content, options.format).map((m) => ({ ...m, path })),
+      );
     });
 
     const getDesc = (text, path) => {
@@ -82,23 +77,19 @@ function extractCommand(args) {
     const touched = new Set();
     const body = messages.reduce(
       (acc, m) => {
-        const key =
-          options.format === "chrome.i18n"
-            ? getKeyInChromeI18nFormat(m.key)
-            : m.key;
-        const c = acc[key];
+        const c = acc[m.key];
         let description = m.description && getDesc(m.description, m.path);
 
         if (m.description) {
-          if (touched.has(key)) {
+          if (touched.has(m.key)) {
             description = `${c.description}\n${getDesc(m.description, m.path)}`;
           } else {
-            touched.add(key);
+            touched.add(m.key);
             description = m.description;
           }
         }
 
-        acc[key] = {
+        acc[m.key] = {
           message: options.e || options["empty-message"] ? "" : m.message,
           ...c,
           description,

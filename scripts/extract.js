@@ -186,6 +186,23 @@ function extractKeys(content, i = 0) {
   return nested ? { keys, i } : keys;
 }
 
-export default function extract(content) {
-  return extractKeys(content);
+function getChromeI18nFormat(entry) {
+  return {
+    key: entry.key
+      .replace("$", "@")
+      .replace(/[^a-zA-Z0-9_@]/g, "_")
+      .toLowerCase(),
+    message: entry.message.replace(/\$/g, "$$$"),
+    description: entry.description,
+  };
+}
+
+export default function extract(content, format = "") {
+  const keys = extractKeys(content);
+  switch (format) {
+    case "chrome.i18n":
+      return keys.map(getChromeI18nFormat);
+    default:
+      return keys;
+  }
 }
