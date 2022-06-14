@@ -125,7 +125,7 @@ function setupBrowserUrl(browserUrl, id) {
         }
 
         return `${acc}/${part}`;
-      });
+      }, "");
 
       const url = new URL(temp, global.location.origin);
 
