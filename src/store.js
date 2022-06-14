@@ -1440,6 +1440,15 @@ function valueWithValidation(
   return defaultValue;
 }
 
+function cloneModel(model) {
+  const config = definitions.get(model);
+  const clone = Object.freeze(Object.create(model));
+
+  definitions.set(clone, config);
+
+  return clone;
+}
+
 function store(Model, options = {}) {
   const config = bootstrap(Model);
 
@@ -1518,7 +1527,7 @@ function store(Model, options = {}) {
       const nextValue = get(Model, id);
 
       if (nextValue !== value && ready(value) && !ready(nextValue)) {
-        const tempValue = config.create(value);
+        const tempValue = cloneModel(value);
         cache.set(tempValue, "state", () => getModelState(nextValue));
         return tempValue;
       }
