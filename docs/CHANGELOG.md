@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.0.5](https://github.com/hybridsjs/hybrids/compare/v8.0.4...v8.0.5) (2022-06-20)
+
+
+### Bug Fixes
+
+* **router:** support parameter in first part of the URL ([7a86cbc](https://github.com/hybridsjs/hybrids/commit/7a86cbcb8ce27f9378209cf8e87b5548e5020400))
+* **store:** add client-side validation for boolean values ([e473689](https://github.com/hybridsjs/hybrids/commit/e473689c3b263fc9939c324bbe4c048cc5312574))
+* **store:** prevent iterating over the previous model props ([f5a5673](https://github.com/hybridsjs/hybrids/commit/f5a567338ab6eadbf69d5e5e94329afff2b158b4))
+
 ### [8.0.4](https://github.com/hybridsjs/hybrids/compare/v8.0.3...v8.0.4) (2022-05-16)
 
 
