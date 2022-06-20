@@ -180,6 +180,11 @@ declare module "hybrids" {
       validate?: ValidateFunction<M, number> | RegExp,
       errorMessage?: string,
     ): number;
+    function value<M>(
+      defaultValue: boolean,
+      validate?: ValidateFunction<M, number> | RegExp,
+      errorMessage?: string,
+    ): boolean;
   }
 
   /* Router */

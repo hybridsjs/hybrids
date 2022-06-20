@@ -895,6 +895,17 @@ describe("store:", () => {
         .then(done);
     });
 
+    it("requires true for new model", (done) => {
+      Model = { id: true, value: store.value(false) };
+
+      store
+        .set(Model, { value: false })
+        .catch((e) => {
+          expect(e.errors.value).toBeDefined();
+        })
+        .then(done);
+    });
+
     it("requires not empty string for updated model", (done) => {
       Model = { id: true, value: store.value("test") };
 
@@ -1000,6 +1011,7 @@ describe("store:", () => {
         id: true,
         one: store.value("one"),
         two: store.value("two"),
+        three: store.value(false),
       };
 
       const desc = store(Model, { draft: true });
@@ -1013,19 +1025,25 @@ describe("store:", () => {
           expect(error).toBeDefined();
           expect(error.errors.one).toBeDefined();
 
-          return store.set(nextModel, { two: "" });
+          return store.set(nextModel, { two: "", three: false });
         })
         .then((nextModel) => {
           const error = store.error(nextModel);
           expect(error).toBeDefined();
           expect(error.errors.one).toBeDefined();
           expect(error.errors.two).toBeDefined();
+          expect(error.errors.three).toBeDefined();
         })
         .then(done);
     });
 
     it("for a draft it allows default value, which does not pass validation", (done) => {
-      Model = { id: true, value: store.value(""), number: store.value(100) };
+      Model = {
+        id: true,
+        value: store.value(""),
+        number: store.value(100),
+        bool: store.value(false),
+      };
 
       const desc = store(Model, { draft: true });
       const host = {};
@@ -1036,6 +1054,7 @@ describe("store:", () => {
         .then((nextModel) => {
           const error = store.error(nextModel);
           expect(error.errors.value).not.toBeDefined();
+          expect(error.errors.bool).not.toBeDefined();
         })
         .then(done);
     });

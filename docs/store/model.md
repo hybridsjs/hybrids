@@ -132,7 +132,7 @@ The model definition supports primitive values of `string`, `number`, or `boolea
 
 #### Validation
 
-The store supports client-side validation for `string` and `number` primitive values, which is called for `store.set()` action. If it fails, the instance won't be updated, and an error will be attached to the instance. The rejected `Error` instance contains the `err.errors` object, where all of the validation errors are listed by the property names (you can read more about how to use it in the [Usage](./usage.md#draft-mode) section).
+The store provides client-side validation for supported primitive values, which is called within `store.set()` action. If it fails, the instance won't be updated, and an error will be attached to the instance. The rejected `Error` instance contains the `err.errors` object, where all of the validation errors are listed by the property names (you can read more about how to use it in the [Usage](./usage.md#draft-mode) section).
 
 To set the property with the validation use the` store.value()` method instead of passing the default value directly:
 
@@ -140,20 +140,21 @@ To set the property with the validation use the` store.value()` method instead o
 const Model = {
   firstName: store.value(""),
   count: store.value(0, (val) => val > 10, "Value must be bigger than 10"),
+  termsAndConditions: store.value(false),
   ...,
 };
 ```
 
 ```typescript
-store.value(defaultValue: string | number, validate?: fn | RegExp, errorMessage?: string): String | Number
+store.value(defaultValue: string | number | boolean, validate?: fn | RegExp, errorMessage?: string): String | Number | Boolean
 ```
 
 * **arguments**:
-  * `defaultValue` - `string` or `number` value
+  * `defaultValue` - `string`, `number` or `boolean`
   * `validate` - a validation function - `validate(val, key, model)`, which should return `false`, error message or throws when validation fails, or a RegExp instance. If omitted, the default validation is used, which fails for empty string and `0`.
   * `errorMessage` - optional error message used when validation fails
 * **returns**:
-  * a `String` or `Number` instance
+  * a `String`, `Number` or `Boolean` instance
 
 ### Computed Value
 

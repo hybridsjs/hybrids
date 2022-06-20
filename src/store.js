@@ -376,7 +376,11 @@ function resolveKey(Model, key, config) {
   if (refs.has(defaultValue)) defaultValue = defaultValue();
   let type = typeof defaultValue;
 
-  if (defaultValue instanceof String || defaultValue instanceof Number) {
+  if (
+    defaultValue instanceof String ||
+    defaultValue instanceof Number ||
+    defaultValue instanceof Boolean
+  ) {
     const check = validationMap.get(defaultValue);
     if (!check) {
       throw TypeError(
@@ -1413,6 +1417,10 @@ function valueWithValidation(
     case "number":
       // eslint-disable-next-line no-new-wrappers
       defaultValue = new Number(defaultValue);
+      break;
+    case "boolean":
+      // eslint-disable-next-line no-new-wrappers
+      defaultValue = new Boolean(defaultValue);
       break;
     default:
       throw TypeError(

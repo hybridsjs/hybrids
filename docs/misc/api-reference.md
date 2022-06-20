@@ -283,15 +283,15 @@ store.ref(fn: () => Property): fn;
 ### Value
 
 ```typescript
-store.value(defaultValue: string | number, validate?: fn | RegExp, errorMessage?: string): String | Number
+store.value(defaultValue: string | number | boolean, validate?: fn | RegExp, errorMessage?: string): String | Number | Boolean
 ```
 
 - **arguments**:
-  - `defaultValue` - `string` or `number` value
+  - `defaultValue` - `string`, `number` or `boolean`
   - `validate` - a validation function - `validate(val, key, model)`, which should return `false`, error message or throws when validation fails, or a RegExp instance. If omitted, the default validation is used, which fails for empty string and `0`.
   - `errorMessage` - optional error message used when validation fails
 - **returns**:
-  - a `String` or `Number` instance
+  - a `String`, `Number` or `Boolean` instance
 
 ### Resolve
 
