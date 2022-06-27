@@ -843,15 +843,14 @@ function connectRootRouter(host, invalidate, options) {
   }
 
   function navigateBack(offset, entry, nextUrl) {
-    const stateLength = global.history.state.length;
+    const state = global.history.state;
     const targetEntry = global.history.state[offset];
-    const pushOffset = offset < stateLength - 1 && stateLength > 2 ? 1 : 0;
+    const pushOffset = offset < state.length - 1 && state.length > 2 ? 1 : 0;
+    offset += pushOffset;
 
     if (targetEntry && entry.id === targetEntry.id) {
       entry = { ...targetEntry, ...entry };
     }
-
-    offset = -(offset + pushOffset);
 
     const replace = (popStateEvent) => {
       if (popStateEvent) {
@@ -859,9 +858,8 @@ function connectRootRouter(host, invalidate, options) {
         global.addEventListener("popstate", flush);
       }
 
-      const state = global.history.state;
       const method = pushOffset ? "pushState" : "replaceState";
-      const nextState = [entry, ...state.slice(pushOffset ? 0 : 1)];
+      const nextState = [entry, ...state.slice(offset + 1)];
 
       if (pushOffset) {
         global.history.scrollRestoration = "manual";
@@ -876,7 +874,7 @@ function connectRootRouter(host, invalidate, options) {
       global.removeEventListener("popstate", flush);
       global.addEventListener("popstate", replace);
 
-      global.history.go(offset);
+      global.history.go(-offset);
     } else {
       replace();
     }
