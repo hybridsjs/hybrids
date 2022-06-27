@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.0.6](https://github.com/hybridsjs/hybrids/compare/v8.0.5...v8.0.6) (2022-06-27)
+
+
+### Bug Fixes
+
+* **router:** prevent using unstable `history.state` when navigate back ([a2cb3a9](https://github.com/hybridsjs/hybrids/commit/a2cb3a908d8b0732619d07954751defb16a386f3))
+
 ### [8.0.5](https://github.com/hybridsjs/hybrids/compare/v8.0.4...v8.0.5) (2022-06-20)
 
 
