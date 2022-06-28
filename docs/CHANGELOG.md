@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.0.7](https://github.com/hybridsjs/hybrids/compare/v8.0.6...v8.0.7) (2022-06-28)
+
+
+### Bug Fixes
+
+* **localize:** expressions in msg html and svg methods ([1dbc279](https://github.com/hybridsjs/hybrids/commit/1dbc2796fb78fbe33cb5b66ba456e47c5e428a65))
+
 ### [8.0.6](https://github.com/hybridsjs/hybrids/compare/v8.0.5...v8.0.6) (2022-06-27)
 
 
