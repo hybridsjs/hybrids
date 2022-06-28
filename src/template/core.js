@@ -114,11 +114,11 @@ function beautifyTemplateLog(input, index) {
   return `${output}`;
 }
 
-export function compileTemplate(rawParts, isSVG, styles, translate = true) {
+export function compileTemplate(rawParts, isSVG, styles, msg = false) {
   const template = global.document.createElement("template");
   const parts = [];
 
-  const signature = createSignature(rawParts, styles);
+  const signature = msg ? rawParts : createSignature(rawParts, styles);
   template.innerHTML = isSVG ? `<svg>${signature}</svg>` : signature;
 
   if (isSVG) {
@@ -147,7 +147,7 @@ export function compileTemplate(rawParts, isSVG, styles, translate = true) {
       let text = node.textContent;
 
       if (!text.match(PLACEHOLDER_REGEXP_EQUAL)) {
-        if (translate && !noTranslate && !text.match(/^\s*$/)) {
+        if (!msg && !noTranslate && !text.match(/^\s*$/)) {
           let offset = -1;
           const key = text.trim();
           const compiledKey = key.replace(

@@ -72,6 +72,9 @@ describe("localize:", () => {
         'with link <a href="#">link</a>': {
           message: 'z linkiem <a href="#">link</a>',
         },
+        'with link <a href="${0}">link</a>': {
+          message: 'z linkiem <a href="${0}">link</a>',
+        },
       });
     });
 
@@ -107,11 +110,25 @@ describe("localize:", () => {
       expect(el.innerHTML).toBe('z linkiem <a href="#">link</a>');
     });
 
+    it("msg.html supports expressions", () => {
+      const el = document.createElement("div");
+      msg.html`with link <a href="${"test"}">link</a>`(el);
+
+      expect(el.innerHTML).toBe('z linkiem <a href="test">link</a>');
+    });
+
     it("msg.svg interprets elements", () => {
       const el = document.createElement("div");
       msg.svg`with link <a href="#">link</a>`(el);
 
       expect(el.innerHTML).toBe('z linkiem <a href="#">link</a>');
+    });
+
+    it("msg.svg supports expressions", () => {
+      const el = document.createElement("div");
+      msg.svg`with link <a href="${"test"}">link</a>`(el);
+
+      expect(el.innerHTML).toBe('z linkiem <a href="test">link</a>');
     });
 
     it("uses translate function when message is not found", () => {

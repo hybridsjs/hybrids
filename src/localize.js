@@ -169,7 +169,12 @@ msg.html = function html(parts, ...args) {
   return (host, target = host) => {
     let render = templates.get(input);
     if (!render) {
-      render = compileTemplate(input.split(EXP_REGEX), false, false, false);
+      render = compileTemplate(
+        input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
+        false,
+        false,
+        true,
+      );
       templates.set(input, render);
     }
 
@@ -184,7 +189,12 @@ msg.svg = function svg(parts, ...args) {
     const id = input + SVG_PLACEHOLDER;
     let render = templates.get(id);
     if (!render) {
-      render = compileTemplate(input.split(EXP_REGEX), true, false, false);
+      render = compileTemplate(
+        input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
+        true,
+        false,
+        true,
+      );
       templates.set(id, render);
     }
 
