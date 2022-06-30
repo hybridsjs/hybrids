@@ -859,7 +859,7 @@ function connectRootRouter(host, invalidate, options) {
       }
 
       const method = pushOffset ? "pushState" : "replaceState";
-      const nextState = [entry, ...state.slice(offset + 1)];
+      const nextState = [entry, ...state.slice(offset + (pushOffset ? 0 : 1))];
 
       if (pushOffset) {
         global.history.scrollRestoration = "manual";
