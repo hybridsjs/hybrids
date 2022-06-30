@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.0.8](https://github.com/hybridsjs/hybrids/compare/v8.0.7...v8.0.8) (2022-06-30)
+
+
+### Bug Fixes
+
+* **router:** navigate back state offset related to history method ([6806e44](https://github.com/hybridsjs/hybrids/commit/6806e44e99505446f6a25622bc32ac6267dd7adc))
+
 ### [8.0.7](https://github.com/hybridsjs/hybrids/compare/v8.0.6...v8.0.7) (2022-06-28)
 
 
