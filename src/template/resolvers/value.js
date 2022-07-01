@@ -1,38 +1,42 @@
 import global from "../../global.js";
-import { dataMap, removeTemplate } from "../utils.js";
+import { removeTemplate } from "../utils.js";
 import resolveArray, { arrayMap } from "./array.js";
 import resolveNode from "./node.js";
 
-export default function resolveValue(host, target, value, lastValue) {
-  let type = typeof value;
-  if (Array.isArray(value)) {
-    type = "array";
-  } else if (value instanceof global.Node) {
-    type = "node";
+function typeOf(value) {
+  const type = typeof value;
+
+  if (type === "object") {
+    if (Array.isArray(value)) return "array";
+    if (value instanceof global.Node) return "node";
   }
 
-  let data = dataMap.get(target, {});
+  return type;
+}
 
-  if (data.type !== type) {
-    removeTemplate(target);
-    if (type === "array") arrayMap.delete(target);
+export default function resolveValue(host, target, value, lastValue) {
+  const type = typeOf(value);
+  const lastType = typeOf(lastValue);
 
-    data = dataMap.set(target, { type });
+  if (lastType !== "undefined" && type !== lastType) {
+    if (type !== "function") removeTemplate(target);
 
-    if (target.textContent !== "") {
+    if (lastType === "array") {
+      arrayMap.delete(target);
+    } else if (lastType !== "node" && lastType !== "function") {
       target.textContent = "";
     }
   }
 
   switch (type) {
-    case "function":
-      value(host, target);
-      break;
     case "array":
       resolveArray(host, target, value, resolveValue);
       break;
     case "node":
-      resolveNode(host, target, value, lastValue);
+      resolveNode(host, target, value);
+      break;
+    case "function":
+      value(host, target);
       break;
     default:
       target.textContent = type === "number" || value ? value : "";

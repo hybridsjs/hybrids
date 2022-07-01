@@ -1132,25 +1132,32 @@ describe("html:", () => {
       }, 500);
     });
 
-    it("adds async styles by style tags to the shadowRoot", (done) => {
-      const container = fragment.attachShadow({ mode: "open" });
-      render().style("@import 'style.css'; div { color: red }")({}, container);
+    it("adds styles by style tags to the element", (done) => {
+      render().style("div { color: red }", false)({}, fragment);
 
-      getComputedStyle(container.children[0]);
+      getComputedStyle(fragment.children[0]);
 
       setTimeout(() => {
-        expect(container.children.length).toBe(2);
-        expect(getComputedStyle(container.children[0]).color).toBe(
+        expect(fragment.children.length).toBe(2);
+        expect(getComputedStyle(fragment.children[0]).color).toBe(
           "rgb(255, 0, 0)",
         );
 
-        html` <div>content</div> `({}, container);
+        render().style("div { color: red }", false)({}, fragment);
+        render().style("div { color: blue; }")({}, fragment);
 
-        expect(getComputedStyle(container.children[0]).color).toBe(
+        expect(fragment.children.length).toBe(2);
+        expect(getComputedStyle(fragment.children[0]).color).toBe(
+          "rgb(0, 0, 255)",
+        );
+
+        render()({}, fragment);
+
+        expect(getComputedStyle(fragment.children[0]).color).toBe(
           "rgb(0, 0, 0)",
         );
 
-        expect(container.children.length).toBe(1);
+        expect(fragment.children.length).toBe(1);
 
         done();
       }, 500);
@@ -1208,15 +1215,16 @@ describe("html:", () => {
     it("adds styles with text content with an expression", () => {
       const container = fragment.attachShadow({ mode: "open" });
 
-      render().css`div { color: ${"red"}; } div { padding-top: 20px; }`(
+      render()
+        .css`div { color: ${"red"}; border-width: ${0}${undefined}px; } div { padding-top: 20px; }`(
         fragment,
         container,
       );
+      const computedStyle = getComputedStyle(container.children[0]);
 
-      expect(getComputedStyle(container.children[0]).color).toBe(
-        "rgb(255, 0, 0)",
-      );
-      expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
+      expect(computedStyle.color).toBe("rgb(255, 0, 0)");
+      expect(computedStyle.borderWidth).toBe("0px");
+      expect(computedStyle.paddingTop).toBe("20px");
     });
 
     it("adds multiple styles with text content", () => {

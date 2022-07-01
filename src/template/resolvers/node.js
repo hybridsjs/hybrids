@@ -1,12 +1,10 @@
-import { dataMap } from "../utils.js";
+import { removeTemplate, getMeta } from "../utils.js";
 
-export default function resolveNode(host, target, value, lastValue) {
-  const data = dataMap.get(target, {});
+export default function resolveNode(host, target, value) {
+  removeTemplate(target);
 
-  if (lastValue) lastValue.parentNode.removeChild(lastValue);
-
-  data.startNode = value;
-  data.endNode = value;
+  const meta = getMeta(target);
+  meta.startNode = meta.endNode = value;
 
   target.parentNode.insertBefore(value, target.nextSibling);
 }

@@ -1,12 +1,12 @@
 import global from "../../global.js";
-import { dataMap, removeTemplate, getTemplateEnd } from "../utils.js";
+import { getMeta, removeTemplate, getTemplateEnd } from "../utils.js";
 
 export const arrayMap = new WeakMap();
 
 function movePlaceholder(target, previousSibling) {
-  const data = dataMap.get(target);
-  const startNode = data.startNode;
-  const endNode = getTemplateEnd(data.endNode);
+  const meta = getMeta(target);
+  const startNode = meta.startNode;
+  const endNode = getTemplateEnd(meta.endNode);
 
   previousSibling.parentNode.insertBefore(target, previousSibling.nextSibling);
 
@@ -48,7 +48,7 @@ export default function resolveArray(host, target, value, resolveValue) {
 
   let previousSibling = target;
   const lastIndex = value.length - 1;
-  const data = dataMap.get(target);
+  const meta = getMeta(target);
 
   for (let index = 0; index < entries.length; index += 1) {
     const entry = entries[index];
@@ -82,11 +82,11 @@ export default function resolveArray(host, target, value, resolveValue) {
     }
 
     previousSibling = getTemplateEnd(
-      dataMap.get(entry.placeholder).endNode || entry.placeholder,
+      getMeta(entry.placeholder, {}).endNode || entry.placeholder,
     );
 
-    if (index === 0) data.startNode = entry.placeholder;
-    if (index === lastIndex) data.endNode = previousSibling;
+    if (index === 0) meta.startNode = entry.placeholder;
+    if (index === lastIndex) meta.endNode = previousSibling;
   }
 
   if (lastEntries) {

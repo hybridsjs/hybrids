@@ -2,7 +2,7 @@ import global from "../global.js";
 import { stringifyElement, probablyDevMode } from "../utils.js";
 import { get as getMessage } from "../localize.js";
 
-import { dataMap, removeTemplate, getPlaceholder } from "./utils.js";
+import { getMeta, getPlaceholder, removeTemplate } from "./utils.js";
 
 import resolveValue from "./resolvers/value.js";
 import resolveProperty from "./resolvers/property.js";
@@ -12,7 +12,7 @@ const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
 const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, "g");
 const PLACEHOLDER_REGEXP_ONLY = /^[${}0-9 \t\n\f\r]+$/;
 
-function createSignature(parts, styles) {
+function createSignature(parts) {
   let signature = parts.reduce((acc, part, index) => {
     if (index === 0) {
       return part;
@@ -26,12 +26,9 @@ function createSignature(parts, styles) {
     ) {
       return `${acc}<!--${getPlaceholder(index - 1)}-->${part}`;
     }
+
     return acc + getPlaceholder(index - 1) + part;
   }, "");
-
-  if (styles) {
-    signature += `<style>\n${styles.join("\n/*------*/\n")}\n</style>`;
-  }
 
   return signature;
 }
@@ -43,37 +40,17 @@ function getPropertyName(string) {
     .pop();
 }
 
-function replaceComments(fragment) {
-  const iterator = global.document.createNodeIterator(
-    fragment,
-    global.NodeFilter.SHOW_COMMENT,
-    null,
-    false,
-  );
-  let node;
-  // eslint-disable-next-line no-cond-assign
-  while ((node = iterator.nextNode())) {
-    if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
-      node.parentNode.insertBefore(
-        global.document.createTextNode(node.textContent),
-        node,
-      );
-      node.parentNode.removeChild(node);
-    }
-  }
-}
-
 function createWalker(context) {
   return global.document.createTreeWalker(
     context,
     // eslint-disable-next-line no-bitwise
-    global.NodeFilter.SHOW_ELEMENT | global.NodeFilter.SHOW_TEXT,
+    global.NodeFilter.SHOW_ELEMENT |
+      global.NodeFilter.SHOW_TEXT |
+      global.NodeFilter.SHOW_COMMENT,
     null,
     false,
   );
 }
-
-const styleSheetsMap = new Map();
 
 function normalizeWhitespace(input, startIndent = 0) {
   input = input.replace(/(^[\n\s\t ]+)|([\n\s\t ]+$)+/g, "");
@@ -114,11 +91,83 @@ function beautifyTemplateLog(input, index) {
   return `${output}`;
 }
 
-export function compileTemplate(rawParts, isSVG, styles, msg = false) {
+const styleSheetsMap = new Map();
+function getCSSStyleSheet(style) {
+  let styleSheet = style;
+  if (!(styleSheet instanceof global.CSSStyleSheet)) {
+    styleSheet = styleSheetsMap.get(style);
+    if (!styleSheet) {
+      styleSheet = new global.CSSStyleSheet();
+      styleSheet.replaceSync(style);
+      styleSheetsMap.set(style, styleSheet);
+    }
+  }
+
+  return styleSheet;
+}
+
+function setupStyleUpdater(target) {
+  const hasAdoptedStyleSheets = !!target.adoptedStyleSheets;
+
+  if (hasAdoptedStyleSheets) {
+    let prevStyleSheets;
+    return (styleSheets) => {
+      const adoptedStyleSheets = target.adoptedStyleSheets;
+
+      if (styleSheets !== prevStyleSheets) {
+        if (styleSheets) {
+          styleSheets = styleSheets.map(getCSSStyleSheet);
+
+          let isNotEqual =
+            !prevStyleSheets ||
+            prevStyleSheets.some(
+              (styleSheet, i) => styleSheet !== styleSheets[i],
+            );
+
+          if (isNotEqual) {
+            target.adoptedStyleSheets = (
+              prevStyleSheets
+                ? adoptedStyleSheets.filter(
+                    (styleSheet) => !prevStyleSheets.includes(styleSheet),
+                  )
+                : adoptedStyleSheets
+            ).concat(styleSheets);
+          }
+        } else {
+          target.adoptedStyleSheets = adoptedStyleSheets.filter(
+            (styleSheet) => !prevStyleSheets.includes(styleSheet),
+          );
+        }
+
+        prevStyleSheets = styleSheets;
+      }
+    };
+  }
+
+  let styleEl;
+  return (styleSheets) => {
+    if (styleSheets) {
+      if (!styleEl) {
+        styleEl = global.document.createElement("style");
+        target.appendChild(styleEl);
+      }
+      const result = [...styleSheets].join("\n/*------*/\n");
+
+      if (styleEl.textContent !== result) {
+        styleEl.textContent = result;
+      }
+    } else if (styleEl) {
+      target.removeChild(styleEl);
+      styleEl = null;
+    }
+  };
+}
+
+export function compileTemplate(rawParts, isSVG, isMsg = false) {
   const template = global.document.createElement("template");
   const parts = [];
 
-  const signature = msg ? rawParts : createSignature(rawParts, styles);
+  const signature = isMsg ? rawParts : createSignature(rawParts);
   template.innerHTML = isSVG ? `<svg>${signature}</svg>` : signature;
 
   if (isSVG) {
@@ -129,25 +178,40 @@ export function compileTemplate(rawParts, isSVG, styles, msg = false) {
     );
   }
 
-  replaceComments(template.content);
-
   const compileWalker = createWalker(template.content);
   const notDefinedElements = [];
   let compileIndex = 0;
   let noTranslate = null;
 
   while (compileWalker.nextNode()) {
-    const node = compileWalker.currentNode;
+    let node = compileWalker.currentNode;
 
     if (noTranslate && !noTranslate.contains(node)) {
       noTranslate = null;
     }
 
+    if (node.nodeType === global.Node.COMMENT_NODE) {
+      if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
+        node.parentNode.insertBefore(
+          global.document.createTextNode(node.textContent),
+          node.nextSibling,
+        );
+
+        compileWalker.nextNode();
+        node.parentNode.removeChild(node);
+        node = compileWalker.currentNode;
+      }
+    }
+
     if (node.nodeType === global.Node.TEXT_NODE) {
       let text = node.textContent;
+      const equal = text.match(PLACEHOLDER_REGEXP_EQUAL);
 
-      if (!text.match(PLACEHOLDER_REGEXP_EQUAL)) {
-        if (!msg && !noTranslate && !text.match(/^\s*$/)) {
+      if (equal) {
+        node.textContent = "";
+        parts[equal[1]] = [compileIndex, resolveValue];
+      } else {
+        if (!isMsg && !noTranslate && !text.match(/^\s*$/)) {
           let offset = -1;
           const key = text.trim();
           const compiledKey = key.replace(
@@ -166,6 +230,7 @@ export function compileTemplate(rawParts, isSVG, styles, msg = false) {
                 : "";
             if (context) {
               context.parentNode.removeChild(context);
+              compileIndex -= 1;
               context = (context.textContent.split("|")[1] || "").trim();
             }
 
@@ -213,12 +278,6 @@ export function compileTemplate(rawParts, isSVG, styles, msg = false) {
                 parts[equal[1]] = [compileIndex, resolveValue];
               }
             });
-        }
-      } else {
-        const equal = node.textContent.match(PLACEHOLDER_REGEXP_EQUAL);
-        if (equal) {
-          node.textContent = "";
-          parts[equal[1]] = [compileIndex, resolveValue];
         }
       }
     } else {
@@ -268,8 +327,8 @@ export function compileTemplate(rawParts, isSVG, styles, msg = false) {
                 parts[id] = [
                   compileIndex,
                   (host, target, attrValue) => {
-                    const data = dataMap.get(target, {});
-                    data[partialName] = (data[partialName] || value).replace(
+                    const meta = getMeta(target);
+                    meta[partialName] = (meta[partialName] || value).replace(
                       placeholder,
                       attrValue == null ? "" : attrValue,
                     );
@@ -281,11 +340,11 @@ export function compileTemplate(rawParts, isSVG, styles, msg = false) {
                           !(target instanceof global.SVGElement) &&
                           name in target);
                       if (isProp) {
-                        target[name] = data[partialName];
+                        target[name] = meta[partialName];
                       } else {
-                        target.setAttribute(name, data[partialName]);
+                        target.setAttribute(name, meta[partialName]);
                       }
-                      data[partialName] = undefined;
+                      meta[partialName] = undefined;
                     }
                   },
                 ];
@@ -312,27 +371,16 @@ export function compileTemplate(rawParts, isSVG, styles, msg = false) {
   }
 
   return function updateTemplateInstance(host, target, args, styleSheets) {
-    const data = dataMap.get(target, { type: "function" });
+    let meta = getMeta(target);
 
-    if (template !== data.template) {
-      if (data.template || target.nodeType !== global.Node.TEXT_NODE) {
-        removeTemplate(target);
-      }
-
-      data.prevArgs = null;
-
+    if (template !== meta.template) {
       const fragment = global.document.importNode(template.content, true);
-
       const renderWalker = createWalker(fragment);
       const clonedParts = parts.slice(0);
+      const markers = [];
 
       let renderIndex = 0;
       let currentPart = clonedParts.shift();
-
-      const markers = [];
-
-      data.template = template;
-      data.markers = markers;
 
       while (renderWalker.nextNode()) {
         const node = renderWalker.currentNode;
@@ -345,9 +393,17 @@ export function compileTemplate(rawParts, isSVG, styles, msg = false) {
         renderIndex += 1;
       }
 
+      removeTemplate(target);
+
+      meta = getMeta(target);
+
+      meta.template = template;
+      meta.markers = markers;
+      meta.styles = setupStyleUpdater(target);
+
       if (target.nodeType === global.Node.TEXT_NODE) {
-        data.startNode = fragment.childNodes[0];
-        data.endNode = fragment.childNodes[fragment.childNodes.length - 1];
+        meta.startNode = fragment.childNodes[0];
+        meta.endNode = fragment.childNodes[fragment.childNodes.length - 1];
 
         let previousChild = target;
 
@@ -362,46 +418,22 @@ export function compileTemplate(rawParts, isSVG, styles, msg = false) {
       }
     }
 
-    const adoptedStyleSheets = target.adoptedStyleSheets;
-    if (styleSheets) {
-      let isEqual = false;
+    meta.styles(styleSheets);
 
-      styleSheets = styleSheets.map((style) => {
-        if (style instanceof global.CSSStyleSheet) return style;
+    const prevArgs = meta.prevArgs;
+    meta.prevArgs = args;
 
-        let styleSheet = styleSheetsMap.get(style);
-        if (!styleSheet) {
-          styleSheet = new global.CSSStyleSheet();
-          styleSheet.replaceSync(style);
-          styleSheetsMap.set(style, styleSheet);
-        }
-        return styleSheet;
-      });
+    for (let index = 0; index < meta.markers.length; index += 1) {
+      const value = args[index];
+      const prevValue = prevArgs && prevArgs[index];
 
-      if (styleSheets.length === adoptedStyleSheets.length) {
-        isEqual = true;
-        for (let i = 0; i < styleSheets.length; i += 1) {
-          if (styleSheets[i] !== adoptedStyleSheets[i]) {
-            isEqual = false;
-            break;
-          }
-        }
-      }
+      // eslint-disable-next-line no-continue
+      if (prevArgs && value === prevValue) continue;
 
-      if (!isEqual) target.adoptedStyleSheets = styleSheets;
-    } else if (adoptedStyleSheets && adoptedStyleSheets.length) {
-      target.adoptedStyleSheets = [];
-    }
-
-    const prevArgs = data.prevArgs;
-    data.prevArgs = args;
-
-    for (let index = 0; index < data.markers.length; index += 1) {
-      if (prevArgs && prevArgs[index] === args[index]) continue; // eslint-disable-line no-continue
-      const [node, marker] = data.markers[index];
+      const [node, marker] = meta.markers[index];
 
       try {
-        marker(host, node, args[index], prevArgs && prevArgs[index]);
+        marker(host, node, value, prevValue);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(
@@ -409,6 +441,7 @@ export function compileTemplate(rawParts, isSVG, styles, msg = false) {
             host,
           )}\n${beautifyTemplateLog(signature, index)}`,
         );
+
         throw error;
       }
     }

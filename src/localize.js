@@ -155,47 +155,44 @@ function getString(parts, args) {
 }
 
 const EXP_REGEX = /\$\{(\d+)\}/g;
-const SVG_PLACEHOLDER = getPlaceholder("svg");
 
 export function msg(parts, ...args) {
   return getString(parts, args).replace(EXP_REGEX, (_, index) => args[index]);
 }
 
-const templates = new Map();
-
+const htmlTemplates = new Map();
 msg.html = function html(parts, ...args) {
   const input = getString(parts, args);
 
   return (host, target = host) => {
-    let render = templates.get(input);
+    let render = htmlTemplates.get(input);
     if (!render) {
       render = compileTemplate(
         input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
         false,
-        false,
         true,
       );
-      templates.set(input, render);
+      htmlTemplates.set(input, render);
     }
 
     render(host, target, args);
   };
 };
 
+const svgTemplates = new Map();
 msg.svg = function svg(parts, ...args) {
   const input = getString(parts, args);
 
   return (host, target = host) => {
-    const id = input + SVG_PLACEHOLDER;
-    let render = templates.get(id);
+    const id = input;
+    let render = svgTemplates.get(id);
     if (!render) {
       render = compileTemplate(
         input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
         true,
-        false,
         true,
       );
-      templates.set(id, render);
+      svgTemplates.set(id, render);
     }
 
     render(host, target, args);

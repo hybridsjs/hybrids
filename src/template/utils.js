@@ -1,43 +1,30 @@
 import global from "../global.js";
 
-const map = new WeakMap();
-export const dataMap = {
-  get(key, defaultValue) {
-    const value = map.get(key);
-    if (value) return value;
+const metaMap = new WeakMap();
+export function getMeta(key) {
+  let value = metaMap.get(key);
+  if (value) return value;
 
-    if (defaultValue) {
-      map.set(key, defaultValue);
-    }
-
-    return defaultValue;
-  },
-  set(key, value) {
-    map.set(key, value);
-    return value;
-  },
-};
+  metaMap.set(key, (value = {}));
+  return value;
+}
 
 export function getTemplateEnd(node) {
-  let data;
-  // eslint-disable-next-line no-cond-assign
-  while (node && (data = dataMap.get(node)) && data.endNode) {
-    node = data.endNode;
+  let meta;
+
+  while (node && (meta = getMeta(node)) && meta.endNode) {
+    node = meta.endNode;
   }
 
   return node;
 }
 
 export function removeTemplate(target) {
-  if (target.nodeType !== global.Node.TEXT_NODE) {
-    let child = target.childNodes[0];
-    while (child) {
-      target.removeChild(child);
-      child = target.childNodes[0];
-    }
-  } else {
-    const data = dataMap.get(target);
+  const data = getMeta(target);
 
+  if (data.styles) data.styles();
+
+  if (target.nodeType === global.Node.TEXT_NODE) {
     if (data.startNode) {
       const endNode = getTemplateEnd(data.endNode);
 
@@ -50,7 +37,15 @@ export function removeTemplate(target) {
         node = nextSibling !== lastNextSibling && nextSibling;
       }
     }
+  } else {
+    let child = target.childNodes[0];
+    while (child) {
+      target.removeChild(child);
+      child = target.childNodes[0];
+    }
   }
+
+  metaMap.delete(target);
 }
 
 const TIMESTAMP = Date.now();

@@ -113,14 +113,19 @@ describe("localize:", () => {
     it("msg.html supports expressions", () => {
       const el = document.createElement("div");
       msg.html`with link <a href="${"test"}">link</a>`(el);
+      expect(el.innerHTML).toBe('z linkiem <a href="test">link</a>');
 
+      msg.html`with link <a href="${"test"}">link</a>`(el);
       expect(el.innerHTML).toBe('z linkiem <a href="test">link</a>');
     });
 
     it("msg.svg interprets elements", () => {
       const el = document.createElement("div");
-      msg.svg`with link <a href="#">link</a>`(el);
 
+      msg.svg`with link <a href="#">link</a>`(el);
+      expect(el.innerHTML).toBe('z linkiem <a href="#">link</a>');
+
+      msg.svg`with link <a href="#">link</a>`(el);
       expect(el.innerHTML).toBe('z linkiem <a href="#">link</a>');
     });
 

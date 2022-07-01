@@ -26,5 +26,5 @@ export function polyfill(global) {
   return global;
 }
 
-/* istanbul ignore else */
+/* istanbul ignore next */
 export default typeof window === "object" ? window : polyfill(globalThis);
