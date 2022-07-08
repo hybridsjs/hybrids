@@ -955,16 +955,14 @@ function get(Model, id) {
     );
   }
 
-  const validate = config.storage.validate;
-  if (validate) {
-    const entry = cache.getEntry(config, stringId);
-    if (entry.value && !validate(entry.value)) {
-      entry.resolved = false;
-      entry.depState = 0;
-    }
-  }
-
   const offline = config.storage.offline;
+  const validate = config.storage.validate;
+  const entry = cache.getEntry(config, stringId);
+
+  if (entry.value && !validate(entry.value)) {
+    entry.resolved = false;
+    entry.depState = 0;
+  }
 
   return cache.get(config, stringId, (h, cachedModel) => {
     if (cachedModel && pending(cachedModel)) return cachedModel;
@@ -981,7 +979,7 @@ function get(Model, id) {
       });
     }
 
-    if (validContexts && cachedModel && config.storage.validate(cachedModel)) {
+    if (validContexts && cachedModel && validate(cachedModel)) {
       return cachedModel;
     }
 
@@ -1063,11 +1061,8 @@ function set(model, values = {}) {
     );
   }
 
-  const isInstance = !!config;
-
+  let isInstance = !!config;
   if (!config) config = bootstrap(model);
-
-  const isDraft = draftMap.get(config);
 
   if (config.nested) {
     throw stringifyModel(
@@ -1091,6 +1086,11 @@ function set(model, values = {}) {
     );
   }
 
+  if (!isInstance && !config.enumerable) {
+    isInstance = true;
+    model = get(model);
+  }
+
   if (isInstance) {
     const promise = pending(model);
     if (promise) {
@@ -1098,17 +1098,8 @@ function set(model, values = {}) {
     }
   }
 
+  const isDraft = draftMap.get(config);
   let id;
-  const setState = (state, value) => {
-    if (isInstance) {
-      setModelState(model, state, value);
-    } else {
-      const entry = cache.getEntry(config, id);
-      if (entry.value) {
-        setModelState(entry.value, state, value);
-      }
-    }
-  };
 
   try {
     if (
@@ -1209,15 +1200,15 @@ function set(model, values = {}) {
       })
       .catch((err) => {
         err = err !== undefined ? err : Error("Undefined error");
-        setState("error", err);
+        if (isInstance) setModelState(model, "error", err);
         throw err;
       });
 
-    setState("pending", result);
+    if (isInstance) setModelState(model, "pending", result);
 
     return result;
   } catch (e) {
-    setState("error", e);
+    if (isInstance) setModelState(model, "error", e);
     return Promise.reject(e);
   }
 }

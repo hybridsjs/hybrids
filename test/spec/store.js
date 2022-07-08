@@ -568,13 +568,31 @@ describe("store:", () => {
         });
       }));
 
-    it("updates singleton model by the model definition reference", () => {
+    it("updates memory singleton model by the model definition reference", () => {
       Model = { value: "test" };
       const model = store.get(Model);
 
       store.set(Model, { value: "new value" });
       store.pending(model).then((nextModel) => {
         expect(nextModel).toBe(store.get(Model));
+      });
+    });
+
+    it("updates external singleton model by the model definition reference", () => {
+      const storage = { one: "another" };
+
+      Model = {
+        one: "test",
+        two: "test",
+        [store.connect]: {
+          get: () => storage,
+          set: (id, values) => Object.assign(storage, values),
+        },
+      };
+
+      return store.set(Model, { two: "new value" }).then((model) => {
+        expect(model.one).toBe("another");
+        expect(model.two).toBe("new value");
       });
     });
 
