@@ -44,14 +44,18 @@ const REGEXP_ONLY_EXPRESSIONS = /^[${}0-9 \t\n\f\r]+$/;
 const REGEXP_WHITESPACE = /^\s*$/;
 const DISABLED_TAGS = ["script", "style"];
 
+function clean(text) {
+  return text && text.trim().replace(/\s+/g, " ");
+}
+
 function getMessages(template, strict) {
   if (strict) {
     const [key, description, context] = template.split("|");
     return [
       {
-        key: `${key.trim()}${context ? ` | ${context}` : ""}`,
-        message: key.trim(),
-        description: description && description.trim(),
+        key: `${clean(key)}${context ? ` | ${context}` : ""}`,
+        message: clean(key),
+        description: description && clean(description),
       },
     ];
   }
@@ -74,7 +78,7 @@ function getMessages(template, strict) {
       ) {
         const prevChild = currentTag.children[currentTag.children.length - 1];
         let offset = 0;
-        let key = text.trim().replace(/\${(\d+)}/g, () => `\${${offset++}}`);
+        let key = clean(text).replace(/\${(\d+)}/g, () => `\${${offset++}}`);
         const m = {
           key,
           message: key,
@@ -82,8 +86,10 @@ function getMessages(template, strict) {
 
         if (prevChild && prevChild.type === "comment") {
           const [description, context] = prevChild.text.split("|");
-          m.key = `${m.key.trim()}${context ? ` | ${context.trim()}` : ""}`;
-          m.description = description.trim();
+          m.key = `${m.key}${context ? ` | ${clean(context)}` : ""}`;
+          if (description.trim()) {
+            m.description = clean(description);
+          }
         }
 
         keys.push(m);

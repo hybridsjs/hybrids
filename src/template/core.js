@@ -213,7 +213,7 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
       } else {
         if (!isMsg && !noTranslate && !text.match(/^\s*$/)) {
           let offset = -1;
-          const key = text.trim();
+          const key = text.trim().replace(/\s+/g, " ");
           const compiledKey = key.replace(
             PLACEHOLDER_REGEXP_ALL,
             (_, index) => {
@@ -231,7 +231,9 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
             if (context) {
               context.parentNode.removeChild(context);
               compileIndex -= 1;
-              context = (context.textContent.split("|")[1] || "").trim();
+              context = (context.textContent.split("|")[1] || "")
+                .trim()
+                .replace(/\s+/g, " ");
             }
 
             const value = getMessage(compiledKey, context).replace(
