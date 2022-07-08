@@ -57,8 +57,11 @@ describe("localize:", () => {
         "text only | context": {
           message: "tylko tekst i kontekst",
         },
-        "text and ${0}": {
+        "text and ${0} ${1}": {
           message: "${0} i tekst",
+        },
+        "text to expression ${0}": {
+          message: "${0}",
         },
         "plural ${0}": {
           message: {
@@ -85,13 +88,13 @@ describe("localize:", () => {
 
       expect(msg`text only`).toBe("haha");
       expect(msg`text only`).toBe("haha");
-      expect(msg`text and ${123}`).toBe("123 i tekst");
+      expect(msg`text and ${123} ${321}`).toBe("123 i tekst");
       expect(msg`plural ${0}`).toBe("0 inne");
       expect(msg`wrong plural ${0}`).toBe("");
     });
 
     it("msg returns translated message using optional context", () => {
-      expect(msg`text and ${123} || context`).toBe("123 i tekst");
+      expect(msg`text and ${123} ${321} || context`).toBe("123 i tekst");
     });
 
     it("msg returns passed key when no translation is found", () => {
@@ -180,17 +183,25 @@ describe("localize:", () => {
             <!-- description | context -->
             text only
             <!-- description -->
-            text and ${123}
+            text and ${123} ${321}
           </div>
-          <span>
-            text and ${321}
-          </span>
+          <div>
+            text and ${321} ${321}
+          </div>
+          <div>
+            text to expression ${123}
+          </div>
+          <div>
+            123 $$$
+          </div>
         `(el);
         expect(el.children[0].childNodes[1].textContent.trim()).toBe(
           "tylko tekst i kontekst",
         );
         expect(el.children[0].innerHTML).toContain("123 i tekst");
-        expect(el.children[1].innerHTML).toContain("321 i tekst");
+        expect(el.children[1].innerHTML.trim()).toEqual("321 i tekst");
+        expect(el.children[2].innerHTML.trim()).toEqual("123");
+        expect(el.children[3].innerHTML.trim()).toEqual("123 $$$");
       });
 
       it("omits nodes where translate attribute is set to 'no' or script and style", () => {

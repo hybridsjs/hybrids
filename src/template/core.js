@@ -1,6 +1,6 @@
 import global from "../global.js";
 import { stringifyElement, probablyDevMode } from "../utils.js";
-import { get as getMessage } from "../localize.js";
+import { get as getMessage, isLocalizeEnabled } from "../localize.js";
 
 import { getMeta, getPlaceholder, removeTemplate } from "./utils.js";
 
@@ -165,7 +165,7 @@ function setupStyleUpdater(target) {
 
 export function compileTemplate(rawParts, isSVG, isMsg = false) {
   const template = global.document.createElement("template");
-  const parts = [];
+  const parts = {};
 
   const signature = isMsg ? rawParts : createSignature(rawParts);
   template.innerHTML = isSVG ? `<svg>${signature}</svg>` : signature;
@@ -211,18 +211,23 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
         node.textContent = "";
         parts[equal[1]] = [compileIndex, resolveValue];
       } else {
-        if (!isMsg && !noTranslate && !text.match(/^\s*$/)) {
-          let offset = -1;
-          const key = text.trim().replace(/\s+/g, " ");
-          const compiledKey = key.replace(
-            PLACEHOLDER_REGEXP_ALL,
-            (_, index) => {
-              if (offset === -1) offset = Number(index);
-              return `\${${Number(index) - offset}}`;
-            },
-          );
+        if (
+          isLocalizeEnabled() &&
+          !isMsg &&
+          !noTranslate &&
+          !text.match(/^\s*$/)
+        ) {
+          let offset;
+          const key = text.trim();
+          const localizedKey = key
+            .replace(/\s+/g, " ")
+            .replace(PLACEHOLDER_REGEXP_ALL, (_, index) => {
+              index = Number(index);
+              if (offset === undefined) offset = index;
+              return `\${${index - offset}}`;
+            });
 
-          if (!compiledKey.match(PLACEHOLDER_REGEXP_ONLY)) {
+          if (!localizedKey.match(PLACEHOLDER_REGEXP_ONLY)) {
             let context =
               node.previousSibling &&
               node.previousSibling.nodeType === global.Node.COMMENT_NODE
@@ -236,11 +241,12 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
                 .replace(/\s+/g, " ");
             }
 
-            const value = getMessage(compiledKey, context).replace(
+            const resultKey = getMessage(localizedKey, context).replace(
               /\${(\d+)}/g,
               (_, index) => getPlaceholder(Number(index) + offset),
             );
-            text = text.replace(key, value);
+
+            text = text.replace(key, resultKey);
             node.textContent = text;
           }
         }
@@ -372,24 +378,31 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
     );
   }
 
+  const partsKeys = Object.keys(parts);
+
   return function updateTemplateInstance(host, target, args, styleSheets) {
     let meta = getMeta(target);
 
     if (template !== meta.template) {
       const fragment = global.document.importNode(template.content, true);
       const renderWalker = createWalker(fragment);
-      const clonedParts = parts.slice(0);
       const markers = [];
 
       let renderIndex = 0;
-      let currentPart = clonedParts.shift();
+      let keyIndex = 0;
+      let currentPart = parts[partsKeys[keyIndex]];
 
       while (renderWalker.nextNode()) {
         const node = renderWalker.currentNode;
 
         while (currentPart && currentPart[0] === renderIndex) {
-          markers.push([node, currentPart[1]]);
-          currentPart = clonedParts.shift();
+          markers.push({
+            index: partsKeys[keyIndex],
+            node,
+            fn: currentPart[1],
+          });
+          keyIndex += 1;
+          currentPart = parts[partsKeys[keyIndex]];
         }
 
         renderIndex += 1;
@@ -422,30 +435,27 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
 
     meta.styles(styleSheets);
 
-    const prevArgs = meta.prevArgs;
-    meta.prevArgs = args;
-
-    for (let index = 0; index < meta.markers.length; index += 1) {
-      const value = args[index];
-      const prevValue = prevArgs && prevArgs[index];
+    meta.markers.forEach((marker) => {
+      const value = args[marker.index];
+      const prevValue = meta.prevArgs && meta.prevArgs[marker.index];
 
       // eslint-disable-next-line no-continue
-      if (prevArgs && value === prevValue) continue;
-
-      const [node, marker] = meta.markers[index];
+      if (meta.prevArgs && value === prevValue) return;
 
       try {
-        marker(host, node, value, prevValue);
+        marker.fn(host, marker.node, value, prevValue);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(
           `Following error was thrown when updating a template expression in ${stringifyElement(
             host,
-          )}\n${beautifyTemplateLog(signature, index)}`,
+          )}\n${beautifyTemplateLog(signature, marker.index)}`,
         );
 
         throw error;
       }
-    }
+    });
+
+    meta.prevArgs = args;
   };
 }

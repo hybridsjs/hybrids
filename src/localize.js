@@ -26,6 +26,10 @@ const languages = (() => {
   }, new Set());
 })();
 
+export function isLocalizeEnabled() {
+  return translate !== null || dictionary.size;
+}
+
 export function clear() {
   languages.delete("default");
   dictionary.clear();
