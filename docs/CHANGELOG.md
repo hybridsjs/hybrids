@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.0.9](https://github.com/hybridsjs/hybrids/compare/v8.0.8...v8.0.9) (2022-07-08)
+
+
+### Bug Fixes
+
+* **html:** remove styles from templates ids with better caching ([c252636](https://github.com/hybridsjs/hybrids/commit/c2526364062de7d5821d1d2154157e0e70c4061b))
+* **store:** get singleton model before update to not overwrite properties with default values ([2844e91](https://github.com/hybridsjs/hybrids/commit/2844e9108db27c5837db7e3464bbe6a0c15d2bce))
+
 ### [8.0.8](https://github.com/hybridsjs/hybrids/compare/v8.0.7...v8.0.8) (2022-06-30)
 
 
