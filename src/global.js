@@ -23,6 +23,16 @@ export function polyfill(global) {
     });
   }
 
+  if (!("document" in global)) {
+    Object.defineProperty(global, "document", {
+      value: {
+        importNode: () => {
+          throw Error("Current context does not support importing nodes");
+        },
+      },
+    });
+  }
+
   return global;
 }
 

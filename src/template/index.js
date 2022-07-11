@@ -3,8 +3,9 @@ import { getPlaceholder } from "./utils.js";
 import * as helpers from "./helpers.js";
 
 const PLACEHOLDER = getPlaceholder();
-
-const styleMap = new WeakMap();
+const PLACEHOLDER_SVG = getPlaceholder("svg");
+const PLACEHOLDER_MSG = getPlaceholder("msg");
+const PLACEHOLDER_LAYOUT = getPlaceholder("layout");
 
 const methods = {
   key(id) {
@@ -12,20 +13,15 @@ const methods = {
     return this;
   },
   style(...styles) {
-    let list = styleMap.get(this);
-    if (!list) styleMap.set(this, (list = []));
-
-    styles.forEach((style) => {
-      if (style) list.push(style);
-    });
+    this.styleSheets = this.styleSheets || [];
+    this.styleSheets.push(...styles);
 
     return this;
   },
   css(parts, ...args) {
-    let set = styleMap.get(this);
-    if (!set) styleMap.set(this, (set = []));
+    this.styleSheets = this.styleSheets || [];
 
-    set.push(
+    this.styleSheets.push(
       parts.reduce(
         (acc, part, index) =>
           `${acc}${part}${args[index] !== undefined ? args[index] : ""}`,
@@ -37,38 +33,32 @@ const methods = {
   },
 };
 
-const htmlTemplates = new Map();
-export function html(parts, ...args) {
-  function compile(host, target = host) {
-    let id = parts.join(PLACEHOLDER);
+const templates = new Map();
+export function compile(parts, args, isSVG, isMsg) {
+  function template(host, target = host) {
+    let id = isMsg ? parts + PLACEHOLDER_MSG : parts.join(PLACEHOLDER);
+    if (isSVG) id += PLACEHOLDER_SVG;
+    const useLayout = template.useLayout;
+    if (useLayout) id += PLACEHOLDER_LAYOUT;
 
-    let render = htmlTemplates.get(id);
+    let render = templates.get(id);
     if (!render) {
-      render = compileTemplate(parts);
-      htmlTemplates.set(id, render);
+      render = compileTemplate(parts, isSVG, isMsg, useLayout);
+      templates.set(id, render);
     }
 
-    render(host, target, args, styleMap.get(compile));
+    render(host, target, args, template.styleSheets);
   }
 
-  return Object.assign(compile, methods);
+  return Object.assign(template, methods);
 }
 
-const svgTemplates = new Map();
+export function html(parts, ...args) {
+  return compile(parts, args, false, false);
+}
+
 export function svg(parts, ...args) {
-  function compile(host, target = host) {
-    let id = parts.join(PLACEHOLDER);
-
-    let render = svgTemplates.get(id);
-    if (!render) {
-      render = compileTemplate(parts, true);
-      svgTemplates.set(id, render);
-    }
-
-    render(host, target, args, styleMap.get(compile));
-  }
-
-  return Object.assign(compile, methods);
+  return compile(parts, args, true, false);
 }
 
 Object.freeze(Object.assign(html, helpers));

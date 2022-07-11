@@ -2,6 +2,7 @@ import global from "../global.js";
 import { stringifyElement, probablyDevMode } from "../utils.js";
 import { get as getMessage, isLocalizeEnabled } from "../localize.js";
 
+import * as layout from "./layout.js";
 import {
   getMeta,
   getPlaceholder,
@@ -97,53 +98,47 @@ function beautifyTemplateLog(input, index) {
 }
 
 const styleSheetsMap = new Map();
-function getCSSStyleSheet(style) {
-  let styleSheet = style;
-  if (!(styleSheet instanceof global.CSSStyleSheet)) {
-    styleSheet = styleSheetsMap.get(style);
-    if (!styleSheet) {
-      styleSheet = new global.CSSStyleSheet();
-      styleSheet.replaceSync(style);
-      styleSheetsMap.set(style, styleSheet);
-    }
-  }
-
-  return styleSheet;
-}
-
 function setupStyleUpdater(target) {
   if (target.adoptedStyleSheets) {
     let prevStyleSheets;
     return (styleSheets) => {
       const adoptedStyleSheets = target.adoptedStyleSheets;
 
-      if (styleSheets !== prevStyleSheets) {
-        if (styleSheets) {
-          styleSheets = styleSheets.map(getCSSStyleSheet);
-
-          let isNotEqual =
-            !prevStyleSheets ||
-            prevStyleSheets.some(
-              (styleSheet, i) => styleSheet !== styleSheets[i],
-            );
-
-          if (isNotEqual) {
-            target.adoptedStyleSheets = (
-              prevStyleSheets
-                ? adoptedStyleSheets.filter(
-                    (styleSheet) => !prevStyleSheets.includes(styleSheet),
-                  )
-                : adoptedStyleSheets
-            ).concat(styleSheets);
+      if (styleSheets) {
+        styleSheets = styleSheets.map((style) => {
+          let styleSheet = style;
+          if (!(styleSheet instanceof global.CSSStyleSheet)) {
+            styleSheet = styleSheetsMap.get(style);
+            if (!styleSheet) {
+              styleSheet = new global.CSSStyleSheet();
+              styleSheet.replaceSync(style);
+              styleSheetsMap.set(style, styleSheet);
+            }
           }
-        } else {
-          target.adoptedStyleSheets = adoptedStyleSheets.filter(
-            (styleSheet) => !prevStyleSheets.includes(styleSheet),
-          );
-        }
 
-        prevStyleSheets = styleSheets;
+          return styleSheet;
+        });
+
+        if (
+          !prevStyleSheets ||
+          prevStyleSheets.some((styleSheet, i) => styleSheet !== styleSheets[i])
+        ) {
+          // TODO: this might change order of already applied styles
+          target.adoptedStyleSheets = (
+            prevStyleSheets
+              ? adoptedStyleSheets.filter(
+                  (styleSheet) => !prevStyleSheets.includes(styleSheet),
+                )
+              : adoptedStyleSheets
+          ).concat(styleSheets);
+        }
+      } else if (prevStyleSheets) {
+        target.adoptedStyleSheets = adoptedStyleSheets.filter(
+          (styleSheet) => !prevStyleSheets.includes(styleSheet),
+        );
       }
+
+      prevStyleSheets = styleSheets;
     };
   }
 
@@ -171,11 +166,12 @@ function setupStyleUpdater(target) {
   };
 }
 
-export function compileTemplate(rawParts, isSVG, isMsg = false) {
-  const template = global.document.createElement("template");
+export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
+  let template = global.document.createElement("template");
   const parts = {};
 
   const signature = isMsg ? rawParts : createSignature(rawParts);
+
   template.innerHTML = isSVG ? `<svg>${signature}</svg>` : signature;
 
   if (isSVG) {
@@ -184,6 +180,35 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
     Array.from(svgRoot.childNodes).forEach((node) =>
       template.content.appendChild(node),
     );
+  }
+
+  let hostLayout;
+  const layoutTemplate = template.content.children[0];
+  if (layoutTemplate instanceof global.HTMLTemplateElement) {
+    Array.from(layoutTemplate.attributes).forEach((attr) => {
+      const value = attr.value.trim();
+      if (attr.name.startsWith("layout") && value) {
+        if (value.match(PLACEHOLDER_REGEXP_ALL)) {
+          throw Error("Layout attribute cannot contain expressions");
+        }
+
+        hostLayout = layout.insertRule(
+          layoutTemplate,
+          attr.name.substr(6),
+          value,
+          true,
+        );
+      }
+    });
+
+    if (hostLayout !== undefined && template.content.children.length > 1) {
+      throw Error(
+        "Template, which uses layout system must have only the '<template>' root element",
+      );
+    }
+
+    useLayout = true;
+    template = layoutTemplate;
   }
 
   const compileWalker = createWalker(template.content);
@@ -324,6 +349,19 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
           const value = attr.value.trim();
           /* istanbul ignore next */
           const name = attr.name;
+
+          if (useLayout && name.startsWith("layout") && value) {
+            if (value.match(PLACEHOLDER_REGEXP_ALL)) {
+              throw Error("Layout attribute cannot contain expressions");
+            }
+
+            const className = layout.insertRule(node, name.substr(6), value);
+            node.removeAttribute(name);
+            node.classList.add(className);
+
+            return;
+          }
+
           const equal = value.match(PLACEHOLDER_REGEXP_EQUAL);
           if (equal) {
             const propertyName = getPropertyName(rawParts[equal[1]]);
@@ -387,8 +425,7 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
   }
 
   const partsKeys = Object.keys(parts);
-
-  return function updateTemplateInstance(host, target, args, styleSheets) {
+  return function updateTemplateInstance(host, target, args, styles) {
     let meta = getMeta(target);
 
     if (template !== meta.template) {
@@ -416,6 +453,10 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
         renderIndex += 1;
       }
 
+      if (meta.hostLayout) {
+        host.classList.remove(meta.hostLayout);
+      }
+
       removeTemplate(target);
 
       meta = getMeta(target);
@@ -437,11 +478,19 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
           child = fragment.childNodes[0];
         }
       } else {
+        if (useLayout) {
+          const className = `${hostLayout}-${host === target ? "c" : "s"}`;
+          host.classList.add(className);
+          meta.hostLayout = className;
+        }
+
         target.appendChild(fragment);
       }
+
+      if (useLayout) layout.inject(target);
     }
 
-    meta.styles(styleSheets);
+    meta.styles(styles);
 
     meta.markers.forEach((marker) => {
       const value = args[marker.index];
@@ -451,7 +500,7 @@ export function compileTemplate(rawParts, isSVG, isMsg = false) {
       if (meta.prevArgs && value === prevValue) return;
 
       try {
-        marker.fn(host, marker.node, value, prevValue);
+        marker.fn(host, marker.node, value, prevValue, useLayout);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(

@@ -22,6 +22,11 @@ describe("global:", () => {
         new global.HTMLElement();
       }).toThrow();
 
+      expect(global.document).toBeDefined();
+      expect(() => {
+        global.document.importNode();
+      }).toThrow();
+
       expect(global.requestAnimationFrame).toBeDefined();
       const spy = jasmine.createSpy();
       global.requestAnimationFrame(spy);

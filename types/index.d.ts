@@ -277,12 +277,12 @@ declare module "hybrids" {
     function html<E>(
       parts: TemplateStringsArray,
       ...args: unknown[]
-    ): UpdateFunction<E>;
+    ): UpdateFunctionWithMethods<E>;
 
     function svg<E>(
       parts: TemplateStringsArray,
       ...args: unknown[]
-    ): UpdateFunction<E>;
+    ): UpdateFunctionWithMethods<E>;
   }
 
   /* Utils */
@@ -299,6 +299,7 @@ declare module "hybrids" {
     key: (id: any) => this;
     style: (...styles: Array<string | CSSStyleSheet>) => this;
     css: (parts: TemplateStringsArray, ...args: unknown[]) => this;
+    layout: (rules: string = "column") => this;
   }
 
   interface EventHandler<E> {
