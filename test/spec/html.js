@@ -1240,6 +1240,19 @@ describe("html:", () => {
       );
       expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
     });
+
+    it("adds styles with nested template", () => {
+      const container = fragment.attachShadow({ mode: "open" });
+
+      html`<div>${html`content`.css`div { color: red }`}</div>`(
+        fragment,
+        container,
+      );
+
+      expect(getComputedStyle(container.children[0]).color).toBe(
+        "rgb(255, 0, 0)",
+      );
+    });
   });
 
   describe("use external element with shadowRoot", () => {

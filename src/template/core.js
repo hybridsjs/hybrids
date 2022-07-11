@@ -2,7 +2,12 @@ import global from "../global.js";
 import { stringifyElement, probablyDevMode } from "../utils.js";
 import { get as getMessage, isLocalizeEnabled } from "../localize.js";
 
-import { getMeta, getPlaceholder, removeTemplate } from "./utils.js";
+import {
+  getMeta,
+  getPlaceholder,
+  getTemplateEnd,
+  removeTemplate,
+} from "./utils.js";
 
 import resolveValue from "./resolvers/value.js";
 import resolveProperty from "./resolvers/property.js";
@@ -107,9 +112,7 @@ function getCSSStyleSheet(style) {
 }
 
 function setupStyleUpdater(target) {
-  const hasAdoptedStyleSheets = !!target.adoptedStyleSheets;
-
-  if (hasAdoptedStyleSheets) {
+  if (target.adoptedStyleSheets) {
     let prevStyleSheets;
     return (styleSheets) => {
       const adoptedStyleSheets = target.adoptedStyleSheets;
@@ -149,7 +152,12 @@ function setupStyleUpdater(target) {
     if (styleSheets) {
       if (!styleEl) {
         styleEl = global.document.createElement("style");
-        target.appendChild(styleEl);
+        target = getTemplateEnd(target);
+        if (target.nodeType === global.Node.TEXT_NODE) {
+          target.parentNode.insertBefore(styleEl, target.nextSibling);
+        } else {
+          target.appendChild(styleEl);
+        }
       }
       const result = [...styleSheets].join("\n/*------*/\n");
 
@@ -157,7 +165,7 @@ function setupStyleUpdater(target) {
         styleEl.textContent = result;
       }
     } else if (styleEl) {
-      target.removeChild(styleEl);
+      styleEl.parentNode.removeChild(styleEl);
       styleEl = null;
     }
   };
