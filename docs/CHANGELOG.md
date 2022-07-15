@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.0.10](https://github.com/hybridsjs/hybrids/compare/v8.0.9...v8.0.10) (2022-07-15)
+
+
+### Bug Fixes
+
+* **html:** apend style element in nested templates ([f8135f6](https://github.com/hybridsjs/hybrids/commit/f8135f6001a72ee4f1ae03c2a4b4bfff67f9865b))
+* **localize:** clean up whitespace inside of the text ([84ef932](https://github.com/hybridsjs/hybrids/commit/84ef932bd13d07b997c0b6bab574ffd2019c139a))
+* **localize:** detect is localize enabled, reordered expressions in message ([7b5db37](https://github.com/hybridsjs/hybrids/commit/7b5db372ee999faafab9e8f9eb8c63436c0fc963))
+* **localize:** simplify exclude strings regexp ([eb39de8](https://github.com/hybridsjs/hybrids/commit/eb39de826929f43ed4ed0260672384887a3de4fe))
+
 ### [8.0.9](https://github.com/hybridsjs/hybrids/compare/v8.0.8...v8.0.9) (2022-07-08)
 
 
