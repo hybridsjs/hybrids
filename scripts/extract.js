@@ -40,7 +40,7 @@ function skip(content, i) {
   return i;
 }
 
-const REGEXP_ONLY_EXPRESSIONS = /^[${}0-9 \t\n\f\r]+$/;
+const REGEXP_ONLY_EXPRESSIONS = /^[^A-Za-z]+$/;
 const REGEXP_WHITESPACE = /^\s*$/;
 const DISABLED_TAGS = ["script", "style"];
 

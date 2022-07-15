@@ -15,7 +15,7 @@ import resolveProperty from "./resolvers/property.js";
 const PLACEHOLDER_REGEXP_TEXT = getPlaceholder("(\\d+)");
 const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
 const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, "g");
-const PLACEHOLDER_REGEXP_ONLY = /^[${}0-9 \t\n\f\r]+$/;
+const PLACEHOLDER_REGEXP_ONLY = /^[^A-Za-z]+$/;
 
 function createSignature(parts) {
   let signature = parts.reduce((acc, part, index) => {
