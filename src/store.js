@@ -1415,7 +1415,7 @@ function valueWithValidation(
       break;
     default:
       throw TypeError(
-        `Default value must be a string or a number: ${typeof defaultValue}`,
+        `Default value must be a string, number or boolean: ${typeof defaultValue}`,
       );
   }
 
