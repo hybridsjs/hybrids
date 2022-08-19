@@ -434,6 +434,16 @@ describe("store:", () => {
           }),
       ));
 
+    it("clears nested object", () =>
+      promise.then((model) =>
+        store
+          .set(model, { nestedObject: { value: "other" } })
+          .then((newModel) => store.set(newModel, { nestedObject: null }))
+          .then((resultModel) => {
+            expect(resultModel.nestedObject).toEqual({ value: "test" });
+          }),
+      ));
+
     it("rejects an error when updates nested object with different model", () =>
       promise.then((model) =>
         store

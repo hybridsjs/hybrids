@@ -669,10 +669,10 @@ function setupModel(Model, nested) {
 
           return (model, data, lastModel) => {
             if (hasOwnProperty.call(data, key)) {
-              model[key] = nestedConfig.create(
-                data[key],
-                lastModel && lastModel[key],
-              );
+              model[key] =
+                data[key] === null
+                  ? nestedConfig.create({})
+                  : nestedConfig.create(data[key], lastModel && lastModel[key]);
             } else {
               model[key] = lastModel ? lastModel[key] : nestedConfig.create({});
             }
