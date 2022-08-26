@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.1](https://github.com/hybridsjs/hybrids/compare/v8.1.0...v8.1.1) (2022-08-26)
+
+
+### Bug Fixes
+
+* **layout:** add combined size rule for width and height ([43ec3b3](https://github.com/hybridsjs/hybrids/commit/43ec3b36bf3abd9dc15bc5993e7211f13673472a))
+* **layout:** remove `flex-shrink` from flexbox main rules ([2efe206](https://github.com/hybridsjs/hybrids/commit/2efe206c5d75a0adf148301b98bf0b5c40aefa26))
+
 ## [8.1.0](https://github.com/hybridsjs/hybrids/compare/v8.0.10...v8.1.0) (2022-08-26)
 
 
