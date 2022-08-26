@@ -20,7 +20,13 @@ function movePlaceholder(target, previousSibling) {
   }
 }
 
-export default function resolveArray(host, target, value, resolveValue) {
+export default function resolveArray(
+  host,
+  target,
+  value,
+  resolveValue,
+  isLayout,
+) {
   let lastEntries = arrayMap.get(target);
   const entries = value.map((item, index) => ({
     id: hasOwnProperty.call(item, "id") ? item.id : index,
@@ -70,7 +76,13 @@ export default function resolveArray(host, target, value, resolveValue) {
         movePlaceholder(entry.placeholder, previousSibling);
       }
       if (matchedEntry.value !== entry.value) {
-        resolveValue(host, entry.placeholder, entry.value, matchedEntry.value);
+        resolveValue(
+          host,
+          entry.placeholder,
+          entry.value,
+          matchedEntry.value,
+          isLayout,
+        );
       }
     } else {
       entry.placeholder = global.document.createTextNode("");
@@ -78,7 +90,7 @@ export default function resolveArray(host, target, value, resolveValue) {
         entry.placeholder,
         previousSibling.nextSibling,
       );
-      resolveValue(host, entry.placeholder, entry.value);
+      resolveValue(host, entry.placeholder, entry.value, undefined, isLayout);
     }
 
     previousSibling = getTemplateEnd(

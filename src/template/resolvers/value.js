@@ -14,7 +14,13 @@ function typeOf(value) {
   return type;
 }
 
-export default function resolveValue(host, target, value, lastValue) {
+export default function resolveValue(
+  host,
+  target,
+  value,
+  lastValue,
+  useLayout,
+) {
   const type = typeOf(value);
   const lastType = typeOf(lastValue);
 
@@ -36,6 +42,7 @@ export default function resolveValue(host, target, value, lastValue) {
       resolveNode(host, target, value);
       break;
     case "function":
+      if (useLayout) value.useLayout = true;
       value(host, target);
       break;
     default:

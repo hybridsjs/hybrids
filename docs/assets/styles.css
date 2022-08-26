@@ -4,4 +4,17 @@
   --theme-color: #2f72a0;
   --mono-hue: 220;
   --mono-saturation: 25%;
+  --heading-h1-font-weight: 500;
+  --heading-h2-font-weight: 500;
+  --content-max-width: 60em;
+}
+
+.sidebar {
+  font-size: 14px;
+}
+
+.sidebar-nav ul ul ul ul {
+  font-size: 13px;
+  --sidebar-nav-link-color: #666;
+  --sidebar-nav-link-color-hover: #444;
 }

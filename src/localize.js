@@ -1,8 +1,8 @@
-import { compileTemplate } from "./template/core.js";
 import { getPlaceholder } from "./template/utils.js";
 
 import global from "./global.js";
 import { probablyDevMode } from "./utils.js";
+import { compile } from "./template/index.js";
 
 const dictionary = new Map();
 const cache = new Map();
@@ -164,41 +164,24 @@ export function msg(parts, ...args) {
   return getString(parts, args).replace(EXP_REGEX, (_, index) => args[index]);
 }
 
-const htmlTemplates = new Map();
 msg.html = function html(parts, ...args) {
   const input = getString(parts, args);
 
-  return (host, target = host) => {
-    let render = htmlTemplates.get(input);
-    if (!render) {
-      render = compileTemplate(
-        input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
-        false,
-        true,
-      );
-      htmlTemplates.set(input, render);
-    }
-
-    render(host, target, args);
-  };
+  return compile(
+    input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
+    args,
+    false,
+    true,
+  );
 };
 
-const svgTemplates = new Map();
 msg.svg = function svg(parts, ...args) {
   const input = getString(parts, args);
 
-  return (host, target = host) => {
-    const id = input;
-    let render = svgTemplates.get(id);
-    if (!render) {
-      render = compileTemplate(
-        input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
-        true,
-        true,
-      );
-      svgTemplates.set(id, render);
-    }
-
-    render(host, target, args);
-  };
+  return compile(
+    input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
+    args,
+    true,
+    true,
+  );
 };
