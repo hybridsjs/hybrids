@@ -15,7 +15,6 @@ const rules = {
     acc[type] = (props, wrap = "nowrap") => ({
       display: "flex",
       "flex-flow": `${type} ${wrap}`,
-      "flex-shrink": "0",
     });
     return acc;
   }, {}),
