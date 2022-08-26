@@ -256,6 +256,9 @@ describe("layout:", () => {
         <div layout="width:full"></div>
         <div layout="height:20px:10px:full"></div>
         <div layout="ratio:16/9"></div>
+        <div layout="size:100px"></div>
+        <div layout="size:100px:50px"></div>
+        <div layout="size::50px"></div>
       </template>
     `(host);
 
@@ -269,6 +272,17 @@ describe("layout:", () => {
 
     const styles2 = window.getComputedStyle(host.children[2]);
     expect(styles2.aspectRatio).toBe("16 / 9");
+
+    const styles3 = window.getComputedStyle(host.children[3]);
+    expect(styles3.width).toBe("100px");
+
+    const styles4 = window.getComputedStyle(host.children[4]);
+    expect(styles4.width).toBe("100px");
+    expect(styles4.height).toBe("50px");
+
+    const styles5 = window.getComputedStyle(host.children[5]);
+    expect(styles5.width).not.toBe("50px");
+    expect(styles5.height).toBe("50px");
   });
 
   it("supports overscroll and overflow rules", () => {

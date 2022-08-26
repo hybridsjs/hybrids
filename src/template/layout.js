@@ -64,6 +64,10 @@ const rules = {
   center: { "place-items": "center", "place-content": "center" },
 
   // size
+  size: (props, width, height = width) => ({
+    width: dimension(width),
+    height: dimension(height),
+  }),
   width: (props, base, min, max) => ({
     width: dimension(base),
     "min-width": dimension(min),
