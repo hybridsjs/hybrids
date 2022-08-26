@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.1.0](https://github.com/hybridsjs/hybrids/compare/v8.0.10...v8.1.0) (2022-08-26)
+
+
+### Features
+
+* **layout:** Add support for layout engine ([#194](https://github.com/hybridsjs/hybrids/issues/194)) ([fe6e424](https://github.com/hybridsjs/hybrids/commit/fe6e424a63a036593ba4f8a35a1c7429fc350ba4))
+
+
+### Bug Fixes
+
+* **store:** clear nested internal object by null value ([1310f47](https://github.com/hybridsjs/hybrids/commit/1310f47dc99f18f75171c08cd924ec8948edead7))
+* **store:** improved error message for value with validation ([3ce6da9](https://github.com/hybridsjs/hybrids/commit/3ce6da9d00d61849e82f88845520ac4cbbbf942f))
+
 ### [8.0.10](https://github.com/hybridsjs/hybrids/compare/v8.0.9...v8.0.10) (2022-07-15)
 
 
