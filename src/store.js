@@ -1487,7 +1487,7 @@ function store(Model, options = {}) {
     Model = draft.model;
   }
 
-  if (!options.id && config.enumerable) {
+  if (!options.id && config.enumerable && !config.list) {
     return {
       get(host, value) {
         const valueConfig = definitions.get(value);
@@ -1513,7 +1513,10 @@ function store(Model, options = {}) {
 
   return {
     get: (host, value) => {
-      const id = (options.id && options.id(host)) || (value && value.id);
+      const valueConfig = definitions.get(value);
+      const id =
+        (options.id && options.id(host)) ||
+        (valueConfig !== undefined ? value.id : value);
 
       if (draft && !id && (value === undefined || value === null)) {
         const draftModel = draft.create({});
@@ -1521,7 +1524,8 @@ function store(Model, options = {}) {
         return get(Model, undefined);
       }
 
-      if (config.enumerable && id === undefined) return undefined;
+      if (!config.list && config.enumerable && id === undefined)
+        return undefined;
 
       const nextValue = get(Model, id);
 
@@ -1533,7 +1537,10 @@ function store(Model, options = {}) {
 
       return nextValue;
     },
-    set: draft && !config.enumerable ? (_, v) => v : undefined,
+    set:
+      (!options.id && config.list) || (draft && !config.enumerable)
+        ? (_, v) => v
+        : undefined,
     connect:
       draft && config.enumerable
         ? (host, key) => () => {

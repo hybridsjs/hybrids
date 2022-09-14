@@ -1389,7 +1389,7 @@ describe("store:", () => {
       });
 
       it("set id by assertion when no id option is set", () => {
-        expect(el.listwithoutid).toBe(undefined);
+        expect(el.listwithoutid).toEqual([]);
         el.listwithoutid = "some";
         expect(el.listwithoutid).toEqual([]);
         el.listwithoutid = "default";
