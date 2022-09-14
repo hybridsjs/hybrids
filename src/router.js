@@ -335,6 +335,9 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
     const stateParams = writableParams.filter(
       (k) => !routerOptions.params.includes(k) && !metaParams.includes(k),
     );
+    const clearParams = browserUrl
+      ? stateParams.filter((k) => !browserUrl.pathnameParams.includes(k))
+      : stateParams;
 
     callbacksMap.get(Constructor).unshift((_) =>
       cache.observe(
@@ -343,9 +346,10 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         (host) =>
           stateParams.reduce((acc, key) => {
             const value = mapUrlParam(host[key]).toString();
-            if (value !== undefined && value !== hybrids[key]) {
-              acc[key] = String(value);
-            }
+            acc[key] =
+              value !== undefined && host[key] !== hybrids[key]
+                ? String(value)
+                : undefined;
             return acc;
           }, {}),
         (host, params, lastParams) => {
@@ -356,6 +360,10 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           while (entry.id !== id && entry.nested) entry = entry.nested;
 
           params = { ...entry.params, ...params };
+
+          clearParams.forEach((key) => {
+            if (params[key] === undefined) delete params[key];
+          });
 
           global.history.replaceState(
             [config.getEntry(params), ...state.slice(1)],
