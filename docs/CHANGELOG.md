@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.2](https://github.com/hybridsjs/hybrids/compare/v8.1.1...v8.1.2) (2022-09-14)
+
+
+### Bug Fixes
+
+* **router:** clear state params if they equal defaults ([2bc0ed4](https://github.com/hybridsjs/hybrids/commit/2bc0ed4820959ccbf795a72c5762fae19d143639))
+* **store:** factory for listing model without id should return a list ([1b168aa](https://github.com/hybridsjs/hybrids/commit/1b168aa5eaf1ff33d04fae7894f1fa87996d3a4f))
+
 ### [8.1.1](https://github.com/hybridsjs/hybrids/compare/v8.1.0...v8.1.1) (2022-08-26)
 
 
