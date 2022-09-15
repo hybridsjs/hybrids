@@ -74,7 +74,7 @@ declare module "hybrids" {
     [property in keyof Omit<M, "id">]: Required<M>[property] extends Array<
       infer T
     >
-      ? [Model<T>] | ((model: M) => T[])
+      ? NestedArrayModel<T> | ((model: M) => NestedArrayModel<T>)
       : Required<M>[property] extends object
       ? Model<Required<M>[property]> | ((model: M) => M[property])
       : Required<M>[property] | ((model: M) => M[property]);
@@ -82,6 +82,14 @@ declare module "hybrids" {
     id?: true;
     __store__connect__?: Storage<M> | Storage<M>["get"];
   };
+
+  type NestedArrayModel<T> = T extends string
+    ? T[] | [StringConstructor]
+    : T extends number
+    ? T[] | [NumberConstructor]
+    : T extends boolean
+    ? T[] | [BooleanConstructor]
+    : T[] | [Model<T>] | [Model<T>, { loose?: boolean }];
 
   type ModelIdentifier =
     | string
@@ -299,7 +307,6 @@ declare module "hybrids" {
     key: (id: any) => this;
     style: (...styles: Array<string | CSSStyleSheet>) => this;
     css: (parts: TemplateStringsArray, ...args: unknown[]) => this;
-    layout: (rules: string = "column") => this;
   }
 
   interface EventHandler<E> {

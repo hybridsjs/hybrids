@@ -238,6 +238,17 @@ const Model = {
 
 If the first item of the array is a primitive or an internal object instance (according to the rules defined for nested objects), the array's content will be unique for each model instance. The default value of the nested array can have more items, which will be created using the first element's model definition.
 
+If the nested array must be empty as a default value, you can use primitive constructor as the first item of the array:
+
+```javascript
+const Model = {
+  domains: [String],
+  numbers: [Number],
+}
+
+store.get(Model); // { domains: [], numbers: [] }
+```
+
 #### Models (External)
 
 ```javascript

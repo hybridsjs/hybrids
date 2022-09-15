@@ -34,6 +34,7 @@ describe("store:", () => {
       nestedArrayOfPrimitives: ["one", "two"],
       nestedArrayOfObjects: [{ one: "two" }],
       nestedArrayOfExternalObjects: [{ id: true, value: "test" }],
+      nestedArrayOfConstructor: [String],
     };
   });
 
@@ -89,6 +90,10 @@ describe("store:", () => {
           nestedArrayOfObjects: Model.nestedArrayOfObjects,
         }),
       ).not.toThrow();
+    });
+
+    it("throws when nested array is set with abritrary function", () => {
+      expect(() => store.get({ nested: [() => {}] })).toThrow();
     });
 
     it("returns a placeholder in error state for not defined model", () => {
@@ -191,6 +196,7 @@ describe("store:", () => {
             nestedArrayOfPrimitives: ["one", "two"],
             nestedArrayOfObjects: [{ one: "two" }],
             nestedArrayOfExternalObjects: [],
+            nestedArrayOfConstructor: [],
           });
           expect(model.computed).toEqual("This is the string: value");
         }));
@@ -562,6 +568,19 @@ describe("store:", () => {
           })
           .then((model) => {
             expect(model.nestedArrayOfExternalObjects[0]).toBe(nestedModel);
+          }),
+      ));
+
+    it("updates nested array of primitives defined by constructor", () =>
+      promise.then((model) =>
+        store
+          .set(model, { nestedArrayOfConstructor: ["a", 1, true] })
+          .then((newModel) => {
+            expect(newModel.nestedArrayOfConstructor).toEqual([
+              "a",
+              "1",
+              "true",
+            ]);
           }),
       ));
 

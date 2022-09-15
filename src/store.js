@@ -537,8 +537,25 @@ function setupModel(Model, nested) {
             const nestedType = typeof defaultValue[0];
 
             if (nestedType !== "object") {
-              const Constructor = getTypeConstructor(nestedType, key);
-              const defaultArray = Object.freeze(defaultValue.map(Constructor));
+              if (
+                nestedType === "function" &&
+                ![String, Number, Boolean].includes(defaultValue[0])
+              ) {
+                throw TypeError(
+                  `The array item for the '${key}' must be one of the primitive types constructor: String, Number, or Boolean`,
+                );
+              }
+
+              const Constructor =
+                nestedType === "function"
+                  ? defaultValue[0]
+                  : getTypeConstructor(nestedType, key);
+
+              const defaultArray =
+                nestedType === "function"
+                  ? []
+                  : Object.freeze(defaultValue.map(Constructor));
+
               return (model, data, lastModel) => {
                 if (hasOwnProperty.call(data, key)) {
                   if (!Array.isArray(data[key])) {
