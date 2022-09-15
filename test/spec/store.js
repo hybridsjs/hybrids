@@ -1108,9 +1108,29 @@ describe("store:", () => {
         }),
       ));
 
+    it("resolve() returns the latest model instance by model definition", () =>
+      store.set(Model).then((model) =>
+        store.resolve(Model, model.id).then((m) => {
+          expect(m).toBe(model);
+
+          store.set(m, { string: "my value" });
+          store.set(m, { string: "latest value" });
+          return store.resolve(Model, m.id).then((nm) => {
+            expect(nm).not.toBe(m);
+            expect(nm.string).toBe("latest value");
+          });
+        }),
+      ));
+
     it("resolve() rejects an error from the model instance", () => {
       const model = store.get(Model, "test");
       return store.resolve(model).catch((e) => {
+        expect(e).toBeInstanceOf(Error);
+      });
+    });
+
+    it("resolve() rejects an error from the model instance by model definition", () => {
+      return store.resolve(Model, "test").catch((e) => {
         expect(e).toBeInstanceOf(Error);
       });
     });

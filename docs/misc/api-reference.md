@@ -208,6 +208,16 @@ store.resolve(model: Model): Promise<Model>
   - A promise instance resolving with the latest model value or rejecting with an error
 
 ```typescript
+store.resolve(Model: object, id?: string | object): Promise<Model>
+```
+
+- **arguments**:
+  - `Model` - a model definition
+  - `id` - a string or an object representing identifier of the model instance
+- **returns**:
+  - A promise instance resolving with the latest model value or rejecting with an error
+
+```typescript
 store.sync(modelOrDefinition: object, values: object | null) : Model;
 ```
 

@@ -171,7 +171,10 @@ declare module "hybrids" {
     function ready(...models: Array<object>): boolean;
 
     function submit<M>(draft: M, values?: ModelValues<M>): Promise<M>;
+
     function resolve<M>(model: M): Promise<M>;
+    function resolve<M>(model: Model<M>, id?: ModelIdentifier): Promise<M>;
+
     function ref<M>(fn: () => M): M;
 
     interface ValidateFunction<M, T> {

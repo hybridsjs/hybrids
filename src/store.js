@@ -1328,8 +1328,9 @@ function pending(...models) {
   return isPending && (models.length > 1 ? Promise.all(result) : result[0]);
 }
 
-function resolveToLatest(model) {
+function resolveToLatest(model, id) {
   model = stales.get(model) || model;
+  if (!definitions.get(model)) model = get(model, id);
 
   const promise = pending(model);
 

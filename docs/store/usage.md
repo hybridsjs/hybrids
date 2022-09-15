@@ -126,12 +126,26 @@ The above action will update only the `myUser.address.street` value leaving the 
 
 You can use the `store.resolve()` method to simplify access to pending model instances, which can be updated at the moment. The function returns a promise resolving into the current model instance, regardless of the pending state. It also supports multiple chains of set methods, so the result will always be the latest instance.
 
+#### Model Instance
+
 ```typescript
 store.resolve(model: Model): Promise<Model>
 ```
 
 * **arguments**:
   * `model` - a model instance
+* **returns**:
+  * A promise instance resolving with the latest model value or rejecting with an error
+
+#### Model Definition
+
+```typescript
+store.resolve(Model: object, id?: string | object): Promise<Model>
+```
+
+* **arguments**:
+  * `Model` - a model definition
+  * `id` - a string or an object representing identifier of the model instance
 * **returns**:
   * A promise instance resolving with the latest model value or rejecting with an error
 
@@ -142,7 +156,7 @@ const State = {
 
 async function sendValue(host) {
   // state can be in pending state at the moment (updating by the change event)
-  const state = await store.resolve(host.state);
+  const state = await store.resolve(host.state); // or store.resolve(State)
   const res = await fetch("/my-endpoint", { method: "post", body: JSON.stringify(state) });
 
   // do something with the response
