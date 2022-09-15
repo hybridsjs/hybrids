@@ -199,6 +199,15 @@ store.set(modelInstance: object, values: object | null): Promise;
   - A promise, which resolves to the model instance or placeholder (for model deletion)
 
 ```typescript
+store.resolve(model: Model): Promise<Model>
+```
+
+- **arguments**:
+  - `model` - a model instance
+- **returns**:
+  - A promise instance resolving with the latest model value or rejecting with an error
+
+```typescript
 store.sync(modelOrDefinition: object, values: object | null) : Model;
 ```
 
@@ -292,17 +301,6 @@ store.value(defaultValue: string | number | boolean, validate?: fn | RegExp, err
   - `errorMessage` - optional error message used when validation fails
 - **returns**:
   - a `String`, `Number` or `Boolean` instance
-
-### Resolve
-
-```typescript
-store.resolve(model: Model): Promise<Model>
-```
-
-- **arguments**:
-  - `model` - a model instance
-- **returns**:
-  - A promise instance resolving with the latest model value or rejecting with an error
 
 ## Router
 

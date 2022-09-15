@@ -20,7 +20,7 @@ Those unique principles unify access to async and sync sources. From the user pe
 
 ## Direct Methods
 
-### Get
+### get
 
 ```typescript
 store.get(Model: object, id?: string | object) : Model;
@@ -54,7 +54,7 @@ define({
 
 The above example uses a singleton memory-based model, so the data is available instantly. The `count` property can be returned directly inside of the host property definition. Even the `count` property of the host does not rely on other properties, the `render` property will be notified when the current value of the `GlobalState` changes (keep in mind that this approach creates a global state object, which is shared between all of the component instances).
 
-### Set
+### set
 
 The `store.set()` method can create a new instance or update an existing model. According to the mode, the first argument should be a model definition or a model instance.
 
@@ -121,6 +121,120 @@ store.set(myUser, { address: { street: "New Street" }});
 ```
 
 The above action will update only the `myUser.address.street` value leaving the rest properties untouched (they will be copied from the last state of the model).
+
+### resolve
+
+You can use the `store.resolve()` method to simplify access to pending model instances, which can be updated at the moment. The function returns a promise resolving into the current model instance, regardless of the pending state. It also supports multiple chains of set methods, so the result will always be the latest instance.
+
+```typescript
+store.resolve(model: Model): Promise<Model>
+```
+
+* **arguments**:
+  * `model` - a model instance
+* **returns**:
+  * A promise instance resolving with the latest model value or rejecting with an error
+
+```javascript
+const State = {
+  value: ""
+};
+
+async function sendValue(host) {
+  // state can be in pending state at the moment (updating by the change event)
+  const state = await store.resolve(host.state);
+  const res = await fetch("/my-endpoint", { method: "post", body: JSON.stringify(state) });
+
+  // do something with the response
+}
+
+define({
+  tag: "my-element",
+  state: store(State),
+  render: ({ state }) => html`
+    <my-async-data-source onupdate="${html.set(state, "value")}"></my-async-data-source>
+    <button onclick="${sendValue}">Send</button>
+  `,
+});
+```
+
+### sync
+
+The storage methods are called only for the user interaction - when the model is got, or when a new value for the model instance is set. However, there might be a case, where your model instance is been updated outside of the user scope, for example by the server.
+
+Using the `store.set()` method as a callback for the update will trigger the storage `set` method, which can lead to an endless loop of updates. Fortunately, the store provides a special `store.sync()` method, which does the trick. It only updates the memory cache synchronously of the model instance without calling any storage method from the `[store.connect]` configuration.
+
+!> This method bypass the storage, so use it with caution, and only if you would use `store.get()` in another context. This method does not replace `store.set()`.
+
+```typescript
+store.sync(modelOrDefinition: object, values: object | null) : Model;
+```
+
+* **arguments**:
+  * `modelOrDefinition` - a model instance or model definition
+  * `values` - an object with partial values of the model instance or `null` for deleting the model
+* **returns**:
+  * Model instance or model instance placeholder
+
+```javascript
+const Model = {
+  ...,
+  [store.connect] : {
+    get: (id) => myApi.get("/model", id),
+    set: (id, values) => myApi.set("/model", id, values),
+  },
+};
+
+define({
+  tag: "my-element",
+  model: store(Model),
+  socket: (host) => {
+    const socket = io();
+
+    socket.on("model:update", (values) => {
+      store.sync(host.model, values);
+    });
+  },
+});
+```
+
+In the above example, even though the `Model` is connected to the external storage, when the websocket emits an event, the values of the model update without calling `[store.connect].set()`, as we expect. It is an update triggered by the server, so we don't want to send new values to the server again.
+
+### clear
+
+Both memory and external storage uses a global cache mechanism based on the model definition reference. Model instances are global, so the cache mechanism cannot automatically predict which instance is no longer required. Because of that, the store provides the `store.clear()` method for invalidating model instances by the model definition or specific instance of the model.
+
+```typescript
+store.clear(model: object, clearValue?: boolean = true)
+```
+
+* **arguments**:
+  * `model` - a model definition (for all instances) or a model instance (for a specific one)
+  * `clearValue` - indicates if the cached value should be deleted (`true`), or it should only notify the cache mechanism, that the value expired, but leaves the value untouched (`false`)
+
+For example, it might be useful to set the `clearValue` to `false` for the case when you want to implement the refresh button. Then, the values stay in the cache, but the store will fetch the next version of the instance.
+
+```javascript
+import Email from "./email.js";
+
+function refresh(host) {
+  store.clear(host.emails, false);
+}
+
+define({
+  tag: "my-element",
+  emails: store([Email]),
+  render: ({ emails }) => html`
+    <button onclick="${refresh}">Refresh</button>
+
+    ${store.ready(emails) && ...}
+  `,
+});
+```
+
+#### Garbage Collector
+
+The `store.clear()` method works as a garbage collector for unused model instances. Those that are not a dependency of any component connected to the DOM will be deleted entirely from the cache registry (as they would never exist) protecting from the memory leaks. It means, that even if you set `clearValue` to `false`, those instances that are not currently attached to the components, will be permanently deleted when the `store.clear()` method is invoked.
 
 ## Factory
 
@@ -328,7 +442,7 @@ define({
 
 The store provides three guard methods, which indicate the current state of the model instance. The returning value of those methods can be used for conditional rendering in the template. The `pending` and `error` also return additional information. The returning values are not exclusive, so there are situations when more than one guard returns a truthy value.
 
-### `store.ready()`
+### ready
 
 ```typescript
 store.ready(model, ...): boolean
@@ -364,7 +478,7 @@ define({
 });
 ```
 
-### `store.pending()`
+### pending
 
 ```typescript
 store.pending(model, ...): boolean | Promise
@@ -379,43 +493,7 @@ The function supports passing one or more model instances. It returns a promise 
 
 Both pending and ready guards can be truthy if the already resolved model instance is being updated.
 
-### `store.resolve()`
-
-You can use the `store.resolve()` method to simplify access to pending model instances, which can be updated at the moment. The function returns a promise resolving into the current model instance, regardless of the pending state. It also supports multiple chains of set methods, so the result will always be the latest instance.
-
-```typescript
-store.resolve(model: Model): Promise<Model>
-```
-
-* **arguments**:
-  * `model` - a model instance
-* **returns**:
-  * A promise instance resolving with the latest model value or rejecting with an error
-
-```javascript
-const State = {
-  value: ""
-};
-
-async function sendValue(host) {
-  // state can be in pending state at the moment (updating by the change event)
-  const state = await store.resolve(host.state);
-  const res = await fetch("/my-endpoint", { method: "post", body: JSON.stringify(state) });
-
-  // do something with the response
-}
-
-define({
-  tag: "my-element",
-  state: store(State),
-  render: ({ state }) => html`
-    <my-async-data-source onupdate="${html.set(state, "value")}"></my-async-data-source>
-    <button onclick="${sendValue}">Send</button>
-  `,
-});
-```
-
-### `store.error()`
+### error
 
 ```typescript
 store.error(model: Model, propertyName?: string | null): boolean | Error | any

@@ -217,42 +217,6 @@ If `cache` is set to a `number`, it represents a time to invalidation counted in
 
 For the high-frequency data, set the `cache` value to `false` or `0`. Then, each call for the model will fetch data from the store. Usually, the store is used inside of the component properties, so its value is cached also on the host property level. Updating other properties won't trigger fetching data again (use cache invalidation for manual update).
 
-#### Invalidation
-
-Both memory and external storage uses a global cache mechanism based on the model definition reference. Model instances are global, so the cache mechanism cannot automatically predict which instance is no longer required. Because of that, the store provides the `store.clear()` method for invalidating model instances by the model definition or specific instance of the model.
-
-```typescript
-store.clear(model: object, clearValue?: boolean = true)
-```
-
-* **arguments**:
-  * `model` - a model definition (for all instances) or a model instance (for a specific one)
-  * `clearValue` - indicates if the cached value should be deleted (`true`), or it should only notify the cache mechanism, that the value expired, but leaves the value untouched (`false`)
-
-For example, it might be useful to set the `clearValue` to `false` for the case when you want to implement the refresh button. Then, the values stay in the cache, but the store will fetch the next version of the instance.
-
-```javascript
-import Email from "./email.js";
-
-function refresh(host) {
-  store.clear(host.emails, false);
-}
-
-define({
-  tag: "my-element",
-  emails: store([Email]),
-  render: ({ emails }) => html`
-    <button onclick="${refresh}">Refresh</button>
-
-    ${store.ready(emails) && ...}
-  `,
-});
-```
-
-#### Garbage Collector
-
-The `store.clear()` method works as a garbage collector for unused model instances. Those that are not a dependency of any component connected to the DOM will be deleted entirely from the cache registry (as they would never exist) protecting from the memory leaks. It means, that even if you set `clearValue` to `false`, those instances that are not currently attached to the components, will be permanently deleted when the `store.clear()` method is invoked.
-
 ### offline
 
 ```typescript
@@ -309,45 +273,3 @@ The `loose` option of the model only affects cache invalidation of the listing e
 By default, it is set to `false`, so updating model instances will not change items' order or placement in the array. The typical use case to turn it on is when you have a paginated list, and updating or creating a model instance might affect the order or content of the list.
 
 If the user does not have control over the model, it is recommended to keep that option off. You can avoid unnecessary calls to external storage when the list result does not depend on the model instance values.
-
-## Observables
-
-The storage methods are called only for the user interaction - when the model is got, or when a new value for the model instance is set. However, there might be a case, where your model instance is been updated outside of the user scope, for example by the server.
-
-Using the `store.set()` method as a callback for the update will trigger the storage `set` method, which can lead to an endless loop of updates. Fortunately, the store provides a special `store.sync()` method, which does the trick. It only updates the memory cache synchronously of the model instance without calling any storage method from the `[store.connect]` configuration.
-
-!> This method bypass the storage, so use it with caution, and only if you would use `store.get()` in another context. This method does not replace `store.set()`.
-
-```typescript
-store.sync(modelOrDefinition: object, values: object | null) : Model;
-```
-
-* **arguments**:
-  * `modelOrDefinition` - a model instance or model definition
-  * `values` - an object with partial values of the model instance or `null` for deleting the model
-* **returns**:
-  * Model instance or model instance placeholder
-
-```javascript
-const Model = {
-  ...,
-  [store.connect] : {
-    get: (id) => myApi.get("/model", id),
-    set: (id, values) => myApi.set("/model", id, values),
-  },
-};
-
-define({
-  tag: "my-element",
-  model: store(Model),
-  socket: (host) => {
-    const socket = io();
-
-    socket.on("model:update", (values) => {
-      store.sync(host.model, values);
-    });
-  },
-});
-```
-
-In the above example, even though the `Model` is connected to the external storage, when the websocket emits an event, the values of the model update without calling `[store.connect].set()`, as we expect. It is an update triggered by the server, so we don't want to send new values to the server again.
