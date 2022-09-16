@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.3](https://github.com/hybridsjs/hybrids/compare/v8.1.2...v8.1.3) (2022-09-16)
+
+
+### Bug Fixes
+
+* **store:** empty nested array with primitive values ([8df84d2](https://github.com/hybridsjs/hybrids/commit/8df84d215e1d680342796bb075ef406bfffbd9ee))
+* **store:** resolve with support for using model definition ([95aa812](https://github.com/hybridsjs/hybrids/commit/95aa812b80f6c90fa14c5a4f0017b30fd37bbd3e))
+
 ### [8.1.2](https://github.com/hybridsjs/hybrids/compare/v8.1.1...v8.1.2) (2022-09-14)
 
 
