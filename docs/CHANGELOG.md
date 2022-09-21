@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.4](https://github.com/hybridsjs/hybrids/compare/v8.1.3...v8.1.4) (2022-09-21)
+
+
+### Bug Fixes
+
+* **layout:** inset rule with an argument ([43d922f](https://github.com/hybridsjs/hybrids/commit/43d922fa0a6efe25e8ec75a46664a8e417d4fb5b))
+* **layout:** use textContent for style element fallback ([e915942](https://github.com/hybridsjs/hybrids/commit/e9159423f73dfbc1a5d46affb3b368223ce6c2b0))
+* **store:** offline list model should contain id ([d1201ef](https://github.com/hybridsjs/hybrids/commit/d1201ef40253225d34d5109b92195379858a1b0d))
+
 ### [8.1.3](https://github.com/hybridsjs/hybrids/compare/v8.1.2...v8.1.3) (2022-09-16)
 
 
