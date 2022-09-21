@@ -185,29 +185,17 @@ export function inject(target) {
     let el = styleElements.get(root);
     if (!el) {
       el = global.document.createElement("style");
-      el.appendChild(global.document.createTextNode(""));
       root.appendChild(el);
 
       styleElements.set(root, el);
     }
 
-    const elSheet = el.sheet;
-    const cssRules = sheet.cssRules;
-
-    for (var i = 0; i < cssRules.length; i++) {
-      if (elSheet.cssRules[i]) {
-        if (elSheet.cssRules[i].cssText === cssRules[i].cssText) {
-          continue;
-        }
-        elSheet.removeRule(i);
-      }
-
-      elSheet.insertRule(cssRules[i].cssText, i);
+    let result = "";
+    for (let i = 0; i < sheet.cssRules.length; i++) {
+      result += sheet.cssRules[i].cssText;
     }
 
-    for (; i < elSheet.cssRules.length; i++) {
-      elSheet.removeRule(i);
-    }
+    el.textContent = result;
   }
 
   injectedTargets.add(root);
