@@ -2312,13 +2312,13 @@ describe("store:", () => {
       };
 
       return store.pending(store.get(Model, "1")).then(() =>
-        store.pending(store.get([Model])).then(() => {
+        store.pending(store.get([Model], { test: "test" })).then(() => {
           store.clear(Model, false);
           return resolveRaf(() => {
             const cacheModel = store.get(Model, "1");
             expect(cacheModel.value).toBe("test");
 
-            const cacheList = store.get([Model]);
+            const cacheList = store.get([Model], { test: "test" });
             expect(cacheList.length).toBe(2);
 
             return resolveRaf(() => {
@@ -2332,7 +2332,8 @@ describe("store:", () => {
               expect(offlineModel.value).toBe("test");
               expect(store.error(offlineModel)).toBeInstanceOf(Error);
 
-              const offlineList = store.get([Model]);
+              const offlineList = store.get([Model], { test: "test" });
+              expect(offlineList.id).toBe(JSON.stringify({ test: "test" }));
               expect(offlineList.length).toBe(2);
               expect(store.error(offlineList)).toBeInstanceOf(Error);
             });

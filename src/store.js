@@ -873,12 +873,19 @@ function setupListModel(Model, nested) {
       offline: modelConfig.storage.offline && {
         threshold: modelConfig.storage.offline.threshold,
         get: (id) => {
-          const result = modelConfig.storage.offline.get(
-            hashCode(String(stringifyId(id))),
+          const stringId = stringifyId(id);
+          let result = modelConfig.storage.offline.get(
+            hashCode(String(stringId)),
           );
-          return result
-            ? result.map((item) => modelConfig.storage.offline.get(item))
-            : null;
+          if (result) {
+            result = result.map((item) =>
+              modelConfig.storage.offline.get(item),
+            );
+            result.id = stringId;
+            return result;
+          }
+
+          return null;
         },
         set: (id, values) => {
           modelConfig.storage.offline.set(
