@@ -360,6 +360,7 @@ describe("layout:", () => {
         <div layout="inset layer"></div>
         <div layout="top left bottom right layer:2"></div>
         <div layout="top:2 left:2 bottom:2 right:2"></div>
+        <div layout="inset:2"></div>
       </template>
     `(host);
 
@@ -382,5 +383,11 @@ describe("layout:", () => {
     expect(styles2.right).toBe("16px");
     expect(styles2.bottom).toBe("16px");
     expect(styles2.left).toBe("16px");
+
+    const styles3 = window.getComputedStyle(host.children[3]);
+    expect(styles3.top).toBe("16px");
+    expect(styles3.right).toBe("16px");
+    expect(styles3.bottom).toBe("16px");
+    expect(styles3.left).toBe("16px");
   });
 });

@@ -224,11 +224,11 @@ Use following examples as a reference:
 
 #### Values
 
-| Rule   | Arguments         | Defaults | Properties                             |
-|--------|-------------------|----------|----------------------------------------|
-| inset  | ---               | ---      | `top: 0; right: 0; bottom: 0; left: 0` |
-| top    | [value:dimension] | top:0    | `top: [value]`                         |
-| right  | [value:dimension] | right:0  | `right: [value]`                       |
-| bottom | [value:dimension] | bottom:0 | `bottom: [value]`                      |
-| left   | [value:dimension] | left:0   | `left: [value]`                        |
-| layer  | [index:value]     | layer:1  | `z-index: [index]`                     |
+| Rule   | Arguments         | Defaults | Properties                       |
+|--------|-------------------|----------|----------------------------------|
+| inset  | [value:dimension] | inset:0  | `top,right,bottom,left: [value]` |
+| top    | [value:dimension] | top:0    | `top: [value]`                   |
+| right  | [value:dimension] | right:0  | `right: [value]`                 |
+| bottom | [value:dimension] | bottom:0 | `bottom: [value]`                |
+| left   | [value:dimension] | left:0   | `left: [value]`                  |
+| layer  | [index:value]     | layer:1  | `z-index: [index]`               |

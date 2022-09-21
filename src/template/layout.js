@@ -116,7 +116,10 @@ const rules = {
   static: { position: "static" },
 
   // position values
-  inset: { top: 0, right: 0, bottom: 0, left: 0 },
+  inset: (props, value = 0) => {
+    const d = dimension(value);
+    return { top: d, right: d, bottom: d, left: d };
+  },
   top: (props, value = 0) => ({ top: dimension(value) }),
   bottom: (props, value = 0) => ({ bottom: dimension(value) }),
   left: (props, value = 0) => ({ left: dimension(value) }),
