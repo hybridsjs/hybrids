@@ -333,6 +333,7 @@ describe("layout:", () => {
         <div layout="margin:top:2"></div>
         <div layout="margin:2:4"></div>
         <div layout="margin:bottom"></div>
+        <div layout="margin:-2"></div>
       </template>
     `(host);
 
@@ -352,6 +353,9 @@ describe("layout:", () => {
 
     const styles3 = window.getComputedStyle(host.children[3]);
     expect(styles3.marginBottom).toBe("8px");
+
+    const styles4 = window.getComputedStyle(host.children[4]);
+    expect(styles4.marginTop).toBe("-16px");
   });
 
   it("supports position rules", () => {

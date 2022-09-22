@@ -143,7 +143,7 @@ const queries = {
 function dimension(value) {
   value = dimensions[value] || value;
 
-  if (/^\d+(\.\d+)*$/.test(String(value))) {
+  if (/^-?\d+(\.\d+)*$/.test(String(value))) {
     return `${value * 8}px`;
   }
 
