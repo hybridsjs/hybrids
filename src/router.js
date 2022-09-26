@@ -262,7 +262,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
 
     const callbacks = callbacksMap.get(Constructor);
 
-    if (!nestedParent) {
+    if (!nestedParent && !options.dialog) {
       callbacks.push(restoreLayout);
     }
 
@@ -275,22 +275,26 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           }
         };
 
-        const focusDialog = () => {
-          focusElement(host);
+        const focusDialog = (event) => {
+          if (!host.contains(event.target) && event.target !== host) {
+            focusElement(host);
+          }
         };
 
         const prevActiveEl = global.document.activeElement;
         const root = rootRouter;
 
+        console.log({ prevActiveEl });
+
         root.addEventListener("focusin", focusDialog);
-        host.addEventListener("focusout", focusDialog);
+        root.addEventListener("focusout", focusDialog);
         host.addEventListener("keydown", goBackOnEscKey);
 
         focusElement(host);
 
         return () => {
           root.removeEventListener("focusin", focusDialog);
-          host.removeEventListener("focusout", focusDialog);
+          root.removeEventListener("focusout", focusDialog);
           host.removeEventListener("keydown", goBackOnEscKey);
 
           focusElement(prevActiveEl);
