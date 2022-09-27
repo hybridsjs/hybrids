@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.5](https://github.com/hybridsjs/hybrids/compare/v8.1.4...v8.1.5) (2022-09-27)
+
+
+### Bug Fixes
+
+* **layout:** support negative dimensions ([6b6c01c](https://github.com/hybridsjs/hybrids/commit/6b6c01c739e2c74ad9de2c6f7f3f8dfe65ef815a))
+* **router:** focus trap and scroll clearing for dialogs ([db8a80a](https://github.com/hybridsjs/hybrids/commit/db8a80a8dd373be983a94d308b34ea9c5bf1ec07))
+
 ### [8.1.4](https://github.com/hybridsjs/hybrids/compare/v8.1.3...v8.1.4) (2022-09-21)
 
 
