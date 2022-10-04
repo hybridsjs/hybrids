@@ -123,6 +123,11 @@ describe("store:", () => {
       expect(store.error(model)).toBeInstanceOf(Error);
     });
 
+    it("returns a model without enumerable properties", () => {
+      const model = store.get({});
+      expect(Object.keys(Object.getPrototypeOf(model))).toEqual([]);
+    });
+
     it("calls computed property function only once", () => {
       const spy = jasmine.createSpy();
       Model = {

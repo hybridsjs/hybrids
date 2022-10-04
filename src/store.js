@@ -443,11 +443,13 @@ function setupModel(Model, nested) {
 
     const checks = new Map();
 
-    const proto = {
-      toString() {
-        return this.id || undefined;
+    const proto = {};
+    Object.defineProperty(proto, "toString", {
+      value: function () {
+        return this.id;
       },
-    };
+    });
+
     const placeholder = Object.create(proto);
 
     config = {
@@ -496,7 +498,7 @@ function setupModel(Model, nested) {
       if (key === "id") {
         if (Model[key] !== true) {
           throw TypeError(
-            "The 'id' property in the model definition must be set to 'true' or not defined",
+            "The 'id' property in the model definition must be set to 'true' or not be defined",
           );
         }
         return (model, data, lastModel) => {
