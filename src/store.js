@@ -115,13 +115,13 @@ function setupOfflineKey(config, threshold) {
         JSON.parse(global.localStorage.getItem(offlinePrefix)) || {};
       const timestamp = getCurrentTimestamp();
 
-      Object.keys(previousKeys).forEach((k) => {
-        /* istanbul ignore next */
+      /* istanbul ignore next */
+      for (const k of Object.keys(previousKeys)) {
         if (!offlineKeys[k] && previousKeys[k] < timestamp) {
           global.localStorage.removeItem(k);
           delete previousKeys[k];
         }
-      });
+      }
 
       global.localStorage.setItem(
         offlinePrefix,
@@ -263,11 +263,11 @@ function setupStorage(config, options) {
             flush = Promise.resolve().then(() => {
               const timestamp = getCurrentTimestamp();
 
-              Object.keys(items).forEach((key) => {
+              for (const key of Object.keys(items)) {
                 if (items[key][0] + threshold < timestamp) {
                   delete items[key];
                 }
-              });
+              }
 
               global.localStorage.setItem(offlineKey, JSON.stringify(items));
               flush = null;
@@ -995,14 +995,14 @@ function get(Model, id) {
 
     let validContexts = true;
     if (config.contexts) {
-      config.contexts.forEach((context) => {
+      for (const context of config.contexts) {
         if (
           cache.get(context, context, resolveTimestamp) ===
           getCurrentTimestamp()
         ) {
           validContexts = false;
         }
-      });
+      }
     }
 
     if (validContexts && cachedModel && validate(cachedModel)) {
@@ -1149,7 +1149,7 @@ function set(model, values = {}) {
     let hasErrors = false;
 
     if (localModel) {
-      config.checks.forEach((fn, key) => {
+      for (const [key, fn] of config.checks.entries()) {
         if (keys.indexOf(key) === -1) {
           if (lastError && lastError.errors && lastError.errors[key]) {
             hasErrors = true;
@@ -1158,7 +1158,7 @@ function set(model, values = {}) {
 
           // eslint-disable-next-line eqeqeq
           if (isDraft && localModel[key] == config.model[key]) {
-            return;
+            continue;
           }
         }
 
@@ -1173,7 +1173,7 @@ function set(model, values = {}) {
           hasErrors = true;
           errors[key] = checkResult || true;
         }
-      });
+      }
 
       if (hasErrors && !isDraft) {
         throw getValidationError(errors);
@@ -1312,10 +1312,10 @@ function clear(model, clearValue = true) {
     config = bootstrap(model);
     const offline = clearValue && config.storage.offline;
 
-    cache.getEntries(config).forEach((entry) => {
+    for (const entry of cache.getEntries(config)) {
       if (offline) offline.set(entry.key, null);
       if (entry.value) invalidateTimestamp(entry.value);
-    });
+    }
     cache.invalidateAll(config, { clearValue, deleteEntry: true });
   }
 }

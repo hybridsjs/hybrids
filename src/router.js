@@ -1,5 +1,4 @@
 import global from "./global.js";
-import { callbacksMap } from "./define.js";
 import * as cache from "./cache.js";
 import { dispatch, walkInShadow } from "./utils.js";
 
@@ -70,10 +69,10 @@ function restoreLayout(target) {
     const entry = state.find((e) => e.id === config.id);
     const clear = entry && entry.params.scrollToTop;
 
-    map.forEach((pos, el) => {
-      el.scrollLeft = clear ? 0 : pos.left;
-      el.scrollTop = clear ? 0 : pos.top;
-    });
+    for (const [el, { left, top }] of map) {
+      el.scrollLeft = clear ? 0 : left;
+      el.scrollTop = clear ? 0 : top;
+    }
 
     scrollMap.delete(target);
   } else {
@@ -129,16 +128,16 @@ function setupBrowserUrl(browserUrl, id) {
 
       const url = new URL(temp, global.location.origin);
 
-      Object.keys(params).forEach((key) => {
+      for (const key of Object.keys(params)) {
         if (
           pathnameParams.includes(key) ||
           (strict && (metaParams.includes(key) || !searchParams.includes(key)))
         ) {
-          return;
+          continue;
         }
 
         url.searchParams.append(key, mapUrlParam(params[key]));
-      });
+      }
 
       return url;
     },
@@ -160,9 +159,9 @@ function setupBrowserUrl(browserUrl, id) {
         }
       }
 
-      url.searchParams.forEach((value, key) => {
+      for (const [key, value] of url.searchParams) {
         params[key] = value;
-      });
+      }
 
       return params;
     },
@@ -180,7 +179,10 @@ function addEntryPoint(config) {
   if (config.browserUrl) {
     entryPoints.add(config);
   }
-  config.stack.forEach(addEntryPoint);
+
+  for (const child of config.stack) {
+    addEntryPoint(child);
+  }
 }
 
 function setupViews(views, options, parent = null, nestedParent = null) {
@@ -260,14 +262,14 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       ...hybrids[connect],
     };
 
-    const callbacks = callbacksMap.get(Constructor);
+    const { connects } = Constructor;
 
     if (!nestedParent && !options.dialog) {
-      callbacks.push(restoreLayout);
+      connects.add(restoreLayout);
     }
 
     if (options.dialog) {
-      callbacks.push((host) => {
+      connects.add((host) => {
         const goBackOnEscKey = (event) => {
           if (event.key === "Escape") {
             event.stopPropagation();
@@ -301,10 +303,11 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
     }
 
     const writableParams = [];
-    Object.keys(Constructor.prototype).forEach((key) => {
+
+    for (const key of Object.keys(Constructor.prototype)) {
       const desc = Object.getOwnPropertyDescriptor(Constructor.prototype, key);
       if (desc.set) writableParams.push(key);
-    });
+    }
 
     if (options.url) {
       if (options.dialog) {
@@ -319,7 +322,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       }
       browserUrl = setupBrowserUrl(options.url, id);
 
-      browserUrl.paramsKeys.forEach((key) => {
+      for (const key of browserUrl.paramsKeys) {
         const desc = Object.getOwnPropertyDescriptor(
           Constructor.prototype,
           key,
@@ -331,7 +334,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
             } in <${id}>`,
           );
         }
-      });
+      }
     }
 
     const stateParams = writableParams.filter(
@@ -341,7 +344,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       ? stateParams.filter((k) => !browserUrl.pathnameParams.includes(k))
       : stateParams;
 
-    callbacksMap.get(Constructor).unshift((_) =>
+    connects.add((_) =>
       cache.observe(
         _,
         connect,
@@ -363,9 +366,9 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
 
           params = { ...entry.params, ...params };
 
-          clearParams.forEach((key) => {
+          for (const key of clearParams) {
             if (params[key] === undefined) delete params[key];
-          });
+          }
 
           global.history.replaceState(
             [config.getEntry(params), ...state.slice(1)],
@@ -404,9 +407,9 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         url(params) {
           const url = new URL("", global.location.origin);
 
-          Object.keys(params).forEach((key) => {
+          for (const key of Object.keys(params)) {
             url.searchParams.append(key, mapUrlParam(params[key]));
-          });
+          }
 
           return new URL(
             `${routerOptions.url}#@${id}${url.search}`,
@@ -415,10 +418,11 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         },
         match(url) {
           const params = {};
-          url.searchParams.forEach((value, key) => {
+
+          for (const [key, value] of url.searchParams) {
             if (writableParams.includes(key) || metaParams.includes(key))
               params[key] = value;
-          });
+          }
 
           return params;
         },
@@ -453,11 +457,11 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           return config.nestedParent.getEntry(params, { nested: entry });
         }
 
-        metaParams.forEach((key) => {
+        for (const key of metaParams) {
           if (hasOwnProperty.call(params, key)) {
             entry.params[key] = params[key];
           }
-        });
+        }
 
         return entry;
       },
@@ -753,13 +757,13 @@ function resolveStack(host, state, options) {
   const view = stack[0];
   const flush = flushes.get(view);
 
-  Object.entries(state[0].params).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(state[0].params)) {
     if (key in view) view[key] = value;
-  });
+  }
 
-  options.params.forEach((key) => {
+  for (const key of options.params) {
     if (key in view) view[key] = host[key];
-  });
+  }
 
   if (flush) flush();
 }
@@ -1053,13 +1057,13 @@ function router(views, options) {
         .reverse();
     },
     connect: (host, key, invalidate) => {
-      options.params.forEach((param) => {
+      for (const param of options.params) {
         if (!(param in host)) {
           throw Error(
             `Property '${param}' for global parameters is not defined in <${host.tagName.toLowerCase()}>`,
           );
         }
-      });
+      }
 
       if (!stacks.has(host)) stacks.set(host, []);
 
@@ -1093,9 +1097,9 @@ function router(views, options) {
           }> ($$${key})`,
         );
 
-        Object.entries(entry.params).forEach(([k, v]) =>
-          console.log(`%c${k}:`, "font-weight: bold", v),
-        );
+        for (const [k, v] of Object.entries(entry.params)) {
+          console.log(`%c${k}:`, "font-weight: bold", v);
+        }
 
         console.groupEnd();
 

@@ -1,40 +1,37 @@
 import global from "./global.js";
 
-const callbacks = new WeakMap();
+const fns = new WeakMap();
 const queue = new Set();
 
 function execute() {
-  try {
-    queue.forEach((target) => {
-      try {
-        callbacks.get(target)();
-        queue.delete(target);
-      } catch (e) {
-        queue.delete(target);
-        throw e;
-      }
-    });
-  } catch (e) {
-    if (queue.size) execute();
-    throw e;
+  const errors = [];
+
+  for (const fn of queue) {
+    try {
+      fn();
+    } catch (e) {
+      errors.push(e);
+    }
   }
+
+  queue.clear();
+
+  if (errors.length > 1) throw errors;
+  if (errors.length) throw errors[0];
 }
 
 export function dispatch(target) {
-  if (callbacks.has(target)) {
-    if (!queue.size) {
-      global.requestAnimationFrame(execute);
-    }
-    queue.add(target);
+  if (!queue.size) {
+    global.requestAnimationFrame(execute);
   }
+  queue.add(fns.get(target));
 }
 
 export function subscribe(target, cb) {
-  callbacks.set(target, cb);
+  fns.set(target, cb);
   dispatch(target);
+}
 
-  return function unsubscribe() {
-    queue.delete(target);
-    callbacks.delete(target);
-  };
+export function unsubscribe(target) {
+  fns.delete(target);
 }

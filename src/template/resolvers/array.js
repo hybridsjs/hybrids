@@ -39,7 +39,9 @@ export default function resolveArray(
 
   if (lastEntries) {
     const ids = new Set();
-    entries.forEach((entry) => ids.add(entry.id));
+    for (const entry of entries) {
+      ids.add(entry.id);
+    }
 
     lastEntries = lastEntries.filter((entry) => {
       if (!ids.has(entry.id)) {
@@ -102,11 +104,11 @@ export default function resolveArray(
   }
 
   if (lastEntries) {
-    lastEntries.forEach((entry) => {
+    for (const entry of lastEntries) {
       if (entry.available) {
         removeTemplate(entry.placeholder);
         entry.placeholder.parentNode.removeChild(entry.placeholder);
       }
-    });
+    }
   }
 }

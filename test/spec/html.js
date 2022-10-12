@@ -225,10 +225,13 @@ describe("html:", () => {
     it("sets string value", () => {
       render("class-one")(fragment);
       expect(hasClass("class-one")).toBe(true);
+
+      render("")(fragment);
+      expect(fragment.children[0].classList.length).toBe(0);
     });
 
     it("sets array value", () => {
-      render(["class-one", "class-two"])(fragment);
+      render(["class-one", "class-two", ""])(fragment);
       expect(hasClass("class-one")).toBe(true);
       expect(hasClass("class-two")).toBe(true);
     });
@@ -238,6 +241,7 @@ describe("html:", () => {
         "class-one": true,
         "class-two": true,
         "class-three": false,
+        "": true,
       })(fragment);
 
       expect(hasClass("class-one")).toBe(true);

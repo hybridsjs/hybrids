@@ -1,7 +1,7 @@
 import global from "./global.js";
 
 function walk(node, fn, options, items = [], host = node) {
-  Array.from(node.children).forEach((child) => {
+  for (const child of Array.from(node.children)) {
     const hybrids = child.constructor.hybrids;
     if (hybrids && fn(hybrids, host)) {
       items.push(child);
@@ -11,7 +11,7 @@ function walk(node, fn, options, items = [], host = node) {
     } else if (options.deep) {
       walk(child, fn, options, items, host);
     }
-  });
+  }
 
   return items;
 }

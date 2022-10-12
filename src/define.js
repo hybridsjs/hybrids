@@ -2,24 +2,16 @@ import global from "./global.js";
 import * as cache from "./cache.js";
 import { deferred, camelToDash, walkInShadow } from "./utils.js";
 
-const propsMap = new WeakMap();
 const disconnects = new WeakMap();
-
-export const callbacksMap = new WeakMap();
 
 class HybridsRootElement extends global.HTMLElement {
   constructor() {
     super();
 
-    const props = propsMap.get(this.constructor);
-
-    for (let index = 0; index < props.length; index += 1) {
-      const key = props[index];
-      if (hasOwnProperty.call(this, key)) {
-        const value = this[key];
-        delete this[key];
-        this[key] = value;
-      }
+    for (const key of Object.keys(this)) {
+      const value = this[key];
+      delete this[key];
+      this[key] = value;
     }
 
     cache.suspend(this);
@@ -28,23 +20,26 @@ class HybridsRootElement extends global.HTMLElement {
   connectedCallback() {
     cache.unsuspend(this);
 
-    const callbacks = callbacksMap.get(this.constructor);
-    const list = [];
+    const { connects } = this.constructor;
 
-    for (let index = 0; index < callbacks.length; index += 1) {
-      const cb = callbacks[index](this);
-      if (cb) list.push(cb);
+    if (connects.size) {
+      const set = new Set();
+      for (const fn of connects) {
+        const cb = fn(this);
+        if (cb) set.add(cb);
+      }
+
+      disconnects.set(this, set);
     }
-
-    disconnects.set(this, list);
   }
 
   disconnectedCallback() {
     cache.suspend(this);
 
-    const list = disconnects.get(this);
-    for (let index = 0; index < list.length; index += 1) {
-      list[index]();
+    const set = disconnects.get(this);
+    if (set) {
+      for (const cb of set) cb();
+      disconnects.delete(this);
     }
   }
 }
@@ -72,7 +67,9 @@ function render(fn, useShadow) {
             return host;
           };
         },
-    observe(host, flush) { flush(); }, // prettier-ignore
+    observe(host, flush) {
+      flush();
+    },
   };
 }
 
@@ -140,23 +137,19 @@ function property(key, desc) {
 function compile(hybrids, HybridsElement) {
   if (HybridsElement) {
     if (hybrids === HybridsElement.hybrids) return HybridsElement;
-    propsMap.get(HybridsElement).forEach((key) => {
+
+    for (const key of Object.keys(HybridsElement.hybrids)) {
       delete HybridsElement.prototype[key];
-    });
+    }
   } else {
     HybridsElement = class extends HybridsRootElement {};
   }
 
   HybridsElement.hybrids = hybrids;
+  const connects = new Set();
 
-  const callbacks = [];
-  const props = Object.keys(hybrids);
-
-  callbacksMap.set(HybridsElement, callbacks);
-  propsMap.set(HybridsElement, props);
-
-  props.forEach((key) => {
-    if (key === "tag") return;
+  for (const key of Object.keys(hybrids)) {
+    if (key === "tag") continue;
 
     let desc = hybrids[key];
     const type = typeof desc;
@@ -203,14 +196,8 @@ function compile(hybrids, HybridsElement) {
       configurable: true,
     });
 
-    if (desc.observe) {
-      callbacks.unshift((host) =>
-        cache.observe(host, key, desc.get, desc.observe),
-      );
-    }
-
     if (desc.connect) {
-      callbacks.push((host) => {
+      connects.add((host) => {
         function invalidate(options) {
           cache.invalidate(host, key, {
             force: typeof options === "object" && options.force === true,
@@ -219,7 +206,13 @@ function compile(hybrids, HybridsElement) {
         return desc.connect(host, key, invalidate);
       });
     }
-  });
+
+    if (desc.observe) {
+      connects.add((host) => cache.observe(host, key, desc.get, desc.observe));
+    }
+  }
+
+  HybridsElement.connects = connects;
 
   return HybridsElement;
 }
@@ -234,14 +227,14 @@ function update(HybridsElement) {
           const hybrids = node.constructor.hybrids;
           node.disconnectedCallback();
 
-          Object.keys(hybrids).forEach((key) => {
+          for (const key of Object.keys(hybrids)) {
             const type = typeof hybrids[key];
             const clearValue =
               type !== "object" &&
               type !== "function" &&
               hybrids[key] !== prevHybrids[key];
             cache.invalidate(node, key, { clearValue });
-          });
+          }
 
           node.connectedCallback();
         }

@@ -177,15 +177,15 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
   if (isSVG) {
     const svgRoot = template.content.firstChild;
     template.content.removeChild(svgRoot);
-    Array.from(svgRoot.childNodes).forEach((node) =>
-      template.content.appendChild(node),
-    );
+    for (const node of Array.from(svgRoot.childNodes)) {
+      template.content.appendChild(node);
+    }
   }
 
   let hostLayout;
   const layoutTemplate = template.content.children[0];
   if (layoutTemplate instanceof global.HTMLTemplateElement) {
-    Array.from(layoutTemplate.attributes).forEach((attr) => {
+    for (const attr of Array.from(layoutTemplate.attributes)) {
       const value = attr.value.trim();
       if (attr.name.startsWith("layout") && value) {
         if (value.match(PLACEHOLDER_REGEXP_ALL)) {
@@ -199,7 +199,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
           true,
         );
       }
-    });
+    }
 
     if (hostLayout !== undefined && template.content.children.length > 1) {
       throw Error(
@@ -345,7 +345,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
           }
         }
 
-        Array.from(node.attributes).forEach((attr) => {
+        for (const attr of Array.from(node.attributes)) {
           const value = attr.value.trim();
           /* istanbul ignore next */
           const name = attr.name;
@@ -359,7 +359,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
             node.removeAttribute(name);
             node.classList.add(className);
 
-            return;
+            continue;
           }
 
           const equal = value.match(PLACEHOLDER_REGEXP_EQUAL);
@@ -375,7 +375,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
             if (results) {
               const partialName = `attr__${name}`;
 
-              results.forEach((placeholder, index) => {
+              for (const [index, placeholder] of results.entries()) {
                 const [, id] = placeholder.match(PLACEHOLDER_REGEXP_EQUAL);
                 let isProp = false;
                 parts[id] = [
@@ -402,12 +402,12 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
                     }
                   },
                 ];
-              });
+              }
 
               attr.value = "";
             }
           }
-        });
+        }
       }
     }
 
@@ -492,12 +492,12 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
 
     meta.styles(styles);
 
-    meta.markers.forEach((marker) => {
+    for (const marker of meta.markers) {
       const value = args[marker.index];
       const prevValue = meta.prevArgs && meta.prevArgs[marker.index];
 
       // eslint-disable-next-line no-continue
-      if (meta.prevArgs && value === prevValue) return;
+      if (meta.prevArgs && value === prevValue) continue;
 
       try {
         marker.fn(host, marker.node, value, prevValue, useLayout);
@@ -511,7 +511,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
 
         throw error;
       }
-    });
+    }
 
     meta.prevArgs = args;
   };

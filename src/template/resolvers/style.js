@@ -28,9 +28,9 @@ export default function resolveStyle(host, target, value) {
     return map;
   }, new Map());
 
-  previousMap.forEach((styleValue, key) => {
+  for (const key of previousMap.keys()) {
     target.style[key] = "";
-  });
+  }
 
   styleMap.set(target, nextMap);
 }
