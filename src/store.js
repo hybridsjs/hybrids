@@ -299,11 +299,11 @@ function memoryStorage(config) {
           throw TypeError(`Memory-based model definition does not support id`);
         }
 
-        return cache.getEntries(config).reduce((acc, { key, value }) => {
-          if (key === config) return acc;
-          if (value && !error(value)) acc.push(key);
-          return acc;
-        }, []);
+        const result = [];
+        for (const { key, value } of cache.getEntries(config)) {
+          if (key !== config && value && !error(value)) result.push(key);
+        }
+        return result;
       },
     loose: true,
   };
@@ -720,10 +720,10 @@ function setupModel(Model, nested) {
         throw TypeError(`Model values must be an object instance: ${data}`);
       }
 
-      const model = transform.reduce((acc, fn) => {
-        fn(acc, data, lastModel);
-        return acc;
-      }, Object.create(proto));
+      const model = Object.create(proto);
+      for (const fn of transform) {
+        fn(model, data, lastModel);
+      }
 
       definitions.set(model, config);
       storePointer.set(model, store);
@@ -815,7 +815,8 @@ function setupListModel(Model, nested) {
       create(items, invalidate = false) {
         if (items === null) return null;
 
-        const result = items.reduce((acc, data) => {
+        const result = [];
+        for (const data of items) {
           let id = data;
           if (typeof data === "object" && data !== null) {
             id = data.id;
@@ -841,22 +842,21 @@ function setupListModel(Model, nested) {
               }
             }
             if (!modelConfig.enumerable) {
-              acc.push(model);
+              result.push(model);
             }
           } else if (!modelConfig.enumerable) {
             throw TypeError(`Model instance must be an object: ${typeof data}`);
           }
           if (modelConfig.enumerable) {
-            const key = acc.length;
-            Object.defineProperty(acc, key, {
+            const key = result.length;
+            Object.defineProperty(result, key, {
               get() {
                 return cache.get(this, key, () => get(Model, id));
               },
               enumerable: true,
             });
           }
-          return acc;
-        }, []);
+        }
 
         Object.defineProperty(result, "id", { value: items.id });
 
@@ -913,22 +913,20 @@ function resolveTimestamp(h, v) {
 
 function stringifyId(id) {
   switch (typeof id) {
-    case "object":
-      return JSON.stringify(
-        Object.keys(id)
-          .sort()
-          .reduce((acc, key) => {
-            if (typeof id[key] === "object" && id[key] !== null) {
-              throw TypeError(
-                `You must use primitive value for '${key}' key: ${typeof id[
-                  key
-                ]}`,
-              );
-            }
-            acc[key] = id[key];
-            return acc;
-          }, {}),
-      );
+    case "object": {
+      const result = {};
+
+      for (const key of Object.keys(id).sort()) {
+        if (typeof id[key] === "object" && id[key] !== null) {
+          throw TypeError(
+            `You must use primitive value for '${key}' key: ${typeof id[key]}`,
+          );
+        }
+        result[key] = id[key];
+      }
+
+      return JSON.stringify(result);
+    }
     case "undefined":
       return undefined;
     default:

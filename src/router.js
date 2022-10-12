@@ -112,7 +112,9 @@ function setupBrowserUrl(browserUrl, id) {
     pathnameParams,
     paramsKeys: [...searchParams, ...pathnameParams],
     url(params, strict = false) {
-      const temp = normalizedPathname.reduce((acc, part) => {
+      let temp = "";
+
+      for (let part of normalizedPathname) {
         if (part.startsWith(":")) {
           const key = part.slice(1);
 
@@ -123,8 +125,8 @@ function setupBrowserUrl(browserUrl, id) {
           part = mapUrlParam(params[key]);
         }
 
-        return `${acc}/${part}`;
-      }, "");
+        temp += `/${part}`;
+      }
 
       const url = new URL(temp, global.location.origin);
 
@@ -348,15 +350,17 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       cache.observe(
         _,
         connect,
-        (host) =>
-          stateParams.reduce((acc, key) => {
+        (host) => {
+          const params = {};
+          for (const key of stateParams) {
             const value = mapUrlParam(host[key]).toString();
-            acc[key] =
+            params[key] =
               value !== undefined && host[key] !== hybrids[key]
                 ? String(value)
                 : undefined;
-            return acc;
-          }, {}),
+          }
+          return params;
+        },
         (host, params, lastParams) => {
           if (!lastParams) return;
 
@@ -434,13 +438,12 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         return el;
       },
       getEntry(params = {}, other) {
-        const entryParams = Object.keys(params).reduce((acc, key) => {
+        let entryParams = {};
+        for (const key of Object.keys(params)) {
           if (writableParams.includes(key)) {
-            acc[key] = params[key];
+            entryParams[key] = params[key];
           }
-
-          return acc;
-        }, {});
+        }
 
         const entry = { id, params: entryParams, ...other };
         const guardConfig = config.parentsWithGuards.find((c) => !c.guard());
@@ -712,16 +715,18 @@ function resolveEvent(event, promise) {
 
 function resolveStack(host, state, options) {
   let stack = stacks.get(host);
-  const reducedState = state.reduce((acc, entry, index) => {
+
+  const reducedState = [];
+  for (const [index, entry] of state.entries()) {
     if (
       index === 0 ||
       state[index - 1].id !== entry.id ||
       getConfigById(entry.id).multiple
     ) {
-      acc.push(entry);
+      reducedState.push(entry);
     }
-    return acc;
-  }, []);
+  }
+
   const offset = stack.length - reducedState.length;
 
   stack = reducedState.map((entry, index) => {
@@ -769,18 +774,16 @@ function resolveStack(host, state, options) {
 }
 
 function getEntryOffset(entry) {
-  const state = global.history.state.reduce((acc, e, index) => {
+  const state = [];
+  for (let [index, e] of global.history.state.entries()) {
     let i = 0;
-
     while (e) {
-      acc[i] = acc[i] || [];
-      acc[i][index] = e;
+      state[i] = state[i] || [];
+      state[i][index] = e;
       e = e.nested;
       i += 1;
     }
-
-    return acc;
-  }, []);
+  }
 
   let offset = 0;
   let i = 0;

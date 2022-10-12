@@ -19,22 +19,22 @@ const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, "g");
 const PLACEHOLDER_REGEXP_ONLY = /^[^A-Za-z]+$/;
 
 function createSignature(parts) {
-  let signature = parts.reduce((acc, part, index) => {
-    if (index === 0) {
-      return part;
-    }
+  let signature = parts[0];
+  let tableMode = false;
+  for (let index = 1; index < parts.length; index += 1) {
+    tableMode =
+      tableMode ||
+      parts[index - 1].match(/<\s*(table|tr|thead|tbody|tfoot|colgroup)>\s*$/);
 
-    if (
-      parts
-        .slice(index)
-        .join("")
-        .match(/^\s*<\/\s*(table|tr|thead|tbody|tfoot|colgroup)>/)
-    ) {
-      return `${acc}<!--${getPlaceholder(index - 1)}-->${part}`;
-    }
+    signature +=
+      (tableMode
+        ? `<!--${getPlaceholder(index - 1)}-->`
+        : getPlaceholder(index - 1)) + parts[index];
 
-    return acc + getPlaceholder(index - 1) + part;
-  }, "");
+    tableMode =
+      tableMode &&
+      !parts[index].match(/<\/\s*(table|tr|thead|tbody|tfoot|colgroup)>/);
+  }
 
   return signature;
 }

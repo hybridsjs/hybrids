@@ -150,9 +150,12 @@ Object.defineProperty(localize, "languages", {
 });
 
 function getString(parts, args) {
-  const string = parts.reduce(
-    (acc, part, index) => `${acc}\${${index - 1}}${part}`,
-  );
+  let string = "";
+
+  for (const [index, part] of parts.entries()) {
+    string += index ? `\${${index - 1}}${part}` : part;
+  }
+
   const [key, , context = ""] = string.split("|");
 
   return get(key, context, args);

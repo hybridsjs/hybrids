@@ -12,7 +12,9 @@ export default function resolveStyle(host, target, value) {
 
   const previousMap = styleMap.get(target) || new Map();
 
-  const nextMap = Object.keys(value).reduce((map, key) => {
+  const nextMap = new Map();
+
+  for (const key of Object.keys(value)) {
     const dashKey = camelToDash(key);
     const styleValue = value[key];
 
@@ -22,11 +24,9 @@ export default function resolveStyle(host, target, value) {
       target.style.setProperty(dashKey, styleValue);
     }
 
-    map.set(dashKey, styleValue);
+    nextMap.set(dashKey, styleValue);
     previousMap.delete(dashKey);
-
-    return map;
-  }, new Map());
+  }
 
   for (const key of previousMap.keys()) {
     target.style[key] = "";
