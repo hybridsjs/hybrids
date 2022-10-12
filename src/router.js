@@ -284,8 +284,6 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         const prevActiveEl = global.document.activeElement;
         const root = rootRouter;
 
-        console.log({ prevActiveEl });
-
         root.addEventListener("focusin", focusDialog);
         root.addEventListener("focusout", focusDialog);
         host.addEventListener("keydown", goBackOnEscKey);
