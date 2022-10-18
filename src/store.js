@@ -1,4 +1,3 @@
-/* eslint-disable no-use-before-define */
 import global from "./global.js";
 import * as cache from "./cache.js";
 import { storePointer } from "./utils.js";
@@ -93,7 +92,6 @@ function invalidateTimestamp(model) {
 function hashCode(str) {
   return global.btoa(
     Array.from(str).reduce(
-      // eslint-disable-next-line no-bitwise
       (s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0,
       0,
     ),
@@ -356,8 +354,7 @@ function getModelState(model) {
 // UUID v4 generator thanks to https://gist.github.com/jed/982883
 function uuid(temp) {
   return temp
-    ? // eslint-disable-next-line no-bitwise, no-mixed-operators
-      (temp ^ ((Math.random() * 16) >> (temp / 4))).toString(16)
+    ? (temp ^ ((Math.random() * 16) >> (temp / 4))).toString(16)
     : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, uuid);
 }
 
@@ -958,7 +955,6 @@ function notFoundError(Model, stringId) {
 
 function mapError(model, err, suppressLog) {
   if (suppressLog !== false && !notFoundErrors.has(err)) {
-    // eslint-disable-next-line no-console
     console.error(err);
   }
 
@@ -1161,7 +1157,6 @@ function set(model, values = {}) {
             errors[key] = lastError.errors[key];
           }
 
-          // eslint-disable-next-line eqeqeq
           if (isDraft && localModel[key] == config.model[key]) {
             continue;
           }
@@ -1434,15 +1429,12 @@ function valueWithValidation(
 ) {
   switch (typeof defaultValue) {
     case "string":
-      // eslint-disable-next-line no-new-wrappers
       defaultValue = new String(defaultValue);
       break;
     case "number":
-      // eslint-disable-next-line no-new-wrappers
       defaultValue = new Number(defaultValue);
       break;
     case "boolean":
-      // eslint-disable-next-line no-new-wrappers
       defaultValue = new Boolean(defaultValue);
       break;
     default:

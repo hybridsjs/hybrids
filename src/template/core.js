@@ -49,7 +49,6 @@ function getPropertyName(string) {
 function createWalker(context) {
   return global.document.createTreeWalker(
     context,
-    // eslint-disable-next-line no-bitwise
     global.NodeFilter.SHOW_ELEMENT |
       global.NodeFilter.SHOW_TEXT |
       global.NodeFilter.SHOW_COMMENT,
@@ -91,7 +90,6 @@ function beautifyTemplateLog(input, index) {
       return `| ${line}`;
     })
     .join("\n")
-    // eslint-disable-next-line no-template-curly-in-string
     .replace(PLACEHOLDER_REGEXP_ALL, "${...}");
 
   return `${output}`;
@@ -322,7 +320,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
         }
       }
     } else {
-      /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
+      /* istanbul ignore else */
       if (node.nodeType === global.Node.ELEMENT_NODE) {
         if (
           !noTranslate &&
@@ -333,7 +331,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
           noTranslate = node;
         }
 
-        /* istanbul ignore else */ // eslint-disable-next-line no-lonely-if
+        /* istanbul ignore else */
         if (probablyDevMode) {
           const tagName = node.tagName.toLowerCase();
           if (
@@ -496,13 +494,11 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       const value = args[marker.index];
       const prevValue = meta.prevArgs && meta.prevArgs[marker.index];
 
-      // eslint-disable-next-line no-continue
       if (meta.prevArgs && value === prevValue) continue;
 
       try {
         marker.fn(host, marker.node, value, prevValue, useLayout);
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error(
           `Following error was thrown when updating a template expression in ${stringifyElement(
             host,
