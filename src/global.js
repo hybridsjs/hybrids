@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 export function polyfill(global) {
   global = Object.create(global);
 
@@ -36,5 +34,5 @@ export function polyfill(global) {
   return global;
 }
 
-/* istanbul ignore next */
+/* istanbul ignore next */ // eslint-disable-next-line no-undef
 export default typeof window === "object" ? window : polyfill(globalThis);

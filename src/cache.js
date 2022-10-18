@@ -87,7 +87,6 @@ export function get(target, key, getter) {
       let depState = entry.state;
 
       for (const depEntry of entry.deps) {
-        // eslint-disable-next-line no-unused-expressions
         depEntry.target[depEntry.key];
 
         if (!depEntry.resolved) {

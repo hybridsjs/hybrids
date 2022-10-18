@@ -200,7 +200,6 @@ function setupViews(views, options, parent = null, nestedParent = null) {
       );
     }
 
-    // eslint-disable-next-line no-use-before-define
     return setupView(hybrids, options, parent, nestedParent);
   });
 }
