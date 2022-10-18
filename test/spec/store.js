@@ -256,6 +256,10 @@ describe("store:", () => {
         });
       });
 
+      it("stringify to its id", () => {
+        expect(String(store.get([Model]))).toEqual("undefined");
+      });
+
       it("returns the same array", () => {
         expect(store.get([Model])).toBe(store.get([Model]));
       });

@@ -858,7 +858,14 @@ function setupListModel(Model, nested) {
           }
         }
 
-        Object.defineProperty(result, "id", { value: items.id });
+        Object.defineProperties(result, {
+          id: { value: items.id },
+          toString: {
+            value: function () {
+              return this.id;
+            },
+          },
+        });
 
         definitions.set(result, config);
         storePointer.set(result, store);
