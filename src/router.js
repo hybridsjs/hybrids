@@ -745,8 +745,6 @@ function resolveStack(host, state, options) {
 
     if (index === 0) {
       if (nextView === prevView) {
-        cache.unsuspend(nextView);
-
         if (offset === 0 && host === rootRouter && entry.params.scrollToTop) {
           restoreLayout(nextView);
         }
@@ -913,11 +911,6 @@ function connectRootRouter(host, invalidate, options) {
     } else {
       let stack = stacks.get(host);
       saveLayout(stack[0]);
-
-      while (stack && stack[0]) {
-        cache.suspend(stack[0]);
-        stack = stacks.get(stack[0]);
-      }
 
       global.history.scrollRestoration = "manual";
       global.history.pushState([entry, ...state], "", url);

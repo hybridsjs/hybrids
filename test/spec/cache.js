@@ -5,9 +5,6 @@ import {
   invalidate,
   invalidateAll,
   observe,
-  suspend,
-  unsuspend,
-  getEntry,
 } from "../../src/cache.js";
 
 describe("cache:", () => {
@@ -341,81 +338,6 @@ describe("cache:", () => {
         expect(() => unobserve()).not.toThrow();
         done();
       });
-    });
-  });
-
-  describe("suspend()", () => {
-    it("disables cache hits", () => {
-      get(target, "key", spy);
-
-      suspend(target);
-
-      get(target, "key", spy);
-
-      expect(spy).toHaveBeenCalledTimes(2);
-    });
-
-    it("disables saving deps", () => {
-      const getDep = () => get(target, "other", () => "value");
-
-      suspend(target);
-      get(target, "key", getDep);
-
-      const entry = getEntry(target, "key");
-
-      expect(entry.deps.size).toBe(0);
-    });
-
-    it("disables observe callback", (done) => {
-      get(target, "key", () => "value");
-      suspend(target);
-      observe(target, "key", (_, v) => v, spy);
-
-      requestAnimationFrame(() => {
-        expect(spy).toHaveBeenCalledTimes(1);
-
-        set(target, "key", () => "new value");
-        requestAnimationFrame(() => {
-          expect(spy).toHaveBeenCalledTimes(1);
-          done();
-        });
-      });
-    });
-
-    it("removes references from deps when dep is set", (done) => {
-      const dep = {};
-      get(target, "key", () => get(dep, "value", () => "value"));
-      const hasTarget = () =>
-        [...getEntry(dep, "value").contexts].some(
-          (entry) => entry.target === target,
-        );
-      expect(hasTarget()).toBe(true);
-
-      suspend(target);
-      set(dep, "value", () => "new value");
-
-      requestAnimationFrame(() => {
-        expect(hasTarget()).toBe(false);
-        done();
-      });
-    });
-  });
-
-  describe("unsuspend()", () => {
-    it("enables cache hits", () => {
-      const cb = () => get(target, "key", spy);
-
-      cb();
-      suspend(target);
-      cb();
-
-      unsuspend(target);
-
-      cb();
-      expect(spy).toHaveBeenCalledTimes(3);
-
-      cb();
-      expect(spy).toHaveBeenCalledTimes(3);
     });
   });
 });
