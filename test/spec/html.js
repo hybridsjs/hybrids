@@ -906,7 +906,8 @@ describe("html:", () => {
     });
 
     it("set multiple properties of the store model instance", (done) => {
-      const model = store.get({ value: "test", other: "test" });
+      const Model = { value: "test", other: "test" };
+      const model = store.get(Model);
 
       const render = html`
         <input type="text" oninput=${html.set(model, "value")} value="John" />
@@ -919,12 +920,8 @@ describe("html:", () => {
       dispatch(fragment.children[1], "input");
 
       requestAnimationFrame(() => {
-        store
-          .pending(model)
-          .then((nextModel) => {
-            expect(nextModel).toEqual({ value: "John", other: "Smith" });
-          })
-          .then(done);
+        expect(store.get(Model)).toEqual({ value: "John", other: "Smith" });
+        done();
       });
     });
 

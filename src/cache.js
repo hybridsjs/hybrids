@@ -2,8 +2,6 @@ import global from "./global.js";
 import * as emitter from "./emitter.js";
 
 const entries = new WeakMap();
-const suspense = new WeakSet();
-
 export function getEntry(target, key) {
   let targetMap = entries.get(target);
   if (!targetMap) {
@@ -24,7 +22,6 @@ export function getEntry(target, key) {
       state: 0,
       depState: 0,
       resolved: false,
-      observed: false,
     };
     targetMap.set(key, entry);
   }
@@ -38,28 +35,10 @@ export function getEntries(target) {
   return [];
 }
 
-function cleanContexts(entry) {
-  for (const contextEntry of entry.contexts) {
-    if (suspense.has(contextEntry.target)) {
-      Object.assign(contextEntry, {
-        depState: 0,
-        resolved: false,
-      });
-
-      entry.contexts.delete(contextEntry);
-      cleanContexts(contextEntry);
-    }
-  }
-}
-
 function dispatchDeep(entry) {
   entry.resolved = false;
 
-  if (entry.observed && !suspense.has(entry.target)) {
-    emitter.dispatch(entry);
-  }
-
-  cleanContexts(entry);
+  emitter.dispatch(entry);
 
   for (const context of entry.contexts) {
     dispatchDeep(context);
@@ -71,36 +50,30 @@ const contexts = new Set();
 export function get(target, key, getter) {
   const entry = getEntry(target, key);
 
-  if (context && !suspense.has(context.target)) {
+  if (context) {
     context.deps.add(entry);
     entry.contexts.add(context);
   }
 
-  if (!suspense.has(target)) {
-    cleanContexts(entry);
+  if (entry.resolved) return entry.value;
 
-    if (entry.resolved) {
-      return entry.value;
+  if (entry.depState > entry.state) {
+    let depState = entry.state;
+
+    for (const depEntry of entry.deps) {
+      depEntry.target[depEntry.key];
+
+      if (!depEntry.resolved) {
+        depState = false;
+        break;
+      }
+
+      depState += depEntry.state;
     }
 
-    if (entry.depState > entry.state) {
-      let depState = entry.state;
-
-      for (const depEntry of entry.deps) {
-        depEntry.target[depEntry.key];
-
-        if (!depEntry.resolved) {
-          depState = false;
-          break;
-        }
-
-        depState += depEntry.state;
-      }
-
-      if (depState && depState === entry.depState) {
-        entry.resolved = true;
-        return entry.value;
-      }
+    if (depState && depState === entry.depState) {
+      entry.resolved = true;
+      return entry.value;
     }
   }
 
@@ -134,7 +107,7 @@ export function get(target, key, getter) {
     }
 
     entry.depState = depState;
-    entry.resolved = !suspense.has(target);
+    entry.resolved = true;
 
     contexts.delete(entry);
   } catch (e) {
@@ -143,7 +116,7 @@ export function get(target, key, getter) {
 
     entry.resolved = false;
 
-    if (context && !suspense.has(context)) {
+    if (context) {
       context.deps.delete(entry);
       entry.contexts.delete(context);
     }
@@ -235,9 +208,8 @@ export function invalidateAll(target, options = {}) {
 
 export function observe(target, key, getter, fn) {
   const entry = getEntry(target, key);
-  entry.observed = true;
 
-  emitter.subscribe(entry, () => {
+  return emitter.subscribe(entry, () => {
     const value = get(target, key, getter);
 
     if (value !== entry.lastValue) {
@@ -245,17 +217,4 @@ export function observe(target, key, getter, fn) {
       entry.lastValue = value;
     }
   });
-
-  return () => {
-    entry.observed = false;
-    emitter.unsubscribe(entry);
-  };
-}
-
-export function suspend(target) {
-  suspense.add(target);
-}
-
-export function unsuspend(target) {
-  suspense.delete(target);
 }

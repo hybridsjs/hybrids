@@ -13,13 +13,9 @@ class HybridsRootElement extends global.HTMLElement {
       delete this[key];
       this[key] = value;
     }
-
-    cache.suspend(this);
   }
 
   connectedCallback() {
-    cache.unsuspend(this);
-
     const { connects } = this.constructor;
 
     if (connects.size) {
@@ -34,8 +30,6 @@ class HybridsRootElement extends global.HTMLElement {
   }
 
   disconnectedCallback() {
-    cache.suspend(this);
-
     const set = disconnects.get(this);
     if (set) {
       for (const cb of set) cb();

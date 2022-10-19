@@ -6,9 +6,9 @@ const queue = new Set();
 function execute() {
   const errors = [];
 
-  for (const fn of queue) {
+  for (const target of queue) {
     try {
-      fn();
+      fns.get(target)();
     } catch (e) {
       errors.push(e);
     }
@@ -21,17 +21,20 @@ function execute() {
 }
 
 export function dispatch(target) {
-  if (!queue.size) {
-    global.requestAnimationFrame(execute);
+  if (fns.has(target)) {
+    if (!queue.size) {
+      global.requestAnimationFrame(execute);
+    }
+    queue.add(target);
   }
-  queue.add(fns.get(target));
 }
 
 export function subscribe(target, cb) {
   fns.set(target, cb);
   dispatch(target);
-}
 
-export function unsubscribe(target) {
-  fns.delete(target);
+  return () => {
+    queue.delete(target);
+    fns.delete(target);
+  };
 }
