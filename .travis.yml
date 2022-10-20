@@ -11,7 +11,7 @@ notifications:
 
 branches:
   only:
-    - master
+    - main
 
 script:
   - npm run test

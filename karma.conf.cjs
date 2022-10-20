@@ -2,7 +2,7 @@ const IS_COVERAGE = process.env.NODE_ENV === "coverage";
 const IS_SAUCE_LABS =
   !IS_COVERAGE &&
   !!process.env.TRAVIS &&
-  process.env.TRAVIS_BRANCH === "master" &&
+  process.env.TRAVIS_BRANCH === "main" &&
   process.env.TRAVIS_PULL_REQUEST === "false";
 
 const customLaunchers = {
