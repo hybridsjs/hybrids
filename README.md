@@ -1,13 +1,13 @@
 
 <center>
 <h1>
-  <img alt="" src="https://raw.githubusercontent.com/hybridsjs/hybrids/master/docs/assets/hybrids-full-logo.svg?sanitize=true" align="center">
+  <img alt="" src="https://raw.githubusercontent.com/hybridsjs/hybrids/main/docs/assets/hybrids-full-logo.svg?sanitize=true" align="center">
 </h1>
 </center>
 
 [![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
-[![build status](https://img.shields.io/travis/hybridsjs/hybrids/master.svg?style=flat)](https://app.travis-ci.com/github/hybridsjs/hybrids)
-[![coverage status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=master)
+[![build status](https://img.shields.io/travis/hybridsjs/hybrids/main.svg?style=flat)](https://app.travis-ci.com/github/hybridsjs/hybrids)
+[![coverage status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=main)
 
 **hybrids** is a JavaScript UI framework for creating fully-featured web applications, components libraries, or single web components with unique mixed declarative and functional architecture.
 
