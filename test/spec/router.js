@@ -132,7 +132,11 @@ describe("router:", () => {
       ]),
     });
     const el = document.createElement("test-router-app");
-    expect(() => el.connectedCallback()).toThrow();
+    el.connectedCallback();
+
+    return Promise.resolve().then(() => {
+      expect(el.views).toEqual([]);
+    });
   });
 
   it("throws for nested router defined inside of the dialog view", () => {
@@ -155,7 +159,11 @@ describe("router:", () => {
       ]),
     });
     const el = document.createElement("test-router-app");
-    expect(() => el.connectedCallback()).toThrow();
+    el.connectedCallback();
+
+    return Promise.resolve().then(() => {
+      expect(el.views).toEqual([]);
+    });
   });
 
   it("throws when parent view has 'url' option", () => {
@@ -173,7 +181,11 @@ describe("router:", () => {
       ]),
     });
     const el = document.createElement("test-router-app");
-    expect(() => el.connectedCallback()).toThrow();
+    el.connectedCallback();
+
+    return Promise.resolve().then(() => {
+      expect(el.views).toEqual([]);
+    });
   });
 
   it("throws when global parameter is not defined", () => {
@@ -189,7 +201,11 @@ describe("router:", () => {
       ),
     });
     const el = document.createElement("test-router-app");
-    expect(() => el.connectedCallback()).toThrow();
+    el.connectedCallback();
+
+    return Promise.resolve().then(() => {
+      expect(el.views).toEqual([]);
+    });
   });
 
   describe("test app", () => {
@@ -525,10 +541,12 @@ describe("router:", () => {
       });
 
       it("throws when connecting root router twice", () => {
-        expect(() => {
-          const anotherHost = document.createElement("test-router-app");
-          anotherHost.connectedCallback();
-        }).toThrow();
+        const el = document.createElement("test-router-app");
+        el.connectedCallback();
+
+        return Promise.resolve().then(() => {
+          expect(el.views).toEqual([]);
+        });
       });
 
       it("displays root view", () =>

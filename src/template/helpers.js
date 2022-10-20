@@ -1,4 +1,3 @@
-import global from "../global.js";
 import { storePointer } from "../utils.js";
 import resolveTemplateValue from "./resolvers/value.js";
 
@@ -97,10 +96,7 @@ export function resolve(promise, placeholder, delay = 200) {
     if (placeholder) {
       timeout = setTimeout(() => {
         timeout = undefined;
-
-        global.requestAnimationFrame(() => {
-          placeholder(host, target);
-        });
+        resolveTemplateValue(host, target, placeholder);
       }, delay);
     }
 

@@ -8,13 +8,13 @@ describe("global:", () => {
   describe("polyfill -", () => {
     it("uses required APIs from the context", () => {
       const global = polyfill(window);
-      expect(global).not.toBe(window);
 
+      expect(global).not.toBe(window);
       expect(global.requestAnimationFrame).toBe(window.requestAnimationFrame);
       expect(global.HTMLElement).toBe(window.HTMLElement);
     });
 
-    it("adds HTMLElement class and requestAnimationFrame to other contexts", (done) => {
+    it("adds HTMLElement class and requestAnimationFrame to other contexts", () => {
       const global = polyfill({});
 
       expect(global.HTMLElement).toBeDefined();
@@ -26,15 +26,6 @@ describe("global:", () => {
       expect(() => {
         global.document.importNode();
       }).toThrow();
-
-      expect(global.requestAnimationFrame).toBeDefined();
-      const spy = jasmine.createSpy();
-      global.requestAnimationFrame(spy);
-
-      setTimeout(() => {
-        expect(spy).toHaveBeenCalledTimes(1);
-        done();
-      });
     });
   });
 });

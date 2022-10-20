@@ -1,133 +1,12 @@
 import global from "./global.js";
 import * as cache from "./cache.js";
+import * as emitter from "./emitter.js";
 import { deferred, camelToDash, walkInShadow } from "./utils.js";
 
+import render from "./render.js";
+import value from "./value.js";
+
 const disconnects = new WeakMap();
-
-class HybridsRootElement extends global.HTMLElement {
-  constructor() {
-    super();
-
-    for (const key of Object.keys(this)) {
-      const value = this[key];
-      delete this[key];
-      this[key] = value;
-    }
-  }
-
-  connectedCallback() {
-    const { connects } = this.constructor;
-
-    if (connects.size) {
-      const set = new Set();
-      for (const fn of connects) {
-        const cb = fn(this);
-        if (cb) set.add(cb);
-      }
-
-      disconnects.set(this, set);
-    }
-  }
-
-  disconnectedCallback() {
-    const set = disconnects.get(this);
-    if (set) {
-      for (const cb of set) cb();
-      disconnects.delete(this);
-    }
-  }
-}
-
-function render(fn, useShadow) {
-  return {
-    get: useShadow
-      ? (host) => {
-          const updateDOM = fn(host);
-          const target =
-            host.shadowRoot ||
-            host.attachShadow({
-              mode: "open",
-              delegatesFocus: fn.delegatesFocus || false,
-            });
-          return () => {
-            updateDOM(host, target);
-            return target;
-          };
-        }
-      : (host) => {
-          const updateDOM = fn(host);
-          return () => {
-            updateDOM(host, host);
-            return host;
-          };
-        },
-    observe(host, flush) {
-      flush();
-    },
-  };
-}
-
-const transforms = {
-  string: String,
-  number: Number,
-  boolean: Boolean,
-  undefined: (v) => v,
-};
-
-function property(key, desc) {
-  const type = typeof desc.value;
-  const transform = transforms[type];
-
-  if (!transform) {
-    throw TypeError(
-      `Invalid default value for '${key}' property - it must be a string, number, boolean or undefined: ${type}`,
-    );
-  }
-
-  const defaultValue = desc.value;
-  const attrName = camelToDash(key);
-
-  const setAttr = (host, value) => {
-    if (
-      (!value && value !== 0) ||
-      (typeof value === "object" && value.toString() === undefined)
-    ) {
-      host.removeAttribute(attrName);
-    } else {
-      host.setAttribute(attrName, type === "boolean" ? "" : value);
-    }
-    return value;
-  };
-
-  return {
-    get: (host, value) => {
-      if (value === undefined) {
-        if (host.hasAttribute(attrName)) {
-          value = transform(type === "boolean" || host.getAttribute(attrName));
-        } else {
-          return defaultValue;
-        }
-      }
-      return value;
-    },
-    set:
-      type !== "undefined"
-        ? (host, value) => setAttr(host, transform(value))
-        : (host, value) => value,
-    connect:
-      type !== "undefined"
-        ? (host, _, invalidate) => {
-            if (!host.hasAttribute(attrName) && host[key] === defaultValue) {
-              setAttr(host, defaultValue);
-            }
-
-            return desc.connect && desc.connect(host, _, invalidate);
-          }
-        : desc.connect,
-    observe: desc.observe,
-  };
-}
-
 function compile(hybrids, HybridsElement) {
   if (HybridsElement) {
     if (hybrids === HybridsElement.hybrids) return HybridsElement;
@@ -136,10 +15,39 @@ function compile(hybrids, HybridsElement) {
       delete HybridsElement.prototype[key];
     }
   } else {
-    HybridsElement = class extends HybridsRootElement {};
+    HybridsElement = class extends global.HTMLElement {
+      connectedCallback() {
+        for (const key of Object.keys(this)) {
+          const value = this[key];
+          delete this[key];
+          this[key] = value;
+        }
+
+        const set = new Set();
+        disconnects.set(this, set);
+
+        emitter.add(() => {
+          if (set === disconnects.get(this)) {
+            for (const fn of this.constructor.connects) set.add(fn(this));
+          }
+        });
+      }
+
+      disconnectedCallback() {
+        const callbacks = disconnects.get(this);
+
+        for (const fn of callbacks) {
+          if (fn) fn();
+        }
+
+        disconnects.delete(this);
+        cache.invalidateAll(this);
+      }
+    };
   }
 
   HybridsElement.hybrids = hybrids;
+
   const connects = new Set();
 
   for (const key of Object.keys(hybrids)) {
@@ -159,6 +67,12 @@ function compile(hybrids, HybridsElement) {
     } else if (type !== "object" || desc === null) {
       desc = { value: desc };
     } else if (desc.set) {
+      if (hasOwnProperty.call(desc, "value")) {
+        throw TypeError(
+          `Invalid property descriptor for '${key}' property - it must not have 'value' and 'set' properties at the same time.`,
+        );
+      }
+
       const attrName = camelToDash(key);
       const get = desc.get || ((host, value) => value);
       desc.get = (host, value) => {
@@ -170,7 +84,7 @@ function compile(hybrids, HybridsElement) {
     }
 
     if (hasOwnProperty.call(desc, "value")) {
-      desc = property(key, desc);
+      desc = value(key, desc);
     } else if (!desc.get) {
       throw TypeError(
         `Invalid descriptor for '${key}' property - it must contain 'value' or 'get' option`,
@@ -191,14 +105,11 @@ function compile(hybrids, HybridsElement) {
     });
 
     if (desc.connect) {
-      connects.add((host) => {
-        function invalidate(options) {
-          cache.invalidate(host, key, {
-            force: typeof options === "object" && options.force === true,
-          });
-        }
-        return desc.connect(host, key, invalidate);
-      });
+      connects.add((host) =>
+        desc.connect(host, key, () => {
+          cache.invalidate(host, key);
+        }),
+      );
     }
 
     if (desc.observe) {

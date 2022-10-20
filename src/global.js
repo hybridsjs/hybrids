@@ -1,14 +1,6 @@
 export function polyfill(global) {
   global = Object.create(global);
 
-  if (!("requestAnimationFrame" in global)) {
-    Object.defineProperty(global, "requestAnimationFrame", {
-      value: function requestAnimationFrame(callback) {
-        return setTimeout(callback, 0);
-      },
-    });
-  }
-
   if (!("HTMLElement" in global)) {
     Object.defineProperty(global, "HTMLElement", {
       value: class HTMLElement {
