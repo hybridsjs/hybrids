@@ -301,7 +301,7 @@ Without the `set` method the property will be read-only. If the `get` method is 
 
 Use the `connect` method to attach event listeners, initialize property value (using key argument), and more. To clean up subscriptions, return a `disconnect` function, where you can remove attached listeners and other things.
 
-When you insert, remove, or relocate an element in the DOM tree, `connect` and `disconnect` is called synchronously (in the `connectedCallback` and `disconnectedCallback` callbacks of the Custom Elements API).
+When you insert, remove, or relocate an element in the DOM tree, `connect` and `disconnect` methods are called (by the `connectedCallback` and `disconnectedCallback` callbacks of the Custom Elements API).
 
 ```javascript
 import { define } from "hybrids";
@@ -330,12 +330,6 @@ define({
 ```
 
 If the third-party code is responsible for the property value, you can use the `invalidate` callback to notify that value should be recalculated. For example, it can be used to connect to async web APIs or external libraries.
-
-The `invalidate` callback can take options object argument with the following properties:
-
-| Option | Type      | Default | Description                                                                                                     |
-| ------ | --------- | ------- | --------------------------------------------------------------------------------------------------------------- |
-| force  | `boolean` | false   | When true, the invalidate call will always trigger an update, even if the property's identity has not changed   |
 
 ### `observe`
 

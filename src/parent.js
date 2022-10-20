@@ -24,11 +24,7 @@ export default function parent(hybridsOrFn) {
   return {
     get: (host) => walk(host, fn),
     connect(host, key, invalidate) {
-      const target = host[key];
-      if (target) {
-        return invalidate;
-      }
-      return false;
+      return invalidate;
     },
   };
 }

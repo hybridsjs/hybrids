@@ -1,6 +1,6 @@
 import global from "./global.js";
 import * as cache from "./cache.js";
-import { dispatch, walkInShadow } from "./utils.js";
+import { deferred, dispatch, walkInShadow } from "./utils.js";
 
 const connect = Symbol("router.connect");
 const configs = new WeakMap();
@@ -704,9 +704,7 @@ function resolveEvent(event, promise) {
 
   return promise.then(() => {
     if (promise === activePromise) {
-      global.requestAnimationFrame(() => {
-        handleNavigate(pseudoEvent);
-      });
+      handleNavigate(pseudoEvent);
       activePromise = null;
     }
   });
@@ -853,7 +851,7 @@ function connectRootRouter(host, invalidate, options) {
     resolveStack(host, global.history.state, options);
     invalidate();
 
-    global.requestAnimationFrame(restoreScrollRestoration);
+    deferred.then(restoreScrollRestoration);
   }
 
   function navigateBack(offset, entry, nextUrl) {

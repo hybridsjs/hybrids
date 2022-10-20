@@ -1,29 +1,57 @@
-import global from "./global.js";
 import * as emitter from "./emitter.js";
 
 const entries = new WeakMap();
+const stack = new Set();
+
+function dispatch(entry) {
+  const contexts = new Set();
+  const iterator = contexts.values();
+
+  while (entry) {
+    entry.resolved = false;
+
+    if (entry.deps) {
+      for (const depEntry of entry.deps) {
+        depEntry.contexts.delete(entry);
+      }
+      entry.deps.clear();
+    }
+
+    if (entry.contexts) {
+      for (const context of entry.contexts) {
+        contexts.add(context);
+      }
+      entry.contexts.clear();
+    }
+
+    if (entry.observe) {
+      emitter.add(entry.observe);
+    }
+
+    entry = iterator.next().value;
+  }
+}
+
 export function getEntry(target, key) {
-  let targetMap = entries.get(target);
-  if (!targetMap) {
-    targetMap = new Map();
-    entries.set(target, targetMap);
+  let map = entries.get(target);
+  if (!map) {
+    map = new Map();
+    entries.set(target, map);
   }
 
-  let entry = targetMap.get(key);
-
+  let entry = map.get(key);
   if (!entry) {
     entry = {
-      target,
       key,
+      target,
       value: undefined,
       lastValue: undefined,
-      contexts: new Set(),
-      deps: new Set(),
-      state: 0,
-      depState: 0,
       resolved: false,
+      contexts: undefined,
+      deps: undefined,
+      observe: undefined,
     };
-    targetMap.set(key, entry);
+    map.set(key, entry);
   }
 
   return entry;
@@ -35,86 +63,39 @@ export function getEntries(target) {
   return [];
 }
 
-function dispatchDeep(entry) {
-  entry.resolved = false;
-
-  emitter.dispatch(entry);
-
-  for (const context of entry.contexts) {
-    dispatchDeep(context);
-  }
-}
-
 let context = null;
-const contexts = new Set();
 export function get(target, key, getter) {
   const entry = getEntry(target, key);
 
   if (context) {
-    context.deps.add(entry);
+    if (!entry.contexts) entry.contexts = new Set();
+    if (!context.deps) context.deps = new Set();
+
     entry.contexts.add(context);
+    context.deps.add(entry);
   }
 
   if (entry.resolved) return entry.value;
 
-  if (entry.depState > entry.state) {
-    let depState = entry.state;
-
-    for (const depEntry of entry.deps) {
-      depEntry.target[depEntry.key];
-
-      if (!depEntry.resolved) {
-        depState = false;
-        break;
-      }
-
-      depState += depEntry.state;
-    }
-
-    if (depState && depState === entry.depState) {
-      entry.resolved = true;
-      return entry.value;
-    }
-  }
-
   const lastContext = context;
 
   try {
-    if (contexts.has(entry)) {
+    if (stack.has(entry)) {
       throw Error(`Circular get invocation is forbidden: '${key}'`);
     }
 
-    for (const depEntry of entry.deps) {
-      depEntry.contexts.delete(entry);
-    }
-
-    entry.deps.clear();
     context = entry;
-    contexts.add(entry);
+    stack.add(entry);
 
-    const nextValue = getter(target, entry.value);
-
-    context = lastContext;
-
-    if (nextValue !== entry.value) {
-      entry.value = nextValue;
-      entry.state += 1;
-    }
-
-    let depState = entry.state;
-    for (const depEntry of entry.deps) {
-      depState += depEntry.state;
-    }
-
-    entry.depState = depState;
+    entry.value = getter(target, entry.value);
     entry.resolved = true;
 
-    contexts.delete(entry);
+    context = lastContext;
+
+    stack.delete(entry);
   } catch (e) {
     context = lastContext;
-    contexts.delete(entry);
-
-    entry.resolved = false;
+    stack.delete(entry);
 
     if (context) {
       context.deps.delete(entry);
@@ -133,21 +114,42 @@ export function set(target, key, setter, value) {
 
   if (newValue !== entry.value) {
     entry.value = newValue;
-    entry.state += 1;
-    entry.depState = 0;
-
-    dispatchDeep(entry);
+    dispatch(entry);
   }
 }
 
-const gcList = new Set();
+export function observe(target, key, getter, fn) {
+  const entry = getEntry(target, key);
+
+  entry.observe = () => {
+    const value = get(target, key, getter);
+
+    if (value !== entry.lastValue) {
+      fn(target, value, entry.lastValue);
+      entry.lastValue = value;
+    }
+  };
+
+  emitter.add(entry.observe);
+
+  return () => {
+    emitter.clear(entry.observe);
+
+    entry.observe = undefined;
+    entry.lastValue = undefined;
+  };
+}
+
+const gc = new Set();
 function deleteEntry(entry) {
-  if (!gcList.size) {
-    global.requestAnimationFrame(() => {
-      for (const e of gcList) {
-        if (e.contexts.size === 0) {
-          for (const depEntry of e.deps) {
-            depEntry.contexts.delete(e);
+  if (!gc.size) {
+    setTimeout(() => {
+      for (const e of gc) {
+        if (!e.contexts || e.contexts.size === 0) {
+          if (e.deps) {
+            for (const depEntry of e.deps) {
+              depEntry.contexts.delete(e);
+            }
           }
 
           const targetMap = entries.get(e.target);
@@ -155,16 +157,15 @@ function deleteEntry(entry) {
         }
       }
 
-      gcList.clear();
+      gc.clear();
     });
   }
 
-  gcList.add(entry);
+  gc.add(entry);
 }
 
 function invalidateEntry(entry, options) {
-  entry.depState = 0;
-  dispatchDeep(entry);
+  dispatch(entry);
 
   if (options.clearValue) {
     entry.value = undefined;
@@ -174,47 +175,18 @@ function invalidateEntry(entry, options) {
   if (options.deleteEntry) {
     deleteEntry(entry);
   }
-
-  if (options.force) {
-    entry.state += 1;
-  }
 }
 
 export function invalidate(target, key, options = {}) {
-  if (contexts.size) {
-    throw Error(
-      `Invalidating property in chain of get calls is forbidden: '${key}'`,
-    );
-  }
-
   const entry = getEntry(target, key);
   invalidateEntry(entry, options);
 }
 
 export function invalidateAll(target, options = {}) {
-  if (contexts.size) {
-    throw Error(
-      "Invalidating all properties in chain of get calls is forbidden",
-    );
-  }
-
   const targetMap = entries.get(target);
   if (targetMap) {
     for (const entry of targetMap.values()) {
       invalidateEntry(entry, options);
     }
   }
-}
-
-export function observe(target, key, getter, fn) {
-  const entry = getEntry(target, key);
-
-  return emitter.subscribe(entry, () => {
-    const value = get(target, key, getter);
-
-    if (value !== entry.lastValue) {
-      fn(target, value, entry.lastValue);
-      entry.lastValue = value;
-    }
-  });
 }

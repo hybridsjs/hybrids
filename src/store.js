@@ -1,6 +1,6 @@
 import global from "./global.js";
 import * as cache from "./cache.js";
-import { storePointer } from "./utils.js";
+import { storePointer, deferred } from "./utils.js";
 
 const connect = Symbol("store.connect");
 
@@ -59,7 +59,7 @@ let currentTimestamp;
 function getCurrentTimestamp() {
   if (!currentTimestamp) {
     currentTimestamp = Date.now();
-    global.requestAnimationFrame(() => {
+    deferred.then(() => {
       currentTimestamp = undefined;
     });
   }
@@ -988,7 +988,6 @@ function get(Model, id) {
 
   if (entry.value && !validate(entry.value)) {
     entry.resolved = false;
-    entry.depState = 0;
   }
 
   return cache.get(config, stringId, (h, cachedModel) => {
