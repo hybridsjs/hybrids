@@ -20,7 +20,7 @@ Those unique principles unify access to async and sync sources. From the user pe
 
 ## Direct Methods
 
-### get
+### `store.get`
 
 ```typescript
 store.get(Model: object, id?: string | object) : Model;
@@ -32,7 +32,7 @@ store.get(Model: object, id?: string | object) : Model;
 * **returns**:
   * Model instance or model instance placeholder
 
-The `store.get` method always returns an object - model instance or a model placeholder. If the model source is synchronous (memory-based or external sync source, like `localStorage`), the get method immediately returns an instance. Otherwise, before the cache has an instance of the model, the placeholder is returned instead. When the promise resolves, the next call to the store returns an instance. The cache takes care to notify the component that data has changed (if you need to use this method outside of the component definition, you can use the `store.pending()` guard to access the returned promise).
+The `store.get()` method always returns an object - model instance or a model placeholder. If the model source is synchronous (memory-based or external sync source, like `localStorage`), the get method immediately returns an instance. Otherwise, before the cache has an instance of the model, the placeholder is returned instead. When the promise resolves, the next call to the store returns an instance. The cache takes care to notify the component that data has changed (if you need to use this method outside of the component definition, you can use the `store.pending()` guard to access the returned promise).
 
 ```javascript
 const GlobalState = {
@@ -54,7 +54,7 @@ define({
 
 The above example uses a singleton memory-based model, so the data is available instantly. The `count` property can be returned directly inside of the host property definition. Even the `count` property of the host does not rely on other properties, the `render` property will be notified when the current value of the `GlobalState` changes (keep in mind that this approach creates a global state object, which is shared between all of the component instances).
 
-### set
+### `store.set`
 
 The `store.set()` method can create a new instance or update an existing model. According to the mode, the first argument should be a model definition or a model instance.
 
@@ -114,7 +114,7 @@ function handleDeleteUser(host) {
 
 #### Partial Values
 
-The `store.set` supports partial values for updating the model only with a subset of values. If your model has nested object structures, you can update them partially as well:
+The `store.set()` supports partial values for updating the model only with a subset of values. If your model has nested object structures, you can update them partially as well:
 
 ```javascript
 store.set(myUser, { address: { street: "New Street" }});
@@ -122,7 +122,7 @@ store.set(myUser, { address: { street: "New Street" }});
 
 The above action will update only the `myUser.address.street` value leaving the rest properties untouched (they will be copied from the last state of the model).
 
-### resolve
+### `store.resolve`
 
 You can use the `store.resolve()` method to simplify access to pending model instances, which can be updated at the moment. The function returns a promise resolving into the current model instance, regardless of the pending state. It also supports multiple chains of set methods, so the result will always be the latest instance.
 
@@ -172,7 +172,7 @@ define({
 });
 ```
 
-### sync
+### `store.sync`
 
 The storage methods are called only for the user interaction - when the model is got, or when a new value for the model instance is set. However, there might be a case, where your model instance is been updated outside of the user scope, for example by the server.
 
@@ -214,7 +214,7 @@ define({
 
 In the above example, even though the `Model` is connected to the external storage, when the websocket emits an event, the values of the model update without calling `[store.connect].set()`, as we expect. It is an update triggered by the server, so we don't want to send new values to the server again.
 
-### clear
+### `store.clear`
 
 Both memory and external storage uses a global cache mechanism based on the model definition reference. Model instances are global, so the cache mechanism cannot automatically predict which instance is no longer required. Because of that, the store provides the `store.clear()` method for invalidating model instances by the model definition or specific instance of the model.
 
@@ -456,7 +456,7 @@ define({
 
 The store provides three guard methods, which indicate the current state of the model instance. The returning value of those methods can be used for conditional rendering in the template. The `pending` and `error` also return additional information. The returning values are not exclusive, so there are situations when more than one guard returns a truthy value.
 
-### ready
+### `store.ready`
 
 ```typescript
 store.ready(model, ...): boolean
@@ -492,7 +492,7 @@ define({
 });
 ```
 
-### pending
+### `store.pending`
 
 ```typescript
 store.pending(model, ...): boolean | Promise
@@ -507,7 +507,7 @@ The function supports passing one or more model instances. It returns a promise 
 
 Both pending and ready guards can be truthy if the already resolved model instance is being updated.
 
-### error
+### `store.error`
 
 ```typescript
 store.error(model: Model, propertyName?: string | null): boolean | Error | any
