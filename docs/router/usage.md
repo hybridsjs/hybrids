@@ -70,7 +70,7 @@ const Home = define({
 define({
   tag: "my-app",
   user: store(User),
-  views: router(Home, { params: ["settings"] }),
+  views: router(Home, { params: ["user"] }),
   ...
 });
 ```
