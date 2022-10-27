@@ -42,7 +42,7 @@ router(views: component | component[] | () => ..., options?: object): object
 
 Views passed to the router factory create the roots of the view structures. Usually, there is only one root view, but you can pass a list of them (navigating between roots always replaces the whole stack). You can find a deeper explanation of the view concept in the [View](/router/view.md) section.
 
-### `url`
+### `options.url`
 
 If your application uses a mixed approach - views with and without URLs, you should specify a base URL to avoid not deterministic behavior of the router for views without the URL. Otherwise, the router will use an entry point as a base URL (which can be different according to the use case).
 
@@ -54,7 +54,7 @@ define({
 })
 ```
 
-### `params`
+### `options.params`
 
 Regardless of the explicit parameters when navigating to the view, you can specify an array of properties of the component, which are passed to every view as a parameter. They bypass the URL generation, so they are set by the reference, and they are not included in the URL.
 
