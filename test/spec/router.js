@@ -577,18 +577,30 @@ describe("router:", () => {
 
       it("saves and restores scroll position preserving focused element", () => {
         const input = host.querySelector("#input");
+        const root = document.scrollingElement;
         input.focus();
 
         return resolveTimeout(() => {
-          document.scrollingElement.scrollTop = 200;
-          document.scrollingElement.scrollLeft = 200;
+          root.scrollTop = 20;
+          root.scrollLeft = 20;
+
+          const spyTop = spyOnProperty(
+            root,
+            "scrollTop",
+            "set",
+          ).and.callThrough();
+          const spyLeft = spyOnProperty(
+            root,
+            "scrollLeft",
+            "set",
+          ).and.callThrough();
 
           host.querySelector("#ChildView").click();
 
           return resolveTimeout(() => {
             expect(hybrids(host.views[0])).toBe(ChildView);
-            expect(document.scrollingElement.scrollTop).toBe(0);
-            expect(document.scrollingElement.scrollLeft).toBe(0);
+            expect(spyTop.calls.mostRecent().args[0]).toBe(0);
+            expect(spyLeft.calls.mostRecent().args[0]).toBe(0);
 
             host.querySelector("#RootView").click();
 
@@ -596,29 +608,29 @@ describe("router:", () => {
               expect(hybrids(host.views[0])).toBe(RootView);
               expect(document.activeElement).toBe(input);
 
-              expect(document.scrollingElement.scrollTop).toBe(200);
-              expect(document.scrollingElement.scrollLeft).toBe(200);
+              expect(spyTop.calls.mostRecent().args[0]).toBe(20);
+              expect(spyLeft.calls.mostRecent().args[0]).toBe(20);
 
               host.querySelector("#ChildView").click();
 
               return resolveTimeout(() => {
-                expect(document.scrollingElement.scrollTop).toBe(0);
-                expect(document.scrollingElement.scrollLeft).toBe(0);
+                expect(spyTop.calls.mostRecent().args[0]).toBe(0);
+                expect(spyLeft.calls.mostRecent().args[0]).toBe(0);
 
                 host.querySelector("#RootViewScrollToTop").click();
 
                 return resolveTimeout(() => {
                   expect(hybrids(host.views[0])).toBe(RootView);
-                  expect(document.scrollingElement.scrollTop).toBe(0);
-                  expect(document.scrollingElement.scrollLeft).toBe(0);
 
-                  document.scrollingElement.scrollTop = 200;
+                  root.scrollTop = 20;
 
                   host.querySelector("#RootView").click();
 
                   return resolveTimeout(() => {
                     expect(hybrids(host.views[0])).toBe(RootView);
-                    expect(document.scrollingElement.scrollTop).toBe(0);
+
+                    expect(spyTop.calls.mostRecent().args[0]).toBe(0);
+                    expect(spyLeft.calls.mostRecent().args[0]).toBe(0);
                   });
                 });
               });
