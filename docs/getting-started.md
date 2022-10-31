@@ -35,5 +35,3 @@ If the entry point imports files that do not support HMR, you can place the abov
 ## Browser Support
 
 The library source code uses ES modules and currently supported JavaScript syntax by all of the major browsers. You can use hybrids in all modern browsers without code transpilation and bundling.
-
-[![Build Status](https://app.saucelabs.com/browser-matrix/hybrids.svg)](https://app.saucelabs.com/open_sauce/user/hybrids/builds)
