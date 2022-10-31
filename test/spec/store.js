@@ -2399,7 +2399,7 @@ describe("store:", () => {
       );
     });
 
-    it("cleans up the localStorage when model reaches threshold", () => {
+    fit("cleans up the localStorage when model reaches threshold", () => {
       Model = {
         id: true,
         value: "cleans up threshold",
@@ -2424,10 +2424,12 @@ describe("store:", () => {
           cache.invalidateAll(storeConfigs.get(Model), {
             clearValue: true,
           });
-          const pendingModel = store.get(Model, "1");
-          expect(store.ready(pendingModel)).toBe(false);
-          return store.pending(pendingModel).then((resultModel) => {
-            expect(resultModel.value).not.toBe(model.value);
+          return Promise.resolve().then(() => {
+            const pendingModel = store.get(Model, "1");
+            expect(store.ready(pendingModel)).toBe(false);
+            return store.pending(pendingModel).then((resultModel) => {
+              expect(resultModel.value).not.toBe(model.value);
+            });
           });
         });
       });
