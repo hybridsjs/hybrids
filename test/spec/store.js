@@ -2404,7 +2404,7 @@ describe("store:", () => {
         id: true,
         value: "cleans up threshold",
         [store.connect]: {
-          offline: 100,
+          offline: 50,
           cache: false,
           get: (id) =>
             Promise.resolve().then(() => ({ id, value: Date.now() })),
@@ -2424,10 +2424,12 @@ describe("store:", () => {
           cache.invalidateAll(storeConfigs.get(Model), {
             clearValue: true,
           });
-          const pendingModel = store.get(Model, "1");
-          expect(store.ready(pendingModel)).toBe(false);
-          return store.pending(pendingModel).then((resultModel) => {
-            expect(resultModel.value).not.toBe(model.value);
+          return Promise.resolve().then(() => {
+            const pendingModel = store.get(Model, "1");
+            expect(store.ready(pendingModel)).toBe(false);
+            return store.pending(pendingModel).then((resultModel) => {
+              expect(resultModel.value).not.toBe(model.value);
+            });
           });
         });
       });
