@@ -940,10 +940,10 @@ function connectRootRouter(host, invalidate, options) {
   }
 
   const state = global.history.state;
+  const bootstrapURL = new URL(global.location.href);
 
   if (!state) {
-    const entry =
-      getEntryFromURL(new URL(global.location.href)) || roots[0].getEntry();
+    const entry = getEntryFromURL(bootstrapURL) || roots[0].getEntry();
 
     global.history.replaceState([entry], "", options.url);
     flush();
@@ -999,6 +999,12 @@ function connectRootRouter(host, invalidate, options) {
 
     entryPoints.clear();
     rootRouter = null;
+
+    const length = global.history.state && global.history.state.length;
+    if (length > 1) {
+      global.history.go(1 - length);
+      global.history.replaceState(state, "", bootstrapURL);
+    }
   };
 }
 
