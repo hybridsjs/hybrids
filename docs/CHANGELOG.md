@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.6](https://github.com/hybridsjs/hybrids/compare/v8.1.5...v8.1.6) (2022-10-31)
+
+
+### Bug Fixes
+
+* **cache:** remove suspend feature ([30ac94e](https://github.com/hybridsjs/hybrids/commit/30ac94e91b9c2c9fb6276320d83e0d344c77ae0b))
+* **define:** defer connect & disconnect callbacks ([cd964a5](https://github.com/hybridsjs/hybrids/commit/cd964a5374e757c7f00af900b9ff33f87b5e81ef))
+* refactor forEach to for-of  in core sources ([c2e71c0](https://github.com/hybridsjs/hybrids/commit/c2e71c0708b27de2966f111224ae520175167f97))
+* refactor reduce to for-of in core sources ([7918737](https://github.com/hybridsjs/hybrids/commit/7918737a73365ec7b5551e57b9ccc7db016caa2c))
+* **router:** clean up dev code ([e16e35f](https://github.com/hybridsjs/hybrids/commit/e16e35fce8caf0e87a54c74a8c7dc15e094897df))
+* **router:** clear history state when root router disconnects ([2f73e81](https://github.com/hybridsjs/hybrids/commit/2f73e81f8c43411b16f2e5cd5fa0326cc61e0856))
+* **store:** listing model stringifies to its id ([82da9a1](https://github.com/hybridsjs/hybrids/commit/82da9a113b5238762a1cd5255d939c053c08979a))
+* **store:** prototype should not contain enumerable properties ([8b16963](https://github.com/hybridsjs/hybrids/commit/8b1696328fd39371bd88983ce2fbe817f18d618b))
+
 ### [8.1.5](https://github.com/hybridsjs/hybrids/compare/v8.1.4...v8.1.5) (2022-09-27)
 
 
