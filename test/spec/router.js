@@ -466,6 +466,9 @@ describe("router:", () => {
         window.history.replaceState(null, "", "/other_child/1");
         document.body.appendChild(host);
 
+        let state;
+        let url;
+
         return resolveTimeout(() => {
           // Clears URL and uses root view
           expect(window.location.pathname).toBe(browserUrl);
@@ -475,7 +478,10 @@ describe("router:", () => {
           host.querySelector("#Dialog").click();
 
           return resolveTimeout(() => {
+            state = window.history.state;
             host.parentElement.removeChild(host);
+
+            window.history.replaceState([state[0]], "", "/");
 
             host = document.createElement("test-router-app");
             document.body.appendChild(host);
@@ -486,30 +492,44 @@ describe("router:", () => {
               host.querySelector("#ChildView").click();
 
               return resolveTimeout(() => {
+                state = window.history.state;
+                url = window.location.pathname;
                 host.parentElement.removeChild(host);
 
-                host = document.createElement("test-router-app");
-                document.body.appendChild(host);
-
                 return resolveTimeout(() => {
-                  // Uses saved state from the window history
-                  expect(hybrids(host.children[0])).toBe(ChildView);
+                  window.history.replaceState([state[0]], "", url);
 
-                  host.parentElement.removeChild(host);
-                  const Another = define({ tag: "test-router-another" });
-                  define({
-                    tag: "test-router-app-another",
-                    views: router([Another]),
-                    content: ({ views }) => html`${views}`, // prettier-ignore
-                  });
-
-                  host = document.createElement("test-router-app-another");
+                  host = document.createElement("test-router-app");
                   document.body.appendChild(host);
 
                   return resolveTimeout(() => {
-                    // Clears not connected views and uses root view
-                    expect(host.children[0].constructor.hybrids).toBe(Another);
-                    window.history.replaceState(null, "", browserUrl);
+                    // Clears state and uses root view
+                    expect(hybrids(host.children[0])).toBe(ChildView);
+                    state = window.history.state;
+                    url = window.location.pathname;
+                    host.parentElement.removeChild(host);
+
+                    return resolveTimeout(() => {
+                      window.history.replaceState([state[0]], "", url);
+
+                      const Another = define({ tag: "test-router-another" });
+                      define({
+                        tag: "test-router-app-another",
+                        views: router([Another]),
+                        content: ({ views }) => html`${views}`, // prettier-ignore
+                      });
+
+                      host = document.createElement("test-router-app-another");
+                      document.body.appendChild(host);
+
+                      return resolveTimeout(() => {
+                        // Clears not connected views and uses root view
+                        expect(host.children[0].constructor.hybrids).toBe(
+                          Another,
+                        );
+                        window.history.replaceState(null, "", browserUrl);
+                      });
+                    });
                   });
                 });
               });
