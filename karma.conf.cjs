@@ -29,6 +29,6 @@ module.exports = (config) => {
       ],
     },
     autoWatch: true,
-    singleRun: false,
+    singleRun: true,
   });
 };
