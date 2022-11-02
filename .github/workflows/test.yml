@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: "19"
           cache: "npm"
-      - run: npm ci
+      - run: npm i
+      - run: npx playwright install-deps
       - run: npm run test
       - run: npm run coveralls || true
