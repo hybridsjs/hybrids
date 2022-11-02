@@ -162,7 +162,7 @@ describe("store:", () => {
 
       it("reset values by setting null", () => {
         const model = store.get(Model);
-        store
+        return store
           .set(model, {
             value: "other value",
             nested: { value: "other value", other: { value: "great" } },
@@ -173,7 +173,7 @@ describe("store:", () => {
               value: "other value",
               other: { value: "great" },
             });
-            store.set(nextModel, null).then((targetModel) => {
+            return store.set(nextModel, null).then((targetModel) => {
               expect(targetModel.value).toBe("test");
               expect(targetModel.nested).toEqual(Model.nested);
             });
@@ -1007,10 +1007,12 @@ describe("store:", () => {
         model: store.ref(() => Model),
       };
 
-      store.set(Model, { value: "a", model: { value: "b" } }).then((model) => {
-        expect(model.value).toBe("a");
-        expect(model.model.value).toBe("b");
-      });
+      return store
+        .set(Model, { value: "a", model: { value: "b" } })
+        .then((model) => {
+          expect(model.value).toBe("a");
+          expect(model.model.value).toBe("b");
+        });
     });
   });
 
@@ -2079,9 +2081,9 @@ describe("store:", () => {
         .then((models) => {
           const model = models[0];
 
-          store.set(model, { value: "new value" }).then((nextModel) => {
+          return store.set(model, { value: "new value" }).then(() => {
             const nextModels = store.get([Model]);
-            expect(nextModels[0]).toBe(nextModel);
+            expect(pending(nextModels[0])).toBe(true);
           });
         });
     });
