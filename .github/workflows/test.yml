@@ -15,7 +15,18 @@ jobs:
         with:
           node-version: "19"
           cache: "npm"
-      - run: npm i
-      - run: npx playwright install-deps
-      - run: npm run test
-      - run: npm run coveralls || true
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npx playwright install-deps
+
+      - name: Run tests
+        run: |
+          npm run test
+          npm run test:coverage || true
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

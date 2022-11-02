@@ -28,9 +28,8 @@
     "dev": "karma start karma.conf.cjs",
     "dev:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run dev",
     "lint": "eslint ./src",
-    "test": "npm run lint && karma start karma.conf.cjs --single-run",
-    "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run test",
-    "coveralls": "npm run test:coverage && cat ./coverage/lcov.info | coveralls",
+    "test": "npm run lint && npm run dev -- --single-run",
+    "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run dev -- --single-run",
     "release": "npm run test && standard-version -a"
   },
   "devDependencies": {
