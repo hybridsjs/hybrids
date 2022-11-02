@@ -25,16 +25,15 @@
     "template engine"
   ],
   "scripts": {
-    "dev": "karma start karma.conf.cjs",
+    "karma": "karma start karma.conf.cjs",
+    "dev": "npm run karma -- --no-single-run",
     "dev:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run dev",
     "lint": "eslint ./src",
-    "test": "npm run lint && karma start karma.conf.cjs --single-run",
-    "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run test",
-    "coveralls": "npm run test:coverage && cat ./coverage/lcov.info | coveralls",
+    "test": "npm run lint && npm run karma",
+    "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run karma",
     "release": "npm run test && standard-version -a"
   },
   "devDependencies": {
-    "coveralls": "^3.1.0",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.4",
@@ -43,7 +42,10 @@
     "karma": "^6.3.11",
     "karma-chrome-launcher": "^3.1.0",
     "karma-coverage": "^2.1.0",
+    "karma-firefox-launcher": "^2.1.2",
     "karma-jasmine": "^5.1.0",
+    "karma-webkit-launcher": "^1.1.0",
+    "playwright": "^1.27.1",
     "prettier": "^2.5.1",
     "standard-version": "^9.3.2"
   },

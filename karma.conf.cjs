@@ -1,14 +1,19 @@
-const IS_COVERAGE = process.env.NODE_ENV === "coverage";
-const reporters = ["dots"];
+const playwright = require("playwright");
 
-if (IS_COVERAGE) reporters.push("coverage");
+process.env.WEBKIT_HEADLESS_BIN = playwright.webkit.executablePath();
+process.env.CHROME_BIN = playwright.chromium.executablePath();
+process.env.FIREFOX_BIN = playwright.firefox.executablePath();
+
+const IS_COVERAGE = process.env.NODE_ENV === "coverage";
 
 module.exports = (config) => {
   config.set({
     basePath: "./",
     frameworks: ["jasmine"],
-    reporters,
-    browsers: ["ChromeHeadless"],
+    reporters: IS_COVERAGE ? ["coverage"] : ["dots"],
+    browsers: IS_COVERAGE
+      ? ["ChromeHeadless"]
+      : ["ChromeHeadless", "WebkitHeadless", "FirefoxHeadless"],
     files: [
       { pattern: "src/**/*.js", type: "module" },
       { pattern: "test/**/*.js", type: "module" },
@@ -24,6 +29,6 @@ module.exports = (config) => {
       ],
     },
     autoWatch: true,
-    singleRun: false,
+    singleRun: true,
   });
 };
