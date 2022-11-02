@@ -5,9 +5,9 @@
 </h1>
 </center>
 
-[![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
-[![build status](https://img.shields.io/travis/hybridsjs/hybrids/main.svg?style=flat)](https://app.travis-ci.com/github/hybridsjs/hybrids)
+[![build status](https://github.com/hybridsjs/hybrids/actions/workflows/test.yml/badge.svg)](https://github.com/hybridsjs/hybrids/actions/workflows/test.yml?query=branch%3Amain)
 [![coverage status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=main)
+[![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
 
 **hybrids** is a JavaScript UI framework for creating fully-featured web applications, components libraries, or single web components with unique mixed declarative and functional architecture.
 
