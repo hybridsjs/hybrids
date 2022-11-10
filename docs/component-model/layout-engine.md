@@ -143,30 +143,31 @@ Add `--` prefix to use a CSS variable as an argument. The engine will pass it as
 
 ### Base
 
-| Rule   | Arguments     | Defaults | Properties                                    |
-|--------|---------------|----------|-----------------------------------------------|
-| block  | [align:value] | block    | `display: block`<br>`text-align: [align]`     |
-| inline |               | ---      | `display: inline`<br>`display: [type]-inline` |
-| hidden | ---           | ---      | `display: none`                               |
+| Rule     | Arguments     | Defaults | Properties                                    |
+|----------|---------------|----------|-----------------------------------------------|
+| block    | [align:value] | block    | `display: block`<br>`text-align: [align]`     |
+| inline   |               | ---      | `display: inline`<br>`display: [type]-inline` |
+| contents |               | ---      | `display: contents`                           |
+| hidden   | ---           | ---      | `display: none`                               |
 
 The `inline` rule can be used after other display types to make the element inline with corresponding type:
 
 ```html
 <div layout="block inline"></div>
 <div layout="row inline"></div>
-<div layout="grid inline"></div>
+<div layout="grid:... inline"></div>
 ```
 
 ### Flexbox
 
-| Rule                                           | Arguments                | Defaults    | Properties                                   |
-|------------------------------------------------|--------------------------|-------------|----------------------------------------------|
-| row<br>row-reverse<br>column<br>column-reverse | [wrap:value]             | type:nowrap | `display: flex` <br>`flex-flow: type [wrap]` |
-| grow                                           | [number:value]           | grow:1      | `flex-grow: [number]`                        |
-| shrink                                         | [number:value]           | shrink:1    | `flex-shrink: [number]`                      |
-| basis                                          | [size:dimension]         | ---         | `flex-basis: [size]`                         |
-| gap                                            | [column:dim.]:[row:dim.] | gap:1       | `column-gap: [column];`<br>`row-gap: [row];` |
-| order                                          | [number:value]           | order:0     | `order: [number]`                            |
+| Rule                                           | Arguments                | Defaults      | Properties                                   |
+|------------------------------------------------|--------------------------|---------------|----------------------------------------------|
+| row<br>row-reverse<br>column<br>column-reverse | [wrap:value]             | [type]:nowrap | `display: flex` <br>`flex-flow: type [wrap]` |
+| grow                                           | [number:value]           | grow:1        | `flex-grow: [number]`                        |
+| shrink                                         | [number:value]           | shrink:1      | `flex-shrink: [number]`                      |
+| basis                                          | [size:dimension]         | ---           | `flex-basis: [size]`                         |
+| gap                                            | [column:dim.]:[row:dim.] | gap:1         | `column-gap: [column];`<br>`row-gap: [row];` |
+| order                                          | [number:value]           | order:0       | `order: [number]`                            |
 
 ### Grid
 

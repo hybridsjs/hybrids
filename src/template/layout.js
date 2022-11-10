@@ -8,6 +8,7 @@ const rules = {
   inline: ({ display }) => ({
     display: `inline${display ? `-${display}` : ""}`,
   }),
+  contents: { display: "contents" },
   hidden: { display: "none" },
 
   // flexbox
