@@ -36,7 +36,7 @@ export default function resolveValue(
 
   switch (type) {
     case "array":
-      resolveArray(host, target, value, resolveValue);
+      resolveArray(host, target, value, resolveValue, useLayout);
       break;
     case "node":
       resolveNode(host, target, value);

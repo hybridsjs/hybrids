@@ -85,6 +85,30 @@ describe("layout:", () => {
     expect(host.children[0].hasAttribute("layout")).toBe(true);
   });
 
+  it("uses layout engine for nested templates", () => {
+    html`<template layout="row">${html`<div layout="row"></div>`}</template>`(
+      host,
+    );
+
+    const nestedHost = host.children[0];
+    const elStyles = window.getComputedStyle(nestedHost);
+    expect(elStyles.display).toBe("flex");
+    expect(elStyles.flexDirection).toBe("row");
+    expect(nestedHost.hasAttribute("layout")).toBe(false);
+  });
+
+  it("uses layout engine for nested array templates", () => {
+    html`<template layout="row">${[html`<div layout="row"></div>`]}</template>`(
+      host,
+    );
+
+    const nestedHost = host.children[0];
+    const elStyles = window.getComputedStyle(nestedHost);
+    expect(elStyles.display).toBe("flex");
+    expect(elStyles.flexDirection).toBe("row");
+    expect(nestedHost.hasAttribute("layout")).toBe(false);
+  });
+
   it("replaces class for the host element", () => {
     html`<template layout="row"></template>`(host);
     const className = host.className;
