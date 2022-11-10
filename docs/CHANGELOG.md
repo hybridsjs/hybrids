@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.7](https://github.com/hybridsjs/hybrids/compare/v8.1.6...v8.1.7) (2022-11-10)
+
+
+### Bug Fixes
+
+* **layout:** support contents display type ([a7dba08](https://github.com/hybridsjs/hybrids/commit/a7dba08642789fc1858bc6d07003f5afd73e1247))
+* **layout:** use layout engine in nested templates in array items ([67f3a76](https://github.com/hybridsjs/hybrids/commit/67f3a76ae601b9e75c9cf75ea7ee42303679e751))
+
 ### [8.1.6](https://github.com/hybridsjs/hybrids/compare/v8.1.5...v8.1.6) (2022-10-31)
 
 
