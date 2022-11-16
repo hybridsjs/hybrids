@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.8](https://github.com/hybridsjs/hybrids/compare/v8.1.7...v8.1.8) (2022-11-16)
+
+
+### Bug Fixes
+
+* **html:** correct signature creation for form family elements ([#201](https://github.com/hybridsjs/hybrids/issues/201)) ([3767f60](https://github.com/hybridsjs/hybrids/commit/3767f60d5f7185ca4f833082711b445c6d6abe88))
+
 ### [8.1.7](https://github.com/hybridsjs/hybrids/compare/v8.1.6...v8.1.7) (2022-11-10)
 
 
