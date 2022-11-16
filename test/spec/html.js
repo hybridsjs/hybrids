@@ -702,6 +702,25 @@ describe("html:", () => {
       expect(fragment.children[0].querySelectorAll("td").length).toBe(4);
     });
 
+    it("should render tbody inside of the table with class attribute", () => {
+      const renderRow = (v) =>
+        html`<tr>
+          <td>${v}</td>
+        </tr>`;
+
+      const renderTable = html`
+        <table>
+          <tbody class="tbody >">
+            ${[1, 2].map((v) => renderRow(v))}
+            ${[3, 4].map((v) => renderRow(v))}
+          </tbody>
+        </table>
+      `;
+
+      renderTable({}, fragment);
+      expect(fragment.children[0].querySelectorAll("td").length).toBe(4);
+    });
+
     it("should set single expression in <tr> element", () => {
       const render = html`
         <table>
