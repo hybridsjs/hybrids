@@ -19,9 +19,11 @@ function dispatch(entry) {
 
     if (entry.contexts) {
       for (const context of entry.contexts) {
-        contexts.add(context);
+        if (!stack.has(context)) {
+          contexts.add(context);
+          entry.contexts.delete(context);
+        }
       }
-      entry.contexts.clear();
     }
 
     if (entry.observe) {
