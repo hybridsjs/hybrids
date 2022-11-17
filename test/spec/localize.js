@@ -86,7 +86,7 @@ describe("localize:", () => {
         "text only": { message: "haha" },
       });
 
-      expect(msg`text only`).toBe("haha");
+      expect(msg`text    only`).toBe("haha");
       expect(msg`text only`).toBe("haha");
       expect(msg`text and ${123} ${321}`).toBe("123 i tekst");
       expect(msg`plural ${0}`).toBe("0 inne");

@@ -40,7 +40,7 @@ export function clear() {
 
 const pluralRules = new Map();
 export function get(key, context, args = []) {
-  key = key.trim();
+  key = key.trim().replace(/\s+/g, " ");
   context = context.trim();
 
   const cacheKey = `${key} | ${context}`;
