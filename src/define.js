@@ -29,6 +29,7 @@ function compile(hybrids, HybridsElement) {
         emitter.add(() => {
           if (set === disconnects.get(this)) {
             for (const fn of this.constructor.connects) set.add(fn(this));
+            for (const fn of this.constructor.observers) set.add(fn(this));
           }
         });
       }
@@ -49,6 +50,7 @@ function compile(hybrids, HybridsElement) {
   HybridsElement.hybrids = hybrids;
 
   const connects = new Set();
+  const observers = new Set();
 
   for (const key of Object.keys(hybrids)) {
     if (key === "tag") continue;
@@ -113,11 +115,12 @@ function compile(hybrids, HybridsElement) {
     }
 
     if (desc.observe) {
-      connects.add((host) => cache.observe(host, key, desc.get, desc.observe));
+      observers.add((host) => cache.observe(host, key, desc.get, desc.observe));
     }
   }
 
   HybridsElement.connects = connects;
+  HybridsElement.observers = observers;
 
   return HybridsElement;
 }
