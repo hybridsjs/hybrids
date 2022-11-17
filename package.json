@@ -1,6 +1,6 @@
 {
   "name": "hybrids",
-  "version": "8.1.8",
+  "version": "8.1.9",
   "description": "A JavaScript framework for creating fully-featured web applications, components libraries, and single web components with unique declarative and functional architecture",
   "type": "module",
   "sideEffects": false,

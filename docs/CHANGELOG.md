@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.9](https://github.com/hybridsjs/hybrids/compare/v8.1.8...v8.1.9) (2022-11-17)
+
+
+### Bug Fixes
+
+* **cache:** setting circular dep of the context should not trigger dispatch ([#203](https://github.com/hybridsjs/hybrids/issues/203)) ([33f4a6c](https://github.com/hybridsjs/hybrids/commit/33f4a6c19266ecddaf94fbd027733c0c0b003721))
+* **define:** run observe method after all connect callbacks ([f8c7b0b](https://github.com/hybridsjs/hybrids/commit/f8c7b0b7c75a8af3500aec45bdc31b9e0043e943))
+* **html:** more strict table mode for template signature ([631c164](https://github.com/hybridsjs/hybrids/commit/631c16487f7a426080e4dc981f83fe193073f1dc))
+* **layout:** update flexbox defaults for overflow scroll ([80350a9](https://github.com/hybridsjs/hybrids/commit/80350a978f484619b67ae487c0759d3217c4e33a))
+* **localize:** Whitespace for the key should match cli tool ([a4c5889](https://github.com/hybridsjs/hybrids/commit/a4c588919c61f187970123a62fbad2e5ae9bd855))
+
 ### [8.1.8](https://github.com/hybridsjs/hybrids/compare/v8.1.7...v8.1.8) (2022-11-16)
 
 
