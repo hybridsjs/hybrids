@@ -1,8 +1,6 @@
 const playwright = require("playwright");
 
 process.env.WEBKIT_HEADLESS_BIN = playwright.webkit.executablePath();
-process.env.FIREFOX_BIN = playwright.firefox.executablePath();
-
 const IS_COVERAGE = process.env.NODE_ENV === "coverage";
 
 module.exports = (config) => {
