@@ -88,6 +88,7 @@ const rules = {
       [`overflow${type}`]: value,
       ...(value === "scroll"
         ? {
+            "flex-grow": props["flex-grow"] || 1,
             "flex-basis": 0,
             "overscroll-behavior": "contain",
             "--webkit-overflow-scrolling": "touch",

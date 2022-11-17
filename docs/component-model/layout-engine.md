@@ -146,8 +146,8 @@ Add `--` prefix to use a CSS variable as an argument. The engine will pass it as
 | Rule     | Arguments     | Defaults | Properties                                    |
 |----------|---------------|----------|-----------------------------------------------|
 | block    | [align:value] | block    | `display: block`<br>`text-align: [align]`     |
-| inline   |               | ---      | `display: inline`<br>`display: [type]-inline` |
-| contents |               | ---      | `display: contents`                           |
+| inline   | ---           | ---      | `display: inline`<br>`display: [type]-inline` |
+| contents | ---           | ---      | `display: contents`                           |
 | hidden   | ---           | ---      | `display: none`                               |
 
 The `inline` rule can be used after other display types to make the element inline with corresponding type:
@@ -208,8 +208,8 @@ Use following examples as a reference:
 | width    | [base:dim.]:[min:dim.]:[max:dim.]                                      | ---                         | `width: [base]`<br>`min-width: [min]`<br>`max-width: [max]`                                                                                                        |
 | height   | [base:dim.]:[min:dim.]:[max:dim.]                                      | ---                         | `height: [base]`<br>`min-height: [min]`<br>`max-height: [max]`                                                                                                     |
 | ratio    | [value]                                                                | ---                         | `aspect-ratio: [value]`                                                                                                                                            |
-| overflow | [type:value]<br>[axis:value]:[type:value]                              | overflow:hidden             | `overflow: [type]`<br>`overflow-[axis]: [type]`<br>For `scroll` type:<br>`flex-basis: 0`<br>`overscroll-behavior: contain`<br>`--webkit-overflow-scrolling: touch` |
-| margin   | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v1:dimension] | margin:1<br>margin:[side]:1 | `margin: [v1] [v2] [v3] [v4]`<br>`margin-[side]: [v1]`                                                                                                             |                                                                                      |
+| overflow | [type:value]<br>[axis:value]:[type:value]                              | overflow:hidden             | `overflow: [type]`<br>`overflow-[axis]: [type]`<br>When `scroll` also:<br>`flex: 1 1 0`<br>`overscroll-behavior: contain`<br>`--webkit-overflow-scrolling: touch`  |
+| margin   | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v1:dimension] | margin:1<br>margin:[side]:1 | `margin: [v1] [v2] [v3] [v4]`<br>`margin-[side]`                                                                                                                   |
 
 ### Position
 
