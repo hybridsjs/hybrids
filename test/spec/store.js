@@ -2083,7 +2083,7 @@ describe("store:", () => {
 
           return store.set(model, { value: "new value" }).then(() => {
             const nextModels = store.get([Model]);
-            expect(pending(nextModels[0])).toBe(true);
+            expect(store.pending(nextModels[0])).toBe(false);
           });
         });
     });
