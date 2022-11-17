@@ -79,6 +79,20 @@ describe("cache:", () => {
   });
 
   describe("set()", () => {
+    it("works with circular call", () => {
+      get(target, "one", () => {
+        get(target, "two", () => "value");
+        get(target, "three", () => true);
+        set(target, "three", () => false);
+
+        return "value";
+      });
+
+      set(target, "two", () => "other value");
+      get(target, "one", spy);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
     it("invalidates state for next get call", () => {
       get(target, "key", () => "value");
       get(target, "key", spy);
