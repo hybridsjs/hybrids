@@ -25,7 +25,7 @@ function createSignature(parts) {
     tableMode =
       tableMode ||
       parts[index - 1].match(
-        /<\s*(table|tr|thead|tbody|tfoot|colgroup)([^>]|".*"|'.*')*>\s*$/,
+        /<\s*(table|tr|thead|tbody|tfoot|colgroup)([^<>]|"[^"]*"|'[^']*')*>\s*$/,
       );
 
     signature +=
