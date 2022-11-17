@@ -15,12 +15,13 @@ jobs:
         with:
           node-version: 19
           cache: "npm"
+      - uses: browser-actions/setup-chrome@latest
+      - uses: browser-actions/setup-firefox@latest
 
       - name: Install dependencies
         run: |
           npm install
-          npx playwright install-deps
-
+          npx playwright install-deps webkit
       - name: Run tests
         run: |
           npm run test
