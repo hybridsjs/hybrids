@@ -2,7 +2,7 @@
 
 ## Installation
 
-If your application uses a bundler (like [Vite](https://vitejs.dev/) or [Snowpack](https://www.snowpack.dev/)), just add the [npm package](https://www.npmjs.com/package/hybrids) to your application:
+If your application setup uses a bundler (like [Vite](https://vitejs.dev/)), just add the [npm package](https://www.npmjs.com/package/hybrids) to your application:
 
 ```bash
 npm i hybrids
@@ -17,16 +17,21 @@ Otherwise, you can use it directly from a number of CDNs, which provides package
 ```html
 <script type="module">
   import { html, define } from 'https://esm.sh/hybrids@^8';
-  ...
+  
+  define({
+    tag: "hello-world",
+    name: '',
+    content: ({ name }) => html`<p>Hello ${name}!</p>`,
+  });
 </script>
 ```
 
 ### Hot Module Replacement
 
-HMR works out of the box, but your bundler setup may require indication that an entry point can be replaced on the fly. For example, for bundlers using ES module syntax, you can use the following code:
+HMR is supported out of the box, but your bundler setup may require indication that an entry point can be replaced on the fly. For example, for bundlers using ES module syntax, you can use the following code:
 
 ```javascript
-// Enable HMR for development
+// Enable HMR only in development mode
 if (import.meta.hot) import.meta.hot.accept();
 ```
 

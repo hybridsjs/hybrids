@@ -1,11 +1,11 @@
 <center>
 <h1>
-  <img alt="hybrids" src="https://raw.githubusercontent.com/hybridsjs/hybrids/main/docs/assets/hybrids-full-logo.svg?sanitize=true" align="center">
+  <img alt="hybrids" src="/assets/hybrids-full-logo.svg" align="center">
 </h1>
 </center>
 
 [![build status](https://github.com/hybridsjs/hybrids/actions/workflows/test.yml/badge.svg)](https://github.com/hybridsjs/hybrids/actions/workflows/test.yml?query=branch%3Amain)
-[![coverage status](https://img.shields.io/coveralls/github/hybridsjs/hybrids.svg?style=flat)](https://coveralls.io/github/hybridsjs/hybrids?branch=main)
+[![coverage status](https://coveralls.io/repos/github/hybridsjs/hybrids/badge.svg?branch=main)](https://coveralls.io/github/hybridsjs/hybrids?branch=main)
 [![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
 
 **hybrids** is a JavaScript UI framework for creating fully-featured web applications, components libraries, or single web components with unique mixed declarative and functional architecture.
@@ -136,8 +136,7 @@ You can read more in the [Router](/router/usage.md) section.
 
 ## Community
 
-* Follow on [Twitter](https://twitter.com/hybridsjs)
-* Chat on [Gitter](https://gitter.im/hybridsjs)
+Do you need help? Something went wrong? Feel free to create [an issue](https://github.com/hybridsjs/hybrids/issues/new) in the github repository or join the [Gitter](https://gitter.im/hybridsjs) channel.
 
 ## License
 

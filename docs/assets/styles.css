@@ -7,6 +7,9 @@
   --heading-h1-font-weight: 500;
   --heading-h2-font-weight: 500;
   --content-max-width: 60em;
+  --code-font-size: calc(var(--font-size-m) * 0.9);
+  --code-block-border-radius: var(--border-radius-l);
+  --code-block-padding: 16px;
 }
 
 .sidebar {
@@ -15,6 +18,29 @@
 
 .sidebar-nav ul ul ul ul {
   font-size: 13px;
-  --sidebar-nav-link-color: #666;
-  --sidebar-nav-link-color-hover: #444;
+}
+
+.markdown-section pre[data-lang]::after {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .markdown-section pre[data-lang] {
+    box-shadow: rgb(0 0 0 / 5%) 0px 32px 32px 0px,
+      rgb(0 0 0 / 5%) 0px 16px 16px 0px, rgb(0 0 0 / 5%) 0px 8px 8px 0px,
+      rgb(0 0 0 / 5%) 0px 4px 4px 0px;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .markdown-section pre[data-lang] {
+    box-shadow: rgb(0 0 0 / 2%) 0px 32px 32px 0px,
+      rgb(0 0 0 / 2%) 0px 16px 16px 0px, rgb(0 0 0 / 2%) 0px 8px 8px 0px,
+      rgb(0 0 0 / 2%) 0px 4px 4px 0px;
+  }
+
+  .sidebar-nav ul ul ul ul {
+    --sidebar-nav-link-color: #666;
+    --sidebar-nav-link-color-hover: #444;
+  }
 }
