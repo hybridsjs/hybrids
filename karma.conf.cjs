@@ -27,5 +27,6 @@ module.exports = (config) => {
     },
     autoWatch: true,
     singleRun: true,
+    port: 9876 + Number(IS_COVERAGE),
   });
 };
