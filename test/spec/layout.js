@@ -376,6 +376,38 @@ describe("layout:", () => {
     expect(styles4.marginTop).toBe("-16px");
   });
 
+  it("supports padding rules", () => {
+    html`
+      <template layout>
+        <div layout="padding"></div>
+        <div layout="padding:top:2"></div>
+        <div layout="padding:2:4"></div>
+        <div layout="padding:bottom"></div>
+        <div layout="padding:-2"></div>
+      </template>
+    `(host);
+
+    const styles0 = window.getComputedStyle(host.children[0]);
+    expect(styles0.paddingTop).toBe("8px");
+    expect(styles0.paddingRight).toBe("8px");
+    expect(styles0.paddingBottom).toBe("8px");
+    expect(styles0.paddingLeft).toBe("8px");
+
+    const styles1 = window.getComputedStyle(host.children[1]);
+    expect(styles1.paddingTop).toBe("16px");
+    expect(styles1.paddingRight).toBe("0px");
+
+    const styles2 = window.getComputedStyle(host.children[2]);
+    expect(styles2.paddingTop).toBe("16px");
+    expect(styles2.paddingRight).toBe("32px");
+
+    const styles3 = window.getComputedStyle(host.children[3]);
+    expect(styles3.paddingBottom).toBe("8px");
+
+    const styles4 = window.getComputedStyle(host.children[4]);
+    expect(styles4.paddingTop).toBe("0px");
+  });
+
   it("supports position rules", () => {
     html`
       <template layout>

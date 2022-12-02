@@ -4,7 +4,11 @@ const hasAdoptedStylesheets = !!global.document.adoptedStyleSheets;
 const NUMBER_REGEXP = /^\d+$/;
 const rules = {
   // base
-  block: (props, align) => ({ display: "block", "text-align": align }),
+  block: (props, align) => ({
+    display: "block",
+    "text-align": align,
+    "box-sizing": "border-box",
+  }),
   inline: ({ display }) => ({
     display: `inline${display ? `-${display}` : ""}`,
   }),
@@ -16,6 +20,7 @@ const rules = {
     acc[type] = (props, wrap = "nowrap") => ({
       display: "flex",
       "flex-flow": `${type} ${wrap}`,
+      "box-sizing": "border-box",
     });
     return acc;
   }, {}),
@@ -42,6 +47,7 @@ const rules = {
       return acc;
     }, {}),
     "grid-auto-flow": `${autoFlow} ${dense && "dense"}`,
+    "box-sizing": "border-box",
   }),
   area: (props, column = "", row = "") => ({
     "grid-column": column.match(NUMBER_REGEXP) ? `span ${column}` : column,
@@ -105,6 +111,19 @@ const rules = {
 
     return {
       margin: `${dimension(v1)} ${dimension(v2)} ${dimension(v3)} ${dimension(
+        v4,
+      )}`,
+    };
+  },
+  padding: (props, v1 = "1", v2, v3, v4) => {
+    if (v1.match(/top|bottom|left|right/)) {
+      return {
+        [`padding-${v1}`]: dimension(v2 || "1"),
+      };
+    }
+
+    return {
+      padding: `${dimension(v1)} ${dimension(v2)} ${dimension(v3)} ${dimension(
         v4,
       )}`,
     };

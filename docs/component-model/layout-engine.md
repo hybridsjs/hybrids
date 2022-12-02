@@ -2,7 +2,7 @@
 
 !> The feature is unstable. It is unlikely, but some breaking changes may occur without the major version bump until `v8.2.0` release.
 
-The layout engine provides creating CSS layouts in-place in templates without any external dependencies. It's built in similar way to utility-first CSS frameworks, but with much more powerful features.
+The layout engine provides creating CSS layouts in-place in templates without external dependencies. It's built in similar way to utility-first CSS frameworks, but with much more powerful features.
 
 It focuses on "invisible" CSS rules, like display types, alignments, positioning, sizing, etc. The rest should be defined inside of the reusable UI components by [styling](/component-model/templates.md#styling) supported by the templates.
 
@@ -143,12 +143,12 @@ Add `--` prefix to use a CSS variable as an argument. The engine will pass it as
 
 ### Base
 
-| Rule     | Arguments     | Defaults | Properties                                    |
-|----------|---------------|----------|-----------------------------------------------|
-| block    | [align:value] | block    | `display: block`<br>`text-align: [align]`     |
-| inline   | ---           | ---      | `display: inline`<br>`display: [type]-inline` |
-| contents | ---           | ---      | `display: contents`                           |
-| hidden   | ---           | ---      | `display: none`                               |
+| Rule     | Arguments     | Defaults | Properties                                                               |
+|----------|---------------|----------|--------------------------------------------------------------------------|
+| block    | [align:value] | block    | `display: block`<br>`box-sizing: border-box`<br>`text-align: [align]`    |
+| inline   | ---           | ---      | `display: inline`<br>`display: [type]-inline`                            |
+| contents | ---           | ---      | `display: contents`                                                      |
+| hidden   | ---           | ---      | `display: none`                                                          |
 
 The `inline` rule can be used after other display types to make the element inline with corresponding type:
 
@@ -162,7 +162,7 @@ The `inline` rule can be used after other display types to make the element inli
 
 | Rule                                           | Arguments                | Defaults      | Properties                                   |
 |------------------------------------------------|--------------------------|---------------|----------------------------------------------|
-| row<br>row-reverse<br>column<br>column-reverse | [wrap:value]             | [type]:nowrap | `display: flex` <br>`flex-flow: type [wrap]` |
+| row<br>row-reverse<br>column<br>column-reverse | [wrap:value]             | [type]:nowrap | `display: flex`<br>`box-sizing: border-box`<br>`flex-flow: type [wrap]` |
 | grow                                           | [number:value]           | grow:1        | `flex-grow: [number]`                        |
 | shrink                                         | [number:value]           | shrink:1      | `flex-shrink: [number]`                      |
 | basis                                          | [size:dimension]         | ---           | `flex-basis: [size]`                         |
@@ -173,7 +173,7 @@ The `inline` rule can be used after other display types to make the element inli
 
 | Rule  | Arguments                                 | Defaults | Properties                                                                                                                    |
 |-------|-------------------------------------------|----------|-------------------------------------------------------------------------------------------------------------------------------|
-| grid  | [columns]:[rows]:[autoFlow:value]:[dense] | grid:1   | `display: grid`<br>`grid-template-columns: [columns]`<br>`grid-template-rows: [rows]`<br>`grid-auto-flow: [autoFlow] [dense]` |
+| grid  | [columns]:[rows]:[autoFlow:value]:[dense] | grid:1   | `display: grid`<br>`box-sizing: border-box`<br>`grid-template-columns: [columns]`<br>`grid-template-rows: [rows]`<br>`grid-auto-flow: [autoFlow] [dense]` |
 | area  | [column:value]:[row:value]                | none     | `grid-column: span [number] \| [value]`<br>`grid-row: span [number] \| [value]`                                               |
 | gap   | [column:dimension]:[row:dimension]        | gap:1    | `column-gap: [column];`<br>`row-gap: [row];`                                                                                  |
 | order | [number:value]                            | order:0  | `order: [number];`                                                                                                            |
@@ -209,7 +209,8 @@ Use following examples as a reference:
 | height   | [base:dim.]:[min:dim.]:[max:dim.]                                      | ---                         | `height: [base]`<br>`min-height: [min]`<br>`max-height: [max]`                                                                                                     |
 | ratio    | [value]                                                                | ---                         | `aspect-ratio: [value]`                                                                                                                                            |
 | overflow | [type:value]<br>[axis:value]:[type:value]                              | overflow:hidden             | `overflow: [type]`<br>`overflow-[axis]: [type]`<br>When `scroll` also:<br>`flex: 1 1 0`<br>`overscroll-behavior: contain`<br>`--webkit-overflow-scrolling: touch`  |
-| margin   | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v1:dimension] | margin:1<br>margin:[side]:1 | `margin: [v1] [v2] [v3] [v4]`<br>`margin-[side]`                                                                                                                   |
+| margin   | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v:dimension] | margin:1<br>margin:[side]:1 | `margin: [v1] [v2] [v3] [v4]`<br>`margin-[side]: [v]`                                                                                                                   |
+| padding  | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v:dimension] | padding:1<br>padding:[side]:1 | `padding: [v1] [v2] [v3] [v4]`<br>`padding-[side]: [v]`                                                                                                                   |
 
 ### Position
 
