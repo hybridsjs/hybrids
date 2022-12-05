@@ -16,7 +16,7 @@ Otherwise, you can use it directly from a number of CDNs, which provides package
 
 ```html
 <script type="module">
-  import { html, define } from 'https://esm.sh/hybrids@^8';
+  import { define, html } from 'https://esm.sh/hybrids@^8';
   
   define({
     tag: "hello-world",

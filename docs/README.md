@@ -8,15 +8,22 @@
 [![coverage status](https://coveralls.io/repos/github/hybridsjs/hybrids/badge.svg?branch=main)](https://coveralls.io/github/hybridsjs/hybrids?branch=main)
 [![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
 
-**hybrids** is a JavaScript UI framework for creating fully-featured web applications, components libraries, or single web components with unique mixed declarative and functional architecture.
+> An extraordinary JavaScript framework for creating client-side web applications, UI components libraries, or single web components with unique mixed declarative and functional architecture
 
-The main goal of the framework is to provide a complete set of tools for the web platform - everything without external dependencies. It supports building UI components, managing complex states, creating app flows with client-side routing, and localizing its content for the worldwide markets. All of the parts follow the same unique concepts making it easy to understand and use!
+**hybrids** provides a complete set of tools for the web platform - everything without external dependencies:
+
+* **Component Model** based on plain objects and pure functions
+* **Global State Management** with external storages, offline caching, relations, and more
+* **App-like Routing** based on the graph structure of views
+* **Localization** with automatic translation of the templates content
+* **Layout Engine** making UI layouts development much faster
+* **Hot Module Replacement** support and other DX features
 
 ## Quick Look
 
-### The Simplest Structure
+### Component Model
 
-The component model is based on plain objects and pure functions*, still using the [Web Components API](https://developer.mozilla.org/en-US/docs/Web/Web_Components) under the hood:
+It's based on plain objects and pure functions*, still using the [Web Components API](https://developer.mozilla.org/en-US/docs/Web/Web_Components) under the hood:
 
 ```javascript
 import { html, define } from "hybrids";
@@ -46,9 +53,87 @@ export default define({
 
 You can read more in the [Component Model](/component-model/definition.md) section.
 
-### Seamless Localization
+### Global State Management
 
-Built-in support for automatic translation of the component's content makes translation seamless and easy to integrate. Additionally, the framework provides a way to add dynamic messages with plural forms, HTML content, or use messages outside of the template context. Also, it comes with handy CLI tool to extract messages from the source code!
+A global state management uses declarative model definitions with support for async external storages, relations, offline caching, and many more:
+
+```javascript
+import { define, store, html } from "hybrids";
+
+const User = {
+  id: true,
+  firstName: "",
+  lastName: "",
+  [store.connect] : {
+    get: id => fetch(`/users/${id}`).then(...),
+  },
+};
+
+define({
+  tag: "user-details",
+  user: store(User),
+  render: ({ user }) => html`
+    <div>
+      ${store.pending(user) && `Loading...`}
+      ${store.error(user) && `Something went wrong...`}
+
+      ${store.ready(user) && html`
+        <p>${user.firstName} ${user.lastName}</p>
+      `}
+    </div>
+  `,
+});
+```
+
+```html
+<user-details user="2"></user-details>
+```
+
+You can read more in the [Store](/store/usage.md) section.
+
+### App-like Routing
+
+Rather than just matching URLs with the corresponding components, the router depends on a tree-like structure of views, which have their own routing configuration. It makes the URLs optional, have out-the-box support for dialogs, protected views, and many more.
+
+```javascript
+import { define, html, router } from "hybrids";
+
+import Details from  "./details.js";
+
+const Home = define({
+  [router.connect]: { stack: [Details, ...] },
+  tag: "app-home",
+  content: () => html`
+    <template layout="column">
+      <h1>Home</h1>
+      <nav layout="row gap">
+        <a href="${router.url(Details)}">Details</a>
+      </nav>
+      ...
+    </template>  
+  `,
+});
+
+export define({
+  tag: "app-router",
+  stack: router(Home),
+  content: ({ stack }) => html`
+    <template layout="column">
+      ${stack}
+    </template>
+  `,
+});
+```
+
+```html
+<app-router></app-router>
+```
+
+You can read more in the [Router](/router/usage.md) section.
+
+### Localization
+
+It supports automatic translation of the component's content, which makes translation seamless and easy to integrate. Additionally, it provides a way to add dynamic messages with plural forms, HTML content, or use messages outside of the template context. Also, it comes with handy CLI tool to extract messages from the source code!
 
 ```javascript
 import { define, html, localize } from "hybrids";
@@ -68,75 +153,33 @@ localize("pl", {
 });
 ```
 
-You can read more in the [Localization](https://hybrids.js.org/#/component-model/localization.md) section of the documentation.
+You can read more in the [Localization](/component-model/localization.md) section.
 
-### Complex State Management
+### Layout Engine
 
-The store module provides a global state management based on declarative model definitions with built-in support for async external storages, relations, offline caching, and many more. It follows the declarative architecture to simplify the process of defining and using data structures:
+Create CSS layouts in-place in templates, even without using Shadow DOM, but still keeping the encapsulation of the component's styles:
 
 ```javascript
-import { define, store, html } from "hybrids";
-
-const User = {
-  id: true,
-  firstName: "",
-  lastName: "",
-  [store.connect] : {
-    get: id => fetch(`/users/${id}`).then(res => res.json()),
-  },
-};
-
 define({
-  tag: "my-user-details",
-  user: store(User),
-  render: ({ user }) => html`
-    <div>
-      ${store.pending(user) && `Loading...`}
-      ${store.error(user) && `Something went wrong...`}
+  tag: "app-home-view",
+  content: () => html`
+    <template layout="column center gap:2">
+      <div layout="grow grid:1|max">
+        <h1>Home</h1>
+        ...
+      </div>
 
-      ${store.ready(user) && html`
-        <p>${user.firstName} ${user.lastName}</p>
-      `}
-    </div>
-  `,
+      <footer layout@768px="hidden">...</footer>
+    </template>
+  `
 });
 ```
 
-```html
-<my-user-details user="2"></my-user-details>
-```
-
-You can read more in the [Store](/store/usage.md) section.
-
-### Structural Client-Side Routing
-
-The router module provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the component definition. It makes the URLs optional, have out-the-box support for dialogs, protected views, and many more.
-
-```javascript
-import { define, html, router } from "hybrids";
-
-import Home from "./views/Home.js";
-
-export define({
-  tag: "my-app",
-  views: router(Home),
-  content: ({ views }) => html`
-    <my-app-layout>
-      ${views}
-    </my-app-layout>
-  `,
-});
-```
-
-```html
-<my-app></my-app>
-```
-
-You can read more in the [Router](/router/usage.md) section.
+You can read more in the [Layout Engine](/component-model/layout-engine.md) section.
 
 ## Community
 
-Do you need help? Something went wrong? Feel free to create [an issue](https://github.com/hybridsjs/hybrids/issues/new) in the github repository or join the [Gitter](https://gitter.im/hybridsjs) channel.
+Do you need help? Something went wrong? Feel free to create [an issue](https://github.com/hybridsjs/hybrids/issues/new) in the github repository or join the [Gitter](https://gitter.im/hybridsjs/hybrids) channel.
 
 ## License
 

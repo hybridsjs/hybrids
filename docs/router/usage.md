@@ -15,10 +15,10 @@ import Home from "./views/Home.js";
 
 export define({
   tag: "my-app",
-  views: router(Home),
-  content: ({ views }) => html`
+  stack: router(Home),
+  content: ({ stack }) => html`
     <my-app-layout>
-      ${views}
+      ${stack}
     </my-app-layout>
   `,
 });
@@ -31,18 +31,20 @@ router(views: component | component[] | () => ..., options?: object): object
 ```
 
 * **arguments**:
-  * `views` - a defined component or an array of defined components. You can wrap `views` in a function to avoid using imports from uninitialized ES modules
+  * `views` - a defined component or an array of defined components. You can wrap `views` in a function to avoid uninitialized ES modules issue
   * `options` - an object with following options:
     * `url` - a string base URL used for views without own `url` option, defaults to current URL
     * `params` - an array of property names of the element, which are passed to every view as a parameter
 * **returns**:
   * a hybrid property descriptor, which resolves to an array of elements
 
-### `views`
+### Arguments
+
+#### `views`
 
 Views passed to the router factory create the roots of the view structures. Usually, there is only one root view, but you can pass a list of them (navigating between roots always replaces the whole stack). You can find a deeper explanation of the view concept in the [View](/router/view.md) section.
 
-### `options.url`
+#### `options.url`
 
 If your application uses a mixed approach - views with and without URLs, you should specify a base URL to avoid not deterministic behavior of the router for views without the URL. Otherwise, the router will use an entry point as a base URL (which can be different according to the use case).
 
@@ -54,7 +56,7 @@ define({
 })
 ```
 
-### `options.params`
+#### `options.params`
 
 Regardless of the explicit parameters when navigating to the view, you can specify an array of properties of the component, which are passed to every view as a parameter. They bypass the URL generation, so they are set by the reference, and they are not included in the URL.
 
@@ -79,7 +81,7 @@ define({
 <my-app user="123"></my-app>
 ```
 
-### Nested Routers
+## Nested Routers
 
 For complex layouts, the router factory can be used inside of the views already connected to the parent router. This feature differs from setting views in the `stack` option of the view. The nested router displays content inside of the host view as content, not a separate view in the stack.
 
@@ -103,7 +105,7 @@ export default define({
 });
 ```
 
-### Events
+## Events
 
 The router dispatches the `navigate` event on the host element, which can be used for the external purposes:
 
@@ -116,7 +118,7 @@ const app = document.getElementById("my-app");
 app.addEventListener("navigate", onNavigate);
 ```
 
-## Navigating
+## Navigation
 
 The router provides a set of methods to navigate to the views. Generally, those methods generate an URL instance, which can be used in anchors as `href` attribute and forms as an `action` attribute.
 
