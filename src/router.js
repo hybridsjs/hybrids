@@ -51,35 +51,41 @@ function focusElement(target) {
       { once: true },
     );
   }
+
   target.focus({ preventScroll: true });
 }
 
+let restoreTimeout = null;
 function restoreLayout(target) {
   const activeEl = global.document.activeElement;
 
-  focusElement(
-    focusMap.get(target) ||
-      (rootRouter.contains(activeEl) ? activeEl : rootRouter),
-  );
+  clearTimeout(restoreTimeout);
 
-  const map = scrollMap.get(target);
-  if (map) {
-    const config = configs.get(target);
-    const state = global.history.state;
-    const entry = state.find((e) => e.id === config.id);
-    const clear = entry && entry.params.scrollToTop;
+  restoreTimeout = setTimeout(() => {
+    focusElement(
+      focusMap.get(target) ||
+        (rootRouter.contains(activeEl) ? activeEl : rootRouter),
+    );
 
-    for (const [el, { left, top }] of map) {
-      el.scrollLeft = clear ? 0 : left;
-      el.scrollTop = clear ? 0 : top;
+    const map = scrollMap.get(target);
+    if (map) {
+      const config = configs.get(target);
+      const state = global.history.state;
+      const entry = state.find((e) => e.id === config.id);
+      const clear = entry && entry.params.scrollToTop;
+
+      for (const [el, { left, top }] of map) {
+        el.scrollLeft = clear ? 0 : left;
+        el.scrollTop = clear ? 0 : top;
+      }
+
+      scrollMap.delete(target);
+    } else {
+      const rootEl = global.document.scrollingElement;
+      rootEl.scrollLeft = 0;
+      rootEl.scrollTop = 0;
     }
-
-    scrollMap.delete(target);
-  } else {
-    const rootEl = global.document.scrollingElement;
-    rootEl.scrollLeft = 0;
-    rootEl.scrollTop = 0;
-  }
+  });
 }
 
 function mapUrlParam(value) {
@@ -284,7 +290,6 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           }
         };
 
-        const prevActiveEl = global.document.activeElement;
         const root = rootRouter;
 
         root.addEventListener("focusin", focusDialog);
@@ -297,8 +302,6 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           root.removeEventListener("focusin", focusDialog);
           root.removeEventListener("focusout", focusDialog);
           host.removeEventListener("keydown", goBackOnEscKey);
-
-          focusElement(prevActiveEl);
         };
       });
     }
@@ -743,7 +746,10 @@ function resolveStack(host, state, options) {
 
     if (index === 0) {
       if (nextView === prevView) {
-        if (offset === 0 && host === rootRouter && entry.params.scrollToTop) {
+        if (
+          offset > 0 ||
+          (offset === 0 && host === rootRouter && entry.params.scrollToTop)
+        ) {
           restoreLayout(nextView);
         }
       }
