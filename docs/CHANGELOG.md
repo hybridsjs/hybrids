@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.10](https://github.com/hybridsjs/hybrids/compare/v8.1.9...v8.1.10) (2022-12-07)
+
+
+### Bug Fixes
+
+* **layout:** Add padding rule with box-sizing for display types ([9b31b87](https://github.com/hybridsjs/hybrids/commit/9b31b87b50633b5db91424a11da7694f74fe0dd2))
+* **layout:** support for multiline attribute value ([a88f101](https://github.com/hybridsjs/hybrids/commit/a88f1011ba7489d452bd1af121c59c531e033e84))
+* **router:** delay restore focus when navigate (safari) ([d6ba541](https://github.com/hybridsjs/hybrids/commit/d6ba5419aab3a4d4b00951e355faf6f3acc67cf1))
+
 ### [8.1.9](https://github.com/hybridsjs/hybrids/compare/v8.1.8...v8.1.9) (2022-11-17)
 
 
