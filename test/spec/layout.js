@@ -118,6 +118,23 @@ describe("layout:", () => {
     expect(window.getComputedStyle(host).flexDirection).toBe("column");
   });
 
+  it("supports multiline attribute value", () => {
+    html`
+      <template
+        layout="
+          row
+          padding:2
+        "
+      >
+      </template>
+    `(host);
+
+    const hostStyles = window.getComputedStyle(host);
+    expect(hostStyles.display).toBe("flex");
+    expect(hostStyles.flexDirection).toBe("row");
+    expect(hostStyles.paddingTop).toBe("16px");
+  });
+
   it("supports custom selectors", () => {
     html`<template layout="row" layout.active="column"></template>`(host);
 

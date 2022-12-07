@@ -240,21 +240,25 @@ export function insertRule(node, query, tokens, hostMode) {
   const [selectors, mediaQueries = ""] = query.split("@");
 
   const cssRules = Object.entries(
-    tokens.split(" ").reduce((acc, token) => {
-      const [id, ...args] = token.split(":");
-      const rule = rules[id];
+    tokens
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(" ")
+      .reduce((acc, token) => {
+        const [id, ...args] = token.split(":");
+        const rule = rules[id];
 
-      if (!rule) {
-        throw TypeError(`Unsupported layout rule: '${id}'`);
-      }
+        if (!rule) {
+          throw TypeError(`Unsupported layout rule: '${id}'`);
+        }
 
-      return Object.assign(
-        acc,
-        typeof rule === "function"
-          ? rule(acc, ...args.map((v) => (v.match(/--.*/) ? `var(${v})` : v)))
-          : rule,
-      );
-    }, {}),
+        return Object.assign(
+          acc,
+          typeof rule === "function"
+            ? rule(acc, ...args.map((v) => (v.match(/--.*/) ? `var(${v})` : v)))
+            : rule,
+        );
+      }, {}),
   ).reduce(
     (acc, [key, value]) =>
       value !== undefined && value !== "" ? acc + `${key}: ${value};` : acc,
