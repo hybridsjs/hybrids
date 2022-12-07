@@ -1,6 +1,7 @@
 /coverage
 /node_modules
 /test
+/cli/test.js
 /.codesandbox
 *.log
 .vscode

@@ -1,4 +1,4 @@
-import sax from "./sax.js";
+import sax from "../utils/sax.js";
 
 function indexStartWith(content, index, target) {
   for (let i = 0; i < target.length; i++) {
@@ -203,7 +203,7 @@ function getChromeI18nFormat(entry) {
   };
 }
 
-export default function extract(content, format = "") {
+export default function task(content, format = "") {
   const keys = extractKeys(content);
   switch (format) {
     case "chrome.i18n":
