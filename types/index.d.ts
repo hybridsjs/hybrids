@@ -341,18 +341,4 @@ declare module "hybrids" {
     parts: TemplateStringsArray,
     ...args: unknown[]
   ): UpdateFunctionWithMethods<E>;
-
-  namespace svg {
-    function set<E>(property: keyof E, valueOrPath?: any): EventHandler<E>;
-    function set<E, M>(
-      property: Model<M>,
-      valueOrPath: string | null,
-    ): EventHandler<E>;
-
-    function resolve<E>(
-      promise: Promise<any>,
-      placeholder?: UpdateFunction<E>,
-      delay?: number,
-    ): UpdateFunction<E>;
-  }
 }

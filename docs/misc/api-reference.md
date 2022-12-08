@@ -99,6 +99,16 @@ html.resolve(promise: Promise, placeholder: Function, delay = 200): Function
   - update function compatible with content expression
 
 ```typescript
+html.set(propertyName: string, value?: any): Function
+```
+
+* **arguments**:
+  * `propertyName` - a target host property name
+  * `value` - a custom value, which will be set instead of `event.target.value`
+* **returns**:
+  * a callback function compatible with template engine event listener
+
+```typescript
 svg`<circle property="${value}">${value}</circle>` : Function
 ```
 
@@ -107,15 +117,6 @@ svg`<circle property="${value}">${value}</circle>` : Function
   - `value` - dynamic values as a property values or element content
 - **returns**:
   - an update function, which takes `host` and `target` arguments
-
-```typescript
-svg`...`.define(map: Object): Function
-```
-
-- **arguments**:
-  - `map` - object with hybrids definitions or custom element's constructors
-- **returns**:
-  - update function compatible with content expression
 
 ```typescript
 svg`...`.style(styles: string, [styles: string]...): Function
@@ -135,17 +136,6 @@ svg`...`.css`path { color: ${value}; }`: Function
   - `value` - dynamic values concatenated with the template literal
 - **returns**:
   - an update function compatible with content expression
-
-```typescript
-svg.resolve(promise: Promise, placeholder: Function, delay = 200): Function
-```
-
-- **arguments**:
-  - `promise` - promise, which should resolve/reject update function
-  - `placeholder` - update function for render content until promise is resolved or rejected
-  - `delay` - delay in milliseconds, after which placeholder is rendered
-- **returns**:
-  - update function compatible with content expression
 
 ## Dispatch
 

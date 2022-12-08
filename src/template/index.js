@@ -62,4 +62,3 @@ export function svg(parts, ...args) {
 }
 
 Object.freeze(Object.assign(html, helpers));
-Object.freeze(Object.assign(svg, helpers));
