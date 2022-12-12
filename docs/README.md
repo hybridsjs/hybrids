@@ -1,8 +1,16 @@
 <center>
 <h1>
-  <img alt="hybrids" src="/assets/hybrids-full-logo.svg" align="center">
+  <object
+    aria-disabled="true"
+    data="/assets/hybrids-full-logo.svg"
+    role="img"
+    style="pointer-events:none"
+    tabindex="-1"
+    type="image/svg+xml">
+  </object>
 </h1>
 </center>
+
 
 [![build status](https://github.com/hybridsjs/hybrids/actions/workflows/test.yml/badge.svg)](https://github.com/hybridsjs/hybrids/actions/workflows/test.yml?query=branch%3Amain)
 [![coverage status](https://coveralls.io/repos/github/hybridsjs/hybrids/badge.svg?branch=main)](https://coveralls.io/github/hybridsjs/hybrids?branch=main)
