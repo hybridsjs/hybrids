@@ -1,4 +1,5 @@
 import { html } from "../../src/template/index.js";
+import { resolveTimeout } from "../helpers.js";
 
 describe("layout:", () => {
   let host;
@@ -59,11 +60,13 @@ describe("layout:", () => {
     );
     document.body.removeChild(host);
 
-    return Promise.resolve().then(() => {
+    return resolveTimeout(() => {
       document.body.appendChild(host);
-      expect(window.getComputedStyle(shadowRoot.children[0]).display).toBe(
-        "flex",
-      );
+      return resolveTimeout(() => {
+        expect(window.getComputedStyle(shadowRoot.children[0]).display).toBe(
+          "flex",
+        );
+      });
     });
   });
 
