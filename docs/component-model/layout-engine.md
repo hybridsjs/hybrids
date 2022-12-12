@@ -23,7 +23,7 @@ define({
 
 When the template is compiled, a group of attributes (`layout*="..."`) containing the layout rules compiles to single unique class selector added to the element. Generated selectors are shared between all of the component instances, regardless if the Shadow DOM is used or not. If the browser supports Constructable Stylesheets, the generated CSS is added to the global single shared stylesheet, which makes the styling the fastest possible.
 
-### Targets
+## Targets
 
 The feature supports both `content` and `render` properties of the component's definition. Styling `content` is especially useful for creating layouts in app views, which don't require Shadow DOM:
 
@@ -57,7 +57,7 @@ define({
 });
 ```
 
-### Compound Selectors
+## Compound Selectors
 
 The `layout` attribute does not support expressions as the value, because the process takes place when the template is compiled (before it runs for the first time with arguments). However, the attribute can be extended with compound selector. The rules will apply only if the conditions are met:
 
@@ -91,7 +91,7 @@ The compound selector is place as-is into the generated class selector, so any s
 <div layout:last-of-type="grow"></div>
 ```
 
-### Media Queries
+## Media Queries
 
 Similarly to the compound selector, the layout supports media queries with the value followed by `@` character. Generally, not predefined values maps to `min-width` media query (The layout engine comes with `portrait` and `landscape` built-in queries).
 
@@ -99,7 +99,7 @@ Similarly to the compound selector, the layout supports media queries with the v
 <div layout="row gap" layout@768px="column gap:2"></div>
 ```
 
-### Arguments
+## Arguments
 
 The attribute value contains space-separated list of rules. The rules are applied in the order they are added to the attribute. The rules comes with useful predefined arguments, but depending on the rule, they can take a list of arguments separated by `:` character (without the whitespace):
 
@@ -113,7 +113,7 @@ If the rule supports more than one argument, you can skip it by omitting the val
 <div layout="row::inline width::50%"></div>
 ```
 
-#### Dimensions
+### Dimensions
 
 If the argument type is dimension, the engine maps it with the following order:
 
@@ -131,7 +131,7 @@ If the argument type is dimension, the engine maps it with the following order:
   * ...
 3. Provided value is used as is.
 
-#### CSS Variables
+### CSS Variables
 
 Add `--` prefix to use a CSS variable as an argument. The engine will pass it as is, without processing, so the variable can represents dynamic value, which can be updated in runtime, or scoped to some subtree.
 
