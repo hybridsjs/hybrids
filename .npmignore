@@ -1,11 +1,15 @@
+.codesandbox
+.github
+.vscode
 /coverage
+/docs
 /node_modules
 /test
 /cli/test.js
-/.codesandbox
 *.log
-.vscode
 .eslintrc
 .prettierrc
 .travis.yml
+CHANGELOG.md
+CODE_OF_CONDUCT.md
 karma.conf.cjs
