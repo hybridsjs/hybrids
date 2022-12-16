@@ -7,7 +7,6 @@ const rules = {
   block: (props, align) => ({
     display: "block",
     "text-align": align,
-    "box-sizing": "border-box",
   }),
   inline: ({ display }) => ({
     display: `inline${display ? `-${display}` : ""}`,
@@ -20,7 +19,6 @@ const rules = {
     acc[type] = (props, wrap = "nowrap") => ({
       display: "flex",
       "flex-flow": `${type} ${wrap}`,
-      "box-sizing": "border-box",
     });
     return acc;
   }, {}),
@@ -47,7 +45,6 @@ const rules = {
       return acc;
     }, {}),
     "grid-auto-flow": `${autoFlow} ${dense && "dense"}`,
-    "box-sizing": "border-box",
   }),
   area: (props, column = "", row = "") => ({
     "grid-column": column.match(NUMBER_REGEXP) ? `span ${column}` : column,
@@ -74,16 +71,19 @@ const rules = {
   size: (props, width, height = width) => ({
     width: dimension(width),
     height: dimension(height),
+    "box-sizing": "border-box",
   }),
   width: (props, base, min, max) => ({
     width: dimension(base),
     "min-width": dimension(min),
     "max-width": dimension(max),
+    "box-sizing": "border-box",
   }),
   height: (props, base, min, max) => ({
     height: dimension(base),
     "min-height": dimension(min),
     "max-height": dimension(max),
+    "box-sizing": "border-box",
   }),
   ratio: (props, v1) => ({ "aspect-ratio": v1 }),
   overflow: (props, v1 = "hidden", v2 = "") => {

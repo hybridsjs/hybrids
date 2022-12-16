@@ -145,7 +145,7 @@ Add `--` prefix to use a CSS variable as an argument. The engine will pass it as
 
 | Rule     | Arguments     | Defaults | Properties                                                               |
 |----------|---------------|----------|--------------------------------------------------------------------------|
-| block    | [align:value] | block    | `display: block`<br>`box-sizing: border-box`<br>`text-align: [align]`    |
+| block    | [align:value] | block    | `display: block`<br>`text-align: [align]`                                |
 | inline   | ---           | ---      | `display: inline`<br>`display: [type]-inline`                            |
 | contents | ---           | ---      | `display: contents`                                                      |
 | hidden   | ---           | ---      | `display: none`                                                          |
@@ -162,7 +162,7 @@ The `inline` rule can be used after other display types to make the element inli
 
 | Rule                                           | Arguments                | Defaults      | Properties                                   |
 |------------------------------------------------|--------------------------|---------------|----------------------------------------------|
-| row<br>row-reverse<br>column<br>column-reverse | [wrap:value]             | [type]:nowrap | `display: flex`<br>`box-sizing: border-box`<br>`flex-flow: type [wrap]` |
+| row<br>row-reverse<br>column<br>column-reverse | [wrap:value]             | [type]:nowrap | `display: flex`<br>`flex-flow: type [wrap]`  |
 | grow                                           | [number:value]           | grow:1        | `flex-grow: [number]`                        |
 | shrink                                         | [number:value]           | shrink:1      | `flex-shrink: [number]`                      |
 | basis                                          | [size:dimension]         | ---           | `flex-basis: [size]`                         |
@@ -173,7 +173,7 @@ The `inline` rule can be used after other display types to make the element inli
 
 | Rule  | Arguments                                 | Defaults | Properties                                                                                                                    |
 |-------|-------------------------------------------|----------|-------------------------------------------------------------------------------------------------------------------------------|
-| grid  | [columns]:[rows]:[autoFlow:value]:[dense] | grid:1   | `display: grid`<br>`box-sizing: border-box`<br>`grid-template-columns: [columns]`<br>`grid-template-rows: [rows]`<br>`grid-auto-flow: [autoFlow] [dense]` |
+| grid  | [columns]:[rows]:[autoFlow:value]:[dense] | grid:1   | `display: grid`<br>`grid-template-columns: [columns]`<br>`grid-template-rows: [rows]`<br>`grid-auto-flow: [autoFlow] [dense]` |
 | area  | [column:value]:[row:value]                | none     | `grid-column: span [number] \| [value]`<br>`grid-row: span [number] \| [value]`                                               |
 | gap   | [column:dimension]:[row:dimension]        | gap:1    | `column-gap: [column];`<br>`row-gap: [row];`                                                                                  |
 | order | [number:value]                            | order:0  | `order: [number];`                                                                                                            |
@@ -204,13 +204,13 @@ Use following examples as a reference:
 
 | Rule     | Arguments                                                              | Defaults                    | Properties                                                                                                                                                         |
 |----------|------------------------------------------------------------------------|-----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| size     | [width:dimension]:[height:dimension]                                   | ---                         | `width: [width]`<br>`height: [height] \|\| [width]`                                                                                                                |
-| width    | [base:dim.]:[min:dim.]:[max:dim.]                                      | ---                         | `width: [base]`<br>`min-width: [min]`<br>`max-width: [max]`                                                                                                        |
-| height   | [base:dim.]:[min:dim.]:[max:dim.]                                      | ---                         | `height: [base]`<br>`min-height: [min]`<br>`max-height: [max]`                                                                                                     |
-| ratio    | [value]                                                                | ---                         | `aspect-ratio: [value]`                                                                                                                                            |
+| size     | [width:dimension]:[height:dimension]                                   | ---                         | `width: [width]`<br>`height: [height] \|\| [width]`<br>`box-sizing: border-box`              |
+| width    | [base:dim.]:[min:dim.]:[max:dim.]                                      | ---                         | `width: [base]`<br>`min-width: [min]`<br>`max-width: [max]`<br>`box-sizing: border-box`      |
+| height   | [base:dim.]:[min:dim.]:[max:dim.]                                      | ---                         | `height: [base]`<br>`min-height: [min]`<br>`max-height: [max]`<br>`box-sizing: border-box`   |
+| ratio    | [value]                                                                | ---                         | `aspect-ratio: [value]`                                                                      |
 | overflow | [type:value]<br>[axis:value]:[type:value]                              | overflow:hidden             | `overflow: [type]`<br>`overflow-[axis]: [type]`<br>When `scroll` also:<br>`flex: 1 1 0`<br>`overscroll-behavior: contain`<br>`--webkit-overflow-scrolling: touch`  |
-| margin   | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v:dimension] | margin:1<br>margin:[side]:1 | `margin: [v1] [v2] [v3] [v4]`<br>`margin-[side]: [v]`                                                                                                                   |
-| padding  | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v:dimension] | padding:1<br>padding:[side]:1 | `padding: [v1] [v2] [v3] [v4]`<br>`padding-[side]: [v]`                                                                                                                   |
+| margin   | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v:dimension] | margin:1<br>margin:[side]:1 | `margin: [v1] [v2] [v3] [v4]`<br>`margin-[side]: [v]`                                         |
+| padding  | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v:dimension] | padding:1<br>padding:[side]:1 | `padding: [v1] [v2] [v3] [v4]`<br>`padding-[side]: [v]`                                     |
 
 ### Position
 

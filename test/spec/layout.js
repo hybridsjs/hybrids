@@ -309,7 +309,7 @@ describe("layout:", () => {
     html`
       <template layout>
         <div layout="width:full"></div>
-        <div layout="height:20px:10px:full"></div>
+        <div layout="height:20px:10px:full padding"></div>
         <div layout="ratio:16/9"></div>
         <div layout="size:100px"></div>
         <div layout="size:100px:50px"></div>
