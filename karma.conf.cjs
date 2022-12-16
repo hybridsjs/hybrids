@@ -7,7 +7,7 @@ module.exports = (config) => {
   config.set({
     basePath: "./",
     frameworks: ["jasmine"],
-    reporters: IS_COVERAGE ? ["coverage"] : ["dots"],
+    reporters: ["dots"].concat(IS_COVERAGE ? ["coverage"] : []),
     browsers: IS_COVERAGE
       ? ["ChromeHeadless"]
       : ["ChromeHeadless", "WebkitHeadless", "FirefoxHeadless"],
