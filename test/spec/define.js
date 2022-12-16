@@ -362,4 +362,53 @@ describe("define:", () => {
       });
     });
   });
+
+  describe("from() method", () => {
+    it("returns early if map of modules is empty", () => {
+      const components = {};
+      expect(define.from(components)).toBe(components);
+    });
+
+    it("defines elements from a map of modules with paths", () => {
+      const component = {};
+
+      define.from({
+        "./test/define-from.js": component,
+      });
+
+      expect(component.tag).toBe("test-define-from");
+      expect(customElements.get("test-define-from")).toBeDefined();
+    });
+
+    it("defines elements clearing out the root", () => {
+      const components = {
+        "./asdf/test/DefineFromRoot.js": {},
+      };
+
+      expect(define.from(components, { root: "./asdf" })).toBe(components);
+      expect(customElements.get("test-define-from-root")).toBeDefined();
+    });
+
+    it("defines elements with custom prefix", () => {
+      define.from(
+        {
+          "/test/defineFrom.js": {},
+        },
+        { prefix: "asdf" },
+      );
+
+      expect(customElements.get("asdf-test-define-from")).toBeDefined();
+    });
+
+    it("defines elements with custom tag from the definition", () => {
+      define.from(
+        {
+          "/test/define-from.js": { tag: "test-define-from-custom" },
+        },
+        { prefix: "asdf" },
+      );
+
+      expect(customElements.get("test-define-from-custom")).toBeDefined();
+    });
+  });
 });

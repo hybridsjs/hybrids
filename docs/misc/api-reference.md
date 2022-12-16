@@ -14,6 +14,18 @@ define(component: object & { tag: string }): component;
   - `component` - a passed argument to `define()` function
 
 ```typescript
+define.from(components: object, options?: { prefix?: string; root?: string | string[]}): components;
+```
+
+* **arguments**:
+  * `components` - an object with map of components with tag names as keys (or paths to the files)
+  * `options` - an optional object with options
+    * `prefix` - a prefix added to the tag names
+    * `root` - a string or a list of strings, which is cleared from the tag names
+* **returns**:
+  * `components` - a passed argument to `define.from()` function
+
+```typescript
 define.compile(component: object): HTMLElement;
 ```
 

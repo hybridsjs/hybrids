@@ -179,6 +179,37 @@ function define(hybrids) {
   return Object.freeze(hybrids);
 }
 
+function from(components, options = {}) {
+  const { root = "", prefix } = options;
+  const keys = Object.keys(components);
+
+  if (keys.length === 0) return components;
+
+  for (const key of keys) {
+    const hybrids = components[key];
+
+    if (!hybrids.tag) {
+      const tag = camelToDash(
+        []
+          .concat(root)
+          .reduce((acc, root) => acc.replace(root, ""), key)
+          .replace(/^[./]+/, "")
+          .replace(/\//g, "-")
+          .replace(/\.[a-zA-Z]+$/, ""),
+      );
+
+      hybrids.tag = prefix ? `${prefix}-${tag}` : tag;
+    }
+
+    define(hybrids);
+  }
+
+  return components;
+}
+
 export default Object.freeze(
-  Object.assign(define, { compile: (hybrids) => compile(hybrids) }),
+  Object.assign(define, {
+    compile: (hybrids) => compile(hybrids),
+    from,
+  }),
 );

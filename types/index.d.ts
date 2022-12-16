@@ -55,6 +55,11 @@ declare module "hybrids" {
 
   namespace define {
     function compile<E>(component: Component<E>): HybridElement<E>;
+
+    function from(
+      components: { [path: string]: Component<any> },
+      options?: { prefix?: string; root?: string | string[] },
+    ): void;
   }
 
   /* Factories */

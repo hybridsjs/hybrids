@@ -1,5 +1,7 @@
 # Definition
 
+## Single Component
+
 To define a web component use the `define` function from the library:
 
 ```typescript
@@ -26,23 +28,52 @@ export default define({
 
 The above structure allows short syntax, and still allows to import the definition in another module, for example for unit testing, or the reference.
 
-## Constructor
+## Multiple Components
 
-If you need access to the custom element constructor, you can use the built-in method from the Custom Elements API:
+For larger projects with multiple definitions of the UI or view components, you can use `define.from()` method, which targets application setup using a bundler, like [Vite](https://vitejs.dev/).
+
+The method accepts an object with map of components definitions with tag names as keys and optional options. The key might contain a path to the file (slashes are replaced with dashes, the file extension is cleared, and the camel case is converted to dash case) or a target tag name. The `tag` key is dynamically injected (if not defined directly) to the component definition before it is passed to the `define` function.
+
+In the result, with the `define.from()` method, modules with components might skip the `tag` property, and should export the component definition instead of the result of the `define` function.
+
+```typescript
+define.from(components: object, options?: { prefix?: string; root?: string | string[]}): components;
+```
+
+* **arguments**:
+  * `components` - an object with map of components with tag names as keys (or paths to the files)
+  * `options` - an optional object with options
+    * `prefix` - a prefix added to the tag names
+    * `root` - a string or a list of strings, which is cleared from the tag names
+* **returns**:
+  * `components` - a passed argument to `define.from()` function
+
+The below example shows how to use the `define.from()` method with the [Vite](https://vitejs.dev/) bundler. The `define.from()` method is called in the `app.js` file, which is the entry point of the application. The rest of the component definition don't have to use `define` function directly, and can export the component definition instead without explicitly setting the `tag` property (it is dynamically generated from the file path).
+
+**./components/HelloWorld.js**:
 
 ```javascript
-// defines a custom element with tag name included as a property
-import "./my-element.js";
+import { html } from "hybrids";
 
-const MyElement = customElements.get("my-element");
-const el = new MyElement();
+export {
+  render: () => html`<div>Hello World!</div>`,
+}
+```
+
+**./app.js**:
+
+```javascript
+import { define } from "hybrids";
+
+define.from(
+  import.meta.glob("./components/*.js", { eager: true, import: "default" }),
+  { root: "components" }
+);
 ```
 
 ## External Usage
 
-The library supports defining a class constructor without the tag name, which can be used to create a custom element. Instead of using `define` function, use `define.compile()` method with the component definition without the `tag` property.
-
-This mode might help create a custom element for external usage without depending on a tag name, and where the library is not used directly.
+For producing the class without defining the custom element, use `define.compile()` method with the component definition without the `tag` property. This mode can be helpful for creating a custom element for external usage without depending on a tag name, or if the components library is not used directly.
 
 ```typescript
 define.compile(component: object): HTMLElement;
@@ -69,7 +100,7 @@ export default define.compile({
 **Customer**:
 
 ```javascript
-import MyElement from "components-library";
+import { MyElement } from "components-library";
 
 // Register the custom element from the package 
 customElements.define("my-super-element", MyElement);
@@ -77,4 +108,16 @@ customElements.define("my-super-element", MyElement);
 
 ```html
 <my-super-element name="John"></my-super-element>
+```
+
+## Constructor
+
+If you need access to the custom element constructor, you can use the built-in method from the Custom Elements API:
+
+```javascript
+// defines a custom element with tag name included as a property
+import component from "./my-element.js";
+
+const MyElement = customElements.get(component.tag);
+const el = new MyElement();
 ```
