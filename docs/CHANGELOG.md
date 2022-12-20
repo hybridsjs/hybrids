@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.11](https://github.com/hybridsjs/hybrids/compare/v8.1.10...v8.1.11) (2022-12-20)
+
+
+### Features
+
+* **define:** define.from() method for bundlers ([8239bc0](https://github.com/hybridsjs/hybrids/commit/8239bc06db01717519fa95b1623bc124aa50b6e0))
+
+
+### Bug Fixes
+
+* **html:** clear out duplicated helper methods from svg namespace ([a980819](https://github.com/hybridsjs/hybrids/commit/a9808197338492eb9320e71c560983a93c492788))
+* **layout:** move box-sizing to the size rules ([9e8b7ae](https://github.com/hybridsjs/hybrids/commit/9e8b7aec6c35f6d96564f7574f7070e69895069f))
+
 ### [8.1.10](https://github.com/hybridsjs/hybrids/compare/v8.1.9...v8.1.10) (2022-12-07)
 
 
