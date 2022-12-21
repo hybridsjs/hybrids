@@ -271,22 +271,17 @@ export function insertRule(node, query, tokens, hostMode) {
   }, "@media screen");
 
   if (hostMode) {
-    const shadowSelector = `.${className}-s${selectors}`;
-    const contentSelector = `.${className}-c${selectors}`;
+    const shadowSelector = `:host(.${className}-s${selectors})`;
+    const contentSelector = `:where(.${className}-c${selectors})`;
 
-    sheet.insertRule(
-      mediaQueries
-        ? `${mediaSelector} { :host(${shadowSelector}) { ${cssRules} } }`
-        : `:host(${shadowSelector}) { ${cssRules} }`,
-      sheet.cssRules.length,
-    );
-
-    sheet.insertRule(
-      mediaQueries
-        ? `${mediaSelector} { ${contentSelector} { ${cssRules} } }`
-        : `${contentSelector} { ${cssRules} }`,
-      sheet.cssRules.length,
-    );
+    [shadowSelector, contentSelector].forEach((selector) => {
+      sheet.insertRule(
+        mediaQueries
+          ? `${mediaSelector} { ${selector} { ${cssRules} } }`
+          : `${selector} { ${cssRules} }`,
+        sheet.cssRules.length,
+      );
+    });
   } else {
     const selector = `.${className}${selectors}`;
 

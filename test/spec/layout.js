@@ -121,6 +121,19 @@ describe("layout:", () => {
     expect(window.getComputedStyle(host).flexDirection).toBe("column");
   });
 
+  it("set main element styles with zero specificity for content", () => {
+    html`<template layout="row">
+      <style>
+        .layout-test-column {
+          flex-flow: column;
+        }
+      </style>
+    </template>`(host);
+
+    host.className = `${host.className} layout-test-column`;
+    expect(window.getComputedStyle(host).flexDirection).toBe("column");
+  });
+
   it("supports multiline attribute value", () => {
     html`
       <template
