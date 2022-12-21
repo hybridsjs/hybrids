@@ -90,13 +90,14 @@ export function set(property, valueOrPath) {
 
 const promiseMap = new WeakMap();
 export function resolve(promise, placeholder, delay = 200) {
-  return (host, target) => {
+  return function fn(host, target) {
+    const useLayout = fn.useLayout;
     let timeout;
 
     if (placeholder) {
       timeout = setTimeout(() => {
         timeout = undefined;
-        resolveTemplateValue(host, target, placeholder);
+        resolveTemplateValue(host, target, placeholder, undefined, useLayout);
       }, delay);
     }
 
@@ -106,7 +107,13 @@ export function resolve(promise, placeholder, delay = 200) {
       if (timeout) clearTimeout(timeout);
 
       if (promiseMap.get(target) === promise) {
-        resolveTemplateValue(host, target, value);
+        resolveTemplateValue(
+          host,
+          target,
+          value,
+          placeholder && !timeout ? placeholder : undefined,
+          useLayout,
+        );
         promiseMap.set(target, null);
       }
     });

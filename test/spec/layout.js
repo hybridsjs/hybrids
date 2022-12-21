@@ -112,6 +112,32 @@ describe("layout:", () => {
     expect(nestedHost.hasAttribute("layout")).toBe(false);
   });
 
+  it("uses layout engine for html.resolve method", () => {
+    html`<template layout="row"
+      >${html.resolve(
+        resolveTimeout(() => html`<div layout="row"></div>`, 200),
+        html`<div layout="column"></div>`,
+        0,
+      )}</template
+    >`(host);
+
+    return resolveTimeout(() => {
+      const el = host.children[0];
+      const elStyles = window.getComputedStyle(el);
+      expect(elStyles.display).toBe("flex");
+      expect(elStyles.flexDirection).toBe("column");
+      expect(el.hasAttribute("layout")).toBe(false);
+
+      return resolveTimeout(() => {
+        const el = host.children[0];
+        const elStyles = window.getComputedStyle(el);
+        expect(elStyles.display).toBe("flex");
+        expect(elStyles.flexDirection).toBe("row");
+        expect(el.hasAttribute("layout")).toBe(false);
+      }, 200);
+    }, 0);
+  });
+
   it("replaces class for the host element", () => {
     html`<template layout="row"></template>`(host);
     const className = host.className;

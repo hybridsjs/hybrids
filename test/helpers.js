@@ -34,11 +34,11 @@ export function resolveRaf(fn) {
   });
 }
 
-export function resolveTimeout(fn) {
+export function resolveTimeout(fn, delay = 100) {
   return new Promise((resolve) => {
     setTimeout(() => {
       Promise.resolve().then(fn).then(resolve);
-    }, 100);
+    }, delay);
   });
 }
 
