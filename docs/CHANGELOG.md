@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.12](https://github.com/hybridsjs/hybrids/compare/v8.1.11...v8.1.12) (2022-12-23)
+
+
+### Bug Fixes
+
+* **layout:** layout flag in html.resolve() helper method ([77d990d](https://github.com/hybridsjs/hybrids/commit/77d990dd1266045533941d68ba66f57717adecac))
+* **layout:** set lowest specificity for content templates ([3ef6311](https://github.com/hybridsjs/hybrids/commit/3ef6311b8c1fcd6c5ff8863a4c0d7797a9ca2236))
+
 ### [8.1.11](https://github.com/hybridsjs/hybrids/compare/v8.1.10...v8.1.11) (2022-12-20)
 
 
