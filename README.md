@@ -9,7 +9,7 @@
 
 > An extraordinary JavaScript framework for creating client-side web applications, UI components libraries, or single web components with unique mixed declarative and functional architecture
 
-**hybrids** provides a complete set of tools for the web platform - everything without external dependencies:
+**Hybrids** provides a complete set of tools for the web - everything without external dependencies:
 
 * **Component Model** based on plain objects and pure functions
 * **Global State Management** with external storages, offline caching, relations, and more

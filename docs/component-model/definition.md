@@ -55,7 +55,7 @@ The below example shows how to use the `define.from()` method with the [Vite](ht
 ```javascript
 import { html } from "hybrids";
 
-export {
+export default {
   render: () => html`<div>Hello World!</div>`,
 }
 ```

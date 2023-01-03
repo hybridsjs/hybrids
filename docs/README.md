@@ -4,7 +4,7 @@
     aria-disabled="true"
     data="/assets/hybrids-full-logo.svg"
     role="img"
-    style="pointer-events:none"
+    style="pointer-events:none;max-width:90%"
     tabindex="-1"
     type="image/svg+xml">
   </object>
@@ -18,7 +18,7 @@
 
 > An extraordinary JavaScript framework for creating client-side web applications, UI components libraries, or single web components with unique mixed declarative and functional architecture
 
-**hybrids** provides a complete set of tools for the web platform - everything without external dependencies:
+**Hybrids** provides a complete set of tools for the web - everything without external dependencies:
 
 * **Component Model** based on plain objects and pure functions
 * **Global State Management** with external storages, offline caching, relations, and more
