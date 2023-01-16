@@ -25,8 +25,9 @@ function saveLayout(target) {
 
   const map = new Map();
 
-  const rootEl = global.document.scrollingElement;
-  map.set(rootEl, { left: rootEl.scrollLeft, top: rootEl.scrollTop });
+  for (const el of [global.document.documentElement, global.document.body]) {
+    map.set(el, { left: el.scrollLeft, top: el.scrollTop });
+  }
 
   walkInShadow(target, (el) => {
     if (el.scrollLeft || el.scrollTop) {
@@ -55,13 +56,10 @@ function focusElement(target) {
   target.focus({ preventScroll: true });
 }
 
-let restoreTimeout = null;
 function restoreLayout(target) {
   const activeEl = global.document.activeElement;
 
-  clearTimeout(restoreTimeout);
-
-  restoreTimeout = setTimeout(() => {
+  deferred.then(() => {
     focusElement(
       focusMap.get(target) ||
         (rootRouter.contains(activeEl) ? activeEl : rootRouter),
@@ -81,10 +79,18 @@ function restoreLayout(target) {
 
       scrollMap.delete(target);
     } else {
-      const rootEl = global.document.scrollingElement;
-      rootEl.scrollLeft = 0;
-      rootEl.scrollTop = 0;
+      for (const el of [
+        global.document.documentElement,
+        global.document.body,
+      ]) {
+        el.scrollLeft = 0;
+        el.scrollTop = 0;
+      }
     }
+
+    setTimeout(() => {
+      global.history.scrollRestoration = "auto";
+    }, 0);
   });
 }
 
@@ -270,10 +276,6 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
     };
 
     const { connects } = Constructor;
-
-    if (!nestedParent && !options.dialog) {
-      connects.add(restoreLayout);
-    }
 
     if (options.dialog) {
       connects.add((host) => {
@@ -744,17 +746,6 @@ function resolveStack(host, state, options) {
       nextView = config.create();
     }
 
-    if (index === 0) {
-      if (nextView === prevView) {
-        if (
-          offset > 0 ||
-          (offset === 0 && host === rootRouter && entry.params.scrollToTop)
-        ) {
-          restoreLayout(nextView);
-        }
-      }
-    }
-
     return nextView;
   });
 
@@ -772,6 +763,8 @@ function resolveStack(host, state, options) {
   }
 
   if (flush) flush();
+
+  return stack;
 }
 
 function getEntryOffset(entry) {
@@ -847,17 +840,14 @@ function getEntryOffset(entry) {
 }
 
 function connectRootRouter(host, invalidate, options) {
-  function restoreScrollRestoration() {
-    if (global.history.scrollRestoration === "manual") {
-      global.history.scrollRestoration = "auto";
-    }
-  }
-
   function flush() {
-    resolveStack(host, global.history.state, options);
+    const stack = resolveStack(host, global.history.state, options);
     invalidate();
 
-    deferred.then(restoreScrollRestoration);
+    const el = stack[0];
+    if (!configs.get(el).dialog) {
+      restoreLayout(el);
+    }
   }
 
   function navigateBack(offset, entry, nextUrl) {
@@ -878,10 +868,6 @@ function connectRootRouter(host, invalidate, options) {
 
       const method = pushOffset ? "pushState" : "replaceState";
       const nextState = [entry, ...state.slice(offset + (pushOffset ? 0 : 1))];
-
-      if (pushOffset) {
-        global.history.scrollRestoration = "manual";
-      }
 
       global.history[method](nextState, "", nextUrl);
 
