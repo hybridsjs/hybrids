@@ -26,7 +26,7 @@ The project documentation is available at the [hybrids.js.org](https://hybrids.j
 
 ### Component Model
 
-It's based on plain objects and pure functions*, still using the [Web Components API](https://developer.mozilla.org/en-US/docs/Web/Web_Components) under the hood:
+It's based on plain objects and pure functions[^1], still using the [Web Components API](https://developer.mozilla.org/en-US/docs/Web/Web_Components) under the hood:
 
 ```javascript
 import { html, define } from "hybrids";
@@ -51,8 +51,6 @@ export default define({
 ```
 
 [![Edit <simple-counter> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/simple-counter-web-component-built-with-hybrids-library-co2ow?file=/src/SimpleCounter.js)
-
-<small>\* Pure functions only apply to the component definition. Side effects attached to event listeners might mutate the host element.</small>
 
 You can read more in the [Component Model](https://hybrids.js.org/#/component-model/definition.md) section.
 
@@ -187,3 +185,5 @@ Do you need help? Something went wrong? Feel free to create [an issue](https://g
 ## License
 
 **hybrids** is released under the [MIT License](LICENSE).
+
+[^1]: Pure functions only apply to the component definition. Side effects attached to event listeners might mutate the host element.
