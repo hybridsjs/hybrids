@@ -160,6 +160,18 @@ describe("layout:", () => {
     expect(window.getComputedStyle(host).flexDirection).toBe("column");
   });
 
+  it("not overwrite hidden selector for the host element", () => {
+    const shadowRoot = host.attachShadow({ mode: "open" });
+    html`<template layout="row"><div></div></template>`(host, shadowRoot);
+
+    return resolveTimeout(() => {
+      expect(window.getComputedStyle(host).display).toBe("flex");
+
+      host.hidden = true;
+      expect(window.getComputedStyle(host).display).toBe("none");
+    });
+  });
+
   it("supports multiline attribute value", () => {
     html`
       <template

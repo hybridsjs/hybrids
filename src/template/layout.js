@@ -279,7 +279,7 @@ export function insertRule(node, query, tokens, hostMode) {
         mediaQueries
           ? `${mediaSelector} { ${selector} { ${cssRules} } }`
           : `${selector} { ${cssRules} }`,
-        sheet.cssRules.length,
+        sheet.cssRules.length - 1,
       );
     });
   } else {
@@ -289,7 +289,7 @@ export function insertRule(node, query, tokens, hostMode) {
       mediaQueries
         ? `${mediaSelector} { ${selector} { ${cssRules} } }`
         : `${selector} { ${cssRules} }`,
-      sheet.cssRules.length,
+      sheet.cssRules.length - 1,
     );
   }
 
