@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.14](https://github.com/hybridsjs/hybrids/compare/v8.1.13...v8.1.14) (2023-03-10)
+
+
+### Bug Fixes
+
+* **layout:** insert rules before  hidden selector ([8173d42](https://github.com/hybridsjs/hybrids/commit/8173d4249d870efc9fc466982bc9b8c2c8a09020))
+
 ### [8.1.13](https://github.com/hybridsjs/hybrids/compare/v8.1.12...v8.1.13) (2023-01-16)
 
 
