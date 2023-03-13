@@ -62,6 +62,7 @@ describe("layout:", () => {
 
     return resolveTimeout(() => {
       document.body.appendChild(host);
+
       return resolveTimeout(() => {
         expect(window.getComputedStyle(shadowRoot.children[0]).display).toBe(
           "flex",

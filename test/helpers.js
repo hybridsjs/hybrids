@@ -34,7 +34,7 @@ export function resolveRaf(fn) {
   });
 }
 
-export function resolveTimeout(fn, delay = 100) {
+export function resolveTimeout(fn, delay = 300) {
   return new Promise((resolve) => {
     setTimeout(() => {
       Promise.resolve().then(fn).then(resolve);
