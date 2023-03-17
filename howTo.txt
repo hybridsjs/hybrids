@@ -1,0 +1,4 @@
+git?
+     git add --all             add the files or changes to the repository
+     git status                see the changes to be committed.
+     git commit -m '<commit_message>'      commit new files/changes to the local repository.
