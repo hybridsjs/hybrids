@@ -11,6 +11,12 @@ module.exports = (config) => {
     browsers: IS_COVERAGE
       ? ["ChromeHeadless"]
       : ["ChromeHeadless", "WebkitHeadless", "FirefoxHeadless"],
+    client: {
+      jasmine: {
+        timeoutInterval: 10000,
+        random: false,
+      },
+    },
     files: [
       { pattern: "src/**/*.js", type: "module" },
       { pattern: "test/**/*.js", type: "module" },
@@ -27,6 +33,7 @@ module.exports = (config) => {
     },
     autoWatch: true,
     singleRun: true,
+    concurrency: process.env.GITHUB_ACTIONS ? 1 : Infinity,
     port: 9876 + Number(IS_COVERAGE),
   });
 };

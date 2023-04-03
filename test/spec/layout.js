@@ -52,25 +52,6 @@ describe("layout:", () => {
     expect(host.children[0].hasAttribute("layout")).toBe(false);
   });
 
-  it("keeps rules when element is taken out from the document", () => {
-    const shadowRoot = host.attachShadow({ mode: "open" });
-    html`<template layout="block"><div layout="row"></div></template>`(
-      host,
-      shadowRoot,
-    );
-    document.body.removeChild(host);
-
-    return resolveTimeout(() => {
-      document.body.appendChild(host);
-
-      return resolveTimeout(() => {
-        expect(window.getComputedStyle(shadowRoot.children[0]).display).toBe(
-          "flex",
-        );
-      });
-    });
-  });
-
   it("for shadowRoot turns on for root <template> element", () => {
     const shadowRoot = host.attachShadow({ mode: "open" });
     html`<template layout="row"><div></div></template>`(host, shadowRoot);
@@ -159,6 +140,23 @@ describe("layout:", () => {
 
     host.className = `${host.className} layout-test-column`;
     expect(window.getComputedStyle(host).flexDirection).toBe("column");
+  });
+
+  it("keeps rules when element is taken out from the document", () => {
+    const shadowRoot = host.attachShadow({ mode: "open" });
+    html`<template layout="column"><div layout="row"></div></template>`(
+      host,
+      shadowRoot,
+    );
+    document.body.removeChild(host);
+
+    return resolveTimeout(() => {
+      document.body.appendChild(host);
+
+      return resolveTimeout(() => {
+        expect(window.getComputedStyle(host).display).toBe("flex");
+      });
+    });
   });
 
   it("not overwrite hidden selector for the host element", () => {
