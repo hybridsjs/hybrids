@@ -1186,22 +1186,30 @@ describe("html:", () => {
     if (document.adoptedStyleSheets) {
       it("does not replace adoptedStyleSheets array when styles are equal", () => {
         const container = fragment.attachShadow({ mode: "open" });
+        const externalStyleSheet = new CSSStyleSheet();
+        container.adoptedStyleSheets = [externalStyleSheet];
+
         render().style("div { color: red }")({}, container);
         const adoptedStyleSheets = container.adoptedStyleSheets;
 
         render().style("div { color: red }")({}, container);
 
-        expect(container.adoptedStyleSheets[0]).toBe(adoptedStyleSheets[0]);
+        expect(container.adoptedStyleSheets[0]).toBe(externalStyleSheet);
+        expect(container.adoptedStyleSheets[1]).toBe(adoptedStyleSheets[1]);
       });
 
       it("replaces adoptedStyleSheets array when styles are not equal", () => {
         const container = fragment.attachShadow({ mode: "open" });
+        const externalStyleSheet = new CSSStyleSheet();
+        container.adoptedStyleSheets = [externalStyleSheet];
+
         render().style("div { color: red }")({}, container);
         const StyleSheet = container.adoptedStyleSheets[0];
 
         render().style("div { color: blue }")({}, container);
 
-        expect(container.adoptedStyleSheets[0]).not.toBe(StyleSheet);
+        expect(container.adoptedStyleSheets[0]).toBe(externalStyleSheet);
+        expect(container.adoptedStyleSheets[1]).not.toBe(StyleSheet);
       });
 
       it("adds styles using CSSStyleSheet instance", () => {

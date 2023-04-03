@@ -98,14 +98,14 @@ function beautifyTemplateLog(input, index) {
 }
 
 const styleSheetsMap = new Map();
+const prevStyleSheetsMap = new WeakMap();
 function setupStyleUpdater(target) {
   if (target.adoptedStyleSheets) {
-    let prevStyleSheets;
-    return (styleSheets) => {
-      const adoptedStyleSheets = target.adoptedStyleSheets;
-
-      if (styleSheets) {
-        styleSheets = styleSheets.map((style) => {
+    return (styles) => {
+      const prevStyleSheets = prevStyleSheetsMap.get(target);
+      const styleSheets =
+        styles &&
+        styles.map((style) => {
           let styleSheet = style;
           if (!(styleSheet instanceof global.CSSStyleSheet)) {
             styleSheet = styleSheetsMap.get(style);
@@ -119,26 +119,32 @@ function setupStyleUpdater(target) {
           return styleSheet;
         });
 
+      let adoptedStyleSheets;
+      if (prevStyleSheets) {
         if (
-          !prevStyleSheets ||
-          prevStyleSheets.some((styleSheet, i) => styleSheet !== styleSheets[i])
+          styleSheets &&
+          styleSheets.length === prevStyleSheets.length &&
+          styleSheets.every((s, i) => s === prevStyleSheets[i])
         ) {
-          // TODO: this might change order of already applied styles
-          target.adoptedStyleSheets = (
-            prevStyleSheets
-              ? adoptedStyleSheets.filter(
-                  (styleSheet) => !prevStyleSheets.includes(styleSheet),
-                )
-              : adoptedStyleSheets
-          ).concat(styleSheets);
+          return;
         }
-      } else if (prevStyleSheets) {
-        target.adoptedStyleSheets = adoptedStyleSheets.filter(
-          (styleSheet) => !prevStyleSheets.includes(styleSheet),
+
+        adoptedStyleSheets = target.adoptedStyleSheets.filter(
+          (s) => !prevStyleSheets.includes(s),
         );
       }
 
-      prevStyleSheets = styleSheets;
+      if (styleSheets) {
+        adoptedStyleSheets = (
+          adoptedStyleSheets || target.adoptedStyleSheets
+        ).concat(styleSheets);
+      }
+
+      if (adoptedStyleSheets) {
+        target.adoptedStyleSheets = adoptedStyleSheets;
+      }
+
+      prevStyleSheetsMap.set(target, styleSheets);
     };
   }
 
