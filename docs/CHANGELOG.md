@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.1.15](https://github.com/hybridsjs/hybrids/compare/v8.1.14...v8.1.15) (2023-04-13)
+
+
+### Bug Fixes
+
+* **html:** refactor styles injection in adoptedStyleSheets ([04d1fa9](https://github.com/hybridsjs/hybrids/commit/04d1fa96aff31e13fa57175d4b5c80e2cc8f7179))
+
 ### [8.1.14](https://github.com/hybridsjs/hybrids/compare/v8.1.13...v8.1.14) (2023-03-10)
 
 
