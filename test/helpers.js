@@ -41,7 +41,3 @@ export function resolveTimeout(fn, delay = 100) {
     }, delay);
   });
 }
-
-// Suppress console logs
-console.error = () => {};
-console.log = () => {};

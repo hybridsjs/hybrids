@@ -12,6 +12,7 @@ module.exports = (config) => {
       ? ["ChromeHeadless"]
       : ["ChromeHeadless", "WebkitHeadless", "FirefoxHeadless"],
     client: {
+      captureConsole: false,
       jasmine: {
         timeoutInterval: 10000,
         random: false,
