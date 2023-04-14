@@ -28,7 +28,16 @@ export function resolveOptions(args) {
   return { args: rest, options };
 }
 
-export function resolveFileOrDir(path, cb) {
+function commonPart(str1, str2) {
+  let i = 0;
+  while (str1[i] === str2[i]) {
+    i++;
+  }
+
+  return str1.slice(0, i);
+}
+
+export function resolveFileOrDir(path, cb, dir) {
   if (!existsSync(path)) {
     console.error(`'${path}' path does not exist`);
     process.exit(1);
@@ -39,10 +48,10 @@ export function resolveFileOrDir(path, cb) {
 
   if (stats.isDirectory()) {
     readdirSync(path).forEach((file) =>
-      resolveFileOrDir(resolve(path, file), cb),
+      resolveFileOrDir(resolve(path, file), cb, dir || path),
     );
   } else if (path.endsWith(".js") || path.endsWith(".ts")) {
-    cb(readFileSync(path, "utf8"), path.replace(cwd, ""));
+    cb(readFileSync(path, "utf8"), path.replace(commonPart(dir, cwd), ""));
   }
 }
 

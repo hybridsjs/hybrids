@@ -45,7 +45,7 @@ export default function extract(args, options) {
       );
     });
 
-    const getDesc = (text, path) => {
+    const getDesc = (text = "", path) => {
       return `${options.includePath && path ? `${path}:\n` : ""}${text}`;
     };
 
@@ -53,7 +53,9 @@ export default function extract(args, options) {
     const body = messages.reduce(
       (acc, m) => {
         const c = acc[m.key];
-        let description = m.description && getDesc(m.description, m.path);
+        let description =
+          (m.description || options.includePath) &&
+          getDesc(m.description, m.path);
 
         if (m.description) {
           description = `${
@@ -76,15 +78,16 @@ export default function extract(args, options) {
         : {},
     );
 
-    const targetContent = JSON.stringify(
-      Object.fromEntries(
-        Object.entries(body).sort(([a], [b]) =>
-          a.localeCompare(b, "en", { sensitivity: "base" }),
+    const targetContent =
+      JSON.stringify(
+        Object.fromEntries(
+          Object.entries(body).sort(([a], [b]) =>
+            a.localeCompare(b, "en", { sensitivity: "base" }),
+          ),
         ),
-      ),
-      null,
-      2,
-    );
+        null,
+        2,
+      ) + "\n";
 
     if (targetPath) {
       writeFileSync(targetPath, targetContent);
