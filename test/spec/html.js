@@ -1183,6 +1183,34 @@ describe("html:", () => {
       }, 500);
     });
 
+    it("replaces styles by style tag when template changes for element", () => {
+      render().style("div { color: red }")({}, fragment);
+      html`<div>content two</div>`.style("div { color: blue; }")({}, fragment);
+
+      return resolveTimeout(() => {
+        expect(getComputedStyle(fragment.children[0]).color).toBe(
+          "rgb(0, 0, 255)",
+        );
+      });
+    });
+
+    it("replaces styles by style tag when template changes for content", () => {
+      html`${html`content`.style("custom-element { color: red }")}`(
+        {},
+        fragment,
+      );
+      html`${html`content two`.style("custom-element { color: blue; }")}`(
+        {},
+        fragment,
+      );
+
+      return resolveTimeout(() => {
+        expect(getComputedStyle(fragment.children[0]).color).toBe(
+          "rgb(0, 0, 255)",
+        );
+      });
+    });
+
     if (document.adoptedStyleSheets) {
       it("does not replace adoptedStyleSheets array when styles are equal", () => {
         const container = fragment.attachShadow({ mode: "open" });

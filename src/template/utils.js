@@ -20,12 +20,10 @@ export function getTemplateEnd(node) {
 }
 
 export function removeTemplate(target) {
-  const data = getMeta(target);
-
-  if (data.styles) data.styles();
-
   if (target.nodeType === global.Node.TEXT_NODE) {
-    if (data.startNode) {
+    const data = metaMap.get(target);
+
+    if (data && data.startNode) {
       const endNode = getTemplateEnd(data.endNode);
 
       let node = data.startNode;
@@ -36,6 +34,7 @@ export function removeTemplate(target) {
         node.parentNode.removeChild(node);
         node = nextSibling !== lastNextSibling && nextSibling;
       }
+      metaMap.set(target, {});
     }
   } else {
     let child = target.childNodes[0];
@@ -43,9 +42,9 @@ export function removeTemplate(target) {
       target.removeChild(child);
       child = target.childNodes[0];
     }
-  }
 
-  metaMap.delete(target);
+    metaMap.set(target, {});
+  }
 }
 
 const TIMESTAMP = Date.now();

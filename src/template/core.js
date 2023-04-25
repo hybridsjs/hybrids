@@ -99,77 +99,92 @@ function beautifyTemplateLog(input, index) {
 
 const styleSheetsMap = new Map();
 const prevStyleSheetsMap = new WeakMap();
-function setupStyleUpdater(target) {
-  if (target.adoptedStyleSheets) {
-    return (styles) => {
-      const prevStyleSheets = prevStyleSheetsMap.get(target);
-      const styleSheets =
-        styles &&
-        styles.map((style) => {
-          let styleSheet = style;
-          if (!(styleSheet instanceof global.CSSStyleSheet)) {
-            styleSheet = styleSheetsMap.get(style);
-            if (!styleSheet) {
-              styleSheet = new global.CSSStyleSheet();
-              styleSheet.replaceSync(style);
-              styleSheetsMap.set(style, styleSheet);
-            }
-          }
+function updateAdoptedStylesheets(target, styles) {
+  const prevStyleSheets = prevStyleSheetsMap.get(target);
+  if (!prevStyleSheets && !styles) return;
 
-          return styleSheet;
-        });
-
-      let adoptedStyleSheets;
-      if (prevStyleSheets) {
-        if (
-          styleSheets &&
-          styleSheets.length === prevStyleSheets.length &&
-          styleSheets.every((s, i) => s === prevStyleSheets[i])
-        ) {
-          return;
+  const styleSheets =
+    styles &&
+    styles.map((style) => {
+      let styleSheet = style;
+      if (!(styleSheet instanceof global.CSSStyleSheet)) {
+        styleSheet = styleSheetsMap.get(style);
+        if (!styleSheet) {
+          styleSheet = new global.CSSStyleSheet();
+          styleSheet.replaceSync(style);
+          styleSheetsMap.set(style, styleSheet);
         }
-
-        adoptedStyleSheets = target.adoptedStyleSheets.filter(
-          (s) => !prevStyleSheets.includes(s),
-        );
       }
 
-      if (styleSheets) {
-        adoptedStyleSheets = (
-          adoptedStyleSheets || target.adoptedStyleSheets
-        ).concat(styleSheets);
-      }
+      return styleSheet;
+    });
 
-      if (adoptedStyleSheets) {
-        target.adoptedStyleSheets = adoptedStyleSheets;
-      }
+  let adoptedStyleSheets;
 
-      prevStyleSheetsMap.set(target, styleSheets);
-    };
+  if (prevStyleSheets) {
+    if (
+      styleSheets &&
+      styleSheets.length === prevStyleSheets.length &&
+      styleSheets.every((s, i) => s === prevStyleSheets[i])
+    ) {
+      return;
+    }
+
+    adoptedStyleSheets = target.adoptedStyleSheets.filter(
+      (s) => !prevStyleSheets.includes(s),
+    );
   }
 
-  let styleEl;
-  return (styleSheets) => {
-    if (styleSheets) {
-      if (!styleEl) {
-        styleEl = global.document.createElement("style");
-        target = getTemplateEnd(target);
-        if (target.nodeType === global.Node.TEXT_NODE) {
-          target.parentNode.insertBefore(styleEl, target.nextSibling);
-        } else {
-          target.appendChild(styleEl);
-        }
-      }
-      const result = [...styleSheets].join("\n/*------*/\n");
+  if (styleSheets) {
+    adoptedStyleSheets = (
+      adoptedStyleSheets || target.adoptedStyleSheets
+    ).concat(styleSheets);
+  }
 
-      if (styleEl.textContent !== result) {
-        styleEl.textContent = result;
+  target.adoptedStyleSheets = adoptedStyleSheets;
+  prevStyleSheetsMap.set(target, styleSheets);
+}
+
+const styleElementMap = new WeakMap();
+function updateStyleElement(target, styles) {
+  let styleEl = styleElementMap.get(target);
+
+  if (styles) {
+    if (!styleEl || styleEl.parentNode !== target) {
+      styleEl = global.document.createElement("style");
+      styleElementMap.set(target, styleEl);
+
+      target = getTemplateEnd(target);
+      if (target.nodeType === global.Node.TEXT_NODE) {
+        target.parentNode.insertBefore(styleEl, target.nextSibling);
+      } else {
+        target.appendChild(styleEl);
       }
-    } else if (styleEl) {
-      styleEl.parentNode.removeChild(styleEl);
-      styleEl = null;
     }
-  };
+
+    const result = [...styles].join("\n/*------*/\n");
+
+    if (styleEl.textContent !== result) {
+      styleEl.textContent = result;
+    }
+  } else if (styleEl) {
+    styleEl.parentNode.removeChild(styleEl);
+    styleElementMap.set(target, null);
+  }
+}
+
+const updateStyleFns = new WeakMap();
+function updateStyles(target, styles) {
+  let fn = updateStyleFns.get(target);
+
+  if (!fn) {
+    fn = target.adoptedStyleSheets
+      ? updateAdoptedStylesheets
+      : updateStyleElement;
+    updateStyleFns.set(target, fn);
+  }
+
+  fn(target, styles);
 }
 
 export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
@@ -469,9 +484,10 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
 
       meta.template = template;
       meta.markers = markers;
-      meta.styles = setupStyleUpdater(target);
 
       if (target.nodeType === global.Node.TEXT_NODE) {
+        updateStyleElement(target);
+
         meta.startNode = fragment.childNodes[0];
         meta.endNode = fragment.childNodes[fragment.childNodes.length - 1];
 
@@ -496,7 +512,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       if (useLayout) layout.inject(target);
     }
 
-    meta.styles(styles);
+    updateStyles(target, styles);
 
     for (const marker of meta.markers) {
       const value = args[marker.index];
@@ -508,9 +524,9 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
         marker.fn(host, marker.node, value, prevValue, useLayout);
       } catch (error) {
         console.error(
-          `Following error was thrown when updating a template expression in ${stringifyElement(
+          `Error while updating template expression in ${stringifyElement(
             host,
-          )}\n${beautifyTemplateLog(signature, marker.index)}`,
+          )}:\n${beautifyTemplateLog(signature, marker.index)}`,
         );
 
         throw error;
