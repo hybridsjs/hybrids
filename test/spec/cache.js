@@ -7,6 +7,8 @@ import {
   observe,
 } from "../../src/cache.js";
 
+import { resolveRaf } from "../helpers.js";
+
 describe("cache:", () => {
   let target;
   let spy;
@@ -208,71 +210,70 @@ describe("cache:", () => {
       }).not.toThrow();
     });
 
-    it("calls observe callback after initial get before setup", (done) => {
+    it("calls observe callback after initial get before setup", () => {
       set(target, "dep", () => "value");
       const getter = () => get(target, "dep", _);
       get(target, "key", getter);
 
       observe(target, "key", getter, spy);
 
-      requestAnimationFrame(() => {
+      return resolveRaf(() => {
         set(target, "dep", () => "new value");
-        requestAnimationFrame(() => {
+        return resolveRaf(() => {
           expect(spy).toHaveBeenCalledTimes(2);
-          done();
         });
       });
     });
 
-    it("runs callback when value changes", (done) => {
+    it("runs callback when value changes", () => {
       observe(target, "key", _, spy);
       set(target, "key", _, "value");
 
-      requestAnimationFrame(() => {
+      return resolveRaf(() => {
         expect(spy).toHaveBeenCalledTimes(1);
         expect(spy).toHaveBeenCalledWith(target, "value", undefined);
-        done();
       });
     });
 
-    it("does not run callback for the first time when value is undefined", (done) => {
+    it("does not run callback for the first time when value is undefined", () => {
       observe(target, "key", _, spy);
 
-      requestAnimationFrame(() => {
+      return resolveRaf(() => {
         expect(spy).toHaveBeenCalledTimes(0);
-        done();
       });
     });
 
-    it("does not run callback when unobserve", (done) => {
-      const unobserve = observe(target, "key", () => "value", spy);
+    it("does not run callback when unobserve", () => {
+      let value = "value";
+      const unobserve = observe(target, "key", () => value, spy);
 
       unobserve();
 
-      requestAnimationFrame(() => {
-        expect(spy).toHaveBeenCalledTimes(0);
-        done();
+      value = "new value";
+      set(target, "key", _, value);
+
+      return resolveRaf(() => {
+        expect(spy).toHaveBeenCalledTimes(1);
       });
     });
 
-    it("runs callback when dependency changes", (done) => {
+    it("runs callback when dependency changes", () => {
       const getter = () =>
         get(target, "otherKey", () => get(target, "deepKey", _));
       observe(target, "key", getter, spy);
 
-      requestAnimationFrame(() => {
+      return resolveRaf(() => {
         expect(spy).toHaveBeenCalledTimes(0);
         set(target, "deepKey", _, "value");
 
-        requestAnimationFrame(() => {
+        return resolveRaf(() => {
           expect(spy).toHaveBeenCalledTimes(1);
           expect(spy).toHaveBeenCalledWith(target, "value", undefined);
-          done();
         });
       });
     });
 
-    it("runs callback when deep value changes", (done) => {
+    it("runs callback when deep value changes", () => {
       const getDeepDeep = () => get(target, "deepDeep", _);
       const getDeepDep = () => get(target, "deep", getDeepDeep);
       const getDep = () => get(target, "dep", getDeepDep);
@@ -291,63 +292,57 @@ describe("cache:", () => {
         spy,
       );
 
-      requestAnimationFrame(() => {
+      return resolveRaf(() => {
         expect(spy).toHaveBeenCalledTimes(1);
         set(target, "other", _, "two");
-        requestAnimationFrame(() => {
+        return resolveRaf(() => {
           expect(spy).toHaveBeenCalledTimes(2);
           set(target, "deepDeep", _, "three");
-          requestAnimationFrame(() => {
+          return resolveRaf(() => {
             expect(spy).toHaveBeenCalledTimes(3);
-            done();
           });
         });
       });
     });
 
-    it("cleans emitter when unobserve", (done) => {
+    it("cleans emitter when unobserve", () => {
       const unobserve = observe(target, "key", _, spy);
 
-      requestAnimationFrame(() => {
+      return resolveRaf(() => {
         unobserve();
         set(target, "key", _, "value");
-        requestAnimationFrame(() => {
+        return resolveRaf(() => {
           expect(spy).toHaveBeenCalledTimes(0);
-          done();
         });
       });
     });
 
-    it("cleans dependencies contexts when unobserve", (done) => {
+    it("cleans dependencies contexts when unobserve", () => {
       const getter = () =>
         get(target, "otherKey", () => get(target, "deepKey", _));
       const unobserve = observe(target, "key", getter, spy);
 
-      requestAnimationFrame(() => {
+      return resolveRaf(() => {
         unobserve();
         set(target, "deepKey", _, "value");
 
-        requestAnimationFrame(() => {
+        return resolveRaf(() => {
           expect(spy).toHaveBeenCalledTimes(0);
-          done();
         });
       });
     });
 
-    it("cleans contexts when getter throws", (done) => {
+    it("cleans contexts when getter throws", () => {
       const getKey = () =>
-        get(target, "key", () =>
-          get(target, "otherKey", () => {
-            throw Error();
-          }),
-        );
-      const unobserve = observe(target, "key", () => {}, spy);
+        get(target, "otherKey", () => {
+          throw Error();
+        });
 
-      expect(() => getKey()).toThrow();
+      expect(() => observe(target, "key", getKey, spy)).not.toThrow();
+      set(target, "otherKey", _, "value");
 
-      requestAnimationFrame(() => {
-        expect(() => unobserve()).not.toThrow();
-        done();
+      return resolveRaf(() => {
+        expect(spy).toHaveBeenCalledTimes(0);
       });
     });
   });

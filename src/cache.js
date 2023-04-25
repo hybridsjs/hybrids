@@ -132,7 +132,11 @@ export function observe(target, key, getter, fn) {
     }
   };
 
-  emitter.add(entry.observe);
+  try {
+    entry.observe();
+  } catch (e) {
+    console.error(e);
+  }
 
   return () => {
     emitter.clear(entry.observe);
