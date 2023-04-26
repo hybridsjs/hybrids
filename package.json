@@ -46,7 +46,7 @@
     "karma-coverage": "^2.1.0",
     "karma-firefox-launcher": "^2.1.2",
     "karma-jasmine": "^5.1.0",
-    "karma-webkit-launcher": "^1.1.0",
+    "karma-webkit-launcher": "^2.1.0",
     "playwright": "^1.27.1",
     "prettier": "^2.5.1",
     "standard-version": "^9.3.2"
