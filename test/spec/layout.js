@@ -514,4 +514,34 @@ describe("layout:", () => {
     expect(styles3.bottom).toBe("16px");
     expect(styles3.left).toBe("16px");
   });
+
+  it("supports generic variables as properties with values", () => {
+    expect(() => {
+      html`
+        <template layout>
+          <div layout="::border"></div>
+        </template>
+      `(host);
+    }).toThrow();
+
+    html`
+      <template layout>
+        <div layout="::ui:color:red ::border:thin"></div>
+        <div layout="::font:headline-m"></div>
+      </template>
+    `.css`
+      :root {
+        --ui-color-red: red;
+        --border-thin: 1px solid black;
+        --font-headline-m: 24px sans-serif;
+      }
+    `(host);
+
+    const styles0 = window.getComputedStyle(host.children[0]);
+    expect(styles0.color).toBe("rgb(255, 0, 0)");
+    expect(styles0.border).toBe("1px solid rgb(0, 0, 0)");
+
+    const styles1 = window.getComputedStyle(host.children[1]);
+    expect(styles1.font).toBe("24px sans-serif");
+  });
 });

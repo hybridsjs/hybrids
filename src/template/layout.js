@@ -147,6 +147,18 @@ const rules = {
   right: (props, value = 0) => ({ right: dimension(value) }),
 
   layer: (props, value = 1) => ({ "z-index": value }),
+
+  "": (props, _, ...args) => {
+    if (args.length < 2) {
+      throw new Error(
+        "Generic rule '::' requires at least two arguments, eg.: ::[property]:[name]",
+      );
+    }
+
+    return {
+      [args[args.length - 2]]: `var(--${args.join("-")})`,
+    };
+  },
 };
 
 const dimensions = {

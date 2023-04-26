@@ -131,7 +131,7 @@ If the argument type is dimension, the engine maps it with the following order:
   * ...
 3. Provided value is used as is.
 
-### CSS Variables
+## CSS Variables
 
 Add `--` prefix to use a CSS variable as an argument. The engine will pass it as is, without processing, so the variable can represents dynamic value, which can be updated in runtime, or scoped to some subtree.
 
@@ -140,6 +140,8 @@ Add `--` prefix to use a CSS variable as an argument. The engine will pass it as
 ```
 
 ## Rules
+
+The following rules are supported by the engine:
 
 ### Base
 
@@ -234,3 +236,37 @@ Use following examples as a reference:
 | bottom | [value:dimension] | bottom:0 | `bottom: [value]`                |
 | left   | [value:dimension] | left:0   | `left: [value]`                  |
 | layer  | [index:value]     | layer:1  | `z-index: [index]`               |
+
+## Generic Values
+
+You can extend ruleset supported by the layout engine by using special empty rule `::`. It generates a CSS property with a value set to CSS variable based on its name. In another words, it allows to use predefined design tokens, which points any CSS properties.
+
+| Rule   | Arguments                       | Properties                    |
+|--------|--------------------------------|--------------------------------|
+| ::     | [[prefix]:...]:[property]:[name] | `[property]: var(--[...args])` |
+
+```html
+<style>
+  html {
+    --color-primary: blue;
+    /* ... */
+
+    /* Prefixed variables */
+    --ui-font-body: 18px / 20px sans-serif;
+  }
+</style>
+```
+
+```html
+<div layout="block ::color:primary ::ui:font:body"></div>
+```
+
+The above example produces the following CSS:
+
+```css
+{
+  display: block;
+  color: var(--color-primary);
+  font: var(--ui-font-body);
+}
+```
