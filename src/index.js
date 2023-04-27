@@ -1,4 +1,5 @@
 export { default as define } from "./define.js";
+export { default as mount } from "./mount.js";
 
 export { default as parent } from "./parent.js";
 export { default as children } from "./children.js";

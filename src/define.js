@@ -6,18 +6,23 @@ import { deferred, camelToDash, walkInShadow } from "./utils.js";
 import render from "./render.js";
 import value from "./value.js";
 
+export const constructors = new WeakMap();
+
 const disconnects = new WeakMap();
 function compile(hybrids, HybridsElement) {
   if (HybridsElement) {
-    if (hybrids === HybridsElement.hybrids) return HybridsElement;
+    const prevHybrids = constructors.get(HybridsElement);
+    if (hybrids === prevHybrids) return HybridsElement;
 
-    for (const key of Object.keys(HybridsElement.hybrids)) {
+    for (const key of Object.keys(prevHybrids)) {
       delete HybridsElement.prototype[key];
     }
   } else {
     HybridsElement = class extends global.HTMLElement {
       connectedCallback() {
-        for (const key of Object.keys(this)) {
+        for (const key of HybridsElement.settable) {
+          if (!hasOwnProperty.call(this, key)) continue;
+
           const value = this[key];
           delete this[key];
           this[key] = value;
@@ -28,8 +33,8 @@ function compile(hybrids, HybridsElement) {
 
         emitter.add(() => {
           if (set === disconnects.get(this)) {
-            for (const fn of this.constructor.connects) set.add(fn(this));
-            for (const fn of this.constructor.observers) set.add(fn(this));
+            for (const fn of HybridsElement.connects) set.add(fn(this));
+            for (const fn of HybridsElement.observers) set.add(fn(this));
           }
         });
       }
@@ -47,10 +52,11 @@ function compile(hybrids, HybridsElement) {
     };
   }
 
-  HybridsElement.hybrids = hybrids;
+  constructors.set(HybridsElement, Object.freeze(hybrids));
 
   const connects = new Set();
   const observers = new Set();
+  const settable = new Set();
 
   for (const key of Object.keys(hybrids)) {
     if (key === "tag") continue;
@@ -93,6 +99,8 @@ function compile(hybrids, HybridsElement) {
       );
     }
 
+    if (desc.set) settable.add(key);
+
     Object.defineProperty(HybridsElement.prototype, key, {
       get: function get() {
         return cache.get(this, key, desc.get);
@@ -121,6 +129,7 @@ function compile(hybrids, HybridsElement) {
 
   HybridsElement.connects = connects;
   HybridsElement.observers = observers;
+  HybridsElement.settable = settable;
 
   return HybridsElement;
 }
@@ -132,7 +141,7 @@ function update(HybridsElement) {
       walkInShadow(global.document.body, (node) => {
         if (updateQueue.has(node.constructor)) {
           const prevHybrids = updateQueue.get(node.constructor);
-          const hybrids = node.constructor.hybrids;
+          const hybrids = constructors.get(node.constructor);
           node.disconnectedCallback();
 
           for (const key of Object.keys(hybrids)) {
@@ -141,6 +150,8 @@ function update(HybridsElement) {
               type !== "object" &&
               type !== "function" &&
               hybrids[key] !== prevHybrids[key];
+
+            if (clearValue) node.removeAttribute(camelToDash(key));
             cache.invalidate(node, key, { clearValue });
           }
 
@@ -150,7 +161,7 @@ function update(HybridsElement) {
       updateQueue.clear();
     });
   }
-  updateQueue.set(HybridsElement, HybridsElement.hybrids);
+  updateQueue.set(HybridsElement, constructors.get(HybridsElement));
 }
 
 function define(hybrids) {
@@ -163,11 +174,11 @@ function define(hybrids) {
   const HybridsElement = global.customElements.get(hybrids.tag);
 
   if (HybridsElement) {
-    if (HybridsElement.hybrids) {
+    if (constructors.get(HybridsElement)) {
       update(HybridsElement);
       compile(hybrids, HybridsElement);
 
-      return Object.freeze(hybrids);
+      return hybrids;
     }
 
     throw TypeError(
@@ -176,7 +187,7 @@ function define(hybrids) {
   }
 
   global.customElements.define(hybrids.tag, compile(hybrids));
-  return Object.freeze(hybrids);
+  return hybrids;
 }
 
 function from(components, options = {}) {

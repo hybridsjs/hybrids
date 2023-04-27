@@ -82,6 +82,7 @@ describe("define:", () => {
     define({
       tag: "test-define-same",
       prop1: "test",
+      prop2: "other",
       render: () => html` <test-define-same-deep></test-define-same-deep> `,
     });
 

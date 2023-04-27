@@ -62,6 +62,9 @@ declare module "hybrids" {
     ): void;
   }
 
+  /* Mount */
+  function mount<E>(target: HTMLElement, component: Component<E>): () => void;
+
   /* Factories */
 
   function parent<E, V>(

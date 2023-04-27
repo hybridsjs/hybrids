@@ -1,8 +1,10 @@
+import { constructors } from "./define.js";
+
 function walk(node, fn) {
   let parentElement = node.parentElement || node.parentNode.host;
 
   while (parentElement) {
-    const hybrids = parentElement.constructor.hybrids;
+    const hybrids = constructors.get(parentElement.constructor);
 
     if (hybrids && fn(hybrids, node)) {
       return parentElement;

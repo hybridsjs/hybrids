@@ -1,6 +1,8 @@
 # Definition
 
-## Single Component
+## Custom Elements
+
+### Single Component
 
 To define a web component use the `define` function from the library:
 
@@ -28,7 +30,7 @@ export default define({
 
 The above structure allows short syntax, and still allows to import the definition in another module, for example for unit testing, or the reference.
 
-## Multiple Components
+### Multiple Components
 
 For larger projects with multiple definitions of the UI or view components, you can use `define.from()` method, which targets application setup using a bundler, like [Vite](https://vitejs.dev/).
 
@@ -48,7 +50,7 @@ define.from(components: object, options?: { prefix?: string; root?: string | str
 * **returns**:
   * `components` - a passed argument to `define.from()` function
 
-The below example shows how to use the `define.from()` method with the [Vite](https://vitejs.dev/) bundler. The `define.from()` method is called in the `app.js` file, which is the entry point of the application. The rest of the component definition don't have to use `define` function directly, and can export the component definition instead without explicitly setting the `tag` property (it is dynamically generated from the file path).
+The below example shows how to use the `define.from()` method with the [Vite](https://vitejs.dev/) bundler. The `define.from()` method is called in the `app.js` file, which is the entry point of the application. The rest of the component definition don't have to use `define` function directly, and can export the component definition without explicitly setting the `tag` property (it is dynamically generated from the file path).
 
 **./components/HelloWorld.js**:
 
@@ -69,6 +71,18 @@ define.from(
   import.meta.glob("./components/*.js", { eager: true, import: "default" }),
   { root: "components" }
 );
+```
+
+### Constructor
+
+If you need access to the custom element constructor, you can use the built-in method from the Custom Elements API:
+
+```javascript
+// defines a custom element with tag name included as a property
+import component from "./my-element.js";
+
+const MyElement = customElements.get(component.tag);
+const el = new MyElement();
 ```
 
 ## External Usage
@@ -110,14 +124,45 @@ customElements.define("my-super-element", MyElement);
 <my-super-element name="John"></my-super-element>
 ```
 
-## Constructor
+## Mounting
 
-If you need access to the custom element constructor, you can use the built-in method from the Custom Elements API:
+The definition as a map of hybrid properties is decoupled from the `HTMLElement` class constructor. It is possible to attach the component to existing DOM element instead of defining new custom elements.
+
+The feature is most helpful for full page app setup, where replacing `define()` with `mount()` function does not require a root custom element, as you can attach the component definition directly to the `document.body` element.
+
+```typescript
+mount(target: HTMLElement, component: object): void;
+```
+
+* **arguments**:
+  * `target` - an DOM element to attach the component definition, usually it should be `document.body`
+  * `component` - an object with map of hybrid property descriptors without `tag` property
+
+The below example shows simplified setup of an application with a router (you can use all of the features of framework, including the layout engine). The stack of the router will be rendered directly as a children of the `document.body` element.
 
 ```javascript
-// defines a custom element with tag name included as a property
-import component from "./my-element.js";
+import { mount, html, router } from "hybrids";
 
-const MyElement = customElements.get(component.tag);
-const el = new MyElement();
+import Home from './views/home.js';
+
+const App = {
+  stack: router(Home),
+  content: () => html`
+    <template layout="column">
+      ...
+      ${stack}
+    </template>
+  `,
+};
+
+mount(document.body, App);
+```
+
+```html
+<html>
+  ...
+  <body class="l-e0y8i-c">
+    <my-app-home-view>...</my-app-home-view>
+  </body>
+</html>
 ```

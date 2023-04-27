@@ -1,6 +1,7 @@
 import global from "./global.js";
 import * as cache from "./cache.js";
 import { deferred, dispatch, walkInShadow } from "./utils.js";
+import { constructors } from "./define.js";
 
 const connect = Symbol("router.connect");
 const configs = new WeakMap();
@@ -259,7 +260,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
   if (!config) {
     const Constructor = global.customElements.get(id);
 
-    if (!Constructor || Constructor.hybrids !== hybrids) {
+    if (!Constructor || constructors.get(Constructor) !== hybrids) {
       throw Error(
         `<${id}> view must be defined by 'define()' function before it can be used in router factory`,
       );

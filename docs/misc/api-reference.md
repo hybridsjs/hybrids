@@ -17,13 +17,13 @@ define(component: object & { tag: string }): component;
 define.from(components: object, options?: { prefix?: string; root?: string | string[]}): components;
 ```
 
-* **arguments**:
-  * `components` - an object with map of components with tag names as keys (or paths to the files)
-  * `options` - an optional object with options
-    * `prefix` - a prefix added to the tag names
-    * `root` - a string or a list of strings, which is cleared from the tag names
-* **returns**:
-  * `components` - a passed argument to `define.from()` function
+- **arguments**:
+  - `components` - an object with map of components with tag names as keys (or paths to the files)
+  - `options` - an optional object with options
+    - `prefix` - a prefix added to the tag names
+    - `root` - a string or a list of strings, which is cleared from the tag names
+- **returns**:
+  - `components` - a passed argument to `define.from()` function
 
 ```typescript
 define.compile(component: object): HTMLElement;
@@ -33,6 +33,14 @@ define.compile(component: object): HTMLElement;
   - `component` - an object with map of hybrid property descriptors without `tag` property
 - **returns**:
   - `HTMLElement` - a constructor for the custom element (not registered in the global custom elements registry)
+
+```typescript
+mount(target: HTMLElement, component: object): void;
+```
+
+- **arguments**:
+  - `target` - an DOM element to attach the component definition, usually it should be `document.body`
+  - `component` - an object with map of hybrid property descriptors without `tag` property
 
 ## Parent
 

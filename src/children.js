@@ -1,8 +1,9 @@
 import global from "./global.js";
+import { constructors } from "./define.js";
 
 function walk(node, fn, options, items = [], host = node) {
   for (const child of Array.from(node.children)) {
-    const hybrids = child.constructor.hybrids;
+    const hybrids = constructors.get(child.constructor);
     if (hybrids && fn(hybrids, host)) {
       items.push(child);
       if (options.deep && options.nested) {

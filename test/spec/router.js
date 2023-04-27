@@ -1,8 +1,9 @@
 import { define, html, router } from "../../src/index.js";
+import { constructors } from "../../src/define.js";
 import { resolveTimeout } from "../helpers.js";
 
 function hybrids(el) {
-  return el.constructor.hybrids;
+  return constructors.get(el.constructor);
 }
 
 const browserUrl = window.location.pathname;
@@ -524,9 +525,9 @@ describe("router:", () => {
 
                       return resolveTimeout(() => {
                         // Clears not connected views and uses root view
-                        expect(host.children[0].constructor.hybrids).toBe(
-                          Another,
-                        );
+                        expect(
+                          constructors.get(host.children[0].constructor),
+                        ).toBe(Another);
                         window.history.replaceState(null, "", browserUrl);
                       });
                     });
