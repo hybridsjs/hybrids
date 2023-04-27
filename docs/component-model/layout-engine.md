@@ -1,7 +1,5 @@
 # Layout Engine
 
-!> The feature is unstable. It is unlikely, but some breaking changes may occur without the major version bump until `v8.2.0` release.
-
 The layout engine provides creating CSS layouts in-place in templates without external dependencies. It's built in similar way to utility-first CSS frameworks, but with much more powerful features.
 
 It focuses on "invisible" CSS rules, like display types, alignments, positioning, sizing, etc. The rest should be defined inside of the reusable UI components by [styling](/component-model/templates.md#styling) supported by the templates.
