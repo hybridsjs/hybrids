@@ -101,6 +101,16 @@ html`...`.style(...styles: Array<string | CSSStyleSheet>): Function
 html`...`.css`div { color: red; padding-top: ${value}; }`: Function
 ```
 
+```typescript
+html`...`.use(plugin: (fn: ((host, target) => void) => (host, target) => void): Function
+```
+
+- **arguments**:
+  - `plugin` - a function, which takes the original update function and returns a new update function
+- **returns**:
+  - an update function compatible with content expression
+
+
 - **arguments**:
   - CSS content in tagged template literals
   - `value` - dynamic values concatenated with the template literal
@@ -122,11 +132,11 @@ html.resolve(promise: Promise, placeholder: Function, delay = 200): Function
 html.set(propertyName: string, value?: any): Function
 ```
 
-* **arguments**:
-  * `propertyName` - a target host property name
-  * `value` - a custom value, which will be set instead of `event.target.value`
-* **returns**:
-  * a callback function compatible with template engine event listener
+- **arguments**:
+  - `propertyName` - a target host property name
+  - `value` - a custom value, which will be set instead of `event.target.value`
+- **returns**:
+  - a callback function compatible with template engine event listener
 
 ```typescript
 svg`<circle property="${value}">${value}</circle>` : Function
@@ -154,6 +164,15 @@ svg`...`.css`path { color: ${value}; }`: Function
 - **arguments**:
   - CSS content in tagged template literals
   - `value` - dynamic values concatenated with the template literal
+- **returns**:
+  - an update function compatible with content expression
+
+```typescript
+svg`...`.use(plugin: (fn: ((host, target) => void) => (host, target) => void): Function
+```
+
+- **arguments**:
+  - `plugin` - a function, which takes the original update function and returns a new update function
 - **returns**:
   - an update function compatible with content expression
 

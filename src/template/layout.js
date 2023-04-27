@@ -1,6 +1,8 @@
 import global from "../global.js";
 
-const hasAdoptedStylesheets = !!global.document.adoptedStyleSheets;
+const hasAdoptedStylesheets = !!(
+  global.document && global.document.adoptedStyleSheets
+);
 const NUMBER_REGEXP = /^\d+$/;
 const rules = {
   // base
@@ -159,6 +161,7 @@ const rules = {
       [args[args.length - 2]]: `var(--${args.join("-")})`,
     };
   },
+  view: (props, value) => ({ "view-transition-name": value }),
 };
 
 const dimensions = {

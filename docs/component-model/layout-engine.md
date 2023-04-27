@@ -235,6 +235,12 @@ Use following examples as a reference:
 | left   | [value:dimension] | left:0   | `left: [value]`                  |
 | layer  | [index:value]     | layer:1  | `z-index: [index]`               |
 
+### Transition API
+
+| Rule | Arguments     | Defaults | Properties                     |
+|------|---------------|----------|--------------------------------|
+| view | [name:value]  | ---      | `view-transition-name: [name]` |
+
 ## Generic Values
 
 You can extend ruleset supported by the layout engine by using special empty rule `::`. It generates a CSS property with a value set to CSS variable based on its name. In another words, it allows to use predefined design tokens, which points any CSS properties.

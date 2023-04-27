@@ -318,6 +318,7 @@ declare module "hybrids" {
     key: (id: any) => this;
     style: (...styles: Array<string | CSSStyleSheet>) => this;
     css: (parts: TemplateStringsArray, ...args: unknown[]) => this;
+    use: (fn: (template: UpdateFunction<E>) => UpdateFunction<E>) => this;
   }
 
   interface EventHandler<E> {
@@ -341,6 +342,8 @@ declare module "hybrids" {
       placeholder?: UpdateFunction<E>,
       delay?: number,
     ): UpdateFunction<E>;
+
+    function transition<E>(template: UpdateFunction<E>): UpdateFunction<E>;
 
     function msg(parts: TemplateStringsArray, ...args: unknown[]): string;
   }

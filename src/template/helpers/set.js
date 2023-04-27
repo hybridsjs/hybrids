@@ -1,5 +1,4 @@
-import { storePointer } from "../utils.js";
-import resolveTemplateValue from "./resolvers/value.js";
+import { storePointer } from "../../utils.js";
 
 function resolveValue({ target, detail }, setter) {
   let value;
@@ -34,7 +33,7 @@ function getPartialObject(name, value) {
 
 const stringCache = new Map();
 
-export function set(property, valueOrPath) {
+export default function set(property, valueOrPath) {
   if (!property) {
     throw Error(
       `The first argument must be a property name or an object instance: ${property}`,
@@ -86,36 +85,4 @@ export function set(property, valueOrPath) {
   }
 
   return fn;
-}
-
-const promiseMap = new WeakMap();
-export function resolve(promise, placeholder, delay = 200) {
-  return function fn(host, target) {
-    const useLayout = fn.useLayout;
-    let timeout;
-
-    if (placeholder) {
-      timeout = setTimeout(() => {
-        timeout = undefined;
-        resolveTemplateValue(host, target, placeholder, undefined, useLayout);
-      }, delay);
-    }
-
-    promiseMap.set(target, promise);
-
-    promise.then((value) => {
-      if (timeout) clearTimeout(timeout);
-
-      if (promiseMap.get(target) === promise) {
-        resolveTemplateValue(
-          host,
-          target,
-          value,
-          placeholder && !timeout ? placeholder : undefined,
-          useLayout,
-        );
-        promiseMap.set(target, null);
-      }
-    });
-  };
 }
