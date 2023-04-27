@@ -446,7 +446,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
   }
 
   const partsKeys = Object.keys(parts);
-  return function updateTemplateInstance(host, target, args, styles) {
+  return function updateTemplateInstance(host, target, args, { styleSheets }) {
     let meta = getMeta(target);
 
     if (template !== meta.template) {
@@ -512,7 +512,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       if (useLayout) layout.inject(target);
     }
 
-    updateStyles(target, styles);
+    updateStyles(target, styleSheets);
 
     for (const marker of meta.markers) {
       const value = args[marker.index];

@@ -513,6 +513,79 @@ define({
 });
 ```
 
+## Plugins
+
+The template engine's `html` and `svg` function returns an update function, which is later called with proper arguments by the library (when used in `render` or `content` properties). If you need to have more control over the update process, you use custom function, which internally uses result of the `html` or `svg` function.
+
+```javascript
+function myPlugin(fn) {
+  return (host, target) => {
+    // do something when library calls the update function
+    // ...
+
+    // Call the original update function from compiled template
+    fn(host, target);
+  };
+}
+
+define({
+  tag: "my-element",
+  render: () => myPlugin(html`<div>...</div>`),
+})
+```
+
+For the simpler syntax, you can use `.use()` helper method. it can be chained, so a list of plugins will be applied in order.
+
+```typescript
+html`...`.use(plugin: (fn: ((host, target) => void) => (host, target) => void): Function
+```
+
+* **arguments**:
+  * `plugin` - a function, which takes the original update function and returns a new update function
+* **returns**:
+  * an update function compatible with content expression
+
+```javascript
+define({
+  tag: "my-element",
+  render: () => html`
+    <div>...</div>
+  `.use(myPlugin),
+});
+```
+
+### Transition API
+
+The built-in `html.transition` plugin allows to utilize the [Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API). It works best with whole viewport transitions, like app-like navigation events, but it can be used for any other transition as well. The API requires to be attached only to one element in the DOM tree, so it is recommended to use it with the root element of the application (which is always attached to the DOM):
+
+```javascript
+define({
+  tag: 'my-app',
+  stack: router([Home]),
+  content: ({ stack }) => html`
+    <header>...</header>
+    <main>${stack}</main>
+    ...
+  `.use(html.transition),
+});
+```
+
+Keep in mind, that the transition API will be trigger only when element, which uses `html.transition` updates. In the above example, it will be triggered only when `stack` property changes. Any change to internal elements of the `stack` will not trigger the transition.
+
+The transition API can be customized by the CSS properties. The DOM elements might have custom view transition names. The [layout engine](./layout-engine.md) supports `view` rule, which sets it:
+
+```javascript
+export default define({
+  tag: 'my-app-home',
+  content: () => html`
+    <template layout="column">
+      ...
+      <div layout="view:card"></div>
+    </template>
+  `,
+});
+```
+
 ## Limitations
 
 The engine tries to support all required features for creating reach HTML templates, but there are a few cases where expressions cannot be used or have some limitations.

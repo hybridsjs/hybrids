@@ -1084,6 +1084,68 @@ describe("html:", () => {
     });
   });
 
+  describe("transition helper", () => {
+    let el;
+
+    beforeEach(() => {
+      el = document.createElement("div");
+      document.body.appendChild(el);
+    });
+
+    afterEach(() => {
+      document.body.removeChild(el);
+    });
+
+    it("should render component", () => {
+      const spy = jasmine.createSpy("transition callback");
+
+      define({
+        tag: "test-html-transition-deep",
+        content: () => html`<div>Hello</div>`,
+      });
+
+      define({
+        tag: "test-html-transition",
+        value: "test",
+        content: ({ value }) =>
+          html`
+            <template layout>
+              <div>${value}</div>
+              <test-html-transition-deep></test-html-transition-deep>
+            </template>
+          `.use((...args) => {
+            spy();
+            return html.transition(...args);
+          }),
+      });
+
+      html`<test-html-transition></test-html-transition>`({}, el);
+
+      return resolveTimeout(() => {
+        expect(el.children[0].children[0].innerHTML).toEqual("test");
+        expect(el.children[0].children[1].innerHTML).toEqual(
+          "<div>Hello</div>",
+        );
+        expect(spy).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    if (document.startViewTransition) {
+      it("warns if try to start transition while another is in progress", () => {
+        spyOn(console, "warn");
+
+        html`
+          <test-html-transition></test-html-transition>
+          <test-html-transition></test-html-transition>
+        `({}, el);
+
+        return resolveTimeout(() => {
+          expect(console.warn).toHaveBeenCalledTimes(1);
+        });
+      });
+    }
+  });
+
   describe("style method", () => {
     const render = () => html` <div>content</div> `;
 
@@ -1341,6 +1403,29 @@ describe("html:", () => {
         document.body.removeChild(el);
         done();
       }, 100);
+    });
+  });
+
+  describe("use method", () => {
+    it("runs a plugin function with a template", () => {
+      const spy1 = jasmine.createSpy("plugin");
+      const spy2 = jasmine.createSpy("plugin");
+
+      const render = html`<div>content</div>`
+        .use((fn) => {
+          spy1();
+          return fn;
+        })
+        .use((fn) => {
+          spy2();
+          return fn;
+        });
+
+      render({}, fragment);
+
+      expect(spy1).toHaveBeenCalledTimes(1);
+      expect(spy2).toHaveBeenCalledTimes(1);
+      expect(fragment.children[0].innerHTML).toBe("content");
     });
   });
 

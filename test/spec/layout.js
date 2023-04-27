@@ -568,4 +568,17 @@ describe("layout:", () => {
     const styles1 = window.getComputedStyle(host.children[1]);
     expect(styles1.font).toBe("24px sans-serif");
   });
+
+  if (document.startViewTransition) {
+    it("supports transition view name", () => {
+      html`
+        <template layout>
+          <div layout="view:test"></div>
+        </template>
+      `(host);
+
+      const styles0 = window.getComputedStyle(host.children[0]);
+      expect(styles0.viewTransitionName).toBe("test");
+    });
+  }
 });

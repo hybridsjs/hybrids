@@ -1,37 +1,13 @@
 import { compileTemplate } from "./core.js";
 import { getPlaceholder } from "./utils.js";
-import * as helpers from "./helpers.js";
+
+import * as helpers from "./helpers/index.js";
+import * as methods from "./methods.js";
 
 const PLACEHOLDER = getPlaceholder();
 const PLACEHOLDER_SVG = getPlaceholder("svg");
 const PLACEHOLDER_MSG = getPlaceholder("msg");
 const PLACEHOLDER_LAYOUT = getPlaceholder("layout");
-
-const methods = {
-  key(id) {
-    this.id = id;
-    return this;
-  },
-  style(...styles) {
-    this.styleSheets = this.styleSheets || [];
-    this.styleSheets.push(...styles);
-
-    return this;
-  },
-  css(parts, ...args) {
-    this.styleSheets = this.styleSheets || [];
-
-    let result = parts[0];
-    for (let index = 1; index < parts.length; index++) {
-      result +=
-        (args[index - 1] !== undefined ? args[index - 1] : "") + parts[index];
-    }
-
-    this.styleSheets.push(result);
-
-    return this;
-  },
-};
 
 const templates = new Map();
 export function compile(parts, args, isSVG, isMsg) {
@@ -47,7 +23,14 @@ export function compile(parts, args, isSVG, isMsg) {
       templates.set(id, render);
     }
 
-    render(host, target, args, template.styleSheets);
+    if (template.plugins) {
+      template.plugins.reduce(
+        (acc, plugin) => plugin(acc),
+        () => render(host, target, args, template),
+      )(host, target);
+    } else {
+      render(host, target, args, template);
+    }
   }
 
   return Object.assign(template, methods);
