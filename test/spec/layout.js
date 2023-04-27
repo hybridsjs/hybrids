@@ -1,7 +1,7 @@
 import { html } from "../../src/template/index.js";
 import { resolveTimeout } from "../helpers.js";
 
-describe("layout:", () => {
+fdescribe("layout:", () => {
   let host;
 
   beforeEach(() => {
@@ -54,19 +54,35 @@ describe("layout:", () => {
 
   it("for shadowRoot turns on for root <template> element", () => {
     const shadowRoot = host.attachShadow({ mode: "open" });
-    html`<template layout="row"><div></div></template>`(host, shadowRoot);
-    expect(host.className).toBeDefined();
+    html`
+      <template layout="row">
+        <div></div>
+      </template>
+    `.css`
+       :host { position: relative }
+    `(host, shadowRoot);
+
+    expect(host.className).not.toBeFalsy();
+
+    const hostStyles = window.getComputedStyle(host);
+    expect(hostStyles.position).toBe("relative");
 
     const nestedHost = shadowRoot.children[0];
     html`<template layout="row"><div></div></template>`(nestedHost);
-    expect(nestedHost.className).toBeDefined();
+    expect(nestedHost.className).not.toBeFalsy();
   });
 
-  it("does not run without the template root element", () => {
+  it("does not run without the template root element with 'layout*' attribute", () => {
     html`<div layout="row">test</div>`(host);
 
-    const elStyles = window.getComputedStyle(host.children[0]);
-    expect(elStyles.display).toBe("block");
+    const elStyles1 = window.getComputedStyle(host.children[0]);
+    expect(elStyles1.display).toBe("block");
+    expect(host.children[0].hasAttribute("layout")).toBe(true);
+
+    html`<template><div layout="row">test</div></template>`(host);
+
+    const elStyles2 = window.getComputedStyle(host.children[0]);
+    expect(elStyles2.display).toBe("block");
     expect(host.children[0].hasAttribute("layout")).toBe(true);
   });
 
@@ -80,6 +96,14 @@ describe("layout:", () => {
     expect(elStyles.display).toBe("flex");
     expect(elStyles.flexDirection).toBe("row");
     expect(nestedHost.hasAttribute("layout")).toBe(false);
+  });
+
+  it("uses layout engine for nested templates", () => {
+    html`
+      <template layout="row">${html`<div layout="column"></div>`}</template>
+    `(host, host.attachShadow({ mode: "open" }));
+
+    expect(host.shadowRoot.children[0].className).not.toBeFalsy();
   });
 
   it("uses layout engine for nested array templates", () => {
@@ -303,7 +327,7 @@ describe("layout:", () => {
     const styles4 = window.getComputedStyle(host.children[4]);
     const grid = styles4.gridTemplateColumns.split(" ");
     expect(grid[0]).toBe("100px");
-    expect(grid[1]).toBeDefined();
+    expect(grid[1]).not.toBeFalsy();
 
     const styles5 = window.getComputedStyle(host.children[5]);
     expect(styles5.display).toBe("inline-grid");

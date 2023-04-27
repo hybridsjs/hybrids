@@ -208,7 +208,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
   if (layoutTemplate instanceof global.HTMLTemplateElement) {
     for (const attr of Array.from(layoutTemplate.attributes)) {
       const value = attr.value.trim();
-      if (attr.name.startsWith("layout") && value) {
+      if (value && attr.name.startsWith("layout")) {
         if (value.match(PLACEHOLDER_REGEXP_ALL)) {
           throw Error("Layout attribute cannot contain expressions");
         }
@@ -228,7 +228,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       );
     }
 
-    useLayout = true;
+    useLayout = hostLayout || layoutTemplate.hasAttribute("layout");
     template = layoutTemplate;
   }
 
