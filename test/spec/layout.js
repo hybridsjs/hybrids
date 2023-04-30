@@ -1,7 +1,7 @@
 import { html } from "../../src/template/index.js";
 import { resolveTimeout } from "../helpers.js";
 
-fdescribe("layout:", () => {
+describe("layout:", () => {
   let host;
 
   beforeEach(() => {
