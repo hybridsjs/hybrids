@@ -1,119 +1,77 @@
 import { camelToDash } from "./utils.js";
 
-function string(desc, attrName) {
-  const defaultValue = desc.value;
+const setters = {
+  string: (host, value, attrName) => {
+    const nextValue = value ? String(value) : "";
+    if (nextValue) {
+      host.setAttribute(attrName, nextValue);
+    } else {
+      host.removeAttribute(attrName);
+    }
 
-  return {
-    get: (host, value) =>
-      value === undefined ? host.getAttribute(attrName) || defaultValue : value,
-    set: (host, value) => {
-      value = String(value);
+    return nextValue;
+  },
+  number: (host, value, attrName) => {
+    const nextValue = Number(value);
+    host.setAttribute(attrName, nextValue);
+    return nextValue;
+  },
+  boolean: (host, value, attrName) => {
+    const nextValue = Boolean(value);
+    if (nextValue) {
+      host.setAttribute(attrName, "");
+    } else {
+      host.removeAttribute(attrName);
+    }
+    return nextValue;
+  },
+  undefined: (host, value, attrName) => {
+    const type = typeof value;
+    const set = type !== "undefined" && setters[type];
+    if (set) {
+      return set(host, value, attrName);
+    } else if (host.hasAttribute(attrName)) {
+      host.removeAttribute(attrName);
+    }
 
-      if (value) {
-        host.setAttribute(attrName, value);
-      } else {
-        host.removeAttribute(attrName);
-      }
+    return value;
+  },
+};
 
-      return value;
-    },
-    connect:
-      defaultValue !== ""
-        ? (host, key, invalidate) => {
-            if (!host.hasAttribute(attrName) && host[key] === defaultValue) {
-              host.setAttribute(attrName, defaultValue);
-            }
-            // istanbul ignore next
-            return desc.connect && desc.connect(host, key, invalidate);
-          }
-        : desc.connect,
-    observe: desc.observe,
-  };
-}
-
-function number(desc, attrName) {
-  const defaultValue = desc.value;
-
-  return {
-    get: (host, value) =>
-      value === undefined
-        ? Number(host.getAttribute(attrName) || defaultValue)
-        : value,
-    set: (host, value) => {
-      value = Number(value);
-      host.setAttribute(attrName, value);
-      return value;
-    },
-    connect: (host, key, invalidate) => {
-      if (!host.hasAttribute(attrName) && host[key] === defaultValue) {
-        host.setAttribute(attrName, defaultValue);
-      }
-      // istanbul ignore next
-      return desc.connect && desc.connect(host, key, invalidate);
-    },
-    observe: desc.observe,
-  };
-}
-
-function boolean(desc, attrName) {
-  const defaultValue = desc.value;
-
-  return {
-    get: (host, value) =>
-      value === undefined ? host.hasAttribute(attrName) || defaultValue : value,
-    set: (host, value) => {
-      value = Boolean(value);
-
-      if (value) {
-        host.setAttribute(attrName, "");
-      } else {
-        host.removeAttribute(attrName);
-      }
-
-      return value;
-    },
-    connect:
-      defaultValue === true
-        ? (host, key, invalidate) => {
-            if (!host.hasAttribute(attrName) && host[key] === defaultValue) {
-              host.setAttribute(attrName, "");
-            }
-            // istanbul ignore next
-            return desc.connect && desc.connect(host, key, invalidate);
-          }
-        : desc.connect,
-    observe: desc.observe,
-  };
-}
-
-function undef(desc, attrName) {
-  const defaultValue = desc.value;
-
-  return {
-    get: (host, value) =>
-      value === undefined ? host.getAttribute(attrName) || defaultValue : value,
-    set: (host, value) => value,
-    connect: desc.connect,
-    observe: desc.observe,
-  };
-}
+const getters = {
+  string: (host, attrName) => host.getAttribute(attrName),
+  number: (host, attrName) => Number(host.getAttribute(attrName)) || 0,
+  boolean: (host, attrName) => host.hasAttribute(attrName),
+  undefined: (host, attrName) => host.getAttribute(attrName),
+};
 
 export default function value(key, desc) {
   const type = typeof desc.value;
+  const set = setters[type];
+  const get = getters[type];
+
+  if (!set) {
+    throw TypeError(
+      `Invalid default value for '${key}' property - it must be a string, number, boolean or undefined: ${type}`,
+    );
+  }
+
   const attrName = camelToDash(key);
 
-  switch (type) {
-    case "string":
-      return string(desc, attrName);
-    case "number":
-      return number(desc, attrName);
-    case "boolean":
-      return boolean(desc, attrName);
-    case "undefined":
-      return undef(desc, attrName);
-    default:
-      throw TypeError(
-        `Invalid default value for '${key}' property - it must be a string, number, boolean or undefined: ${type}`,
-      );
-  }
+  return {
+    get: (host, value) =>
+      value === undefined ? get(host, attrName) || desc.value : value,
+    set: (host, value) => set(host, value, attrName),
+    connect:
+      type !== "undefined"
+        ? (host, key, invalidate) => {
+            if (!host.hasAttribute(attrName) && host[key] === desc.value) {
+              host[key] = set(host, desc.value, attrName);
+            }
+
+            return desc.connect && desc.connect(host, key, invalidate);
+          }
+        : desc.connect,
+    observe: desc.observe,
+  };
 }

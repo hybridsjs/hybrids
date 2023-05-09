@@ -1,12 +1,12 @@
 import { constructors } from "./define.js";
 
-function walk(node, fn) {
-  let parentElement = node.parentElement || node.parentNode.host;
+function walk(host, fn) {
+  let parentElement = host.parentElement || host.parentNode.host;
 
   while (parentElement) {
     const hybrids = constructors.get(parentElement.constructor);
 
-    if (hybrids && fn(hybrids, node)) {
+    if (hybrids && fn(hybrids, host)) {
       return parentElement;
     }
 

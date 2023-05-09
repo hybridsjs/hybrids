@@ -258,7 +258,7 @@ describe("define:", () => {
         expect(el.getAttribute("prop1")).toBe("a");
         expect(el.getAttribute("prop2")).toBe("1");
         expect(el.getAttribute("prop3")).toBe("");
-        expect(el.hasAttribute("not-defined")).toBe(false);
+        expect(el.getAttribute("not-defined")).toBe("abc");
       });
     });
 
@@ -266,6 +266,8 @@ describe("define:", () => {
       document.body.appendChild(el);
 
       el.notDefined = {};
+      el.notDefined = undefined;
+
       el.setAttribute("bool-true", "");
 
       return resolveRaf(() => {

@@ -246,7 +246,7 @@ All writable properties (defined with `value` option, or with `set` method) supp
 
 ### `value`
 
-The `value` defines a writable property, which value type must be a `string`, `boolean`, `number` or `undefined`. The property uses the dashed-cased attribute for the initial value, and reflects back the value to attribute if the value is not a `undefined`.
+The `value` defines a writable property, which value type must be a `string`, `boolean`, `number` or `undefined`. The property uses the dashed-cased attribute for the initial value, and reflects back the value to attribute if the value does not equal `undefined`.
 
 ```javascript
 import { define } from "hybrids";
