@@ -265,7 +265,7 @@ describe("define:", () => {
     it("sets corresponding attribute value for primitives properties", () => {
       document.body.appendChild(el);
 
-      el.notDefined = {};
+      el.notDefined = true;
       el.notDefined = undefined;
 
       el.setAttribute("bool-true", "");
