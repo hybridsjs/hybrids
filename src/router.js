@@ -840,9 +840,33 @@ function getEntryOffset(entry) {
   return offset;
 }
 
+function setTransition(stack, prevStack) {
+  const el = global.document.documentElement;
+
+  if (!stack) {
+    el.removeAttribute("router-transition");
+    return;
+  }
+
+  const { dialog } = configs.get(stack[0].constructor);
+
+  const transition =
+    (dialog && "dialog") ||
+    (prevStack.length &&
+      ((stack.length > prevStack.length && "forward") ||
+        (stack.length < prevStack.length && "backward") ||
+        (stack[0] !== prevStack[0] && "replace"))) ||
+    "";
+
+  el.setAttribute("router-transition", transition);
+}
+
 function connectRootRouter(host, invalidate, options) {
   function flush() {
+    const prevStack = stacks.get(host);
     const stack = resolveStack(host, global.history.state, options);
+
+    if (options.transition) setTransition(stack, prevStack);
     invalidate();
 
     const el = stack[0];
@@ -989,6 +1013,8 @@ function connectRootRouter(host, invalidate, options) {
     host.removeEventListener("click", handleNavigate);
     host.removeEventListener("submit", handleNavigate);
     host.removeEventListener("navigate", executeNavigate);
+
+    setTransition(null);
 
     entryPoints.clear();
     rootRouter = null;

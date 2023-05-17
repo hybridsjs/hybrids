@@ -570,7 +570,7 @@ define({
 });
 ```
 
-Keep in mind, that the transition API will be trigger only when element, which uses `html.transition` updates. In the above example, it will be triggered only when `stack` property changes. Any change to internal elements of the `stack` will not trigger the transition.
+!> The transition API will be trigger only when element, which uses `html.transition` updates. In the above example, it will be triggered only when `stack` property changes. Any change to internal elements of the `stack` will not trigger the transition.
 
 The transition API can be customized by the CSS properties. The DOM elements might have custom view transition names. The [layout engine](./layout-engine.md) supports `view` rule, which sets it:
 
