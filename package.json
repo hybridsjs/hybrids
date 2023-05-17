@@ -40,7 +40,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-prettier": "^4.0.0",
-    "jasmine-core": "^4.0.0",
+    "jasmine-core": "^5.0.0",
     "karma": "^6.3.11",
     "karma-chrome-launcher": "^3.1.0",
     "karma-coverage": "^2.1.0",
