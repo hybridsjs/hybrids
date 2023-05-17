@@ -9,14 +9,14 @@
 
 > An extraordinary JavaScript framework for creating client-side web applications, UI components libraries, or single web components with unique mixed declarative and functional architecture
 
-**Hybrids** provides a complete set of tools for the web - everything without external dependencies:
+**Hybrids** provides a complete set of features for building modern web applications:
 
 * **Component Model** based on plain objects and pure functions
 * **Global State Management** with external storages, offline caching, relations, and more
 * **App-like Routing** based on the graph structure of views
 * **Localization** with automatic translation of the templates content
 * **Layout Engine** making UI layouts development much faster
-* **Hot Module Replacement** support and other DX features
+* **Hot Module Replacement** out of the box support and other DX features
 
 ### Documentation
 
@@ -184,6 +184,6 @@ Do you need help? Something went wrong? Feel free to create [an issue](https://g
 
 ## License
 
-**hybrids** is released under the [MIT License](LICENSE).
+**Hybrids** is released under the [MIT License](LICENSE).
 
 [^1]: Pure functions only apply to the component definition. Side effects attached to event listeners might mutate the host element.
