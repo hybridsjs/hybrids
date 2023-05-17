@@ -225,6 +225,7 @@ declare module "hybrids" {
     options?: {
       url?: string;
       params?: Array<keyof E>;
+      transition?: boolean;
     },
   ): Descriptor<E, HTMLElement[]>;
 

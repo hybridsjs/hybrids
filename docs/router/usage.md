@@ -35,16 +35,15 @@ router(views: component | component[] | () => ..., options?: object): object
   * `options` - an object with following options:
     * `url` - a string base URL used for views without own `url` option, defaults to current URL
     * `params` - an array of property names of the element, which are passed to every view as a parameter
+    * `transition` - a boolean flag to enable notifications about the transition type between views by setting `<html router-transition="">` element's attribute
 * **returns**:
   * a hybrid property descriptor, which resolves to an array of elements
 
-### Arguments
-
-#### `views`
+### `views`
 
 Views passed to the router factory create the roots of the view structures. Usually, there is only one root view, but you can pass a list of them (navigating between roots always replaces the whole stack). You can find a deeper explanation of the view concept in the [View](/router/view.md) section.
 
-#### `options.url`
+### `options.url`
 
 If your application uses a mixed approach - views with and without URLs, you should specify a base URL to avoid not deterministic behavior of the router for views without the URL. Otherwise, the router will use an entry point as a base URL (which can be different according to the use case).
 
@@ -56,7 +55,7 @@ define({
 })
 ```
 
-#### `options.params`
+### `options.params`
 
 Regardless of the explicit parameters when navigating to the view, you can specify an array of properties of the component, which are passed to every view as a parameter. They bypass the URL generation, so they are set by the reference, and they are not included in the URL.
 
@@ -79,6 +78,29 @@ define({
 
 ```html
 <my-app user="123"></my-app>
+```
+
+### `options.transition`
+
+The `transition` option enables notifications about the transition type between views set in `<html router-transition="">` element's attribute with the following values:
+
+* `""` - empty when the router displays view stack for the first time
+* `forward` - when the user navigates to nested view
+* `backward` - when the user navigates backward to parent view
+* `replace` - when the user replaces the current view
+
+The `transition` option is useful for animations, like using [Transition API](/component-model/templates.md#transition-api), which should be triggered only when the user navigates between views.
+
+```html
+<style>
+  [router-transition="backward"]::view-transition-old(root) {
+    animation-name: fade-out, slide-to-right;
+  }
+
+  [router-transition="backward"]::view-transition-new(root) {
+    animation-name: fade-in, slide-from-left;
+  }
+</style>
 ```
 
 ## Nested Routers

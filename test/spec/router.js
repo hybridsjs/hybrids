@@ -9,16 +9,17 @@ function hybrids(el) {
 const browserUrl = window.location.pathname;
 
 describe("router:", () => {
-  let RootView;
   let ChildView;
   let OtherChildView;
   let OtherChildWithLongerUrl;
+  let OtherChildWithSharedUrl;
   let NestedViewOne;
   let NestedViewTwo;
   let Dialog;
   let MultipleView;
   let MultipleViewWithUrl;
   let host;
+  let RootView;
 
   afterAll(() => {
     window.history.replaceState(null, "", browserUrl);
@@ -270,7 +271,7 @@ describe("router:", () => {
         `,
       });
 
-      const OtherChildWithSharedUrl = define({
+      OtherChildWithSharedUrl = define({
         [router.connect]: {
           url: "/a/:value",
         },
@@ -308,6 +309,9 @@ describe("router:", () => {
           </a>
           <a href="${router.url(OtherChildView)}" id="OtherChildView"
             >OtherChildView</a
+          >
+          <a href="${router.url(MultipleView)}" id="MultipleViewFromChild"
+            >MultipleViewFromChild</a
           >
         `,
       });
@@ -441,7 +445,10 @@ describe("router:", () => {
         tag: "test-router-app",
         globalA: "value",
         globalB: "value",
-        views: router([RootView], { params: ["globalA", "globalB"] }),
+        views: router([RootView], {
+          params: ["globalA", "globalB"],
+          transition: true,
+        }),
         content: ({ views }) => html`${views}`, // prettier-ignore
       });
 
@@ -574,6 +581,10 @@ describe("router:", () => {
         resolveTimeout(() => {
           expect(hybrids(host.views[0])).toBe(RootView);
           expect(hybrids(host.children[0])).toBe(RootView);
+
+          expect(
+            document.documentElement.getAttribute("router-transition"),
+          ).toBe("");
         }));
 
       it("saves and restores scroll position preserving focused element", () => {
@@ -643,6 +654,11 @@ describe("router:", () => {
       it("navigate by pushing and pulling views from the stack", () => {
         expect(host.views[0].globalA).toBe(undefined);
         expect(host.views[0].globalB).toBe("value");
+
+        expect(document.documentElement.getAttribute("router-transition")).toBe(
+          "",
+        );
+
         host.querySelector("#ChildView").click();
 
         return resolveTimeout(() => {
@@ -650,6 +666,10 @@ describe("router:", () => {
           expect(window.history.state.length).toBe(2);
           expect(router.backUrl().hash).toBe("#@test-router-root-view");
           expect(host.children[0].globalA).toBe("value");
+
+          expect(
+            document.documentElement.getAttribute("router-transition"),
+          ).toBe("forward");
 
           host.querySelector("#OtherChildView").click();
 
@@ -662,6 +682,10 @@ describe("router:", () => {
               "#@test-router-child-view?scrollToTop=1",
             );
 
+            expect(
+              document.documentElement.getAttribute("router-transition"),
+            ).toBe("forward");
+
             window.history.back();
 
             return resolveTimeout(() => {
@@ -670,6 +694,10 @@ describe("router:", () => {
               expect(window.history.state.length).toBe(2);
               expect(host.views[0].views[0].globalC).toBe("value");
               expect(host.views[0].views[0].globalA).toBe("");
+
+              expect(
+                document.documentElement.getAttribute("router-transition"),
+              ).toBe("backward");
 
               host.querySelector("#NestedViewTwo").click();
 
@@ -688,6 +716,10 @@ describe("router:", () => {
                 return resolveTimeout(() => {
                   expect(host.children[0].views[0].param).toBe(true);
                   expect(window.location.search).toBe("?param=1");
+
+                  expect(
+                    document.documentElement.getAttribute("router-transition"),
+                  ).toBe("");
 
                   host.children[0].views[0].param = false;
 
@@ -708,12 +740,24 @@ describe("router:", () => {
                         expect(hybrids(host.children[1])).toBe(Dialog);
                         expect(window.history.state.length).toBe(2);
 
+                        expect(
+                          document.documentElement.getAttribute(
+                            "router-transition",
+                          ),
+                        ).toBe("dialog");
+
                         host.querySelector("#DialogCurrent").click();
 
                         return resolveTimeout(() => {
                           expect(hybrids(host.children[0])).toBe(RootView);
                           expect(hybrids(host.children[1])).toBe(Dialog);
                           expect(window.history.state.length).toBe(2);
+
+                          expect(
+                            document.documentElement.getAttribute(
+                              "router-transition",
+                            ),
+                          ).toBe("dialog");
 
                           const keyEventEsc = new KeyboardEvent("keydown", {
                             key: "Escape",
@@ -757,6 +801,29 @@ describe("router:", () => {
               return resolveTimeout(() => {
                 expect(hybrids(host.children[0])).toBe(RootView);
               });
+            });
+          });
+        });
+      });
+
+      it("navigates to other child and replaces current stack it with another view", () => {
+        host.querySelector("#ChildView").click();
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.children[0])).toBe(ChildView);
+          host.querySelector("#MultipleViewFromChild").click();
+
+          return resolveTimeout(() => {
+            expect(hybrids(host.children[0])).toBe(MultipleView);
+
+            expect(
+              document.documentElement.getAttribute("router-transition"),
+            ).toBe("replace");
+
+            window.history.back();
+
+            return resolveTimeout(() => {
+              expect(hybrids(host.children[0])).toBe(RootView);
             });
           });
         });
