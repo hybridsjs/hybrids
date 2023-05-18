@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.2.0](https://github.com/hybridsjs/hybrids/compare/v8.1.15...v8.2.0) (2023-05-18)
+
+
+### Features
+
+* **html:** Add support for Transition API and `use` helper method ([8cb25c3](https://github.com/hybridsjs/hybrids/commit/8cb25c35b946ceb8bd7893de98903bee6362a467))
+* **layout:** Layout engine as a stable feature ([e55756b](https://github.com/hybridsjs/hybrids/commit/e55756bf926871f1d46a28145dd109cec783aeb3))
+* **mount:** Mount component definition to existing DOM element ([3dc58ab](https://github.com/hybridsjs/hybrids/commit/3dc58abd621c6f9bd860d4418bf5a9b586b7d553))
+* **router:** Add transition option ([a04c32e](https://github.com/hybridsjs/hybrids/commit/a04c32e26ec3bf7f83e721045e85948cdcc559cd))
+
+
+### Bug Fixes
+
+* **cache:** run observe callback synchronously on startup ([f34fca8](https://github.com/hybridsjs/hybrids/commit/f34fca815254b5068fe28b40ad81f8aac7eda62c))
+* **cli:** extract - better path support in description ([ea49577](https://github.com/hybridsjs/hybrids/commit/ea49577f3a1792a98e2e75067cf2b0667df5edbf))
+* **define:** Reflect back primitive values for value defined as undefined ([333d989](https://github.com/hybridsjs/hybrids/commit/333d989d3107a0a6257c0a6d0b3ba21a9b030e4b))
+* **html:** prevent setup styles for template update ([8439def](https://github.com/hybridsjs/hybrids/commit/8439def9dee147f00490375a114c59bfe8ced7b6))
+* **layout:** add generic values special rule ([8ce6326](https://github.com/hybridsjs/hybrids/commit/8ce6326c67e5b45f58db753ee0dfd990e11a431d))
+* **layout:** use layout engine only if attribute is present ([a366878](https://github.com/hybridsjs/hybrids/commit/a366878e45412855a721dd8e7fa1bbaf9c3f68d7))
+
 ### [8.1.15](https://github.com/hybridsjs/hybrids/compare/v8.1.14...v8.1.15) (2023-04-13)
 
 
