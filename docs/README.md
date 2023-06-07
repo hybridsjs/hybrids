@@ -11,7 +11,6 @@
 </h1>
 </center>
 
-
 [![build status](https://github.com/hybridsjs/hybrids/actions/workflows/test.yml/badge.svg)](https://github.com/hybridsjs/hybrids/actions/workflows/test.yml?query=branch%3Amain)
 [![coverage status](https://coveralls.io/repos/github/hybridsjs/hybrids/badge.svg?branch=main)](https://coveralls.io/github/hybridsjs/hybrids?branch=main)
 [![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
@@ -23,8 +22,8 @@
 * **Component Model** based on plain objects and pure functions
 * **Global State Management** with external storages, offline caching, relations, and more
 * **App-like Routing** based on the graph structure of views
-* **Localization** with automatic translation of the templates content
 * **Layout Engine** making UI layouts development much faster
+* **Localization** with automatic translation of the templates content
 * **Hot Module Replacement** out of the box support and other DX features
 
 ## Quick Look
@@ -139,30 +138,6 @@ export define({
 
 You can read more in the [Router](/router/usage.md) section.
 
-### Localization
-
-It supports automatic translation of the component's content, which makes translation seamless and easy to integrate. Additionally, it provides a way to add dynamic messages with plural forms, HTML content, or use messages outside of the template context. Also, it comes with handy CLI tool to extract messages from the source code!
-
-```javascript
-import { define, html, localize } from "hybrids";
-
-export default define({
-  tag: "my-element",
-  name: "",
-  render: ({ name }) => html`
-    <div>Hello ${name}!</div>
-  `,
-});
-
-localize("pl", {
-  "Hello ${0}!": {
-    message: "Witaj ${0}!",
-  },
-});
-```
-
-You can read more in the [Localization](/component-model/localization.md) section.
-
 ### Layout Engine
 
 Create CSS layouts in-place in templates, even without using Shadow DOM, but still keeping the encapsulation of the component's styles:
@@ -184,6 +159,30 @@ define({
 ```
 
 You can read more in the [Layout Engine](/component-model/layout-engine.md) section.
+
+### Localization
+
+The library supports automatic translation of the component's content, which makes translation seamless and easy to integrate. Additionally, it provides a way to add dynamic messages with plural forms, HTML content, or use messages outside of the template context. Also, it comes with handy CLI tool to extract messages from the source code!
+
+```javascript
+import { define, html, localize } from "hybrids";
+
+export default define({
+  tag: "my-element",
+  name: "",
+  render: ({ name }) => html`
+    <div>Hello ${name}!</div>
+  `,
+});
+
+localize("pl", {
+  "Hello ${0}!": {
+    message: "Witaj ${0}!",
+  },
+});
+```
+
+You can read more in the [Localization](/component-model/localization.md) section.
 
 ## Community
 

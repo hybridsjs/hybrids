@@ -14,8 +14,8 @@
 * **Component Model** based on plain objects and pure functions
 * **Global State Management** with external storages, offline caching, relations, and more
 * **App-like Routing** based on the graph structure of views
-* **Localization** with automatic translation of the templates content
 * **Layout Engine** making UI layouts development much faster
+* **Localization** with automatic translation of the templates content
 * **Hot Module Replacement** out of the box support and other DX features
 
 ### Documentation
@@ -132,30 +132,6 @@ export define({
 
 You can read more in the [Router](https://hybrids.js.org/#/router/usage.md) section.
 
-### Localization
-
-It supports automatic translation of the component's content, which makes translation seamless and easy to integrate. Additionally, it provides a way to add dynamic messages with plural forms, HTML content, or use messages outside of the template context. Also, it comes with handy CLI tool to extract messages from the source code!
-
-```javascript
-import { define, html, localize } from "hybrids";
-
-export default define({
-  tag: "my-element",
-  name: "",
-  render: ({ name }) => html`
-    <div>Hello ${name}!</div>
-  `,
-});
-
-localize("pl", {
-  "Hello ${0}!": {
-    message: "Witaj ${0}!",
-  },
-});
-```
-
-You can read more in the [Localization](https://hybrids.js.org/#/component-model/localization.md) section of the documentation.
-
 ### Layout Engine
 
 Create CSS layouts in-place in templates, even without using Shadow DOM, but still keeping the encapsulation of the component's styles:
@@ -177,6 +153,30 @@ define({
 ```
 
 You can read more in the [Layout Engine](https://hybrids.js.org/#/component-model/layout-engine.md) section of the documentation.
+
+### Localization
+
+The library supports automatic translation of the component's content, which makes translation seamless and easy to integrate. Additionally, it provides a way to add dynamic messages with plural forms, HTML content, or use messages outside of the template context. Also, it comes with handy CLI tool to extract messages from the source code!
+
+```javascript
+import { define, html, localize } from "hybrids";
+
+export default define({
+  tag: "my-element",
+  name: "",
+  render: ({ name }) => html`
+    <div>Hello ${name}!</div>
+  `,
+});
+
+localize("pl", {
+  "Hello ${0}!": {
+    message: "Witaj ${0}!",
+  },
+});
+```
+
+You can read more in the [Localization](https://hybrids.js.org/#/component-model/localization.md) section of the documentation.
 
 ## Community
 
