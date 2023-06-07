@@ -14,6 +14,7 @@ function compile(hybrids, HybridsElement) {
     if (hybrids === prevHybrids) return HybridsElement;
 
     for (const key of Object.keys(prevHybrids)) {
+      if (key === "tag") continue;
       delete HybridsElement.prototype[key];
     }
   } else {
@@ -189,13 +190,8 @@ function define(hybrids) {
   return hybrids;
 }
 
-function from(components, options = {}) {
-  const { root = "", prefix } = options;
-  const keys = Object.keys(components);
-
-  if (keys.length === 0) return components;
-
-  for (const key of keys) {
+function from(components, { root = "", prefix } = {}) {
+  for (const key of Object.keys(components)) {
     const hybrids = components[key];
 
     if (!hybrids.tag) {
