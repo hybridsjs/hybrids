@@ -1,4 +1,3 @@
-import global from "../../global.js";
 import resolveEventListener from "./event.js";
 import resolveClassList from "./class.js";
 import resolveStyleList from "./style.js";
@@ -20,7 +19,7 @@ export default function resolveProperty(attrName, propertyName, isSVG) {
         isProp =
           isProp ||
           (!isSVG &&
-            !(target instanceof global.SVGElement) &&
+            !(target instanceof globalThis.SVGElement) &&
             propertyName in target);
         if (isProp) {
           target[propertyName] = value;

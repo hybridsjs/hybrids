@@ -1,4 +1,3 @@
-import global from "./global.js";
 import { constructors } from "./define.js";
 
 function walk(node, fn, options, items = [], host = node) {
@@ -29,7 +28,7 @@ export default function children(
   return {
     get: (host) => walk(host, fn, options),
     connect(host, key, invalidate) {
-      const observer = new global.MutationObserver(invalidate);
+      const observer = new globalThis.MutationObserver(invalidate);
 
       observer.observe(host, {
         childList: true,

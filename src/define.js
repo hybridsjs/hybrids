@@ -1,4 +1,3 @@
-import global from "./global.js";
 import * as cache from "./cache.js";
 import * as emitter from "./emitter.js";
 import { deferred, camelToDash, walkInShadow } from "./utils.js";
@@ -18,7 +17,7 @@ function compile(hybrids, HybridsElement) {
       delete HybridsElement.prototype[key];
     }
   } else {
-    HybridsElement = class extends global.HTMLElement {
+    HybridsElement = class extends globalThis.HTMLElement {
       connectedCallback() {
         for (const key of HybridsElement.settable) {
           if (!hasOwnProperty.call(this, key)) continue;
@@ -138,7 +137,7 @@ const updateQueue = new Map();
 function update(HybridsElement) {
   if (!updateQueue.size) {
     deferred.then(() => {
-      walkInShadow(global.document.body, (node) => {
+      walkInShadow(globalThis.document.body, (node) => {
         if (updateQueue.has(node.constructor)) {
           const prevHybrids = updateQueue.get(node.constructor);
           const hybrids = constructors.get(node.constructor);
@@ -171,7 +170,7 @@ function define(hybrids) {
     );
   }
 
-  const HybridsElement = global.customElements.get(hybrids.tag);
+  const HybridsElement = globalThis.customElements.get(hybrids.tag);
 
   if (HybridsElement) {
     if (constructors.get(HybridsElement)) {
@@ -186,7 +185,7 @@ function define(hybrids) {
     );
   }
 
-  global.customElements.define(hybrids.tag, compile(hybrids));
+  globalThis.customElements.define(hybrids.tag, compile(hybrids));
   return hybrids;
 }
 

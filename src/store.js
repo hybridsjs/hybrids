@@ -1,4 +1,3 @@
-import global from "./global.js";
 import * as cache from "./cache.js";
 import { storePointer, deferred } from "./utils.js";
 
@@ -90,7 +89,7 @@ function invalidateTimestamp(model) {
 }
 
 function hashCode(str) {
-  return global.btoa(
+  return globalThis.btoa(
     Array.from(str).reduce(
       (s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0,
       0,
@@ -110,18 +109,18 @@ function setupOfflineKey(config, threshold) {
   if (!clearPromise) {
     clearPromise = Promise.resolve().then(() => {
       const previousKeys =
-        JSON.parse(global.localStorage.getItem(offlinePrefix)) || {};
+        JSON.parse(globalThis.localStorage.getItem(offlinePrefix)) || {};
       const timestamp = getCurrentTimestamp();
 
       /* istanbul ignore next */
       for (const k of Object.keys(previousKeys)) {
         if (!offlineKeys[k] && previousKeys[k] < timestamp) {
-          global.localStorage.removeItem(k);
+          globalThis.localStorage.removeItem(k);
           delete previousKeys[k];
         }
       }
 
-      global.localStorage.setItem(
+      globalThis.localStorage.setItem(
         offlinePrefix,
         JSON.stringify({ ...previousKeys, ...offlineKeys }),
       );
@@ -196,7 +195,8 @@ function setupStorage(config, options) {
     const offlineKey = setupOfflineKey(config, threshold);
 
     try {
-      const items = JSON.parse(global.localStorage.getItem(offlineKey)) || {};
+      const items =
+        JSON.parse(globalThis.localStorage.getItem(offlineKey)) || {};
 
       let flush;
 
@@ -267,7 +267,10 @@ function setupStorage(config, options) {
                 }
               }
 
-              global.localStorage.setItem(offlineKey, JSON.stringify(items));
+              globalThis.localStorage.setItem(
+                offlineKey,
+                JSON.stringify(items),
+              );
               flush = null;
             });
           }

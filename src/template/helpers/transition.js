@@ -1,9 +1,8 @@
-import global from "../../global.js";
 import { deferred, stringifyElement } from "../../utils.js";
 
 let instance;
-export default (global.document &&
-  global.document.startViewTransition !== undefined &&
+export default (globalThis.document &&
+  globalThis.document.startViewTransition !== undefined &&
   function transition(template) {
     return function fn(host, target) {
       if (instance) {
@@ -19,7 +18,7 @@ export default (global.document &&
       template.useLayout = fn.useLayout;
       instance = host;
 
-      global.document.startViewTransition(() => {
+      globalThis.document.startViewTransition(() => {
         template(host, target);
 
         return deferred.then(() => {

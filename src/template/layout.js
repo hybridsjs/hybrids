@@ -1,7 +1,5 @@
-import global from "../global.js";
-
 const hasAdoptedStylesheets = !!(
-  global.document && global.document.adoptedStyleSheets
+  globalThis.document && globalThis.document.adoptedStyleSheets
 );
 const NUMBER_REGEXP = /^\d+$/;
 const rules = {
@@ -192,11 +190,11 @@ function getCSSStyleSheet() {
 
   /* istanbul ignore else */
   if (hasAdoptedStylesheets) {
-    globalSheet = new global.CSSStyleSheet();
+    globalSheet = new globalThis.CSSStyleSheet();
   } else {
-    const el = global.document.createElement("style");
-    el.appendChild(global.document.createTextNode(""));
-    global.document.head.appendChild(el);
+    const el = globalThis.document.createElement("style");
+    el.appendChild(globalThis.document.createTextNode(""));
+    globalThis.document.head.appendChild(el);
 
     globalSheet = el.sheet;
   }
@@ -219,11 +217,11 @@ export function inject(target) {
   if (hasAdoptedStylesheets) {
     root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
   } else {
-    if (root === global.document) return;
+    if (root === globalThis.document) return;
 
     let el = styleElements.get(root);
     if (!el) {
-      el = global.document.createElement("style");
+      el = globalThis.document.createElement("style");
       root.appendChild(el);
 
       styleElements.set(root, el);

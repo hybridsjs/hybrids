@@ -1,4 +1,3 @@
-import global from "../global.js";
 import { stringifyElement, probablyDevMode } from "../utils.js";
 import { get as getMessage, isLocalizeEnabled } from "../localize.js";
 
@@ -49,11 +48,11 @@ function getPropertyName(string) {
 }
 
 function createWalker(context) {
-  return global.document.createTreeWalker(
+  return globalThis.document.createTreeWalker(
     context,
-    global.NodeFilter.SHOW_ELEMENT |
-      global.NodeFilter.SHOW_TEXT |
-      global.NodeFilter.SHOW_COMMENT,
+    globalThis.NodeFilter.SHOW_ELEMENT |
+      globalThis.NodeFilter.SHOW_TEXT |
+      globalThis.NodeFilter.SHOW_COMMENT,
     null,
     false,
   );
@@ -107,10 +106,10 @@ function updateAdoptedStylesheets(target, styles) {
     styles &&
     styles.map((style) => {
       let styleSheet = style;
-      if (!(styleSheet instanceof global.CSSStyleSheet)) {
+      if (!(styleSheet instanceof globalThis.CSSStyleSheet)) {
         styleSheet = styleSheetsMap.get(style);
         if (!styleSheet) {
-          styleSheet = new global.CSSStyleSheet();
+          styleSheet = new globalThis.CSSStyleSheet();
           styleSheet.replaceSync(style);
           styleSheetsMap.set(style, styleSheet);
         }
@@ -151,11 +150,11 @@ function updateStyleElement(target, styles) {
 
   if (styles) {
     if (!styleEl || styleEl.parentNode !== target) {
-      styleEl = global.document.createElement("style");
+      styleEl = globalThis.document.createElement("style");
       styleElementMap.set(target, styleEl);
 
       target = getTemplateEnd(target);
-      if (target.nodeType === global.Node.TEXT_NODE) {
+      if (target.nodeType === globalThis.Node.TEXT_NODE) {
         target.parentNode.insertBefore(styleEl, target.nextSibling);
       } else {
         target.appendChild(styleEl);
@@ -188,7 +187,7 @@ function updateStyles(target, styles) {
 }
 
 export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
-  let template = global.document.createElement("template");
+  let template = globalThis.document.createElement("template");
   const parts = {};
 
   const signature = isMsg ? rawParts : createSignature(rawParts);
@@ -205,7 +204,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
 
   let hostLayout;
   const layoutTemplate = template.content.children[0];
-  if (layoutTemplate instanceof global.HTMLTemplateElement) {
+  if (layoutTemplate instanceof globalThis.HTMLTemplateElement) {
     for (const attr of Array.from(layoutTemplate.attributes)) {
       const value = attr.value.trim();
       if (value && attr.name.startsWith("layout")) {
@@ -244,10 +243,10 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       noTranslate = null;
     }
 
-    if (node.nodeType === global.Node.COMMENT_NODE) {
+    if (node.nodeType === globalThis.Node.COMMENT_NODE) {
       if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
         node.parentNode.insertBefore(
-          global.document.createTextNode(node.textContent),
+          globalThis.document.createTextNode(node.textContent),
           node.nextSibling,
         );
 
@@ -257,7 +256,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       }
     }
 
-    if (node.nodeType === global.Node.TEXT_NODE) {
+    if (node.nodeType === globalThis.Node.TEXT_NODE) {
       let text = node.textContent;
       const equal = text.match(PLACEHOLDER_REGEXP_EQUAL);
 
@@ -284,7 +283,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
           if (!localizedKey.match(PLACEHOLDER_REGEXP_ONLY)) {
             let context =
               node.previousSibling &&
-              node.previousSibling.nodeType === global.Node.COMMENT_NODE
+              node.previousSibling.nodeType === globalThis.Node.COMMENT_NODE
                 ? node.previousSibling
                 : "";
             if (context) {
@@ -324,7 +323,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
                 currentNode.textContent = part;
               } else {
                 currentNode = currentNode.parentNode.insertBefore(
-                  global.document.createTextNode(part),
+                  globalThis.document.createTextNode(part),
                   currentNode.nextSibling,
                 );
 
@@ -344,7 +343,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       }
     } else {
       /* istanbul ignore else */
-      if (node.nodeType === global.Node.ELEMENT_NODE) {
+      if (node.nodeType === globalThis.Node.ELEMENT_NODE) {
         if (
           !noTranslate &&
           (node.getAttribute("translate") === "no" ||
@@ -359,7 +358,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
           const tagName = node.tagName.toLowerCase();
           if (
             tagName.match(/.+-.+/) &&
-            !global.customElements.get(tagName) &&
+            !globalThis.customElements.get(tagName) &&
             !notDefinedElements.includes(tagName)
           ) {
             notDefinedElements.push(tagName);
@@ -412,7 +411,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
                       isProp =
                         isProp ||
                         (!isSVG &&
-                          !(target instanceof global.SVGElement) &&
+                          !(target instanceof globalThis.SVGElement) &&
                           name in target);
                       if (isProp) {
                         target[name] = meta[partialName];
@@ -450,7 +449,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
     let meta = getMeta(target);
 
     if (template !== meta.template) {
-      const fragment = global.document.importNode(template.content, true);
+      const fragment = globalThis.document.importNode(template.content, true);
       const renderWalker = createWalker(fragment);
       const markers = [];
 
@@ -485,7 +484,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       meta.template = template;
       meta.markers = markers;
 
-      if (target.nodeType === global.Node.TEXT_NODE) {
+      if (target.nodeType === globalThis.Node.TEXT_NODE) {
         updateStyleElement(target);
 
         meta.startNode = fragment.childNodes[0];

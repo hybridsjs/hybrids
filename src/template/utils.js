@@ -1,5 +1,3 @@
-import global from "../global.js";
-
 const metaMap = new WeakMap();
 export function getMeta(key) {
   let value = metaMap.get(key);
@@ -20,7 +18,7 @@ export function getTemplateEnd(node) {
 }
 
 export function removeTemplate(target) {
-  if (target.nodeType === global.Node.TEXT_NODE) {
+  if (target.nodeType === globalThis.Node.TEXT_NODE) {
     const data = metaMap.get(target);
 
     if (data && data.startNode) {

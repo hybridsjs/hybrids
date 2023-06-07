@@ -1,6 +1,5 @@
 import { getPlaceholder } from "./template/utils.js";
 
-import global from "./global.js";
 import { probablyDevMode } from "./utils.js";
 import { compile } from "./template/index.js";
 
@@ -13,7 +12,7 @@ const languages = (() => {
 
   // istanbul ignore next
   try {
-    list = global.navigator.languages || [global.navigator.language];
+    list = globalThis.navigator.languages || [globalThis.navigator.language];
   } catch (e) {
     list = [];
   }

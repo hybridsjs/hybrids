@@ -1,4 +1,3 @@
-import global from "../../global.js";
 import { removeTemplate } from "../utils.js";
 import resolveArray, { arrayMap } from "./array.js";
 import resolveNode from "./node.js";
@@ -8,7 +7,7 @@ function typeOf(value) {
 
   if (type === "object") {
     if (Array.isArray(value)) return "array";
-    if (value instanceof global.Node) return "node";
+    if (value instanceof globalThis.Node) return "node";
   }
 
   return type;
