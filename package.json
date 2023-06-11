@@ -3,7 +3,12 @@
   "version": "8.2.0",
   "description": "A JavaScript framework for creating fully-featured web applications, components libraries, and single web components with unique declarative and functional architecture",
   "type": "module",
-  "exports": "./src/index.js",
+  "exports": {
+   ".": {
+     "types": "./types/index.d.ts",
+     "default": "./src/index.js"
+   } 
+  },
   "types": "types/index.d.ts",
   "bin": "./cli/index.js",
   "sideEffects": false,
