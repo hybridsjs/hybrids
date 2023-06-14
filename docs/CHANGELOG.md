@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.1](https://github.com/hybridsjs/hybrids/compare/v8.2.0...v8.2.1) (2023-06-14)
+
+
+### Bug Fixes
+
+* **define:** minor performance refactoring ([53464b1](https://github.com/hybridsjs/hybrids/commit/53464b11d2ba9148dde8278c2d933e3cddb4ee1c))
+* replace global helper with `globalThis` ([3976121](https://github.com/hybridsjs/hybrids/commit/39761213c1e693868bab4939784a92ce01367a5c))
+* **types:** update package.json exports to include types ([#208](https://github.com/hybridsjs/hybrids/issues/208)) ([d9afc8b](https://github.com/hybridsjs/hybrids/commit/d9afc8b5e51513053d03c13b630f63ce7e2e0dd8))
+
 ## [8.2.0](https://github.com/hybridsjs/hybrids/compare/v8.1.15...v8.2.0) (2023-05-18)
 
 
