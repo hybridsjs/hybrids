@@ -188,13 +188,12 @@ function setupStorage(config, options) {
   }
 
   if (result.offline) {
-    const isBool = result.offline === true;
-    const threshold = isBool
-      ? 1000 * 60 * 60 * 24 * 30 /* 30 days */
-      : result.offline;
-    const offlineKey = setupOfflineKey(config, threshold);
-
     try {
+      const isBool = result.offline === true;
+      const threshold = isBool
+        ? 1000 * 60 * 60 * 24 * 30 /* 30 days */
+        : result.offline;
+      const offlineKey = setupOfflineKey(config, threshold);
       const items =
         JSON.parse(globalThis.localStorage.getItem(offlineKey)) || {};
 
@@ -279,7 +278,7 @@ function setupStorage(config, options) {
         },
       });
     } catch (e) /* istanbul ignore next */ {
-      console.error(e);
+      console.error("Error while setup offline cache", e);
       result.offline = false;
     }
   }
