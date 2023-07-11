@@ -2626,6 +2626,18 @@ describe("store:", () => {
         });
       });
 
+      it("calls observe method when model is cleared", () => {
+        const oldModel = store.get(Model, 1);
+        store.clear(Model, false);
+
+        const model = store.get(Model, 1);
+
+        return resolveTimeout(() => {
+          expect(spy).toHaveBeenCalledTimes(2);
+          expect(spy).toHaveBeenCalledWith("1", model, oldModel);
+        });
+      });
+
       it("calls observe method with object id", () => {
         const model = store.get(Model, { a: "b" });
         expect(spy).toHaveBeenCalledWith({ a: "b" }, model, null);
@@ -2730,6 +2742,15 @@ describe("store:", () => {
             expect(spy).toHaveBeenCalledWith("1", null, resultModel);
           });
         });
+      });
+
+      it("calls observe method when model is cleared", async () => {
+        const oldModel = await store.resolve(Model, 1);
+        store.clear(Model, false);
+
+        const model = await store.resolve(Model, 1);
+        expect(spy).toHaveBeenCalledTimes(2);
+        expect(spy).toHaveBeenCalledWith("1", model, oldModel);
       });
 
       it("does not call observe when error occurs", () => {

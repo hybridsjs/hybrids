@@ -177,6 +177,11 @@ const MovieSearchResult = {
 observe: (id: string | object | undefined, model: object | null, lastModel: object | null) => void
 ```
 
+* **arguments**:
+  * `id` - `undefined`, a `string` or `object` model instance identifier
+  * `model` - an `object` or `null` if the model is deleted
+  * `lastModel` - an `object` or `null` if the model is set for the first time
+
 Use `observe` method for invoking side effects related to the model changes, for example to notify third party code that model has changed. It is called synchronously at the end of the `get` and `set` actions, just before the model value is passed to the memory cache layer. If the model is set for the first time, the `lastModel` argument is `null`. Similarly, if the model is deleted, the `model` argument is null.
 
 !> Do not call the `store.get()` or `store.set()` methods related to the model itself from the `observe` method, as it may lead to the endless loop and throw the stack overflow error.
