@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.2](https://github.com/hybridsjs/hybrids/compare/v8.2.1...v8.2.2) (2023-07-11)
+
+
+### Bug Fixes
+
+* **store:** add test for clear case & update docs ([d1fd7f1](https://github.com/hybridsjs/hybrids/commit/d1fd7f14891c375ab873c3909861102007598da2))
+* **store:** Unavailable localStorage for offline caching ([8287593](https://github.com/hybridsjs/hybrids/commit/82875933ac15c3cd61ac616a17e78a3283741384))
+* **store:** use GC for `store.clear()` when clearValue is set ([b7aea14](https://github.com/hybridsjs/hybrids/commit/b7aea14f0f752b24d7fcc7b8cd1ac220cc62b893))
+
 ### [8.2.1](https://github.com/hybridsjs/hybrids/compare/v8.2.0...v8.2.1) (2023-06-14)
 
 
