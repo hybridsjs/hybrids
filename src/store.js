@@ -1303,7 +1303,7 @@ function clear(model, clearValue = true) {
     if (offline) offline.set(model.id, null);
 
     invalidateTimestamp(model);
-    cache.invalidate(config, model.id, { clearValue, deleteEntry: true });
+    cache.invalidate(config, model.id, { clearValue, deleteEntry: clearValue });
   } else {
     if (!configs.get(model) && !lists.get(model[0])) {
       throw Error(
@@ -1317,7 +1317,7 @@ function clear(model, clearValue = true) {
       if (offline) offline.set(entry.key, null);
       if (entry.value) invalidateTimestamp(entry.value);
     }
-    cache.invalidateAll(config, { clearValue, deleteEntry: true });
+    cache.invalidateAll(config, { clearValue, deleteEntry: clearValue });
   }
 }
 

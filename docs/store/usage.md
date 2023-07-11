@@ -248,7 +248,7 @@ define({
 
 #### Garbage Collector
 
-The `store.clear()` method works as a garbage collector for unused model instances. Those that are not a dependency of any component connected to the DOM will be deleted entirely from the cache registry (as they would never exist) protecting from the memory leaks. It means, that even if you set `clearValue` to `false`, those instances that are not currently attached to the components, will be permanently deleted when the `store.clear()` method is invoked.
+The `store.clear()` method can work as a garbage collector for unused model instances. Those that are not a dependency of any component connected to the DOM can be deleted entirely from the cache registry (as they would never exist) protecting from the memory leaks. If you set `clearValue` to `true`, those instances that are not currently attached to the components, will be permanently deleted when the `store.clear()` method is invoked.
 
 ## Factory
 

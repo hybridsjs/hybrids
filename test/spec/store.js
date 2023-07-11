@@ -2696,7 +2696,9 @@ describe("store:", () => {
           value: "",
           [store.connect]: {
             get: (id) =>
-              Promise.resolve().then(() => ({ id, value: Date.now() })),
+              new Promise((resolve) =>
+                setTimeout(() => resolve({ id, value: Date.now() }), 5),
+              ),
             set: (id, values) => Promise.resolve().then(() => values),
             list: () =>
               Promise.resolve().then(() => [
