@@ -32,7 +32,7 @@ store.get(Model: object, id?: string | object) : Model;
 * **returns**:
   * Model instance or model instance placeholder
 
-The `store.get()` method always returns an object - model instance or a model placeholder. If the model source is synchronous (memory-based or external sync source, like `localStorage`), the get method immediately returns an instance. Otherwise, before the cache has an instance of the model, the placeholder is returned instead. When the promise resolves, the next call to the store returns an instance. The cache takes care to notify the component that data has changed (if you need to use this method outside of the component definition, you can use the `store.pending()` guard to access the returned promise).
+The `store.get()` method always returns an object - model instance or a model placeholder. If the model source is synchronous (memory-based or external sync source, like `localStorage`), the get method immediately returns an instance. Otherwise, before the cache has an instance of the model, the placeholder is returned instead. When the promise resolves, the next call to the store returns an instance. The cache takes care to notify the component that data has changed (if you need to use this method outside of the component definition, you can use the `store.resolve()` method to access the returned instance).
 
 ```javascript
 const GlobalState = {
@@ -58,7 +58,7 @@ The above example uses a singleton memory-based model, so the data is available 
 
 The `store.set()` method can create a new instance or update an existing model. According to the mode, the first argument should be a model definition or a model instance.
 
-The set method always returns a promise regardless of the type of data source. The model values are updated within the next microtask. However, the current state of the model instance will be updated instantly. After calling the set method the `store.pending()` guard will return a truthy value (a promise instance), up to when the promise is resolved.
+The set method always returns a promise regardless of the type of data source. The model values are updated within the next microtask. However, the current state of the model instance will be updated instantly. After calling the set method the `store.pending()` guard will return a truthy value (a promise instance), up to when the promise is resolved or rejected.
 
 #### Create
 
@@ -137,18 +137,6 @@ store.resolve(model: Model): Promise<Model>
 * **returns**:
   * A promise instance resolving with the latest model value or rejecting with an error
 
-#### Model Definition
-
-```typescript
-store.resolve(Model: object, id?: string | object): Promise<Model>
-```
-
-* **arguments**:
-  * `Model` - a model definition
-  * `id` - a string or an object representing identifier of the model instance
-* **returns**:
-  * A promise instance resolving with the latest model value or rejecting with an error
-
 ```javascript
 const State = {
   value: ""
@@ -170,6 +158,32 @@ define({
     <button onclick="${sendValue}">Send</button>
   `,
 });
+```
+
+#### Model Definition
+
+```typescript
+store.resolve(Model: object, id?: string | object): Promise<Model>
+```
+
+* **arguments**:
+  * `Model` - a model definition
+  * `id` - a string or an object representing identifier of the model instance
+* **returns**:
+  * A promise instance resolving with the latest model value or rejecting with an error
+
+```javascript
+const User = {
+  id: true,
+  ...
+};
+
+async function sendUserData(id) {
+  const user = await store.resolve(User, id);
+
+  // do something with the user
+  ...
+}
 ```
 
 ### `store.sync`
