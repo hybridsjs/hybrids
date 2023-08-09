@@ -1305,11 +1305,8 @@ function clear(model, clearValue = true) {
     invalidateTimestamp(model);
     cache.invalidate(config, model.id, { clearValue, deleteEntry: clearValue });
   } else {
-    if (!configs.get(model) && !lists.get(model[0])) {
-      throw Error(
-        "Model definition must be used before - passed argument is probably not a model definition",
-      );
-    }
+    if (!configs.get(model) && !lists.get(model[0])) return;
+
     config = bootstrap(model);
     const offline = clearValue && config.storage.offline;
 

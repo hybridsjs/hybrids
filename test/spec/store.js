@@ -744,8 +744,8 @@ describe("store:", () => {
       expect(() => store.clear("string")).toThrow();
     });
 
-    it("throws when first argument is error not connected to model instance", () => {
-      expect(() => store.clear(Error("Some error"))).toThrow();
+    it("returns eagerly when the first argument is an object not connected to model instance", () => {
+      expect(() => store.clear({})).not.toThrow();
     });
 
     it("throws when model has expired", () =>
@@ -1989,6 +1989,17 @@ describe("store:", () => {
       store.get(Model, 1);
 
       expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it("calls storage get action with object id", () => {
+      const model = store.get(Model, { b: "c", a: "b" });
+
+      expect(model.id).toEqual(JSON.stringify({ a: "b", b: "c" }));
+
+      return store.resolve(model).then((resultModel) => {
+        expect(resultModel.id).toEqual(JSON.stringify({ a: "b", b: "c" }));
+        expect(String(resultModel)).toBe(JSON.stringify({ a: "b", b: "c" }));
+      });
     });
 
     it("calls storage get action once for time-based cache", () => {
