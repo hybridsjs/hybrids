@@ -23,8 +23,8 @@ function createSignature(parts) {
   for (let index = 1; index < parts.length; index += 1) {
     tableMode =
       tableMode ||
-      parts[index - 1].match(
-        /<\s*(table|tr|thead|tbody|tfoot|colgroup)([^<>]|"[^"]*"|'[^']*')*>\s*$/,
+      signature.match(
+        /<\s*(table|th|tr|td|thead|tbody|tfoot|caption|colgroup)([^<>]|"[^"]*"|'[^']*')*>\s*$/,
       );
 
     signature +=
@@ -34,7 +34,9 @@ function createSignature(parts) {
 
     tableMode =
       tableMode &&
-      !parts[index].match(/<\/\s*(table|tr|thead|tbody|tfoot|colgroup)\s*>/);
+      !signature.match(
+        /<\/\s*(table|th|tr|td|thead|tbody|tfoot|caption|colgroup)\s*>/,
+      );
   }
 
   return signature;

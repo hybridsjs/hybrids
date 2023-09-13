@@ -696,10 +696,34 @@ describe("html:", () => {
             ${[3, 4].map((v) => renderRow(v))}
           </tbody>
         </table>
+        <div class="${"test"}">${"text"}</div>
       `;
 
       renderTable({}, fragment);
       expect(fragment.children[0].querySelectorAll("td").length).toBe(4);
+      expect(fragment.children[1].outerHTML).toBe(
+        '<div class="test">text</div>',
+      );
+    });
+
+    it("should render table with rows with attribute expression", () => {
+      const renderRow = (v) =>
+        html`
+          <tr class="${{ test: true }}">
+            ${html`<td>${v}</td>`}
+          </tr>
+        `.key(v);
+      const renderTable = html`
+        <table>
+          <tbody>
+            ${[1, 2].map((v) => renderRow(v))}
+            ${[3, 4].map((v) => renderRow(v))}
+          </tbody>
+        </table>
+      `;
+
+      renderTable({}, fragment);
+      expect(fragment.children[0].querySelectorAll("tr > td").length).toBe(4);
     });
 
     it("should render tbody inside of the table with class attribute", () => {
