@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.3](https://github.com/hybridsjs/hybrids/compare/v8.2.2...v8.2.3) (2023-09-13)
+
+
+### Bug Fixes
+
+* **html:** table elements with attribute expressions ([#212](https://github.com/hybridsjs/hybrids/issues/212)) ([ed333a5](https://github.com/hybridsjs/hybrids/commit/ed333a5ffe7e5241fc36a2725e488ff2d20ae277))
+* **store:** Return instead of throw when clear unused model definition ([1e4be86](https://github.com/hybridsjs/hybrids/commit/1e4be8667d86933c79d70990220966263390535b))
+
 ### [8.2.2](https://github.com/hybridsjs/hybrids/compare/v8.2.1...v8.2.2) (2023-07-11)
 
 
