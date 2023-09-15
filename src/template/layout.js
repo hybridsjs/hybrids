@@ -284,7 +284,7 @@ export function insertRule(node, query, tokens, hostMode) {
   }, "@media screen");
 
   if (hostMode) {
-    const shadowSelector = `:host(.${className}-s${selectors})`;
+    const shadowSelector = `:host(:where(.${className}-s${selectors}))`;
     const contentSelector = `:where(.${className}-c${selectors})`;
 
     [shadowSelector, contentSelector].forEach((selector) => {

@@ -166,6 +166,19 @@ describe("layout:", () => {
     expect(window.getComputedStyle(host).flexDirection).toBe("column");
   });
 
+  it("set main element styles with zero specificity for shadowRoot", () => {
+    const shadowRoot = host.attachShadow({ mode: "open" });
+    html`<template layout="row">
+      <div></div>
+    </template>`.css`
+      :host {
+        flex-flow: column;
+      }
+    `(host, shadowRoot);
+
+    expect(window.getComputedStyle(host).flexDirection).toBe("column");
+  });
+
   it("keeps rules when element is taken out from the document", () => {
     const shadowRoot = host.attachShadow({ mode: "open" });
     html`<template layout="column"><div layout="row"></div></template>`(
