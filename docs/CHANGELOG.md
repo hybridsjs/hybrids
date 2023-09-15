@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.4](https://github.com/hybridsjs/hybrids/compare/v8.2.3...v8.2.4) (2023-09-15)
+
+
+### Bug Fixes
+
+* **layout:** make zero specificity for root styles with shadowRoot ([16d7b2d](https://github.com/hybridsjs/hybrids/commit/16d7b2d2afe02f4f72ad0e018c138b9c9664480f))
+
 ### [8.2.3](https://github.com/hybridsjs/hybrids/compare/v8.2.2...v8.2.3) (2023-09-13)
 
 
