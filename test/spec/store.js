@@ -2086,8 +2086,13 @@ describe("store:", () => {
         },
       };
 
+      const pendingModel = store.get([Model], "test");
+
+      expect(pendingModel.id).toBe("test");
+      expect(String(pendingModel)).toBe("test");
+
       return store
-        .pending(store.get([Model]))
+        .pending(pendingModel)
         .then((models) => store.pending(models[0]).then(() => models))
         .then((models) => {
           const model = models[0];
@@ -2150,6 +2155,10 @@ describe("store:", () => {
       };
 
       const pendingModel = store.get(Model, 1);
+
+      expect(pendingModel.id).toBe("1");
+      expect(String(pendingModel)).toBe("1");
+
       expect(store.pending(pendingModel)).toBeInstanceOf(Promise);
       expect(() => pendingModel.value).toThrow();
 
