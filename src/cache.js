@@ -4,8 +4,8 @@ const entries = new WeakMap();
 const stack = new Set();
 
 function dispatch(entry) {
-  const contexts = new Set();
-  const iterator = contexts.values();
+  const contexts = [];
+  let index = 0;
 
   while (entry) {
     entry.resolved = false;
@@ -20,7 +20,7 @@ function dispatch(entry) {
     if (entry.contexts) {
       for (const context of entry.contexts) {
         if (!stack.has(context)) {
-          contexts.add(context);
+          if (!contexts.includes(context)) contexts.push(context);
           entry.contexts.delete(context);
         }
       }
@@ -30,7 +30,7 @@ function dispatch(entry) {
       emitter.add(entry.observe);
     }
 
-    entry = iterator.next().value;
+    entry = contexts[index++];
   }
 }
 
