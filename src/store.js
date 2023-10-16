@@ -803,9 +803,18 @@ function setupListModel(Model, nested) {
       contexts,
       enumerable: modelConfig.enumerable,
       external: modelConfig.external,
-      placeholder: () => {
+      placeholder: (id) => {
         const model = Object.create(listPlaceholderPrototype);
         definitions.set(model, config);
+
+        Object.defineProperties(model, {
+          id: { value: id },
+          toString: {
+            value: function () {
+              return this.id;
+            },
+          },
+        });
 
         return Object.freeze(model);
       },
