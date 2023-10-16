@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.5](https://github.com/hybridsjs/hybrids/compare/v8.2.4...v8.2.5) (2023-10-16)
+
+
+### Bug Fixes
+
+* **cache:** use array instance instead of set iterator ([c06c178](https://github.com/hybridsjs/hybrids/commit/c06c178539c5b3e280acabb1be6030f2f0b75062))
+* **store:** add id to listing type placeholder ([cc0c9d9](https://github.com/hybridsjs/hybrids/commit/cc0c9d9963a50905343c2fb615804ee9a32df594))
+
 ### [8.2.4](https://github.com/hybridsjs/hybrids/compare/v8.2.3...v8.2.4) (2023-09-15)
 
 
