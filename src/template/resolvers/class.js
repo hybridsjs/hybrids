@@ -1,14 +1,24 @@
-function normalizeValue(value, set = new Set()) {
-  if (Array.isArray(value)) {
-    for (const className of value) {
+function addClassNames(set, value) {
+  if (value) {
+    for (const className of String(value).split(/\s+/)) {
       if (className) set.add(className);
     }
+  }
+}
+
+function normalizeValue(value) {
+  const set = new Set();
+
+  if (Array.isArray(value)) {
+    for (const v of value) {
+      addClassNames(set, v);
+    }
   } else if (value !== null && typeof value === "object") {
-    for (const [className, condition] of Object.entries(value)) {
-      if (className && condition) set.add(className);
+    for (const [v, condition] of Object.entries(value)) {
+      if (v && condition) addClassNames(set, v);
     }
   } else {
-    if (value) set.add(value);
+    addClassNames(set, value);
   }
 
   return set;

@@ -226,14 +226,19 @@ describe("html:", () => {
       render("class-one")(fragment);
       expect(hasClass("class-one")).toBe(true);
 
+      render("class-one class-two   ")(fragment);
+      expect(hasClass("class-one")).toBe(true);
+      expect(hasClass("class-two")).toBe(true);
+
       render("")(fragment);
       expect(fragment.children[0].classList.length).toBe(0);
     });
 
     it("sets array value", () => {
-      render(["class-one", "class-two", ""])(fragment);
+      render(["class-one", "class-two class-three", ""])(fragment);
       expect(hasClass("class-one")).toBe(true);
       expect(hasClass("class-two")).toBe(true);
+      expect(hasClass("class-three")).toBe(true);
     });
 
     it("sets object value", () => {
@@ -250,7 +255,7 @@ describe("html:", () => {
     });
 
     it("updates values", () => {
-      render(["one", "two", "three"])(fragment);
+      render(["one", "two three"])(fragment);
       render(["one", "four"])(fragment);
 
       expect(hasClass("one")).toBe(true);
