@@ -39,6 +39,7 @@ export function getEntry(target, key) {
       key,
       target,
       value: undefined,
+      assertValue: undefined,
       lastValue: undefined,
       resolved: false,
       contexts: undefined,
@@ -58,7 +59,11 @@ export function getEntries(target) {
 }
 
 let context = null;
-export function get(target, key, getter) {
+export function getCurrentEntry() {
+  return context;
+}
+
+export function get(target, key, fn) {
   const entry = getEntry(target, key);
 
   if (context) {
@@ -88,7 +93,7 @@ export function get(target, key, getter) {
     context = entry;
     stack.add(entry);
 
-    entry.value = getter(target, entry.value);
+    entry.value = fn(target, entry.assertValue, entry.value);
     entry.resolved = true;
 
     context = lastContext;
@@ -109,24 +114,35 @@ export function get(target, key, getter) {
   return entry.value;
 }
 
-export function set(target, key, setter, value) {
+export function assert(target, key, value) {
   const entry = getEntry(target, key);
-  const newValue = setter(target, value, entry.value);
 
-  if (newValue !== entry.value) {
-    entry.value = newValue;
+  entry.value = undefined;
+  entry.assertValue = value;
+
+  dispatch(entry);
+}
+
+export function set(target, key, fn, value) {
+  const entry = getEntry(target, key);
+  const nextValue = fn(target, value, entry.value);
+
+  if (nextValue !== entry.value) {
+    entry.value = nextValue;
+    entry.assertValue = undefined;
+
     dispatch(entry);
   }
 }
 
-export function observe(target, key, getter, fn) {
+export function observe(target, key, fn, callback) {
   const entry = getEntry(target, key);
 
   entry.observe = () => {
-    const value = get(target, key, getter);
+    const value = get(target, key, fn);
 
     if (value !== entry.lastValue) {
-      fn(target, value, entry.lastValue);
+      callback(target, value, entry.lastValue);
       entry.lastValue = value;
     }
   };
@@ -168,6 +184,7 @@ function invalidateEntry(entry, options) {
 
   if (options.clearValue) {
     entry.value = undefined;
+    entry.assertValue = undefined;
     entry.lastValue = undefined;
   }
 

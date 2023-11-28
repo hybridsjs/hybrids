@@ -256,7 +256,7 @@ describe("store:", () => {
         expect(() => model.message).not.toThrow();
       });
 
-      it("returns an array with updated models", () => {
+      it("returns an array with created models", () => {
         expect(store.get([Model])).toEqual([]);
 
         return promise.then(() => {
@@ -790,7 +790,7 @@ describe("store:", () => {
 
     it("removes model instance by id", () =>
       promise.then((model) => {
-        store.clear(Model, model.id);
+        store.clear(model, true);
         expect(store.error(store.get(Model, model.id))).toBeInstanceOf(Error);
       }));
 
@@ -983,7 +983,7 @@ describe("store:", () => {
 
       const desc = store(Model, { draft: true });
       const host = {};
-      const model = desc.get(host);
+      const model = desc.value(host);
 
       return store
         .set(model, { one: "" })
@@ -1013,7 +1013,7 @@ describe("store:", () => {
 
       const desc = store(Model, { draft: true });
       const host = {};
-      const model = desc.get(host);
+      const model = desc.value(host);
 
       return store.set(model, { number: 0 }).then((nextModel) => {
         const error = store.error(nextModel);
@@ -1231,7 +1231,7 @@ describe("store:", () => {
       });
 
       describe("with id", () => {
-        it("throws when try to set value by assertion", () => {
+        it("throws an error for the same model when try to set value by assertion", () => {
           expect(() => {
             el.byprop = "1";
           }).toThrow();
@@ -1266,10 +1266,10 @@ describe("store:", () => {
         });
 
         describe("in draft mode", () => {
-          it("throws when try to set value by assertion", () => {
-            expect(() => {
-              el.draft = "1";
-            }).toThrow();
+          it("returns the same model when try to set value by assertion", () => {
+            const model = el.draft;
+            el.draft = "1";
+            expect(el.draft).toBe(model);
           });
 
           it("has global space for draft definitions", () => {
@@ -1350,8 +1350,11 @@ describe("store:", () => {
         });
 
         it("set model id from the attribute value", () => {
-          el.setAttribute("withoutid", "2");
-          expect(el.withoutid).toBe(store.get(Model, "2"));
+          el.innerHTML = `
+            <test-store-factory-enumerable withoutid="2"></test-store-factory-enumerable>
+          `;
+
+          expect(el.firstElementChild.withoutid).toBe(store.get(Model, "2"));
         });
 
         it("set model id by assertion", () => {
@@ -1398,6 +1401,17 @@ describe("store:", () => {
             expect(store.ready(el2.draftwithoutid)).toBe(true);
 
             document.body.removeChild(el2);
+          });
+
+          it("sets draft model by assert model instance", () => {
+            const model = store.get(Model, "1");
+            el.draftwithoutid = model;
+            expect(el.draftwithoutid.id).toBe(model.id);
+          });
+
+          it("sets draft model by assertion string id", () => {
+            el.draftwithoutid = "1";
+            expect(el.draftwithoutid.id).toBe("1");
           });
 
           it("updates not initialized draft new model instance", () =>
@@ -1528,7 +1542,7 @@ describe("store:", () => {
         expect(el.listwithoutid.length).toBe(2);
       });
 
-      it("throws when try to update property with id option", () => {
+      it("returns the same model when try to update property with id option", () => {
         expect(() => {
           el.listwithid = "another";
         }).toThrow();

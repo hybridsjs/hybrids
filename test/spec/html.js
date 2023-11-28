@@ -53,27 +53,22 @@ describe("html:", () => {
   it("logs template with highlight expression when an error occur", () => {
     define({
       tag: "test-html-object-property",
-      model: () => "value",
     });
 
     const renderWithNewLines = (value) => html`
-      <test-html-object-property model=${value}>
+      <test-html-object-property onclick=${value}>
         <div></div>
       </test-html-object-property>
     `;
 
     // prettier-ignore
-    const renderWithoutNewLines = (value) => html`<test-html-object-property model=${value}></test-html-object-property>`;
+    const renderWithoutNewLines = (value) => html`<test-html-object-property onclick=${value}></test-html-object-property>`;
 
     expect(() => {
-      renderWithNewLines(undefined)(fragment);
+      renderWithNewLines("fn")(fragment);
     }).toThrow();
     expect(() => {
-      renderWithoutNewLines(undefined)(fragment);
-    }).toThrow();
-
-    expect(() => {
-      renderWithoutNewLines(true)(fragment);
+      renderWithoutNewLines("fn")(fragment);
     }).toThrow();
   });
 
