@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.6](https://github.com/hybridsjs/hybrids/compare/v8.2.5...v8.2.6) (2023-11-28)
+
+
+### Bug Fixes
+
+* **html:** add support for multiple class names as string ([a6f52ba](https://github.com/hybridsjs/hybrids/commit/a6f52baf96a57adbaaf5679e71b9afadd4507fa9))
+
 ### [8.2.5](https://github.com/hybridsjs/hybrids/compare/v8.2.4...v8.2.5) (2023-10-16)
 
 
