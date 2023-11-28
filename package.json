@@ -10,10 +10,15 @@
     }
   },
   "types": "types/index.d.ts",
-  "bin": "./cli/index.js",
+  "bin": {
+    "hybrids": "cli/index.js"
+  },
   "sideEffects": false,
   "homepage": "https://hybrids.js.org",
-  "repository": "https://github.com/hybridsjs/hybrids",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hybridsjs/hybrids.git"
+  },
   "bugs": "https://github.com/hybridsjs/hybrids/issues",
   "author": "Dominik Lubański <dominik.lubanski@gmail.com>",
   "license": "MIT",
