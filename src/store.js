@@ -1493,6 +1493,13 @@ function store(Model, options = {}) {
     );
   }
 
+  const resolveId = options.id
+    ? options.id
+    : (host, value) => {
+        if (value !== null && typeof value === "object") return value.id;
+        return value ? String(value) : undefined;
+      };
+
   let draft;
   if (options.draft) {
     if (config.list) {
@@ -1516,69 +1523,55 @@ function store(Model, options = {}) {
 
     draftMap.set(draft, config);
     Model = draft.model;
-  }
 
-  if (!options.id && config.enumerable && !config.list) {
     return {
       get(host, value) {
-        const valueConfig = definitions.get(value);
-        const id = valueConfig !== undefined ? value.id : value;
+        let id = resolveId(host, value);
 
-        if (draft && (value === undefined || value === null)) {
-          const draftModel = draft.create({}, { id: undefined });
-          syncCache(draft, undefined, draftModel, false);
-          return get(Model, undefined);
+        if (!id && (value === undefined || value === null)) {
+          const draftModel = draft.create({});
+          id = draftModel.id;
+
+          syncCache(draft, draftModel.id, draftModel, false);
         }
 
-        return value ? get(Model, id) : undefined;
+        return get(Model, id);
       },
-      set: (_, v) => v,
-      connect: draft
+      set: options.id ? undefined : (_, v) => v,
+      connect: config.enumerable
         ? (host, key) => () => {
             const model = host[key];
-            if (model && model.id) clear(model, true);
+            if (model) clear(model, true);
           }
         : undefined,
     };
   }
 
+  if (options.id) {
+    return {
+      get(host, value) {
+        const id = resolveId(host);
+        const nextValue = config.list || id ? get(Model, id) : undefined;
+
+        if (nextValue !== value && ready(value) && !ready(nextValue)) {
+          const tempValue = cloneModel(value);
+          cache.set(tempValue, "state", () => getModelState(nextValue));
+          return tempValue;
+        }
+
+        return nextValue;
+      },
+    };
+  }
+
   return {
-    get: (host, value) => {
-      const valueConfig = definitions.get(value);
-      const id =
-        (options.id && options.id(host)) ||
-        (valueConfig !== undefined ? value.id : value);
-
-      if (draft && !id && (value === undefined || value === null)) {
-        const draftModel = draft.create({});
-        syncCache(draft, undefined, draftModel, false);
-        return get(Model, undefined);
-      }
-
-      if (!config.list && config.enumerable && id === undefined)
-        return undefined;
-
-      const nextValue = get(Model, id);
-
-      if (nextValue !== value && ready(value) && !ready(nextValue)) {
-        const tempValue = cloneModel(value);
-        cache.set(tempValue, "state", () => getModelState(nextValue));
-        return tempValue;
-      }
-
-      return nextValue;
+    get(host, value) {
+      const id = resolveId(host, value);
+      return !config.enumerable || config.list || value
+        ? get(Model, id)
+        : undefined;
     },
-    set:
-      (!options.id && config.list) || (draft && !config.enumerable)
-        ? (_, v) => v
-        : undefined,
-    connect:
-      draft && config.enumerable
-        ? (host, key) => () => {
-            const model = host[key];
-            if (model && model.id) clear(model, true);
-          }
-        : undefined,
+    set: (_, v) => v,
   };
 }
 

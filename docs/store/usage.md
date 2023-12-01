@@ -307,8 +307,6 @@ define({
 
 ### Enumerables and Listings
 
-For the enumerable or listing model definition, the property creates a read-only connection to the model instance:
-
 #### Explicit Identifier
 
 If the `id` option is set, it can be a property name or a function returning the identifier:
@@ -358,9 +356,9 @@ el.user = someUser;
 html`<my-element user="1"></my-element>`;
 ```
 
-#### Cache
+#### Rendering in-between state
 
-The significant difference between using the `store.get()` method directly and the factory for properties, which set the `id` option is a unique behavior for returning the last resolved value when identifier changes. The get method always returns the data according to the current state of the model. However, if the `id` option is set for enumerable or listing definition, the factory caches the last value of the property, until the next value is ready. In the meantime, guards return a state of the next value. It means, that it returns the old value, but in the pending state, rather than an empty placeholder for the new value:
+The significant difference between using the `store.get()` method directly and the factory, which have the `id` option is a unique behavior for returning the last resolved value when identifier changes. The get method always returns the data according to the current state of the model. However, if the `id` option is set for enumerable or listing definition, the factory caches the last value of the property, until the next value is ready. In the meantime, guards return a state of the next value. It means, that it returns the old value, but in the pending state, rather than an empty placeholder for the new value:
 
 ```javascript
 import { User } from "./models.js";
