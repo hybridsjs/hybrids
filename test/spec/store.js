@@ -1326,9 +1326,18 @@ describe("store:", () => {
         });
 
         describe("in draft mode", () => {
-          it("returns new model instance for not initialized model", () => {
+          it("returns new model instance for not initialized model for each component", () => {
             expect(el.draftwithoutid).toBeDefined();
             expect(store.ready(el.draftwithoutid)).toBe(true);
+
+            const el2 = document.createElement("test-store-factory-enumerable");
+            document.body.appendChild(el2);
+
+            expect(el2.draftwithoutid).toBeDefined();
+            expect(el2.draftwithoutid).not.toBe(el.draftwithoutid);
+            expect(store.ready(el2.draftwithoutid)).toBe(true);
+
+            document.body.removeChild(el2);
           });
 
           it("updates not initialized draft new model instance", () =>
