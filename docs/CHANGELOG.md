@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.7](https://github.com/hybridsjs/hybrids/compare/v8.2.6...v8.2.7) (2023-12-04)
+
+
+### Bug Fixes
+
+* **store:** unique instance of the draft without an id for each component ([#222](https://github.com/hybridsjs/hybrids/issues/222)) ([a06a266](https://github.com/hybridsjs/hybrids/commit/a06a266f55adc61e3cc27c1aa58f23da3111a10e))
+
 ### [8.2.6](https://github.com/hybridsjs/hybrids/compare/v8.2.5...v8.2.6) (2023-11-28)
 
 
