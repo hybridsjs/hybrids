@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.8](https://github.com/hybridsjs/hybrids/compare/v8.2.7...v8.2.8) (2023-12-07)
+
+
+### Bug Fixes
+
+* **cache:** clean up not reachable removal of deps ([c1cb4f7](https://github.com/hybridsjs/hybrids/commit/c1cb4f7075a1dfe421bd161f89b7e5b8f0c52219))
+* **store:** Use id from the current draft when id is falsy ([a52bf00](https://github.com/hybridsjs/hybrids/commit/a52bf0083984ead69c64b828420ec247116a4e5f))
+
 ### [8.2.7](https://github.com/hybridsjs/hybrids/compare/v8.2.6...v8.2.7) (2023-12-04)
 
 
