@@ -152,12 +152,6 @@ function deleteEntry(entry) {
     setTimeout(() => {
       for (const e of gc) {
         if (!e.contexts || e.contexts.size === 0) {
-          if (e.deps) {
-            for (const depEntry of e.deps) {
-              depEntry.contexts.delete(e);
-            }
-          }
-
           const targetMap = entries.get(e.target);
           targetMap.delete(e.key);
         }

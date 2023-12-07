@@ -7,7 +7,7 @@ import {
   observe,
 } from "../../src/cache.js";
 
-import { resolveRaf } from "../helpers.js";
+import { resolveRaf, resolveTimeout } from "../helpers.js";
 
 describe("cache:", () => {
   let target;
@@ -165,6 +165,20 @@ describe("cache:", () => {
       get(target, "key", spy);
 
       expect(spy).toHaveBeenCalledTimes(0);
+    });
+
+    it("deletes entry if it has no contexts", () => {
+      get(target, "key", () =>
+        get(target, "otherKey", () => get(target, "deepKey", () => "value")),
+      );
+      invalidate(target, "otherKey", { deleteEntry: true });
+
+      return resolveTimeout(() => {
+        expect(getEntries(target).map(({ key }) => key)).toEqual([
+          "key",
+          "deepKey",
+        ]);
+      });
     });
   });
 
