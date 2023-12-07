@@ -1236,6 +1236,15 @@ describe("store:", () => {
             });
           });
 
+          it("returns new model when id is not set", () => {
+            el.modelId = "";
+            expect(el.draft.id).not.toBe("1");
+
+            store.set(el.draft, { value: "other" }).then(() => {
+              expect(store.error(el.draft)).not.toBeTruthy();
+            });
+          });
+
           it("returns the first draft of the original model after model changes", () =>
             store.pending(el.draft).then((model) =>
               store.set(model, { value: "new value" }).then(() => {

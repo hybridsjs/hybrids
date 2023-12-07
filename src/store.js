@@ -1526,7 +1526,7 @@ function store(Model, options = {}) {
 
     return {
       get(host, value) {
-        let id = resolveId(host, value);
+        let id = resolveId(host, value) || (value ? value.id : undefined);
 
         if (!id && (value === undefined || value === null)) {
           const draftModel = draft.create({});
@@ -1540,8 +1540,7 @@ function store(Model, options = {}) {
       set: options.id ? undefined : (_, v) => v,
       connect: config.enumerable
         ? (host, key) => () => {
-            const model = host[key];
-            if (model) clear(model, true);
+            clear(host[key], true);
           }
         : undefined,
     };
