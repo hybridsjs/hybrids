@@ -54,7 +54,7 @@ export default define({
 <simple-counter count="42"></simple-counter>
 ```
 
-[![Edit <simple-counter> web component built with hybrids library](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/simple-counter-web-component-built-with-hybrids-library-co2ow?file=/src/SimpleCounter.js)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/edit/hybrids-simple-counter)
 
 <small>\* Pure functions only apply to the component definition. Side effects attached to event listeners might mutate the host element.</small>
 
