@@ -495,6 +495,10 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
   } else {
     config.parent = parent;
     config.nestedParent = nestedParent;
+
+    if (parent && !parent.stack.includes(config)) {
+      parent.stack.push(config);
+    }
   }
 
   if (!parent) {
@@ -1123,7 +1127,7 @@ function router(views, options) {
 
         console.groupEnd();
 
-        global[`$$${key}`] = view;
+        globalThis[`$$${key}`] = view;
       }),
   };
 

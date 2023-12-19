@@ -210,6 +210,49 @@ describe("router:", () => {
     });
   });
 
+  it("uses push navigation to view with multiple parents", () => {
+    const Target = define({
+      tag: "test-router-view-multiple-parents-target",
+    });
+
+    const A = define({
+      tag: "test-router-view-multiple-parents-a",
+      [router.connect]: {
+        stack: [Target],
+      },
+      content: () => html` <a href="${router.url(B)}"></a> `,
+    });
+
+    const B = define({
+      tag: "test-router-view-multiple-parents-b",
+      [router.connect]: {
+        stack: [Target],
+      },
+      content: () => html` <a href="${router.url(Target)}"></a> `,
+    });
+
+    define({
+      tag: "test-router-view-multiple-parents",
+      stack: router([A, B]),
+      content: ({ stack }) => html`${stack}`,
+    });
+
+    const el = document.createElement("test-router-view-multiple-parents");
+    document.body.appendChild(el);
+
+    return resolveTimeout(() => {
+      el.querySelector("a").click();
+      return resolveTimeout(() => {
+        el.querySelector("a").click();
+
+        return resolveTimeout(() => {
+          expect(history.state.length).toBe(2);
+          document.body.removeChild(el);
+        });
+      });
+    });
+  });
+
   describe("test app", () => {
     beforeAll(() => {
       NestedViewTwo = define({
