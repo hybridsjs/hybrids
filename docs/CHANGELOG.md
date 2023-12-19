@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.9](https://github.com/hybridsjs/hybrids/compare/v8.2.8...v8.2.9) (2023-12-19)
+
+
+### Bug Fixes
+
+* **router:** add view to the stack of all parents ([f0cbe51](https://github.com/hybridsjs/hybrids/commit/f0cbe51a9d0d919f68ef30d365981292aaf58f51))
+
 ### [8.2.8](https://github.com/hybridsjs/hybrids/compare/v8.2.7...v8.2.8) (2023-12-07)
 
 
