@@ -165,6 +165,57 @@ describe("define:", () => {
     });
   });
 
+  // Relates to https://github.com/hybridsjs/hybrids/issues/229
+  // with a move of clearing deps and context in cache
+  // There is still a problem with "prop3" which is not updated in render
+  // but it happens because the render was already called after the prop1 observer
+  it("render method is called when observed chain of properties changes", () => {
+    define({
+      tag: "test-define-render-observed",
+      prop1: {
+        value: 0,
+        observe(host, value) {
+          host.prop2 = value;
+        },
+      },
+      prop2: {
+        value: 0,
+        observe(host, value) {
+          host.prop3 = value;
+        },
+      },
+      prop3: 0,
+      render: ({ prop1, prop2, prop3 }) =>
+        // prettier-ignore
+        html`<div>${prop1}</div><div>${prop2}</div><div>${prop3}</div>`,
+    });
+
+    el = document.createElement("test-define-render-observed");
+    document.body.appendChild(el);
+
+    return resolveRaf(() => {
+      expect(el.shadowRoot.innerHTML).toBe(
+        "<div>0</div><div>0</div><div>0</div>",
+      );
+
+      el.prop1 = 1;
+
+      return resolveRaf(() => {
+        expect(el.shadowRoot.innerHTML).toBe(
+          "<div>1</div><div>1</div><div>0</div>",
+        );
+
+        el.prop1 = 2;
+
+        return resolveRaf(() => {
+          expect(el.shadowRoot.innerHTML).toBe(
+            "<div>2</div><div>2</div><div>1</div>",
+          );
+        });
+      });
+    });
+  });
+
   describe("created element", () => {
     beforeAll(() => {
       define({
