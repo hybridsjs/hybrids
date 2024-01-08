@@ -10,18 +10,10 @@ function dispatch(entry) {
   while (entry) {
     entry.resolved = false;
 
-    if (entry.deps) {
-      for (const depEntry of entry.deps) {
-        depEntry.contexts.delete(entry);
-      }
-      entry.deps.clear();
-    }
-
     if (entry.contexts) {
       for (const context of entry.contexts) {
-        if (!stack.has(context)) {
-          if (!contexts.includes(context)) contexts.push(context);
-          entry.contexts.delete(context);
+        if (!stack.has(context) && !contexts.includes(context)) {
+          contexts.push(context);
         }
       }
     }
@@ -78,6 +70,13 @@ export function get(target, key, getter) {
   }
 
   if (entry.resolved) return entry.value;
+
+  if (entry.deps) {
+    for (const depEntry of entry.deps) {
+      depEntry.contexts.delete(entry);
+    }
+    entry.deps.clear();
+  }
 
   const lastContext = context;
 
@@ -173,6 +172,20 @@ function invalidateEntry(entry, options) {
   }
 
   if (options.deleteEntry) {
+    if (entry.deps) {
+      for (const depEntry of entry.deps) {
+        depEntry.contexts.delete(entry);
+      }
+      entry.deps = undefined;
+    }
+
+    if (entry.contexts) {
+      for (const context of entry.contexts) {
+        context.deps.delete(entry);
+      }
+      entry.contexts = undefined;
+    }
+
     deleteEntry(entry);
   }
 }
