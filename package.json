@@ -47,9 +47,9 @@
   },
   "devDependencies": {
     "eslint": "^8.7.0",
-    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-prettier": "^5.1.2",
     "jasmine-core": "^5.0.0",
     "karma": "^6.3.11",
     "karma-chrome-launcher": "^3.1.0",
@@ -58,7 +58,7 @@
     "karma-jasmine": "^5.1.0",
     "karma-webkit-launcher": "^2.1.0",
     "playwright": "^1.27.1",
-    "prettier": "^2.5.1",
+    "prettier": "^3.1.1",
     "standard-version": "^9.3.2"
   },
   "standard-version": {
