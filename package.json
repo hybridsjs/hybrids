@@ -43,6 +43,7 @@
     "test": "npm run test:cli && npm run lint && npm run karma",
     "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run karma",
     "test:cli": "node ./cli/test.js",
+    "test:setup": "playwright install firefox webkit --with-deps",
     "release": "npm run test && standard-version -a"
   },
   "devDependencies": {

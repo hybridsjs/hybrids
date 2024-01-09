@@ -20,8 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npx playwright install-deps webkit
-          npx playwright install firefox
+          npm run test:setup
       - name: Run tests
         run: |
           npm run test
