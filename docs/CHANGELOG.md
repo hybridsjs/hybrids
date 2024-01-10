@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.10](https://github.com/hybridsjs/hybrids/compare/v8.2.9...v8.2.10) (2024-01-10)
+
+
+### Bug Fixes
+
+* **cache:** Clear deps and context when get value from cache ([#230](https://github.com/hybridsjs/hybrids/issues/230)) ([ec6f8b1](https://github.com/hybridsjs/hybrids/commit/ec6f8b1379dc71031805a2e3046691b0cd7f43d5))
+
 ### [8.2.9](https://github.com/hybridsjs/hybrids/compare/v8.2.8...v8.2.9) (2023-12-19)
 
 
