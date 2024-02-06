@@ -1000,7 +1000,7 @@ describe("store:", () => {
       expect(() => store.ref()).toThrow();
     });
 
-    it("resolves to the result of the function", () => {
+    it("resolves for the model reference", () => {
       Model = {
         id: true,
         value: "",
@@ -1012,6 +1012,21 @@ describe("store:", () => {
         .then((model) => {
           expect(model.value).toBe("a");
           expect(model.model.value).toBe("b");
+        });
+    });
+
+    it("resolves for the model reference in array", () => {
+      Model = {
+        id: true,
+        value: "",
+        model: store.ref(() => [Model]),
+      };
+
+      return store
+        .set(Model, { value: "a", model: [{ value: "b" }] })
+        .then((model) => {
+          expect(model.value).toBe("a");
+          expect(model.model[0].value).toBe("b");
         });
     });
   });

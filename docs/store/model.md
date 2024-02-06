@@ -290,7 +290,7 @@ To prevent an endless loop of fetching data, the cached value of the parent mode
 
 ### Self Reference & Import Cycles
 
-The model definition is based on the plain object definition, so by the JavaScript constraints, it is not possible to create a property, which is a model definition of itself, or use the definition from another ES module, which depends on the source file. In those situations, you can use the `store.ref(fn)` method, which sets a property to the result of the passed function in time of the definition (when the model definition is used for the first time).
+The model definition is based on the plain object definition, so by the JavaScript constraints, it is not possible to create a property, which is a model definition of itself, or use the definition from another ES module, which depends on the source file (there is an import cycle). In those situations, use the `store.ref(fn)` method, which sets a property to the result of the passed function in time of the definition (when the model definition is used for the first time).
 
 ```typescript
 store.ref(fn: () => Property): fn;
@@ -299,14 +299,15 @@ store.ref(fn: () => Property): fn;
 * **arguments**:
   * `fn` - a function returning the property definition
 * **returns**:
-  * a marked passed function, to use the result of the call instead of creating computed property
+  * a passed function, which is called in time of the definition
 
 ```javascript
 const Model = {
   id: true,
   value: "",
+  // single reference
   model: store.ref(() => Model),
+  // multiple references - wrap Model in the array inside of the function
+  models: store.ref(() => [Model]),
 };
 ```
-
-In the above example, the `Model` defines a connected list structure, where each instance can reference the same definition.
