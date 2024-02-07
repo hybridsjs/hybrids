@@ -12,7 +12,7 @@ module.exports = (config) => {
     reporters: ["dots"].concat(IS_COVERAGE ? ["coverage"] : []),
     browsers: IS_COVERAGE
       ? ["ChromeHeadless"]
-      : ["ChromeHeadless", "FirefoxHeadless", "WebkitHeadless"],
+      : ["WebkitHeadless", "ChromeHeadless", "FirefoxHeadless"],
     client: {
       captureConsole: false,
       jasmine: {
@@ -30,13 +30,15 @@ module.exports = (config) => {
     coverageReporter: {
       dir: "coverage/",
       reporters: [
-        { type: "html", subdir: "." },
-        { type: "lcovonly", subdir: ".", file: "lcov.info" },
+        { type: "html", subdir: "html" },
+        { type: "lcovonly", subdir: "lcov", file: "lcov.info" },
       ],
     },
     autoWatch: true,
     singleRun: true,
-    concurrency: 1,
+    concurrency: Infinity,
+    browserDisconnectTimeout: 10000,
+    browserDisconnectTolerance: 1,
     port: 9876 + Number(IS_COVERAGE),
   });
 };

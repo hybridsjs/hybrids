@@ -274,12 +274,11 @@ describe("router:", () => {
             el.scrollLeft = 100;
           },
         },
-        render: () =>
-          html`
-            <div class="overflow" style="height: 100px; overflow: scroll">
-              <div style="height: 300px"></div>
-            </div>
-          `,
+        render: () => html`
+          <div class="overflow" style="height: 100px; overflow: scroll">
+            <div style="height: 300px"></div>
+          </div>
+        `,
       });
 
       NestedViewOne = define({
@@ -289,11 +288,10 @@ describe("router:", () => {
         tag: "test-router-nested-view-one",
         globalA: "",
         globalC: "",
-        render: () =>
-          html`
-            <test-router-nested-component></test-router-nested-component>
-            <slot></slot>
-          `,
+        render: () => html`
+          <test-router-nested-component></test-router-nested-component>
+          <slot></slot>
+        `,
         content: () => html`
           <a
             href="${router.url(NestedViewTwo, { value: "1" })}"
@@ -1383,10 +1381,9 @@ describe("router:", () => {
           [router.connect]: {
             url: "/other_child",
           },
-          content: () =>
-            html`
-              <a href="${router.url(RootView)}" id="RootView">RootView</a>
-            `,
+          content: () => html`
+            <a href="${router.url(RootView)}" id="RootView">RootView</a>
+          `,
         });
 
         RootView = define({
