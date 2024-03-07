@@ -365,7 +365,7 @@ import { define } from "hybrids";
 
 function myCustomProperty(multiplier) {
   return {
-    get: (host, value) => value | 0,
+    get: (host, value) => value || 0,
     set: (host, value) => value * multiplier,
   };
 }
