@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.11](https://github.com/hybridsjs/hybrids/compare/v8.2.10...v8.2.11) (2024-03-08)
+
+
+### Bug Fixes
+
+* **store:** resolve to the current state of singleton model for draft mode ([64b4474](https://github.com/hybridsjs/hybrids/commit/64b44747ca0385d633363c59bc6fe6283eec69a9))
+
 ### [8.2.10](https://github.com/hybridsjs/hybrids/compare/v8.2.9...v8.2.10) (2024-01-10)
 
 
