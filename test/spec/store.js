@@ -82,7 +82,6 @@ describe("store:", () => {
       store.get(Model, "1");
       expect(() => store.get(Model.nestedArrayOfObjects)).toThrow();
     });
-
     it("does not throw when nested array is used as other nested listing", () => {
       store.get(Model, "1");
       expect(() =>
@@ -94,6 +93,18 @@ describe("store:", () => {
 
     it("throws when nested array is set with abritrary function", () => {
       expect(() => store.get({ nested: [() => {}] })).toThrow();
+    });
+
+    it("set to an error state when get method returning undefined", () => {
+      Model = {
+        value: "test",
+        [store.connect]: {
+          get: () => undefined,
+        },
+      };
+
+      const model = store.get(Model);
+      expect(store.error(model)).toBeInstanceOf(Error);
     });
 
     it("returns a placeholder in error state for not defined model", () => {
@@ -388,6 +399,22 @@ describe("store:", () => {
           }),
         )
         .catch((e) => expect(e).toBeInstanceOf(Error)));
+
+    it("rejects an error when set method returning undefined", () => {
+      Model = {
+        value: "test",
+        [store.connect]: {
+          get: () => ({}),
+          set: () => {
+            return undefined;
+          },
+        },
+      };
+
+      return store.set(Model).catch((e) => {
+        expect(e).toBeInstanceOf(Error);
+      });
+    });
 
     it("returns a placeholder in error state for not found singleton model", () => {
       Model = {
@@ -1432,7 +1459,9 @@ describe("store:", () => {
         Model = {
           value: "test",
           [store.connect]: {
-            get: () => {},
+            get: () => {
+              return { value: "test 2" };
+            },
             set: (id, values) => values,
           },
         };
@@ -1442,12 +1471,13 @@ describe("store:", () => {
           draft: store(Model, { draft: true }),
         });
         el = document.createElement("test-store-factory-singleton-draft");
-        expect(el.draft).toEqual({ value: "test" });
+
+        expect(el.draft).toEqual({ value: "test 2" });
 
         return store.set(el.draft, { value: "other" }).then(() => {
           expect(el.draft).toEqual({ value: "other" });
           el.draft = undefined;
-          expect(el.draft).toEqual({ value: "test" });
+          expect(el.draft).toEqual({ value: "test 2" });
         });
       });
     });
