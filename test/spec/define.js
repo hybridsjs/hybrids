@@ -30,40 +30,40 @@ describe("define:", () => {
     }).toThrow();
   });
 
-  it("throws for unsupported property value", () => {
-    expect(() => {
-      define({
-        tag: "test-define-throws",
-        prop: Symbol("asd"),
-      });
-    }).toThrow();
-    expect(() => {
-      define({
-        tag: "test-define-throws",
-        prop: null,
-      });
-    }).toThrow();
-    expect(() => {
-      define({
-        tag: "test-define-throws",
-        prop: [],
-      });
-    }).toThrow();
-  });
-
-  it("throws when set and value property is set at the same time", () => {
+  it("throws when get or set methods are defined", () => {
     expect(() => {
       define({
         tag: "test-define-throws",
         prop: {
-          value: "value",
+          get: () => {},
           set: () => {},
         },
       });
     }).toThrow();
   });
 
-  it("returns passed hybrids if the tag name is defined", () => {
+  it("throws when render value is not a function", () => {
+    expect(() => {
+      define({
+        tag: "test-define-throws",
+        render: "string",
+      });
+    }).toThrow();
+  });
+
+  it("throws when reflect option is defined for render key", () => {
+    expect(() => {
+      define({
+        tag: "test-define-throws",
+        render: {
+          value: () => html`<div></div>`,
+          reflect: true,
+        },
+      });
+    }).toThrow();
+  });
+
+  it("returns passed hybrids", () => {
     const hybrids = { tag: "test-define-twice" };
     expect(define(hybrids)).toBe(hybrids);
     expect(define(hybrids)).toBe(hybrids);
@@ -135,7 +135,7 @@ describe("define:", () => {
     define({
       tag: "test-define-invalidate-value",
       prop: {
-        get: () => count,
+        value: () => count,
         connect(host, key, invalidate) {
           ref = invalidate;
         },
@@ -217,23 +217,38 @@ describe("define:", () => {
   });
 
   describe("created element", () => {
+    let observeSpy;
+
     beforeAll(() => {
       define({
         tag: "test-define-default",
-        prop1: "",
+        prop1: "default",
         prop2: 0,
         prop3: {
           value: false,
+          reflect: true,
           connect: (...args) => spy && spy(...args),
         },
+        prop4: { value: "test", reflect: true },
+        prop5: {
+          value: undefined,
+          reflect: (value) => "This is " + value,
+          observe: (...args) => observeSpy && observeSpy(...args),
+        },
+        stringReflect: { value: "test", reflect: true },
+        numberReflect: { value: 0, reflect: true },
+        undefinedReflect: { value: undefined, reflect: true },
+        fnReflect: { value: "test", reflect: (v) => v + "!" },
+        array: { value: ["a", "b", "c"] },
         boolTrue: true,
         computed: ({ prop2, prop3 }) => `${prop2} ${prop3}`,
         fullDesc: () => "fullDesc",
         fullDescWritable: {
-          set: (host, val) => (val ? val * 2 : 0),
+          value: (host, val) => (val ? val * 2 : 0),
+          writable: true,
         },
         fullDescReadonly: {
-          get: () => 0,
+          value: () => 0,
         },
         notDefined: undefined,
         render: ({ prop1 }) =>
@@ -247,39 +262,45 @@ describe("define:", () => {
       el = document.createElement("test-define-default");
     });
 
-    it("throws when updating readonly computed property", () => {
-      expect(() => {
-        el.computed = "a";
-      }).toThrow();
-      expect(() => {
-        el.fullDesc = "a";
-      }).toThrow();
-    });
-
     it("throws when assert readonly full description", () => {
-      expect(el.fullDescReadonly).toBe(0);
       expect(() => {
         el.fullDescReadonly = 1;
       }).toThrow();
     });
 
     it("returns an element with defined properties", () => {
-      expect(el.prop1).toBe("");
+      expect(el.prop1).toBe("default");
       expect(el.prop2).toBe(0);
       expect(el.prop3).toBe(false);
+      expect(el.prop4).toBe("test");
+      expect(el.prop5).toBe(undefined);
+      expect(el.array).toEqual(["a", "b", "c"]);
       expect(el.computed).toBe("0 false");
       expect(el.fullDesc).toBe("fullDesc");
       expect(el.fullDescWritable).toBe(0);
       expect(el.notDefined).toBe(undefined);
     });
 
+    it("freezes properties view object values", () => {
+      expect(() => {
+        el.array.push("d");
+      }).toThrow();
+    });
+
     it("sets initial values from corresponding attributes", () => {
-      el.setAttribute("prop1", "a");
-      el.setAttribute("prop2", "2");
-      el.setAttribute("prop3", "");
-      el.setAttribute("bool-true", "");
-      el.setAttribute("full-desc-writable", "2");
-      el.setAttribute("not-defined", "abc");
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = `
+        <test-define-default
+          prop1="a"
+          prop2="2"
+          prop3=""
+          bool-true=""
+          full-desc-writable="2"
+          not-defined="abc"
+        ></test-define-default>
+      `;
+
+      el = wrapper.firstElementChild;
 
       expect(el.prop1).toBe("a");
       expect(el.prop2).toBe(2);
@@ -288,7 +309,10 @@ describe("define:", () => {
       expect(el.notDefined).toEqual("abc");
     });
 
-    it("updates writable properties", () => {
+    it("updates properties and reflects them to corresponding attributes", () => {
+      el.prop1 = "";
+      expect(el.prop1).toBe("");
+
       el.prop1 = "a";
       expect(el.prop1).toBe("a");
 
@@ -298,35 +322,40 @@ describe("define:", () => {
       el.prop3 = "true";
       expect(el.prop3).toBe(true);
 
+      el.prop4 = "test 2";
+      expect(el.prop4).toBe("test 2");
+
       el.fullDescWritable = 1;
       expect(el.fullDescWritable).toBe(2);
 
       el.notDefined = "abc";
 
+      expect(el.stringReflect).toBe("test");
+      el.stringReflect = "";
+
+      expect(el.numberReflect).toBe(0);
+      el.numberReflect = 1;
+
+      el.undefinedReflect = "test";
+
       document.body.appendChild(el);
-
-      return resolveRaf(() => {
-        expect(el.getAttribute("prop1")).toBe("a");
-        expect(el.getAttribute("prop2")).toBe("1");
-        expect(el.getAttribute("prop3")).toBe("");
-        expect(el.getAttribute("not-defined")).toBe("abc");
-      });
-    });
-
-    it("sets corresponding attribute value for primitives properties", () => {
-      document.body.appendChild(el);
-
-      el.notDefined = true;
-      el.notDefined = undefined;
-
-      el.setAttribute("bool-true", "");
 
       return resolveRaf(() => {
         expect(el.getAttribute("prop1")).toBe(null);
-        expect(el.getAttribute("prop2")).toBe("0");
-        expect(el.hasAttribute("prop3")).toBe(false);
-        expect(el.getAttribute("bool-true")).toBe("");
-        expect(el.hasAttribute("not-defined")).toBe(false);
+        expect(el.getAttribute("prop2")).toBe(null);
+        expect(el.getAttribute("prop3")).toBe("");
+        expect(el.getAttribute("prop4")).toBe("test 2");
+        expect(el.getAttribute("not-defined")).toBe(null);
+
+        expect(el.getAttribute("string-reflect")).toBe(null);
+        expect(el.getAttribute("number-reflect")).toBe("1");
+        expect(el.getAttribute("undefined-reflect")).toBe("test");
+
+        el.undefinedReflect = undefined;
+
+        return resolveRaf(() => {
+          expect(el.getAttribute("undefined-reflect")).toBe(null);
+        });
       });
     });
 
@@ -337,8 +366,32 @@ describe("define:", () => {
       el.setAttribute("prop-2", "200");
 
       return resolveRaf(() => {
-        expect(el.prop1).toBe("");
+        expect(el.prop1).toBe("default");
         expect(el.prop2).toBe(0);
+      });
+    });
+
+    it("calls observe method", () => {
+      observeSpy = jasmine.createSpy("observe");
+      el = document.createElement("test-define-default");
+      document.body.appendChild(el);
+
+      expect(observeSpy).toHaveBeenCalledTimes(0);
+
+      return resolveRaf(() => {
+        expect(observeSpy).toHaveBeenCalledTimes(0);
+        el.prop5 = "a";
+
+        return resolveRaf(() => {
+          expect(observeSpy).toHaveBeenCalledTimes(1);
+          expect(observeSpy).toHaveBeenCalledWith(el, "a", undefined);
+          el.prop5 = "b";
+
+          return resolveRaf(() => {
+            expect(observeSpy).toHaveBeenCalledTimes(2);
+            expect(observeSpy).toHaveBeenCalledWith(el, "b", "a");
+          });
+        });
       });
     });
 
@@ -372,7 +425,7 @@ describe("define:", () => {
       expect(el.shadowRoot).toBe(null);
 
       return resolveRaf(() => {
-        expect(el.shadowRoot.innerHTML).toBe("<div></div>");
+        expect(el.shadowRoot.innerHTML).toBe("<div>default</div>");
         el.prop1 = "a";
 
         return resolveRaf(() => {
@@ -381,12 +434,31 @@ describe("define:", () => {
       });
     });
 
-    it("uses fn options for render in shadowRoot", () => {
+    it("calls observe method of the render property", () => {
+      const spy = jasmine.createSpy("observe");
+      define({
+        tag: "test-define-render-observe",
+        render: {
+          value: () => html`<div></div>`,
+          observe: spy,
+        },
+      });
+
+      el = document.createElement("test-define-render-observe");
+      document.body.appendChild(el);
+
+      return resolveRaf(() => {
+        expect(spy).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it("uses property options for render in shadowRoot", () => {
       define({
         tag: "test-define-render-options",
-        render: Object.assign(() => html` <div>test</div> `, {
-          delegatesFocus: true,
-        }),
+        render: {
+          options: { delegatesFocus: true },
+          value: () => html` <div>test</div>`,
+        },
       });
 
       el = document.createElement("test-define-render-options");
@@ -402,12 +474,30 @@ describe("define:", () => {
       });
     });
 
+    it("calls observe method for render property", () => {
+      const spy = jasmine.createSpy("observe");
+      define({
+        tag: "test-define-render-observe",
+        render: {
+          value: () => html`<div></div>`,
+          observe: spy,
+        },
+      });
+
+      el = document.createElement("test-define-render-observe");
+      document.body.appendChild(el);
+
+      return resolveRaf(() => {
+        expect(spy).toHaveBeenCalledTimes(1);
+      });
+    });
+
     it("puts content to children", () => {
       document.body.appendChild(el);
       expect(el.innerHTML).toBe("");
 
       return resolveRaf(() => {
-        expect(el.innerHTML).toBe("<div></div>");
+        expect(el.innerHTML).toBe("<div>default</div>");
         el.prop1 = "a";
 
         return resolveRaf(() => {

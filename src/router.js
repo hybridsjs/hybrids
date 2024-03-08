@@ -311,12 +311,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
       });
     }
 
-    const writableParams = [];
-
-    for (const key of Object.keys(Constructor.prototype)) {
-      const desc = Object.getOwnPropertyDescriptor(Constructor.prototype, key);
-      if (desc.set) writableParams.push(key);
-    }
+    const writableParams = [...Constructor.writable.keys()];
 
     if (options.url) {
       if (options.dialog) {
@@ -1074,13 +1069,13 @@ function router(views, options) {
   };
 
   const desc = {
-    get: (host) => {
+    value: (host) => {
       const stack = stacks.get(host) || [];
       return stack
         .slice(0, stack.findIndex((el) => !configs.get(el).dialog) + 1)
         .reverse();
     },
-    connect: (host, key, invalidate) => {
+    connect: (host, _, invalidate) => {
       for (const param of options.params) {
         if (!(param in host)) {
           throw Error(

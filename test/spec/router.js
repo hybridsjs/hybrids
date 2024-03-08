@@ -1054,30 +1054,29 @@ describe("router:", () => {
         expect(router.url(MyElement)).toBe("");
       });
 
-      it("throws for duplicated parameters in URL", () => {
+      it("throws for duplicated parameters in URL from definition", () => {
         const desc = router([
           define({
             [router.connect]: { url: "/:test?test" },
-            tag: "test-router-url-error",
+            tag: "test-router-url-error-one",
           }),
         ]);
 
         expect(() =>
-          desc.connect(document.createElement("div"), "test", () => {}),
+          desc.connect(document.createElement("div"), "", () => {}),
         ).toThrow();
       });
 
-      it("throws for duplicated parameters in URL", () => {
+      it("throws for duplicated parameters in URL in property", () => {
         const desc = router([
           define({
-            [router.connect]: { url: "/:test" },
-            test: () => "",
-            tag: "test-router-url-error",
+            [router.connect]: { url: "/:render" },
+            tag: "test-router-url-error-two",
           }),
         ]);
 
         expect(() =>
-          desc.connect(document.createElement("div"), "test", () => {}),
+          desc.connect(document.createElement("div"), "", () => {}),
         ).toThrow();
       });
 

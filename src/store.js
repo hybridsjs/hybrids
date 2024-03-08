@@ -331,26 +331,30 @@ function getTypeConstructor(type, key) {
   }
 }
 
-const stateSetter = (_, value, lastValue) => {
-  if (value.state === "error") {
-    return { state: "error", error: value.value };
-  }
-
-  value.error = !!lastValue && lastValue.error;
-
-  return value;
-};
 function setModelState(model, state, value = model) {
-  cache.set(model, "state", stateSetter, { state, value });
+  cache.set(
+    model,
+    "state",
+    (_, value, lastValue) => {
+      if (value.state === "error") {
+        return { state: "error", error: value.value };
+      }
+
+      value.error = !!lastValue && lastValue.error;
+
+      return value;
+    },
+    { state, value },
+  );
   return model;
 }
 
-const stateGetter = (
-  model,
-  v = { state: "ready", value: model, error: false },
-) => v;
 function getModelState(model) {
-  return cache.get(model, "state", stateGetter);
+  return cache.get(
+    model,
+    "state",
+    (model, _, v = { state: "ready", value: model, error: false }) => v,
+  );
 }
 
 // UUID v4 generator thanks to https://gist.github.com/jed/982883
@@ -1001,7 +1005,7 @@ function get(Model, id) {
     entry.resolved = false;
   }
 
-  return cache.get(config, stringId, (h, cachedModel) => {
+  return cache.get(config, stringId, (h, assertModel, cachedModel) => {
     if (cachedModel && pending(cachedModel)) return cachedModel;
 
     let validContexts = true;
@@ -1492,13 +1496,47 @@ function valueWithValidation(
   return defaultValue;
 }
 
-function cloneModel(model) {
-  const config = definitions.get(model);
-  const clone = Object.freeze(Object.create(model));
+function resolveModel(Model, config, id, lastModel) {
+  if (!config.enumerable && !config.list) {
+    return get(Model, id);
+  }
 
-  definitions.set(clone, config);
+  const nextModel = id || config.list ? get(Model, id) : undefined;
 
-  return clone;
+  if (
+    lastModel &&
+    nextModel &&
+    nextModel.id !== lastModel.id &&
+    ready(lastModel) &&
+    !ready(nextModel)
+  ) {
+    const config = definitions.get(lastModel);
+    const clone = Object.freeze(Object.create(lastModel));
+
+    definitions.set(clone, config);
+    cache.set(clone, "state", () => getModelState(nextModel));
+
+    return clone;
+  }
+
+  return nextModel;
+}
+
+function resolveDraft(Model, draft, id, value, lastValue) {
+  if (!id && draft.enumerable && (value === undefined || value === null)) {
+    const draftModel = draft.create({});
+    id = draftModel.id;
+
+    syncCache(draft, draftModel.id, draftModel, false);
+  } else if (
+    !draft.enumerable &&
+    !lastValue &&
+    (value === undefined || value === null)
+  ) {
+    clear(Model);
+  }
+
+  return get(Model, id);
 }
 
 function store(Model, options = {}) {
@@ -1514,13 +1552,6 @@ function store(Model, options = {}) {
       "Store factory for singleton model definition does not support 'id' option",
     );
   }
-
-  const resolveId = options.id
-    ? options.id
-    : (host, value) => {
-        if (value !== null && typeof value === "object") return value.id;
-        return value ? String(value) : undefined;
-      };
 
   let draft;
   if (options.draft) {
@@ -1547,23 +1578,20 @@ function store(Model, options = {}) {
     Model = draft.model;
 
     return {
-      get(host, value) {
-        let id = resolveId(host, value) || (value ? value.id : undefined);
-
-        if (!id && (value === undefined || value === null)) {
-          if (config.enumerable) {
-            const draftModel = draft.create({});
-            id = draftModel.id;
-
-            syncCache(draft, draftModel.id, draftModel, false);
-          } else {
-            clear(draft.model);
+      value: options.id
+        ? (host, value, lastValue) => {
+            let id = options.id(host);
+            return resolveDraft(Model, draft, id, value, lastValue);
           }
-        }
+        : (host, value, lastValue) => {
+            let id =
+              value !== null && typeof value === "object"
+                ? value.id
+                : (value && String(value)) ||
+                  (lastValue ? lastValue.id : undefined);
 
-        return get(Model, id);
-      },
-      set: options.id ? undefined : (_, v) => v,
+            return resolveDraft(Model, draft, id, value, lastValue);
+          },
       connect: config.enumerable
         ? (host, key) => () => {
             clear(host[key], true);
@@ -1572,31 +1600,19 @@ function store(Model, options = {}) {
     };
   }
 
-  if (options.id) {
-    return {
-      get(host, value) {
-        const id = resolveId(host);
-        const nextValue = config.list || id ? get(Model, id) : undefined;
-
-        if (nextValue !== value && ready(value) && !ready(nextValue)) {
-          const tempValue = cloneModel(value);
-          cache.set(tempValue, "state", () => getModelState(nextValue));
-          return tempValue;
-        }
-
-        return nextValue;
-      },
-    };
-  }
-
   return {
-    get(host, value) {
-      const id = resolveId(host, value);
-      return !config.enumerable || config.list || value
-        ? get(Model, id)
-        : undefined;
-    },
-    set: (_, v) => v,
+    value: options.id
+      ? (host) => {
+          const id = options.id(host);
+          return resolveModel(Model, config, id, cache.getCurrentEntry().value);
+        }
+      : (host, value, lastValue) => {
+          const id =
+            value !== null && typeof value === "object"
+              ? value.id
+              : (value && String(value)) || undefined;
+          return resolveModel(Model, config, id, lastValue);
+        },
   };
 }
 

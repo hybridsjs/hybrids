@@ -24,7 +24,7 @@ export default function parent(hybridsOrFn) {
       ? hybridsOrFn
       : (hybrids) => hybrids === hybridsOrFn;
   return {
-    get: (host) => walk(host, fn),
+    value: (host) => walk(host, fn),
     connect(host, key, invalidate) {
       return invalidate;
     },
