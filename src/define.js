@@ -75,10 +75,8 @@ function compile(hybrids, HybridsElement) {
 
     if (typeof desc !== "object" || desc === null) {
       desc = { value: desc };
-    }
-
-    if (desc.get || desc.set) {
-      throw TypeError(`'get' and 'set' have been replaced with 'value' option`);
+    } else if (!hasOwnProperty.call(desc, "value")) {
+      throw TypeError(`The 'value' option is required for '${key}' property`);
     }
 
     desc =
