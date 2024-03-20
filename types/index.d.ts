@@ -74,7 +74,7 @@ declare module "hybrids" {
   function children<E, V>(
     componentOrFn: Component<V> | ((component: Component<E>) => boolean),
     options?: { deep?: boolean; nested?: boolean },
-  ): Descriptor<E, V>;
+  ): Descriptor<E, V[]>;
 
   /* Store */
 
@@ -84,8 +84,8 @@ declare module "hybrids" {
     >
       ? NestedArrayModel<T> | ((model: M) => NestedArrayModel<T>)
       : Required<M>[property] extends object
-      ? Model<Required<M>[property]> | ((model: M) => M[property])
-      : Required<M>[property] | ((model: M) => M[property]);
+        ? Model<Required<M>[property]> | ((model: M) => M[property])
+        : Required<M>[property] | ((model: M) => M[property]);
   } & {
     id?: true;
     __store__connect__?: Storage<M> | Storage<M>["get"];
@@ -94,10 +94,10 @@ declare module "hybrids" {
   type NestedArrayModel<T> = T extends string
     ? T[] | [StringConstructor]
     : T extends number
-    ? T[] | [NumberConstructor]
-    : T extends boolean
-    ? T[] | [BooleanConstructor]
-    : T[] | [Model<T>] | [Model<T>, { loose?: boolean }];
+      ? T[] | [NumberConstructor]
+      : T extends boolean
+        ? T[] | [BooleanConstructor]
+        : T[] | [Model<T>] | [Model<T>, { loose?: boolean }];
 
   type ModelIdentifier =
     | string
