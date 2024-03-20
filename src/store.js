@@ -989,7 +989,10 @@ function get(Model, id) {
     }
   } else if (id !== undefined) {
     throw TypeError(
-      stringifyModel(Model, "Provided model definition does not support id"),
+      stringifyModel(
+        Model,
+        `Provided model definition does not support id: ${JSON.stringify(id)}`,
+      ),
     );
   }
 
@@ -1518,8 +1521,10 @@ function store(Model, options = {}) {
   const resolveId = options.id
     ? options.id
     : (host, value) => {
-        if (value !== null && typeof value === "object") return value.id;
-        return value ? String(value) : undefined;
+        if (value !== null && value !== undefined) {
+          return typeof value === "object" ? value.id : String(value);
+        }
+        return undefined;
       };
 
   let draft;

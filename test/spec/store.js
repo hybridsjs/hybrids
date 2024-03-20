@@ -1411,6 +1411,16 @@ describe("store:", () => {
               });
             }));
 
+          it("gets draft of the model instance by id", () => {
+            const model = store.get(Model, "0");
+            return store
+              .set(model, { value: "new value" })
+              .then((updatedModel) => {
+                el.draftwithoutid = 0;
+                expect(el.draftwithoutid).toEqual(updatedModel);
+              });
+          });
+
           it("reset draft values by store set method", () =>
             store
               .set(el.draftwithoutid, { value: "new value" })
