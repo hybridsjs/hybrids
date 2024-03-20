@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.12](https://github.com/hybridsjs/hybrids/compare/v8.2.11...v8.2.12) (2024-03-20)
+
+
+### Bug Fixes
+
+* **store:** resolve number 0 to correct model identifier ([bbf280b](https://github.com/hybridsjs/hybrids/commit/bbf280b788061f43467a63c923aa48d555f17771))
+
 ### [8.2.11](https://github.com/hybridsjs/hybrids/compare/v8.2.10...v8.2.11) (2024-03-08)
 
 
