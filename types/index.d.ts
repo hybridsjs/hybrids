@@ -147,9 +147,17 @@ declare module "hybrids" {
     Model: Model<M>,
     options: {
       id?: keyof E | ((host: E) => ModelIdentifier);
-      draft?: boolean;
+      draft: true;
     },
   ): Descriptor<E, M>;
+
+  function store<E, M>(
+    Model: Model<M>,
+    options: {
+      id?: keyof E | ((host: E) => ModelIdentifier);
+      draft?: false;
+    },
+  ): Descriptor<E, M extends { id: any } ? M | undefined : M>;
 
   namespace store {
     const connect = "__store__connect__";
