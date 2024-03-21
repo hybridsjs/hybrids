@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.14](https://github.com/hybridsjs/hybrids/compare/v8.2.13...v8.2.14) (2024-03-21)
+
+
+### Bug Fixes
+
+* **types:** id result function should be a ModelIdentifier ([32afb12](https://github.com/hybridsjs/hybrids/commit/32afb124d117cd6d1e44b16a034079b63e8c0c68))
+
 ### [8.2.13](https://github.com/hybridsjs/hybrids/compare/v8.2.12...v8.2.13) (2024-03-21)
 
 
