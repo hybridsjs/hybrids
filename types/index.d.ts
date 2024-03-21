@@ -139,25 +139,35 @@ declare module "hybrids" {
     loose?: boolean;
   };
 
-  function store<E, M>(
-    Model: Model<M>,
-  ): Descriptor<E, M extends { id: any } ? M | undefined : M>;
+  // Enumerable
+  function store<E, M extends { id: string } & object>(
+    model: Model<M>,
+    options?: { draft?: false; id?: keyof E | ((host: E) => number) },
+  ): Descriptor<E, M | undefined>;
 
-  function store<E, M>(
-    Model: Model<M>,
-    options: {
-      id?: keyof E | ((host: E) => ModelIdentifier);
-      draft: true;
-    },
+  // Enumerable Draft
+  function store<E, M extends { id: string } & object>(
+    model: Model<M>,
+    options: { draft: true; id?: keyof E | ((host: E) => number) },
   ): Descriptor<E, M>;
 
-  function store<E, M>(
-    Model: Model<M>,
-    options: {
-      id?: keyof E | ((host: E) => ModelIdentifier);
-      draft?: false;
-    },
-  ): Descriptor<E, M extends { id: any } ? M | undefined : M>;
+  // Enumerable Listing
+  function store<E, M extends { id: string } & object>(
+    model: [Model<M>],
+    options?: { draft?: false; id?: keyof E | ((host: E) => number) },
+  ): Descriptor<E, M[]>;
+
+  // Singleton
+  function store<E, M extends { id?: never } & object>(
+    model: Model<M> extends Array<any> ? never : Model<M>,
+    options?: { draft?: false; id?: keyof E | ((host: E) => number) },
+  ): Descriptor<E, M>;
+
+  // Singleton Draft
+  function store<E, M extends { id?: never } & object>(
+    model: Model<M> extends Array<any> ? never : Model<M>,
+    options: { draft: true; id?: keyof E | ((host: E) => number) },
+  ): Descriptor<E, M>;
 
   namespace store {
     const connect = "__store__connect__";
