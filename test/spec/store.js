@@ -1215,6 +1215,9 @@ describe("store:", () => {
           byundefined: store(Model, { id: () => undefined }),
           byprop: store(Model, { id: "modelId" }),
           byfn: store(Model, { id: ({ modelId }) => modelId }),
+          byfnwithnumber: store(Model, {
+            id: ({ modelId }) => Number(modelId),
+          }),
           withoutid: store(Model),
           draft: store(Model, { draft: true, id: "modelId" }),
           draftwithoutid: store(Model, { draft: true }),
@@ -1254,6 +1257,11 @@ describe("store:", () => {
               expect(el.byfn).toBe(anotherResultModel);
             });
           });
+        });
+
+        it("gets a model instance when id is a number zero", () => {
+          el.modelId = "0";
+          expect(el.byfnwithnumber).toBe(store.get(Model, "0"));
         });
 
         describe("in draft mode", () => {

@@ -1519,7 +1519,10 @@ function store(Model, options = {}) {
   }
 
   const resolveId = options.id
-    ? options.id
+    ? (host) => {
+        const id = options.id(host);
+        return id !== undefined && id !== null ? String(id) : undefined;
+      }
     : (host, value) => {
         if (value !== null && value !== undefined) {
           return typeof value === "object" ? value.id : String(value);
