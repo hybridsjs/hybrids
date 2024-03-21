@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.13](https://github.com/hybridsjs/hybrids/compare/v8.2.12...v8.2.13) (2024-03-21)
+
+
+### Bug Fixes
+
+* **store:** store factory function id should be always a string value ([faec4c6](https://github.com/hybridsjs/hybrids/commit/faec4c67cc255b60a705cd86c2ed8ef0f4703e3b))
+* **store:** store factory with overloaded definitions ([3a90d6b](https://github.com/hybridsjs/hybrids/commit/3a90d6b52aa22d82a12a7954d256f910a5f5db39))
+* **types:** Add missing array indicator to result of the children factory function ([f29902f](https://github.com/hybridsjs/hybrids/commit/f29902f042995f1aa76f9d7cc5cf28e9e4a915a1))
+* **types:** Add missing result `undefined` type to store factory when `id` option is used ([daac11f](https://github.com/hybridsjs/hybrids/commit/daac11fd1e7ccdcc5b931abb6b5caf171805eff8))
+* **types:** Update generic of type `Model<M>` ([#243](https://github.com/hybridsjs/hybrids/issues/243)) ([7d5cf8f](https://github.com/hybridsjs/hybrids/commit/7d5cf8ff7218dc733f7ecd1e7acb6dd0f0fbc1ee))
+
 ### [8.2.12](https://github.com/hybridsjs/hybrids/compare/v8.2.11...v8.2.12) (2024-03-20)
 
 
