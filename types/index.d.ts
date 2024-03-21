@@ -97,7 +97,9 @@ declare module "hybrids" {
       ? T[] | [NumberConstructor]
       : T extends boolean
         ? T[] | [BooleanConstructor]
-        : T[] | [Model<T>] | [Model<T>, { loose?: boolean }];
+        : T extends object
+          ? T[] | [Model<T>] | [Model<T>, { loose?: boolean }]
+          : never;
 
   type ModelIdentifier =
     | string
@@ -142,45 +144,51 @@ declare module "hybrids" {
   // Enumerable
   function store<E, M extends { id: string } & object>(
     model: Model<M>,
-    options?: { draft?: false; id?: keyof E | ((host: E) => number) },
+    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier) },
   ): Descriptor<E, M | undefined>;
 
   // Enumerable Draft
   function store<E, M extends { id: string } & object>(
     model: Model<M>,
-    options: { draft: true; id?: keyof E | ((host: E) => number) },
+    options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier) },
   ): Descriptor<E, M>;
 
   // Enumerable Listing
   function store<E, M extends { id: string } & object>(
     model: [Model<M>],
-    options?: { draft?: false; id?: keyof E | ((host: E) => number) },
+    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier) },
   ): Descriptor<E, M[]>;
 
   // Singleton
   function store<E, M extends { id?: never } & object>(
     model: Model<M> extends Array<any> ? never : Model<M>,
-    options?: { draft?: false; id?: keyof E | ((host: E) => number) },
+    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier) },
   ): Descriptor<E, M>;
 
   // Singleton Draft
   function store<E, M extends { id?: never } & object>(
     model: Model<M> extends Array<any> ? never : Model<M>,
-    options: { draft: true; id?: keyof E | ((host: E) => number) },
+    options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier) },
   ): Descriptor<E, M>;
 
   namespace store {
     const connect = "__store__connect__";
 
-    function get<M>(Model: Model<M>, id?: ModelIdentifier): M;
-    function get<M>(Model: [Model<M>], id?: ModelIdentifier): M[];
+    function get<M extends object>(Model: Model<M>, id?: ModelIdentifier): M;
+    function get<M extends object>(
+      Model: [Model<M>],
+      id?: ModelIdentifier,
+    ): M[];
 
-    function set<M>(
+    function set<M extends object>(
       model: Model<M> | M,
       values: ModelValues<M> | null,
     ): Promise<M>;
-    function sync<M>(model: Model<M> | M, values: ModelValues<M> | null): M;
-    function clear<M>(
+    function sync<M extends object>(
+      model: Model<M> | M,
+      values: ModelValues<M> | null,
+    ): M;
+    function clear<M extends object>(
       model: Model<M> | [Model<M>] | M,
       clearValue?: boolean,
     ): void;
@@ -199,7 +207,10 @@ declare module "hybrids" {
     function submit<M>(draft: M, values?: ModelValues<M>): Promise<M>;
 
     function resolve<M>(model: M): Promise<M>;
-    function resolve<M>(model: Model<M>, id?: ModelIdentifier): Promise<M>;
+    function resolve<M extends object>(
+      model: Model<M>,
+      id?: ModelIdentifier,
+    ): Promise<M>;
 
     function ref<M>(fn: () => M): M;
 
