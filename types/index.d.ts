@@ -78,7 +78,7 @@ declare module "hybrids" {
 
   /* Store */
 
-  type Model<M> = {
+  type Model<M extends { id?: string } & object> = {
     [property in keyof Omit<M, "id">]: Required<M>[property] extends Array<
       infer T
     >
