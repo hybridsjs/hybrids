@@ -10,9 +10,9 @@ declare module "hybrids" {
     get?: (host: E & HTMLElement, lastValue: any) => V;
     set?: (host: E & HTMLElement, value: any, lastValue: V) => any;
     connect?(
-      host: E & HTMLElement & { __property_key__: V },
+      host: E & HTMLElement & { __property_key__: V; },
       key: "__property_key__",
-      invalidate: (options?: { force?: boolean }) => void,
+      invalidate: (options?: { force?: boolean; }) => void,
     ): Function | void;
     observe?(host: E & HTMLElement, value: V, lastValue: V): void;
   }
@@ -35,17 +35,17 @@ declare module "hybrids" {
       keyof Omit<E, keyof HTMLElement>,
       string
     >]: property extends "render" | "content"
-      ? E[property] extends () => HTMLElement
-        ? RenderFunction<E>
-        : Property<E, E[property]>
-      : Property<E, E[property]>;
+    ? E[property] extends () => HTMLElement
+    ? RenderFunction<E>
+    : Property<E, E[property]>
+    : Property<E, E[property]>;
   } & {
     render?: RenderFunction<E>;
     content?: RenderFunction<E>;
   };
 
   interface HybridElement<E> {
-    new (): E & HTMLElement;
+    new(): E & HTMLElement;
     prototype: E & HTMLElement;
   }
 
@@ -57,8 +57,8 @@ declare module "hybrids" {
     function compile<E>(component: Component<E>): HybridElement<E>;
 
     function from(
-      components: { [path: string]: Component<any> },
-      options?: { prefix?: string; root?: string | string[] },
+      components: { [path: string]: Component<any>; },
+      options?: { prefix?: string; root?: string | string[]; },
     ): void;
   }
 
@@ -73,19 +73,19 @@ declare module "hybrids" {
 
   function children<E, V>(
     componentOrFn: Component<V> | ((component: Component<E>) => boolean),
-    options?: { deep?: boolean; nested?: boolean },
+    options?: { deep?: boolean; nested?: boolean; },
   ): Descriptor<E, V[]>;
 
   /* Store */
 
-  type Model<M extends { id?: string } & object> = {
+  type Model<M extends { id?: string; } & object> = {
     [property in keyof Omit<M, "id">]: Required<M>[property] extends Array<
       infer T
     >
-      ? NestedArrayModel<T> | ((model: M) => NestedArrayModel<T>)
-      : Required<M>[property] extends object
-        ? Model<Required<M>[property]> | ((model: M) => M[property])
-        : Required<M>[property] | ((model: M) => M[property]);
+    ? NestedArrayModel<T> | ((model: M) => NestedArrayModel<T>)
+    : Required<M>[property] extends object
+    ? Model<Required<M>[property]> | ((model: M) => M[property])
+    : Required<M>[property] | ((model: M) => M[property]);
   } & {
     id?: true;
     __store__connect__?: Storage<M> | Storage<M>["get"];
@@ -94,12 +94,12 @@ declare module "hybrids" {
   type NestedArrayModel<T> = T extends string
     ? T[] | [StringConstructor]
     : T extends number
-      ? T[] | [NumberConstructor]
-      : T extends boolean
-        ? T[] | [BooleanConstructor]
-        : T extends object
-          ? T[] | [Model<T>] | [Model<T>, { loose?: boolean }]
-          : never;
+    ? T[] | [NumberConstructor]
+    : T extends boolean
+    ? T[] | [BooleanConstructor]
+    : T extends object
+    ? T[] | [Model<T>] | [Model<T>, { loose?: boolean; }]
+    : never;
 
   type ModelIdentifier =
     | string
@@ -108,14 +108,14 @@ declare module "hybrids" {
 
   type ModelValues<M> = {
     [property in keyof M]?: M[property] extends object
-      ? ModelValues<M[property]>
-      : M[property];
+    ? ModelValues<M[property]>
+    : M[property];
   };
 
   type StorageValues<M> = {
     [property in keyof M]?: M[property] extends object
-      ? M[property] | string
-      : M[property];
+    ? M[property] | string
+    : M[property];
   };
 
   type StorageResult<M> =
@@ -142,33 +142,33 @@ declare module "hybrids" {
   };
 
   // Enumerable
-  function store<E, M extends { id: string } & object>(
+  function store<E, M extends { id: string; } & object>(
     model: Model<M>,
-    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier) },
+    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); },
   ): Descriptor<E, M | undefined>;
 
   // Enumerable Draft
-  function store<E, M extends { id: string } & object>(
+  function store<E, M extends { id: string; } & object>(
     model: Model<M>,
-    options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier) },
+    options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier); },
   ): Descriptor<E, M>;
 
   // Enumerable Listing
-  function store<E, M extends { id: string } & object>(
+  function store<E, M extends { id: string; } & object>(
     model: [Model<M>],
-    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier) },
+    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); },
   ): Descriptor<E, M[]>;
 
   // Singleton
-  function store<E, M extends { id?: never } & object>(
+  function store<E, M extends { id?: never; } & object>(
     model: Model<M> extends Array<any> ? never : Model<M>,
-    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier) },
+    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); },
   ): Descriptor<E, M>;
 
   // Singleton Draft
-  function store<E, M extends { id?: never } & object>(
+  function store<E, M extends { id?: never; } & object>(
     model: Model<M> extends Array<any> ? never : Model<M>,
-    options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier) },
+    options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier); },
   ): Descriptor<E, M>;
 
   namespace store {
@@ -276,13 +276,13 @@ declare module "hybrids" {
       params?: UrlParams<E> & UrlOptions,
     ): URL | "";
 
-    function backUrl(options?: { nested?: boolean } & UrlOptions): URL | "";
+    function backUrl(options?: { nested?: boolean; } & UrlOptions): URL | "";
     function guardUrl(params?: UrlParams<any> & UrlOptions): URL | "";
     function currentUrl<E>(params?: UrlParams<E> & UrlOptions): URL | "";
 
     function active(
       views: ComponentBase | ComponentBase[],
-      options?: { stack?: boolean },
+      options?: { stack?: boolean; },
     ): boolean;
 
     function resolve<P>(event: Event, promise: Promise<P>): Promise<P>;
@@ -292,15 +292,15 @@ declare module "hybrids" {
   type Messages = {
     [key: string]: {
       message:
-        | string
-        | {
-            zero?: string;
-            one?: string;
-            two?: string;
-            few?: string;
-            many?: string;
-            other?: string;
-          };
+      | string
+      | {
+        zero?: string;
+        one?: string;
+        two?: string;
+        few?: string;
+        many?: string;
+        other?: string;
+      };
       description?: string;
     };
   };
