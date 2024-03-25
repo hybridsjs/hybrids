@@ -78,7 +78,13 @@ declare module "hybrids" {
 
   /* Store */
 
-  type Model<M extends { id?: string; } & object> = {
+  type ModelInstance = { id?: string; } & NonArrayObject;
+  type EnumerableInstance = { id: string; } & NonArrayObject;
+  type SingletonInstance = { id?: never; } & NonArrayObject;
+
+  type NonArrayObject = { [Symbol.iterator]?: never; } & object;
+
+  type Model<M extends { id?: string; } & object> = NonArrayObject & {
     [property in keyof Omit<M, "id">]: Required<M>[property] extends Array<
       infer T
     >
@@ -141,34 +147,34 @@ declare module "hybrids" {
     loose?: boolean;
   };
 
-  // Enumerable
-  function store<E, M extends { id: string; } & object>(
+  // Enumerable - This overload must be the first one, then its signature and documentation will be displayed in intelephence by default.
+  function store<E, M extends EnumerableInstance>(
     model: Model<M>,
-    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); },
+    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); }
   ): Descriptor<E, M | undefined>;
 
   // Enumerable Draft
-  function store<E, M extends { id: string; } & object>(
+  function store<E, M extends EnumerableInstance>(
     model: Model<M>,
-    options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier); },
+    options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier); }
   ): Descriptor<E, M>;
 
   // Enumerable Listing
-  function store<E, M extends { id: string; } & object>(
+  function store<E, M extends EnumerableInstance>(
     model: [Model<M>],
-    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); },
+    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); loose?: boolean; }
   ): Descriptor<E, M[]>;
 
   // Singleton
-  function store<E, M extends { id?: never; } & object>(
-    model: Model<M> extends Array<any> ? never : Model<M>,
-    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); },
+  function store<E, M extends SingletonInstance>(
+    model: M extends Array<any> ? never : Model<M>,
+    options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); }
   ): Descriptor<E, M>;
 
   // Singleton Draft
-  function store<E, M extends { id?: never; } & object>(
-    model: Model<M> extends Array<any> ? never : Model<M>,
-    options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier); },
+  function store<E, M extends SingletonInstance>(
+    model: M extends Array<any> ? never : Model<M>,
+    options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier); }
   ): Descriptor<E, M>;
 
   namespace store {
