@@ -78,33 +78,69 @@ declare module "hybrids" {
 
   /* Store */
 
-  type ModelInstance = { id?: string; } & NonArrayObject;
-  type EnumerableInstance = { id: string; } & NonArrayObject;
-  type SingletonInstance = { id?: never; } & NonArrayObject;
+  type ModelInstance = { id?: string; } & object & NonArrayObject;
+  type EnumerableInstance = { id: string; } & object & NonArrayObject;
+  type SingletonInstance = { id?: never; } & object & NonArrayObject;
 
+  type Unarray<T> = T extends Array<infer U> ? U : T;
+  type NonConstructor = { readonly prototype?: never; };
   type NonArrayObject = { [Symbol.iterator]?: never; } & object;
 
-  type Model<M extends { id?: string; } & object> = NonArrayObject & {
-    [property in keyof Omit<M, "id">]: Required<M>[property] extends Array<
-      infer T
-    >
-    ? NestedArrayModel<T> | ((model: M) => NestedArrayModel<T>)
-    : Required<M>[property] extends object
-    ? Model<Required<M>[property]> | ((model: M) => M[property])
-    : Required<M>[property] | ((model: M) => M[property]);
-  } & {
-    id?: true;
+  type Model<M extends ModelInstance> = NonArrayObject & {
+    [property in keyof Omit<M, "id">]-?:
+    NonNullable<M[property]> extends Array<any>
+    ? NestedArrayModel<NonNullable<M[property]>>
+    | NonConstructor & ((model: M) =>
+      undefined extends M[property]
+      ? undefined | NestedArrayModel<M[property]>
+      : NestedArrayModel<M[property]>)
+
+    : NonNullable<M[property]> extends string | String
+    ? string
+    | NonConstructor & ((model: M) => M[property])
+
+    : NonNullable<M[property]> extends number | Number
+    ? number
+    | NonConstructor & ((model: M) => M[property])
+
+    : NonNullable<M[property]> extends boolean | Boolean
+    ? boolean
+    | NonConstructor & ((model: M) => M[property])
+
+    : NonNullable<M[property]> extends ModelInstance
+    ? Model<NonNullable<M[property]>>
+    | NonConstructor & ((model: M) =>
+      undefined extends M[property]
+      ? undefined | Model<NonNullable<M[property]>>
+      : Model<NonNullable<M[property]>>)
+
+    : NonNullable<M[property]> extends NonArrayObject
+    ? NonNullable<M[property]>
+    | NonConstructor & ((model: M) => M[property])
+
+    : never;
+  } & (M extends EnumerableInstance ? {
+    id: true;
+  } : {}) & {
     __store__connect__?: Storage<M> | Storage<M>["get"];
   };
 
-  type NestedArrayModel<T> = T extends string
-    ? T[] | [StringConstructor]
-    : T extends number
-    ? T[] | [NumberConstructor]
-    : T extends boolean
-    ? T[] | [BooleanConstructor]
-    : T extends object
-    ? T[] | [Model<T>] | [Model<T>, { loose?: boolean; }]
+  type NestedArrayModel<T> =
+    NonNullable<Unarray<T>> extends string | String
+    ? T | string[] | [String | StringConstructor]
+
+    : NonNullable<Unarray<T>> extends number | Number
+    ? T | number[] | [Number | NumberConstructor]
+
+    : NonNullable<Unarray<T>> extends boolean | Boolean
+    ? T | boolean[] | [Boolean | BooleanConstructor]
+
+    : NonNullable<Unarray<T>> extends EnumerableInstance
+    ? [Model<NonNullable<Unarray<T>>>] | [Model<NonNullable<Unarray<T>>>, { loose?: boolean; }]
+
+    : NonNullable<Unarray<T>> extends NonArrayObject
+    ? T
+
     : never;
 
   type ModelIdentifier =
