@@ -1,4 +1,4 @@
-import { Model, StorageValues, store } from "hybrids";
+import { Model, StorageValues, store } from "/types/index";
 import { IEnumerable } from "./enumerable-definition.store.test";
 
 const EnumerableModelsSource: { [key: number]: StorageValues<IEnumerable>; } = {
