@@ -78,13 +78,14 @@ declare module "hybrids" {
 
   /* Store */
 
-  type ModelInstance = { id?: string; } & object & NonArrayObject;
-  type EnumerableInstance = { id: string; } & object & NonArrayObject;
-  type SingletonInstance = { id?: never; } & object & NonArrayObject;
+  type ModelInstance = { id?: string; } & object & NonArrayObject & NonModelDefinition;
+  type EnumerableInstance = { id: string; } & ModelInstance;
+  type SingletonInstance = { id?: never; } & ModelInstance;
 
   type Unarray<T> = T extends Array<infer U> ? U : T;
   type NonConstructor = { readonly prototype?: never; };
   type NonArrayObject = { [Symbol.iterator]?: never; } & object;
+  type NonModelDefinition = { __store__connect__?: never; } & object;
 
   type Model<M extends ModelInstance> = NonArrayObject & {
     [property in keyof Omit<M, "id">]-?:
