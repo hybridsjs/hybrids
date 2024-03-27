@@ -3,22 +3,22 @@
 
 import { Model } from "hybrids";
 
-export interface IExampleEnumerable {
+export interface IEnumerable {
     id: string;
     prop: string;
     length: number;
 }
 
-const ExampleEnumerableStore: Model<IExampleEnumerable> = {
+const EnumerableStore: Model<IEnumerable> = {
     id: true,
     prop: "",
     length: 0,
 };
 
-export default ExampleEnumerableStore;
+export default EnumerableStore;
 
 /// @ts-expect-error
-const ExampleBrokenEnumerableStore: Model<IExampleEnumerable> = {
+const BrokenEnumerableStore: Model<IEnumerable> = {
     prop: "",
     length: 0,
 };

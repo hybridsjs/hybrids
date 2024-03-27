@@ -2,13 +2,15 @@
 // This test is for static analysis of TypeScript and must be run by TypeScript-compiler to detect errors.
 
 import { Model } from "hybrids";
-import ExampleSingletonStore, { IExampleSingleton } from "./example-singleton.store.test";
-import ExampleEnumerableStore, { IExampleEnumerable } from "./example-enumerable.store.test";
+import SingletonStore, { ISingleton } from "./singleton-definition.store.test";
+import EnumerableStore, { IEnumerable } from "./enumerable-definition.store.test";
 
 interface ISomeObject {
     prop: string;
     length: number;
 }
+
+let condition = false;
 
 interface IModel {
     id: string;
@@ -131,64 +133,56 @@ interface IModel {
 
     // Enumerable Model
 
-    enumerableModel: IExampleEnumerable;
-    looseEnumerableModel: IExampleEnumerable;
-    undefinedOptionalEnumerableModel?: IExampleEnumerable;
-    optionalEnumerableModel?: IExampleEnumerable;
+    enumerableModel: IEnumerable;
+    looseEnumerableModel: IEnumerable;
+    undefinedOptionalEnumerableModel?: IEnumerable;
+    optionalEnumerableModel?: IEnumerable;
 
-    calculatedEnumerableModel: IExampleEnumerable;
-    undefinedCalculatedEnumerableModel: IExampleEnumerable;
-    looseCalculatedEnumerableModel: IExampleEnumerable;
-    calculatedOptionalEnumerableModel?: IExampleEnumerable;
-    undefinedCalculatedOptionalEnumerableModel?: IExampleEnumerable;
+    calculatedEnumerableModel: IEnumerable;
+    undefinedCalculatedEnumerableModel: IEnumerable;
+    looseCalculatedEnumerableModel: IEnumerable;
+    calculatedOptionalEnumerableModel?: IEnumerable;
+    undefinedCalculatedOptionalEnumerableModel?: IEnumerable;
 
     // Enumerable Model List
 
-    enumerableModelList: IExampleEnumerable[];
-    looseEnumerableModelList: IExampleEnumerable[];
-    undefinedOptionalEnumerableModelList?: IExampleEnumerable[];
-    optionalEnumerableModelList?: IExampleEnumerable[];
+    enumerableModelList: IEnumerable[];
+    looseEnumerableModelList: IEnumerable[];
+    undefinedOptionalEnumerableModelList?: IEnumerable[];
+    optionalEnumerableModelList?: IEnumerable[];
 
-    calculatedEnumerableModelList: IExampleEnumerable[];
-    undefinedCalculatedEnumerableModelList: IExampleEnumerable[];
-    looseCalculatedEnumerableModelList: IExampleEnumerable[];
-    calculatedOptionalEnumerableModelList?: IExampleEnumerable[];
-    undefinedCalculatedOptionalEnumerableModelList?: IExampleEnumerable[];
+    calculatedEnumerableModelList: IEnumerable[];
+    undefinedCalculatedEnumerableModelList: IEnumerable[];
+    looseCalculatedEnumerableModelList: IEnumerable[];
+    calculatedOptionalEnumerableModelList?: IEnumerable[];
+    undefinedCalculatedOptionalEnumerableModelList?: IEnumerable[];
 
     // Singleton Model
 
-    singletonModel: IExampleSingleton;
-    looseSingletonModel: IExampleSingleton;
-    undefinedOptionalSingletonModel?: IExampleSingleton;
-    optionalSingletonModel?: IExampleSingleton;
+    singletonModel: ISingleton;
+    looseSingletonModel: ISingleton;
+    undefinedOptionalSingletonModel?: ISingleton;
+    optionalSingletonModel?: ISingleton;
 
-    calculatedSingletonModel: IExampleSingleton;
-    undefinedCalculatedSingletonModel: IExampleSingleton;
-    looseCalculatedSingletonModel: IExampleSingleton;
-    calculatedOptionalSingletonModel?: IExampleSingleton;
-    undefinedCalculatedOptionalSingletonModel?: IExampleSingleton;
+    calculatedSingletonModel: ISingleton;
+    undefinedCalculatedSingletonModel: ISingleton;
+    looseCalculatedSingletonModel: ISingleton;
+    calculatedOptionalSingletonModel?: ISingleton;
+    undefinedCalculatedOptionalSingletonModel?: ISingleton;
 
     // Singleton Model List
 
-    singletonModelList: IExampleSingleton[];
-    looseSingletonModelList: IExampleSingleton[];
-    undefinedOptionalSingletonModelList?: IExampleSingleton[];
-    optionalSingletonModelList?: IExampleSingleton[];
+    singletonModelList: ISingleton[];
+    looseSingletonModelList: ISingleton[];
+    undefinedOptionalSingletonModelList?: ISingleton[];
+    optionalSingletonModelList?: ISingleton[];
 
-    calculatedSingletonModelList: IExampleSingleton[];
-    undefinedCalculatedSingletonModelList: IExampleSingleton[];
-    looseCalculatedSingletonModelList: IExampleSingleton[];
-    calculatedOptionalSingletonModelList?: IExampleSingleton[];
-    undefinedCalculatedOptionalSingletonModelList?: IExampleSingleton[];
+    calculatedSingletonModelList: ISingleton[];
+    undefinedCalculatedSingletonModelList: ISingleton[];
+    looseCalculatedSingletonModelList: ISingleton[];
+    calculatedOptionalSingletonModelList?: ISingleton[];
+    undefinedCalculatedOptionalSingletonModelList?: ISingleton[];
 }
-
-/// @ts-expect-error
-const EmptyStore: Model<IModel> = {
-    id: true,
-    boolean: false,
-};
-
-let condition = false;
 
 const ModelStore: Model<IModel> = {
     id: true,
@@ -334,64 +328,72 @@ const ModelStore: Model<IModel> = {
 
     // Enumerable Model
 
-    enumerableModel: ExampleEnumerableStore,
-    optionalEnumerableModel: ExampleEnumerableStore,
+    enumerableModel: EnumerableStore,
+    optionalEnumerableModel: EnumerableStore,
     /// @ts-expect-error
     undefinedOptionalEnumerableModel: undefined,
 
-    calculatedEnumerableModel: () => ExampleEnumerableStore,
+    calculatedEnumerableModel: () => EnumerableStore,
     /// @ts-expect-error
     undefinedCalculatedEnumerableModel: () => undefined,
-    calculatedOptionalEnumerableModel: () => ExampleEnumerableStore,
-    undefinedCalculatedOptionalEnumerableModel: () => condition ? undefined : ExampleEnumerableStore,
+    calculatedOptionalEnumerableModel: () => EnumerableStore,
+    undefinedCalculatedOptionalEnumerableModel: () => condition ? undefined : EnumerableStore,
 
     // Enumerable Model List
 
-    enumerableModelList: [ExampleEnumerableStore],
-    looseEnumerableModelList: [ExampleEnumerableStore, { loose: true }],
-    optionalEnumerableModelList: [ExampleEnumerableStore],
+    enumerableModelList: [EnumerableStore],
+    looseEnumerableModelList: [EnumerableStore, { loose: true }],
+    optionalEnumerableModelList: [EnumerableStore],
     /// @ts-expect-error
     undefinedOptionalEnumerableModelList: undefined,
 
-    calculatedEnumerableModelList: () => [ExampleEnumerableStore],
+    calculatedEnumerableModelList: () => [EnumerableStore],
     /// @ts-expect-error
     undefinedCalculatedEnumerableModelList: () => undefined,
-    looseCalculatedEnumerableModelList: () => [ExampleEnumerableStore, { loose: true }],
-    calculatedOptionalEnumerableModelList: () => [ExampleEnumerableStore],
-    undefinedCalculatedOptionalEnumerableModelList: () => condition ? undefined : [ExampleEnumerableStore],
+    looseCalculatedEnumerableModelList: () => [EnumerableStore, { loose: true }],
+    calculatedOptionalEnumerableModelList: () => [EnumerableStore],
+    undefinedCalculatedOptionalEnumerableModelList: () => condition ? undefined : [EnumerableStore],
 
     // Singleton Model
 
-    singletonModel: ExampleSingletonStore,
-    optionalSingletonModel: ExampleSingletonStore,
+    singletonModel: SingletonStore,
+    optionalSingletonModel: SingletonStore,
     /// @ts-expect-error
     undefinedOptionalSingletonModel: undefined,
 
-    calculatedSingletonModel: () => ExampleSingletonStore,
+    calculatedSingletonModel: () => SingletonStore,
     /// @ts-expect-error
     undefinedCalculatedSingletonModel: () => undefined,
-    calculatedOptionalSingletonModel: () => ExampleSingletonStore,
-    undefinedCalculatedOptionalSingletonModel: () => condition ? undefined : ExampleSingletonStore,
+    calculatedOptionalSingletonModel: () => SingletonStore,
+    undefinedCalculatedOptionalSingletonModel: () => condition ? undefined : SingletonStore,
 
     // Singleton Model List
 
     /// @ts-expect-error
-    singletonModelList: [ExampleSingletonStore],
+    singletonModelList: [SingletonStore],
     /// @ts-expect-error
-    looseSingletonModelList: [ExampleSingletonStore, { loose: true }],
+    looseSingletonModelList: [SingletonStore, { loose: true }],
     /// @ts-expect-error
-    optionalSingletonModelList: [ExampleSingletonStore],
+    optionalSingletonModelList: [SingletonStore],
     /// @ts-expect-error
     undefinedOptionalSingletonModelList: undefined,
 
     /// @ts-expect-error
-    calculatedSingletonModelList: () => [ExampleSingletonStore],
+    calculatedSingletonModelList: () => [SingletonStore],
     /// @ts-expect-error
     undefinedCalculatedSingletonModelList: () => undefined,
     /// @ts-expect-error
-    looseCalculatedSingletonModelList: () => [ExampleSingletonStore, { loose: true }],
+    looseCalculatedSingletonModelList: () => [SingletonStore, { loose: true }],
     /// @ts-expect-error
-    calculatedOptionalSingletonModelList: () => [ExampleSingletonStore],
+    calculatedOptionalSingletonModelList: () => [SingletonStore],
     /// @ts-expect-error
-    undefinedCalculatedOptionalSingletonModelList: () => condition ? undefined : [ExampleSingletonStore],
+    undefinedCalculatedOptionalSingletonModelList: () => condition ? undefined : [SingletonStore],
+};
+
+export default ModelStore;
+
+/// @ts-expect-error
+const EmptyStore: Model<IModel> = {
+    id: true,
+    boolean: false,
 };

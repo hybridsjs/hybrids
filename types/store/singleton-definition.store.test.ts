@@ -3,19 +3,19 @@
 
 import { Model } from "hybrids";
 
-export interface IExampleSingleton {
+export interface ISingleton {
     prop: string;
     length: number;
 }
 
-const ExampleSingletonStore: Model<IExampleSingleton> = {
+const SingletonStore: Model<ISingleton> = {
     prop: "",
     length: 0,
 };
 
-export default ExampleSingletonStore
+export default SingletonStore
 
-const ExampleBrokenSingletonStore: Model<IExampleSingleton> = {
+const BrokenSingletonStore: Model<ISingleton> = {
     /// @ts-expect-error
     id: true,
     prop: "",
