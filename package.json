@@ -33,7 +33,8 @@
     "template engine"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "npx": "*"
   },
   "scripts": {
     "karma": "karma start karma.conf.cjs",
@@ -44,6 +45,7 @@
     "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run karma",
     "test:cli": "node ./cli/test.js",
     "test:setup": "playwright install firefox webkit --with-deps",
+    "test:typescript": "npx tsc --noEmit",
     "release": "npm run test && standard-version -a"
   },
   "devDependencies": {
