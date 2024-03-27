@@ -214,27 +214,27 @@ declare module "hybrids" {
   namespace store {
     const connect = "__store__connect__";
 
-    function get<M extends ModelInstance>(Model: Model<M>, id?: ModelIdentifier): M
-    function get<M extends ModelInstance>(Model: [Model<M>], id?: ModelIdentifier): M[]
+    function get<M extends ModelInstance>(Model: Model<M>, id?: ModelIdentifier): M;
+    function get<M extends ModelInstance>(Model: [Model<M>], id?: ModelIdentifier): M[];
 
-    function set<M extends ModelInstance>(model: Model<M> | M, values: ModelValues<M> | null): Promise<M>
-    function sync<M extends ModelInstance>(model: Model<M> | M, values: ModelValues<M> | null): M
-    function clear<M extends ModelInstance>(model: Model<M> | [Model<M>] | M, clearValue?: boolean): void
+    function set<M extends ModelInstance>(model: Model<M> | M, values: ModelValues<M> | null): Promise<M>;
+    function sync<M extends ModelInstance>(model: Model<M> | M, values: ModelValues<M> | null): M;
+    function clear<M extends ModelInstance>(model: Model<M> | [Model<M>] | M, clearValue?: boolean): void;
 
-    function pending<M extends ModelInstance>(model: M): false | Promise<M>
-    function pending<M extends ModelInstance>(...models: Array<M>): false | Promise<typeof models>
+    function pending<M extends ModelInstance>(model: M): false | Promise<M>;
+    function pending<M extends ModelInstance>(...models: Array<M>): false | Promise<typeof models>;
 
-    function error<M extends ModelInstance>(model: M, propertyName?: keyof M | null): false | Error | any
+    function error<M extends ModelInstance>(model: M, propertyName?: keyof M | null): false | Error | any;
 
-    function ready<M extends ModelInstance>(model: M): boolean
-    function ready<M extends ModelInstance>(...models: Array<M>): boolean
+    function ready<M extends ModelInstance>(model: M): boolean;
+    function ready<M extends ModelInstance>(...models: Array<M>): boolean;
 
-    function submit<M extends ModelInstance>(draft: M, values?: ModelValues<M>): Promise<M>
+    function submit<M extends ModelInstance>(draft: M, values?: ModelValues<M>): Promise<M>;
 
-    function resolve<M extends ModelInstance>(model: M): Promise<M>
-    function resolve<M extends ModelInstance>(model: Model<M>, id?: ModelIdentifier): Promise<M>
+    function resolve<M extends ModelInstance>(model: M): Promise<M>;
+    function resolve<M extends ModelInstance>(model: Model<M>, id?: ModelIdentifier): Promise<M>;
 
-    function ref<T>(fn: () => T): T
+    function ref<T>(fn: () => T): T;
 
     interface ValidateFunction<M extends ModelInstance, T> {
       (value: T, key: string, model: M): string | boolean | void;
