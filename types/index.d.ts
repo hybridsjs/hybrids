@@ -149,36 +149,33 @@ declare module "hybrids" {
     | Record<string, string | boolean | number | null>
     | undefined;
 
-  type ModelValues<M> = {
-    [property in keyof M]?: M[property] extends object
-    ? ModelValues<M[property]>
+  type ModelValues<M extends ModelInstance> = {
+    [property in keyof M]?: NonNullable<M[property]> extends ModelInstance
+    ? ModelValues<NonNullable<M[property]>>
     : M[property];
   };
 
-  type StorageValues<M> = {
-    [property in keyof M]?: M[property] extends object
+  type StorageValues<M extends ModelInstance> = {
+    [property in keyof M]?: NonNullable<M[property]> extends EnumerableInstance
     ? M[property] | string
     : M[property];
   };
 
-  type StorageResult<M> =
-    | StorageValues<M>
-    | null
-    | Promise<StorageValues<M> | null>;
+  type StorageResult<M extends ModelInstance> = StorageValues<M> | null;
 
-  type Storage<M> = {
-    get?: (id: ModelIdentifier) => StorageResult<M>;
-    set?: (
-      id: ModelIdentifier,
-      values: M | null,
-      keys: [keyof M],
-    ) => StorageResult<M>;
-    list?: (id: ModelIdentifier) => StorageResult<Array<M>>;
-    observe?: (
-      id: ModelIdentifier,
-      model: M | null,
-      lastModel: M | null,
-    ) => void;
+  type Storage<M extends ModelInstance> = {
+    get?: (id: ModelIdentifier)
+      => StorageResult<M> | Promise<StorageResult<M>>;
+
+    set?: (id: ModelIdentifier, values: M | null, keys: [keyof M])
+      => StorageResult<M> | Promise<StorageResult<M>>;
+
+    list?: (id: ModelIdentifier)
+      => Array<StorageResult<M>> | Promise<Array<StorageResult<M>>>;
+
+    observe?: (id: ModelIdentifier, model: M | null, lastModel: M | null)
+      => void;
+
     cache?: boolean | number;
     offline?: boolean | number;
     loose?: boolean;
