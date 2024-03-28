@@ -155,8 +155,11 @@ export type ModelValues<M extends ModelInstance> = {
 };
 
 export type StorageValues<M extends ModelInstance> = {
-  [property in keyof M]?: NonNullable<M[property]> extends EnumerableInstance
-  ? M[property] | string
+  [property in keyof M]?:
+  NonNullable<M[property]> extends EnumerableInstance
+  ? M[property] | M['id']
+  : NonNullable<M[property]> extends EnumerableInstance[]
+  ? (M[property] | M['id'])[]
   : M[property];
 };
 
