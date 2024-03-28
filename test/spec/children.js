@@ -292,18 +292,17 @@ describe("children:", () => {
       define({
         tag: "test-dynamic-wrapper",
         items: undefined,
-        render: ({ items }) =>
-          html`
-            <test-dynamic-parent>
-              <test-dynamic-child name="one"></test-dynamic-child>
-              ${items &&
-              items.map((name) =>
-                html`
-                  <test-dynamic-child name="${name}"></test-dynamic-child>
-                `.key(name),
-              )}
-            </test-dynamic-parent>
-          `,
+        render: ({ items }) => html`
+          <test-dynamic-parent>
+            <test-dynamic-child name="one"></test-dynamic-child>
+            ${items &&
+            items.map((name) =>
+              html`
+                <test-dynamic-child name="${name}"></test-dynamic-child>
+              `.key(name),
+            )}
+          </test-dynamic-parent>
+        `,
       });
     });
 
