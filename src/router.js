@@ -372,7 +372,18 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           if (!lastParams) return;
 
           const state = globalThis.history.state;
-          let entry = state[0];
+          const index = state.findIndex((entry) => {
+            if (entry.id === id) return true;
+            if (entry.nested) {
+              let nested = entry.nested;
+              while (nested) {
+                if (nested.id === id) return true;
+                nested = nested.nested;
+              }
+            }
+          });
+
+          let entry = state[index];
           while (entry.id !== id && entry.nested) entry = entry.nested;
 
           params = { ...entry.params, ...params };
@@ -382,7 +393,9 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           }
 
           globalThis.history.replaceState(
-            [config.getEntry(params), ...state.slice(1)],
+            state.map((entry, i) =>
+              i === index ? config.getEntry(params) : entry,
+            ),
             "",
             browserUrl ? config.url(params, true) : "",
           );
@@ -796,7 +809,8 @@ function getEntryOffset(entry) {
       const e = state[i][j];
 
       if (config.dialog) {
-        return e.id !== entry.id ? -1 : offset;
+        if (e.id === entry.id) return j;
+        continue;
       }
 
       if (e.id === entry.id) {
@@ -834,6 +848,8 @@ function getEntryOffset(entry) {
         }
       }
     }
+
+    if (config.dialog) return -1;
 
     if (j === state[i].length) {
       offset = state[i].length - 1;

@@ -16,6 +16,7 @@ describe("router:", () => {
   let NestedViewOne;
   let NestedViewTwo;
   let Dialog;
+  let Dialog2;
   let MultipleView;
   let MultipleViewWithUrl;
   let host;
@@ -357,6 +358,14 @@ describe("router:", () => {
         `,
       });
 
+      Dialog2 = define({
+        [router.connect]: { dialog: true },
+        tag: "test-router-dialog2",
+        param: 1,
+        content: () =>
+          html`<a href="${router.backUrl()}" id="Dialog2Back"></a>`,
+      });
+
       Dialog = define({
         [router.connect]: { dialog: true },
         tag: "test-router-dialog",
@@ -365,6 +374,7 @@ describe("router:", () => {
           <a href="${router.currentUrl({ param: 2 })}" id="DialogCurrent"
             >DialogCurrent</a
           >
+          <a href="${router.url(Dialog2)}" id="Dialog2"></a>
         `,
       });
 
@@ -418,7 +428,13 @@ describe("router:", () => {
 
       RootView = define({
         [router.connect]: {
-          stack: [ChildView, MultipleView, MultipleViewWithUrl, Dialog],
+          stack: [
+            ChildView,
+            MultipleView,
+            MultipleViewWithUrl,
+            Dialog,
+            Dialog2,
+          ],
         },
         tag: "test-router-root-view",
         globalB: "",
@@ -787,31 +803,40 @@ describe("router:", () => {
                           ),
                         ).toBe("dialog");
 
-                        host.querySelector("#DialogCurrent").click();
+                        host.querySelector("#Dialog2").click();
 
                         return resolveTimeout(() => {
                           expect(hybrids(host.children[0])).toBe(RootView);
                           expect(hybrids(host.children[1])).toBe(Dialog);
-                          expect(window.history.state.length).toBe(2);
+                          expect(hybrids(host.children[2])).toBe(Dialog2);
+                          expect(window.history.state.length).toBe(3);
 
-                          expect(
-                            document.documentElement.getAttribute(
-                              "router-transition",
-                            ),
-                          ).toBe("dialog");
-
-                          const keyEventEsc = new KeyboardEvent("keydown", {
-                            key: "Escape",
-                          });
-                          const keyEventEnter = new KeyboardEvent("keydown", {
-                            key: "Enter",
-                          });
-                          host.children[1].dispatchEvent(keyEventEnter);
-                          host.children[1].dispatchEvent(keyEventEsc);
+                          host.querySelector("#Dialog2Back").click();
 
                           return resolveTimeout(() => {
                             expect(hybrids(host.children[0])).toBe(RootView);
-                            expect(window.history.state.length).toBe(1);
+                            expect(hybrids(host.children[1])).toBe(Dialog);
+                            expect(window.history.state.length).toBe(2);
+
+                            expect(
+                              document.documentElement.getAttribute(
+                                "router-transition",
+                              ),
+                            ).toBe("dialog");
+
+                            const keyEventEsc = new KeyboardEvent("keydown", {
+                              key: "Escape",
+                            });
+                            const keyEventEnter = new KeyboardEvent("keydown", {
+                              key: "Enter",
+                            });
+                            host.children[1].dispatchEvent(keyEventEnter);
+                            host.children[1].dispatchEvent(keyEventEsc);
+
+                            return resolveTimeout(() => {
+                              expect(hybrids(host.children[0])).toBe(RootView);
+                              expect(window.history.state.length).toBe(1);
+                            });
                           });
                         });
                       });
