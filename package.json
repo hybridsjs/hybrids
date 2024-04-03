@@ -40,10 +40,11 @@
     "dev": "npm run karma -- --no-single-run --browsers ChromeHeadless",
     "dev:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run dev",
     "lint": "eslint ./src",
-    "test": "npm run test:cli && npm run lint && npm run karma",
+    "test": "npm run test:cli && npm run lint && npm run karma && npm run test:typescript",
     "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run karma",
     "test:cli": "node ./cli/test.js",
     "test:setup": "playwright install firefox webkit --with-deps",
+    "test:typescript": "tsc --noEmit --project ./test/types/tsconfig.json",
     "release": "npm run test && standard-version -a"
   },
   "devDependencies": {
@@ -61,7 +62,8 @@
     "log4js": "^6.2.1",
     "playwright": "^1.41.2",
     "prettier": "^3.1.1",
-    "standard-version": "^9.3.2"
+    "standard-version": "^9.3.2",
+    "typescript": "^5.4.3"
   },
   "standard-version": {
     "scripts": {

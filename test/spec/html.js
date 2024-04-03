@@ -1416,8 +1416,9 @@ describe("html:", () => {
 
     customElements.define("test-external-element", TestExternalElement);
 
-    const render = (value) =>
-      html` <test-external-element>${value}</test-external-element> `;
+    const render = (value) => html`
+      <test-external-element>${value}</test-external-element>
+    `;
 
     it("renders external element with slotted value", (done) => {
       const el = document.createElement("div");
