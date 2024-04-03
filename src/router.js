@@ -295,7 +295,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           const stack = stacks.get(root);
 
           if (
-            stack[stack.length - 1] === host &&
+            stack[0] === host &&
             !host.contains(event.target) &&
             event.target !== host
           ) {
