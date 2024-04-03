@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.15](https://github.com/hybridsjs/hybrids/compare/v8.2.14...v8.2.15) (2024-04-03)
+
+
+### Bug Fixes
+
+* **router:** multiple dialogs navigation minor fixes ([b792c0f](https://github.com/hybridsjs/hybrids/commit/b792c0fe521d3ee910106cf7edde9040fa144f23))
+* **router:** prevent loop of focus events on multiple dialogs ([b78e7c4](https://github.com/hybridsjs/hybrids/commit/b78e7c40cba6517298ef8a61c6b1b59aa133666e))
+* **store:** clear model with loose set to `true` ([dda4f91](https://github.com/hybridsjs/hybrids/commit/dda4f91b5ef263c7dcfd0005f6e0d9c70f899901))
+* **types:** Strict store types ([#246](https://github.com/hybridsjs/hybrids/issues/246)) ([9aba4be](https://github.com/hybridsjs/hybrids/commit/9aba4befb184c530e5536934b03b0ca07e6ce974))
+
 ### [8.2.14](https://github.com/hybridsjs/hybrids/compare/v8.2.13...v8.2.14) (2024-03-21)
 
 
