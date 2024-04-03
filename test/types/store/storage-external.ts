@@ -1,10 +1,13 @@
 import { Model, ModelIdentifier, StorageValues, store } from "/types/index";
-import EnumerableStore, { IEnumerable } from "./enumerable-definition.store.test";
+import EnumerableStore, { IEnumerable } from "./enumerable-definition.store";
 
-const EnumerableModelsSource = new Map<ModelIdentifier, StorageValues<IEnumerable>>([
-  ["0", { id: "0", prop: 'qweqwe', length: 5, relatedModel: "2" }],
+const EnumerableModelsSource = new Map<
+  ModelIdentifier,
+  StorageValues<IEnumerable>
+>([
+  ["0", { id: "0", prop: "qweqwe", length: 5, relatedModel: "2" }],
   ["1", { id: "1", length: 1711014651455, relatedModels: ["1", "2"] }],
-  ["2", { id: "2", prop: 'swswswsws' }],
+  ["2", { id: "2", prop: "swswswsws" }],
 ]);
 
 const EnumerableModelStore: Model<IEnumerable> = {
@@ -13,7 +16,8 @@ const EnumerableModelStore: Model<IEnumerable> = {
     list: (id) => [...Object.values(EnumerableModelsSource)],
     get: (id) => EnumerableModelsSource.get(id) ?? null,
     set: (id, values) => {
-      if (id === undefined && values) { // create
+      if (id === undefined && values) {
+        // create
         const autoincrement = String(EnumerableModelsSource.size);
 
         EnumerableModelsSource.set(autoincrement, {
@@ -24,7 +28,8 @@ const EnumerableModelStore: Model<IEnumerable> = {
         return EnumerableModelsSource.get(autoincrement) ?? null;
       }
 
-      if (id && values) { // update
+      if (id && values) {
+        // update
         const lastSourceValue = EnumerableModelsSource.get(id);
         if (!lastSourceValue) throw new Error();
 
@@ -35,12 +40,13 @@ const EnumerableModelStore: Model<IEnumerable> = {
         return newValue;
       }
 
-      if (id && !values) { // delete
+      if (id && !values) {
+        // delete
         EnumerableModelsSource.delete(id);
         return EnumerableModelsSource.get(id) ?? null;
       }
 
       throw new Error();
     },
-  }
+  },
 };

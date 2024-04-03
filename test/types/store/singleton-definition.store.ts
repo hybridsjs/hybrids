@@ -1,6 +1,3 @@
-// This test is not intended to be run by JavaScript.
-// This test is for static analysis of TypeScript and must be run by TypeScript-compiler to detect errors.
-
 import { Model } from "/types/index";
 
 export interface ISingleton {
