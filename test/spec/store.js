@@ -833,6 +833,7 @@ describe("store:", () => {
         [store.connect]: {
           cache: 1000 * 60 * 5,
           list: () => [{ id: 1, value: "test" }],
+          loose: true,
         },
       };
 

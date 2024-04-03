@@ -1345,8 +1345,10 @@ function clear(model, clearValue = true) {
     const offline = clearValue && config.storage.offline;
 
     for (const entry of cache.getEntries(config)) {
+      if (entry.key === config) continue;
+
       if (offline) offline.set(entry.key, null);
-      if (entry.value) invalidateTimestamp(entry.value);
+      invalidateTimestamp(entry.value);
     }
     cache.invalidateAll(config, { clearValue, deleteEntry: clearValue });
   }
