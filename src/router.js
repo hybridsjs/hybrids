@@ -282,6 +282,8 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
 
     if (options.dialog) {
       connects.add((host) => {
+        const root = rootRouter;
+
         const goBackOnEscKey = (event) => {
           if (event.key === "Escape") {
             event.stopPropagation();
@@ -290,12 +292,16 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         };
 
         const focusDialog = (event) => {
-          if (!host.contains(event.target) && event.target !== host) {
+          const stack = stacks.get(root);
+
+          if (
+            stack[stack.length - 1] === host &&
+            !host.contains(event.target) &&
+            event.target !== host
+          ) {
             focusElement(host);
           }
         };
-
-        const root = rootRouter;
 
         root.addEventListener("focusin", focusDialog);
         root.addEventListener("focusout", focusDialog);
