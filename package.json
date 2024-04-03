@@ -40,7 +40,7 @@
     "dev": "npm run karma -- --no-single-run --browsers ChromeHeadless",
     "dev:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run dev",
     "lint": "eslint ./src",
-    "test": "npm run test:cli && npm run lint && npm run karma && test:typescript",
+    "test": "npm run test:cli && npm run lint && npm run karma && npm run test:typescript",
     "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run karma",
     "test:cli": "node ./cli/test.js",
     "test:setup": "playwright install firefox webkit --with-deps",
