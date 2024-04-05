@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.16](https://github.com/hybridsjs/hybrids/compare/v8.2.15...v8.2.16) (2024-04-05)
+
+
+### Bug Fixes
+
+* **router:** navigate when browser triggers the popstate event ([eaa1bc6](https://github.com/hybridsjs/hybrids/commit/eaa1bc6b155648665170e186ce4885425e1b209e))
+
 ### [8.2.15](https://github.com/hybridsjs/hybrids/compare/v8.2.14...v8.2.15) (2024-04-03)
 
 
