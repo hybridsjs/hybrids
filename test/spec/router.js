@@ -644,6 +644,59 @@ describe("router:", () => {
           ).toBe("");
         }));
 
+      it("navigates when browser pops a new url within the router", () =>
+        resolveTimeout(() => {
+          expect(hybrids(host.views[0])).toBe(RootView);
+
+          window.history.pushState(
+            null,
+            "",
+            window.location.pathname + "#@test-router-child-view",
+          );
+          window.history.pushState(
+            null,
+            "",
+            window.location.pathname + "#@test-router-child-view",
+          );
+
+          return resolveTimeout(() => {
+            history.back();
+
+            return resolveTimeout(() => {
+              expect(hybrids(host.views[0])).toBe(ChildView);
+              history.back();
+              return resolveTimeout(() => {
+                expect(hybrids(host.views[0])).toBe(RootView);
+              });
+            });
+          });
+        }));
+
+      it("navigates when browser pops a new url outside the router", () =>
+        resolveTimeout(() => {
+          expect(hybrids(host.views[0])).toBe(RootView);
+
+          window.history.pushState(
+            null,
+            "",
+            window.location.pathname + "#nope",
+          );
+
+          window.history.pushState(
+            null,
+            "",
+            window.location.pathname + "#nope",
+          );
+
+          history.back();
+
+          return resolveTimeout(() => {
+            expect(hybrids(host.views[0])).toBe(RootView);
+            history.back();
+            return resolveTimeout(() => {});
+          });
+        }));
+
       it("saves and restores scroll position preserving focused element", () => {
         const input = host.querySelector("#input");
         const root = document.scrollingElement;

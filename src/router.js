@@ -903,6 +903,30 @@ function connectRootRouter(host, invalidate, options) {
     }
   }
 
+  function handlePopstate() {
+    // URL have changed externally, eg. chrome.tabs.update API
+    if (!globalThis.history.state) {
+      const url = new URL(globalThis.location.href);
+      const entry = getEntryFromURL(url);
+
+      if (entry) {
+        globalThis.removeEventListener("popstate", handlePopstate);
+        globalThis.addEventListener(
+          "popstate",
+          () => {
+            globalThis.addEventListener("popstate", handlePopstate);
+            navigate(entry);
+          },
+          { once: true },
+        );
+
+        globalThis.history.back();
+      }
+    } else {
+      flush();
+    }
+  }
+
   function navigateBack(offset, entry, nextUrl) {
     const state = globalThis.history.state;
     const targetEntry = globalThis.history.state[offset];
@@ -916,7 +940,7 @@ function connectRootRouter(host, invalidate, options) {
     const replace = (popStateEvent) => {
       if (popStateEvent) {
         globalThis.removeEventListener("popstate", replace);
-        globalThis.addEventListener("popstate", flush);
+        globalThis.addEventListener("popstate", handlePopstate);
       }
 
       const method = pushOffset ? "pushState" : "replaceState";
@@ -928,7 +952,7 @@ function connectRootRouter(host, invalidate, options) {
     };
 
     if (offset) {
-      globalThis.removeEventListener("popstate", flush);
+      globalThis.removeEventListener("popstate", handlePopstate);
       globalThis.addEventListener("popstate", replace);
 
       globalThis.history.go(-offset);
@@ -1029,14 +1053,14 @@ function connectRootRouter(host, invalidate, options) {
     }
   }
 
-  globalThis.addEventListener("popstate", flush);
+  globalThis.addEventListener("popstate", handlePopstate);
 
   host.addEventListener("click", handleNavigate);
   host.addEventListener("submit", handleNavigate);
   host.addEventListener("navigate", executeNavigate);
 
   return () => {
-    globalThis.removeEventListener("popstate", flush);
+    globalThis.removeEventListener("popstate", handlePopstate);
 
     host.removeEventListener("click", handleNavigate);
     host.removeEventListener("submit", handleNavigate);
