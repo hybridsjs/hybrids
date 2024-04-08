@@ -7,7 +7,9 @@
       // `import "/path/to/module.ts"`
       // is not `import "C:/path/to/module.ts"`
       // but is `import "~project/path/to/module.ts"`
-      "/*": ["*"]
+      "/*": [
+        "*"
+      ]
     },
     "newLine": "lf",
     "esModuleInterop": true,
