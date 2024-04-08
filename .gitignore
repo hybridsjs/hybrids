@@ -20,7 +20,6 @@
 nbproject
 Thumbs.db
 .tern-project
-.vscode
 
 # NPMs
 node_modules/
