@@ -149,7 +149,9 @@ export type ModelIdentifier =
   | undefined;
 
 export type ModelValues<M extends ModelInstance> = {
-  [property in keyof M]?: NonNullable<M[property]> extends ModelInstance
+  [property in keyof M]?: NonNullable<M[property]> extends Array<any>
+  ? Array<ModelValues<Unarray<NonNullable<M[property]>>>>
+  : NonNullable<M[property]> extends ModelInstance
   ? ModelValues<NonNullable<M[property]>>
   : M[property];
 };
