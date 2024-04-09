@@ -221,7 +221,7 @@ describe("define:", () => {
       define({
         tag: "test-define-default",
         prop1: "",
-        prop2: 0,
+        prop2: 1,
         prop3: {
           value: false,
           connect: (...args) => spy && spy(...args),
@@ -265,24 +265,31 @@ describe("define:", () => {
 
     it("returns an element with defined properties", () => {
       expect(el.prop1).toBe("");
-      expect(el.prop2).toBe(0);
+      expect(el.prop2).toBe(1);
       expect(el.prop3).toBe(false);
-      expect(el.computed).toBe("0 false");
+      expect(el.computed).toBe("1 false");
       expect(el.fullDesc).toBe("fullDesc");
       expect(el.fullDescWritable).toBe(0);
       expect(el.notDefined).toBe(undefined);
     });
 
     it("sets initial values from corresponding attributes", () => {
-      el.setAttribute("prop1", "a");
-      el.setAttribute("prop2", "2");
-      el.setAttribute("prop3", "");
-      el.setAttribute("bool-true", "");
-      el.setAttribute("full-desc-writable", "2");
-      el.setAttribute("not-defined", "abc");
+      const wrapper = document.createElement("test-define-default");
+      wrapper.innerHTML = `
+        <test-define-default
+          prop1="a"
+          prop2="0"
+          prop3=""
+          bool-true=""
+          full-desc-writable="2"
+          not-defined="abc"
+        ></test-define-default>
+      `;
+
+      el = wrapper.firstElementChild;
 
       expect(el.prop1).toBe("a");
-      expect(el.prop2).toBe(2);
+      expect(el.prop2).toBe(0);
       expect(el.prop3).toBe(true);
       expect(el.fullDescWritable).toEqual(4);
       expect(el.notDefined).toEqual("abc");
@@ -323,7 +330,7 @@ describe("define:", () => {
 
       return resolveRaf(() => {
         expect(el.getAttribute("prop1")).toBe(null);
-        expect(el.getAttribute("prop2")).toBe("0");
+        expect(el.getAttribute("prop2")).toBe("1");
         expect(el.hasAttribute("prop3")).toBe(false);
         expect(el.getAttribute("bool-true")).toBe("");
         expect(el.hasAttribute("not-defined")).toBe(false);
@@ -338,7 +345,7 @@ describe("define:", () => {
 
       return resolveRaf(() => {
         expect(el.prop1).toBe("");
-        expect(el.prop2).toBe(0);
+        expect(el.prop2).toBe(1);
       });
     });
 

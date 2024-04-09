@@ -19,15 +19,26 @@ function compile(hybrids, HybridsElement) {
     }
   } else {
     HybridsElement = class extends globalThis.HTMLElement {
-      connectedCallback() {
+      constructor() {
+        super();
+
         for (const key of HybridsElement.settable) {
-          if (!hasOwnProperty.call(this, key)) continue;
-
-          const value = this[key];
-          delete this[key];
-          this[key] = value;
+          if (hasOwnProperty.call(this, key)) {
+            const value = this[key];
+            delete this[key];
+            this[key] = value;
+          } else {
+            const attrName = camelToDash(key);
+            if (this.hasAttribute(attrName)) {
+              const value = this.getAttribute(attrName);
+              this[key] =
+                (value === "" && typeof this[key] === "boolean") || value;
+            }
+          }
         }
+      }
 
+      connectedCallback() {
         const set = new Set();
         disconnects.set(this, set);
 

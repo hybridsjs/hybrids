@@ -38,17 +38,9 @@ const setters = {
   },
 };
 
-const getters = {
-  string: (host, attrName) => host.getAttribute(attrName),
-  number: (host, attrName) => Number(host.getAttribute(attrName)) || 0,
-  boolean: (host, attrName) => host.hasAttribute(attrName),
-  undefined: (host, attrName) => host.getAttribute(attrName),
-};
-
 export default function value(key, desc) {
   const type = typeof desc.value;
   const set = setters[type];
-  const get = getters[type];
 
   if (!set) {
     throw TypeError(
@@ -59,8 +51,7 @@ export default function value(key, desc) {
   const attrName = camelToDash(key);
 
   return {
-    get: (host, value) =>
-      value === undefined ? get(host, attrName) || desc.value : value,
+    get: (host, value) => (value === undefined ? desc.value : value),
     set: (host, value) => set(host, value, attrName),
     connect:
       type !== "undefined"
