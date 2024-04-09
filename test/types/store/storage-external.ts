@@ -5,8 +5,8 @@ const EnumerableModelsSource = new Map<
   ModelIdentifier,
   StorageValues<IEnumerable>
 >([
-  ["0", { id: "0", prop: "qweqwe", length: 5, relatedModel: "2" }],
-  ["1", { id: "1", length: 1711014651455, relatedModels: ["1", "2"] }],
+  ["0", { id: "0", prop: "qweqwe", length: 5, relatedEnumerable: "2" }],
+  ["1", { id: "1", length: 1711014651455, relatedEnumerables: ["1", "2"] }],
   ["2", { id: "2", prop: "swswswsws" }],
 ]);
 
