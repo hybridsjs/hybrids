@@ -76,9 +76,7 @@ function compile(hybrids, HybridsElement) {
       desc = { value: desc };
     } else if (desc.set) {
       if (hasOwnProperty.call(desc, "value")) {
-        throw TypeError(
-          `Invalid property descriptor for '${key}' property - it must not have 'value' and 'set' properties at the same time.`,
-        );
+        throw TypeError(`Invalid property descriptor for '${key}' property - it must not have 'value' and 'set' properties at the same time.`);
       }
 
       const attrName = camelToDash(key);
@@ -94,9 +92,7 @@ function compile(hybrids, HybridsElement) {
     if (hasOwnProperty.call(desc, "value")) {
       desc = value(key, desc);
     } else if (!desc.get) {
-      throw TypeError(
-        `Invalid descriptor for '${key}' property - it must contain 'value' or 'get' option`,
-      );
+      throw TypeError(`Invalid descriptor for '${key}' property - it must contain 'value' or 'get' option`);
     }
 
     if (desc.set) settable.add(key);
@@ -146,10 +142,7 @@ function update(HybridsElement) {
 
           for (const key of Object.keys(hybrids)) {
             const type = typeof hybrids[key];
-            const clearValue =
-              type !== "object" &&
-              type !== "function" &&
-              hybrids[key] !== prevHybrids[key];
+            const clearValue = type !== "object" && type !== "function" && hybrids[key] !== prevHybrids[key];
 
             if (clearValue) node.removeAttribute(camelToDash(key));
             cache.invalidate(node, key, { clearValue });
@@ -166,9 +159,7 @@ function update(HybridsElement) {
 
 function define(hybrids) {
   if (!hybrids.tag) {
-    throw TypeError(
-      "Error while defining hybrids: 'tag' property with dashed tag name is required",
-    );
+    throw TypeError("Error while defining hybrids: 'tag' property with dashed tag name is required");
   }
 
   const HybridsElement = globalThis.customElements.get(hybrids.tag);
@@ -181,9 +172,7 @@ function define(hybrids) {
       return hybrids;
     }
 
-    throw TypeError(
-      `Custom element with '${hybrids.tag}' tag name already defined outside of the hybrids context`,
-    );
+    throw TypeError(`Custom element with '${hybrids.tag}' tag name already defined outside of the hybrids context`);
   }
 
   globalThis.customElements.define(hybrids.tag, compile(hybrids));

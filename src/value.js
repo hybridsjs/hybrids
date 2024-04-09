@@ -51,16 +51,13 @@ export default function value(key, desc) {
   const get = getters[type];
 
   if (!set) {
-    throw TypeError(
-      `Invalid default value for '${key}' property - it must be a string, number, boolean or undefined: ${type}`,
-    );
+    throw TypeError(`Invalid default value for '${key}' property - it must be a string, number, boolean or undefined: ${type}`);
   }
 
   const attrName = camelToDash(key);
 
   return {
-    get: (host, value) =>
-      value === undefined ? get(host, attrName) || desc.value : value,
+    get: (host, value) => (value === undefined ? get(host, attrName) || desc.value : value),
     set: (host, value) => set(host, value, attrName),
     connect:
       type !== "undefined"

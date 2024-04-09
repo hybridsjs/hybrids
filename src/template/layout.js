@@ -1,6 +1,4 @@
-const hasAdoptedStylesheets = !!(
-  globalThis.document && globalThis.document.adoptedStyleSheets
-);
+const hasAdoptedStylesheets = !!(globalThis.document && globalThis.document.adoptedStyleSheets);
 const NUMBER_REGEXP = /^\d+$/;
 const rules = {
   // base
@@ -36,11 +34,7 @@ const rules = {
         value &&
         value
           .split("|")
-          .map((v) =>
-            v.match(NUMBER_REGEXP)
-              ? `repeat(${v}, minmax(0, 1fr))`
-              : dimension(v),
-          )
+          .map((v) => (v.match(NUMBER_REGEXP) ? `repeat(${v}, minmax(0, 1fr))` : dimension(v)))
           .join(" ");
       return acc;
     }, {}),
@@ -110,9 +104,7 @@ const rules = {
     }
 
     return {
-      margin: `${dimension(v1)} ${dimension(v2)} ${dimension(v3)} ${dimension(
-        v4,
-      )}`,
+      margin: `${dimension(v1)} ${dimension(v2)} ${dimension(v3)} ${dimension(v4)}`,
     };
   },
   padding: (props, v1 = "1", v2, v3, v4) => {
@@ -123,9 +115,7 @@ const rules = {
     }
 
     return {
-      padding: `${dimension(v1)} ${dimension(v2)} ${dimension(v3)} ${dimension(
-        v4,
-      )}`,
+      padding: `${dimension(v1)} ${dimension(v2)} ${dimension(v3)} ${dimension(v4)}`,
     };
   },
 
@@ -150,9 +140,7 @@ const rules = {
 
   "": (props, _, ...args) => {
     if (args.length < 2) {
-      throw new Error(
-        "Generic rule '::' requires at least two arguments, eg.: ::[property]:[name]",
-      );
+      throw new Error("Generic rule '::' requires at least two arguments, eg.: ::[property]:[name]");
     }
 
     return {
@@ -265,18 +253,9 @@ export function insertRule(node, query, tokens, hostMode) {
           throw TypeError(`Unsupported layout rule: '${id}'`);
         }
 
-        return Object.assign(
-          acc,
-          typeof rule === "function"
-            ? rule(acc, ...args.map((v) => (v.match(/--.*/) ? `var(${v})` : v)))
-            : rule,
-        );
+        return Object.assign(acc, typeof rule === "function" ? rule(acc, ...args.map((v) => (v.match(/--.*/) ? `var(${v})` : v))) : rule);
       }, {}),
-  ).reduce(
-    (acc, [key, value]) =>
-      value !== undefined && value !== "" ? acc + `${key}: ${value};` : acc,
-    "",
-  );
+  ).reduce((acc, [key, value]) => (value !== undefined && value !== "" ? acc + `${key}: ${value};` : acc), "");
 
   const mediaSelector = mediaQueries.split(":").reduce((acc, query) => {
     if (query === "") return acc;
@@ -288,22 +267,12 @@ export function insertRule(node, query, tokens, hostMode) {
     const contentSelector = `:where(.${className}-c${selectors})`;
 
     [shadowSelector, contentSelector].forEach((selector) => {
-      sheet.insertRule(
-        mediaQueries
-          ? `${mediaSelector} { ${selector} { ${cssRules} } }`
-          : `${selector} { ${cssRules} }`,
-        sheet.cssRules.length - 1,
-      );
+      sheet.insertRule(mediaQueries ? `${mediaSelector} { ${selector} { ${cssRules} } }` : `${selector} { ${cssRules} }`, sheet.cssRules.length - 1);
     });
   } else {
     const selector = `.${className}${selectors}`;
 
-    sheet.insertRule(
-      mediaQueries
-        ? `${mediaSelector} { ${selector} { ${cssRules} } }`
-        : `${selector} { ${cssRules} }`,
-      sheet.cssRules.length - 1,
-    );
+    sheet.insertRule(mediaQueries ? `${mediaSelector} { ${selector} { ${cssRules} } }` : `${selector} { ${cssRules} }`, sheet.cssRules.length - 1);
   }
 
   return className;

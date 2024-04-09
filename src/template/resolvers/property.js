@@ -16,11 +16,7 @@ export default function resolveProperty(attrName, propertyName, isSVG) {
     default: {
       let isProp = false;
       return (host, target, value) => {
-        isProp =
-          isProp ||
-          (!isSVG &&
-            !(target instanceof globalThis.SVGElement) &&
-            propertyName in target);
+        isProp = isProp || (!isSVG && !(target instanceof globalThis.SVGElement) && propertyName in target);
         if (isProp) {
           target[propertyName] = value;
         } else if (value === false || value === undefined || value === null) {

@@ -63,11 +63,7 @@ export function get(key, context, args = []) {
               }
 
               const pluralForms = msg;
-              msg = (number) =>
-                (number === 0 && pluralForms.zero) ||
-                pluralForms[rules.select(number)] ||
-                pluralForms.other ||
-                "";
+              msg = (number) => (number === 0 && pluralForms.zero) || pluralForms[rules.select(number)] || pluralForms.other || "";
             }
             break;
           }
@@ -82,9 +78,7 @@ export function get(key, context, args = []) {
       if (!msg) {
         msg = key;
         if ((dictionary.size || translate) && probablyDevMode) {
-          console.warn(
-            `Missing translation: "${key}"${context ? ` [${context}]` : ""}`,
-          );
+          console.warn(`Missing translation: "${key}"${context ? ` [${context}]` : ""}`);
         }
       }
     }

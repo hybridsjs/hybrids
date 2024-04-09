@@ -18,8 +18,7 @@ function resolve(config, model, lastModel) {
   if (config.storage.observe) {
     const modelValue = model && config.isInstance(model) ? model : null;
 
-    const lastModelValue =
-      lastModel && config.isInstance(lastModel) ? lastModel : null;
+    const lastModelValue = lastModel && config.isInstance(lastModel) ? lastModel : null;
 
     if (modelValue !== lastModelValue) {
       config.storage.observe(modelValue, lastModelValue);
@@ -36,13 +35,7 @@ function shallowEqual(target, compare) {
 function resolveWithInvalidate(config, model, lastModel) {
   resolve(config, model, lastModel);
 
-  if (
-    config.invalidate &&
-    (!lastModel ||
-      error(model) ||
-      !config.isInstance(lastModel) ||
-      !shallowEqual(model, lastModel))
-  ) {
+  if (config.invalidate && (!lastModel || error(model) || !config.isInstance(lastModel) || !shallowEqual(model, lastModel))) {
     config.invalidate();
   }
 
@@ -89,12 +82,7 @@ function invalidateTimestamp(model) {
 }
 
 function hashCode(str) {
-  return globalThis.btoa(
-    Array.from(str).reduce(
-      (s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0,
-      0,
-    ),
-  );
+  return globalThis.btoa(Array.from(str).reduce((s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0, 0));
 }
 
 const offlinePrefix = "hybrids:store:cache";
@@ -108,8 +96,7 @@ function setupOfflineKey(config, threshold) {
 
   if (!clearPromise) {
     clearPromise = Promise.resolve().then(() => {
-      const previousKeys =
-        JSON.parse(globalThis.localStorage.getItem(offlinePrefix)) || {};
+      const previousKeys = JSON.parse(globalThis.localStorage.getItem(offlinePrefix)) || {};
       const timestamp = getCurrentTimestamp();
 
       /* istanbul ignore next */
@@ -120,10 +107,7 @@ function setupOfflineKey(config, threshold) {
         }
       }
 
-      globalThis.localStorage.setItem(
-        offlinePrefix,
-        JSON.stringify({ ...previousKeys, ...offlineKeys }),
-      );
+      globalThis.localStorage.setItem(offlinePrefix, JSON.stringify({ ...previousKeys, ...offlineKeys }));
       clearPromise = null;
     });
   }
@@ -144,9 +128,7 @@ function setupStorage(config, options) {
   if (result.observe) {
     const fn = result.observe;
     if (typeof fn !== "function") {
-      throw TypeError(
-        `Storage 'observe' property must be a function: ${typeof result.observe}`,
-      );
+      throw TypeError(`Storage 'observe' property must be a function: ${typeof result.observe}`);
     }
     result.observe = (model, lastModel) => {
       try {
@@ -166,17 +148,12 @@ function setupStorage(config, options) {
   }
 
   if (result.cache === false || result.cache === 0) {
-    result.validate = (cachedModel) =>
-      !cachedModel || getTimestamp(cachedModel) === getCurrentTimestamp();
+    result.validate = (cachedModel) => !cachedModel || getTimestamp(cachedModel) === getCurrentTimestamp();
   } else if (typeof result.cache === "number") {
-    result.validate = (cachedModel) =>
-      !cachedModel ||
-      getTimestamp(cachedModel) + result.cache > getCurrentTimestamp();
+    result.validate = (cachedModel) => !cachedModel || getTimestamp(cachedModel) + result.cache > getCurrentTimestamp();
   } else {
     if (result.cache !== true) {
-      throw TypeError(
-        `Storage 'cache' property must be a boolean or number: ${typeof result.cache}`,
-      );
+      throw TypeError(`Storage 'cache' property must be a boolean or number: ${typeof result.cache}`);
     }
     result.validate = (cachedModel) => getTimestamp(cachedModel) !== 1;
   }
@@ -190,12 +167,9 @@ function setupStorage(config, options) {
   if (result.offline) {
     try {
       const isBool = result.offline === true;
-      const threshold = isBool
-        ? 1000 * 60 * 60 * 24 * 30 /* 30 days */
-        : result.offline;
+      const threshold = isBool ? 1000 * 60 * 60 * 24 * 30 /* 30 days */ : result.offline;
       const offlineKey = setupOfflineKey(config, threshold);
-      const items =
-        JSON.parse(globalThis.localStorage.getItem(offlineKey)) || {};
+      const items = JSON.parse(globalThis.localStorage.getItem(offlineKey)) || {};
 
       let flush;
 
@@ -237,9 +211,7 @@ function setupStorage(config, options) {
                   if (offline) {
                     if (valueConfig.list) {
                       return value.map((model) => {
-                        configs
-                          .get(valueConfig.model)
-                          .storage.offline.set(model.id, model);
+                        configs.get(valueConfig.model).storage.offline.set(model.id, model);
                         return `${model}`;
                       });
                     }
@@ -266,10 +238,7 @@ function setupStorage(config, options) {
                 }
               }
 
-              globalThis.localStorage.setItem(
-                offlineKey,
-                JSON.stringify(items),
-              );
+              globalThis.localStorage.setItem(offlineKey, JSON.stringify(items));
               flush = null;
             });
           }
@@ -289,9 +258,7 @@ function setupStorage(config, options) {
 function memoryStorage(config) {
   return {
     get: config.enumerable ? () => {} : () => config.create({}),
-    set: config.enumerable
-      ? (id, values) => values
-      : (id, values) => (values === null ? { id } : values),
+    set: config.enumerable ? (id, values) => values : (id, values) => (values === null ? { id } : values),
     list:
       config.enumerable &&
       function list(id) {
@@ -325,9 +292,7 @@ function getTypeConstructor(type, key) {
     case "boolean":
       return Boolean;
     default:
-      throw TypeError(
-        `The value of the '${key}' must be a string, number or boolean: ${type}`,
-      );
+      throw TypeError(`The value of the '${key}' must be a string, number or boolean: ${type}`);
   }
 }
 
@@ -345,19 +310,14 @@ function setModelState(model, state, value = model) {
   return model;
 }
 
-const stateGetter = (
-  model,
-  v = { state: "ready", value: model, error: false },
-) => v;
+const stateGetter = (model, v = { state: "ready", value: model, error: false }) => v;
 function getModelState(model) {
   return cache.get(model, "state", stateGetter);
 }
 
 // UUID v4 generator thanks to https://gist.github.com/jed/982883
 function uuid(temp) {
-  return temp
-    ? (temp ^ ((Math.random() * 16) >> (temp / 4))).toString(16)
-    : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, uuid);
+  return temp ? (temp ^ ((Math.random() * 16) >> (temp / 4))).toString(16) : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, uuid);
 }
 
 function ref(fn) {
@@ -375,18 +335,11 @@ function resolveKey(Model, key, config) {
   if (refs.has(defaultValue)) defaultValue = defaultValue();
   let type = typeof defaultValue;
 
-  if (
-    defaultValue instanceof String ||
-    defaultValue instanceof Number ||
-    defaultValue instanceof Boolean
-  ) {
+  if (defaultValue instanceof String || defaultValue instanceof Number || defaultValue instanceof Boolean) {
     const check = validationMap.get(defaultValue);
     if (!check) {
       throw TypeError(
-        stringifyModel(
-          Model,
-          `You must use primitive ${typeof defaultValue.valueOf()} value for '${key}' property of the provided model definition`,
-        ),
+        stringifyModel(Model, `You must use primitive ${typeof defaultValue.valueOf()} value for '${key}' property of the provided model definition`),
       );
     }
 
@@ -414,21 +367,11 @@ function setupModel(Model, nested) {
 
   if (config && !config.enumerable) {
     if (nested && !config.nested) {
-      throw TypeError(
-        stringifyModel(
-          Model,
-          "Provided model definition for nested object already used as a root definition",
-        ),
-      );
+      throw TypeError(stringifyModel(Model, "Provided model definition for nested object already used as a root definition"));
     }
 
     if (!nested && config.nested) {
-      throw TypeError(
-        stringifyModel(
-          Model,
-          "Nested model definition cannot be used outside of the parent definition",
-        ),
-      );
+      throw TypeError(stringifyModel(Model, "Nested model definition cannot be used outside of the parent definition"));
     }
   }
 
@@ -484,11 +427,7 @@ function setupModel(Model, nested) {
       if (key !== "id") {
         Object.defineProperty(placeholder, key, {
           get() {
-            throw Error(
-              `Model instance in ${
-                getModelState(this).state
-              } state - use store.pending(), store.error(), or store.ready() guards`,
-            );
+            throw Error(`Model instance in ${getModelState(this).state} state - use store.pending(), store.error(), or store.ready() guards`);
           },
           enumerable: true,
         });
@@ -496,9 +435,7 @@ function setupModel(Model, nested) {
 
       if (key === "id") {
         if (Model[key] !== true) {
-          throw TypeError(
-            "The 'id' property in the model definition must be set to 'true' or not be defined",
-          );
+          throw TypeError("The 'id' property in the model definition must be set to 'true' or not be defined");
         }
         return (model, data, lastModel) => {
           let id;
@@ -527,9 +464,7 @@ function setupModel(Model, nested) {
           };
         case "object": {
           if (defaultValue === null) {
-            throw TypeError(
-              `The value for the '${key}' must be an object instance: ${defaultValue}`,
-            );
+            throw TypeError(`The value for the '${key}' must be an object instance: ${defaultValue}`);
           }
 
           const isArray = Array.isArray(defaultValue);
@@ -538,33 +473,18 @@ function setupModel(Model, nested) {
             const nestedType = typeof defaultValue[0];
 
             if (nestedType !== "object") {
-              if (
-                nestedType === "function" &&
-                ![String, Number, Boolean].includes(defaultValue[0])
-              ) {
-                throw TypeError(
-                  `The array item for the '${key}' must be one of the primitive types constructor: String, Number, or Boolean`,
-                );
+              if (nestedType === "function" && ![String, Number, Boolean].includes(defaultValue[0])) {
+                throw TypeError(`The array item for the '${key}' must be one of the primitive types constructor: String, Number, or Boolean`);
               }
 
-              const Constructor =
-                nestedType === "function"
-                  ? defaultValue[0]
-                  : getTypeConstructor(nestedType, key);
+              const Constructor = nestedType === "function" ? defaultValue[0] : getTypeConstructor(nestedType, key);
 
-              const defaultArray =
-                nestedType === "function"
-                  ? []
-                  : Object.freeze(defaultValue.map(Constructor));
+              const defaultArray = nestedType === "function" ? [] : Object.freeze(defaultValue.map(Constructor));
 
               return (model, data, lastModel) => {
                 if (hasOwnProperty.call(data, key)) {
                   if (!Array.isArray(data[key])) {
-                    throw TypeError(
-                      `The value for '${key}' property must be an array: ${typeof data[
-                        key
-                      ]}`,
-                    );
+                    throw TypeError(`The value for '${key}' property must be an array: ${typeof data[key]}`);
                   }
                   model[key] = Object.freeze(data[key].map(Constructor));
                 } else if (lastModel && hasOwnProperty.call(lastModel, key)) {
@@ -581,8 +501,7 @@ function setupModel(Model, nested) {
               localConfig.external &&
               config.storage.offline &&
               localConfig.storage.offline &&
-              localConfig.storage.offline.threshold <
-                config.storage.offline.threshold
+              localConfig.storage.offline.threshold < config.storage.offline.threshold
             ) {
               throw Error(
                 `External nested model for '${key}' property has lower offline threshold (${localConfig.storage.offline.threshold} ms) than the parent definition (${config.storage.offline.threshold} ms)`,
@@ -592,9 +511,7 @@ function setupModel(Model, nested) {
             if (localConfig.enumerable && defaultValue[1]) {
               const nestedOptions = defaultValue[1];
               if (typeof nestedOptions !== "object") {
-                throw TypeError(
-                  `Options for '${key}' array property must be an object instance: ${typeof nestedOptions}`,
-                );
+                throw TypeError(`Options for '${key}' array property must be an object instance: ${typeof nestedOptions}`);
               }
               if (nestedOptions.loose) {
                 config.contexts = config.contexts || new Set();
@@ -604,31 +521,18 @@ function setupModel(Model, nested) {
             return (model, data, lastModel) => {
               if (hasOwnProperty.call(data, key)) {
                 if (!Array.isArray(data[key])) {
-                  throw TypeError(
-                    `The value for '${key}' property must be an array: ${typeof data[
-                      key
-                    ]}`,
-                  );
+                  throw TypeError(`The value for '${key}' property must be an array: ${typeof data[key]}`);
                 }
                 model[key] = localConfig.create(data[key], true);
               } else {
-                model[key] =
-                  (lastModel && lastModel[key]) ||
-                  (!localConfig.enumerable &&
-                    localConfig.create(defaultValue)) ||
-                  [];
+                model[key] = (lastModel && lastModel[key]) || (!localConfig.enumerable && localConfig.create(defaultValue)) || [];
               }
             };
           }
 
           const nestedConfig = bootstrap(defaultValue, true);
           if (nestedConfig.enumerable || nestedConfig.external) {
-            if (
-              config.storage.offline &&
-              nestedConfig.storage.offline &&
-              nestedConfig.storage.offline.threshold <
-                config.storage.offline.threshold
-            ) {
+            if (config.storage.offline && nestedConfig.storage.offline && nestedConfig.storage.offline.threshold < config.storage.offline.threshold) {
               throw Error(
                 `External nested model for '${key}' property has lower offline threshold (${nestedConfig.storage.offline.threshold} ms) than the parent definition (${config.storage.offline.threshold} ms)`,
               );
@@ -647,23 +551,12 @@ function setupModel(Model, nested) {
                   const dataConfig = definitions.get(nestedData);
                   if (dataConfig) {
                     if (dataConfig.model !== defaultValue) {
-                      throw TypeError(
-                        "Model instance must match the definition",
-                      );
+                      throw TypeError("Model instance must match the definition");
                     }
                     resultModel = nestedData;
                   } else {
-                    const lastNestedModel = cache.getEntry(
-                      nestedConfig,
-                      data[key].id,
-                    ).value;
-                    resultModel = nestedConfig.create(
-                      nestedData,
-                      lastNestedModel &&
-                        nestedConfig.isInstance(lastNestedModel)
-                        ? lastNestedModel
-                        : undefined,
-                    );
+                    const lastNestedModel = cache.getEntry(nestedConfig, data[key].id).value;
+                    resultModel = nestedConfig.create(nestedData, lastNestedModel && nestedConfig.isInstance(lastNestedModel) ? lastNestedModel : undefined);
                     syncCache(nestedConfig, resultModel.id, resultModel);
                   }
                 }
@@ -687,10 +580,7 @@ function setupModel(Model, nested) {
 
           return (model, data, lastModel) => {
             if (hasOwnProperty.call(data, key)) {
-              model[key] =
-                data[key] === null
-                  ? nestedConfig.create({})
-                  : nestedConfig.create(data[key], lastModel && lastModel[key]);
+              model[key] = data[key] === null ? nestedConfig.create({}) : nestedConfig.create(data[key], lastModel && lastModel[key]);
             } else {
               model[key] = lastModel ? lastModel[key] : nestedConfig.create({});
             }
@@ -737,18 +627,12 @@ function setupModel(Model, nested) {
   return config;
 }
 
-const listPlaceholderPrototype = Object.getOwnPropertyNames(
-  Array.prototype,
-).reduce((acc, key) => {
+const listPlaceholderPrototype = Object.getOwnPropertyNames(Array.prototype).reduce((acc, key) => {
   if (key === "length" || key === "constructor") return acc;
 
   Object.defineProperty(acc, key, {
     get() {
-      throw Error(
-        `Model list instance in ${
-          getModelState(this).state
-        } state - use store.pending(), store.error(), or store.ready() guards`,
-      );
+      throw Error(`Model list instance in ${getModelState(this).state} state - use store.pending(), store.error(), or store.ready() guards`);
     },
   });
   return acc;
@@ -760,12 +644,7 @@ function setupListModel(Model, nested) {
 
   if (config && !config.enumerable) {
     if (!nested && config.nested) {
-      throw TypeError(
-        stringifyModel(
-          Model,
-          "Nested model definition cannot be used outside of the parent definition",
-        ),
-      );
+      throw TypeError(stringifyModel(Model, "Nested model definition cannot be used outside of the parent definition"));
     }
   }
 
@@ -777,20 +656,10 @@ function setupListModel(Model, nested) {
 
     if (!nested) {
       if (!modelConfig.enumerable) {
-        throw TypeError(
-          stringifyModel(
-            Model,
-            "Provided model definition does not support listing (it must be enumerable - set `id` property to `true`)",
-          ),
-        );
+        throw TypeError(stringifyModel(Model, "Provided model definition does not support listing (it must be enumerable - set `id` property to `true`)"));
       }
       if (!modelConfig.storage.list) {
-        throw TypeError(
-          stringifyModel(
-            Model,
-            "Provided model definition storage does not support `list` action",
-          ),
-        );
+        throw TypeError(stringifyModel(Model, "Provided model definition storage does not support `list` action"));
       }
     }
 
@@ -818,8 +687,7 @@ function setupListModel(Model, nested) {
 
         return Object.freeze(model);
       },
-      isInstance: (model) =>
-        Object.getPrototypeOf(model) !== listPlaceholderPrototype,
+      isInstance: (model) => Object.getPrototypeOf(model) !== listPlaceholderPrototype,
       create(items, invalidate = false) {
         if (items === null) return null;
 
@@ -835,15 +703,8 @@ function setupListModel(Model, nested) {
                 throw TypeError("Model instance must match the definition");
               }
             } else {
-              const lastModel =
-                modelConfig.enumerable &&
-                cache.getEntry(modelConfig, data.id).value;
-              model = modelConfig.create(
-                data,
-                lastModel && modelConfig.isInstance(lastModel)
-                  ? lastModel
-                  : undefined,
-              );
+              const lastModel = modelConfig.enumerable && cache.getEntry(modelConfig, data.id).value;
+              model = modelConfig.create(data, lastModel && modelConfig.isInstance(lastModel) ? lastModel : undefined);
               if (modelConfig.enumerable) {
                 id = model.id;
                 syncCache(modelConfig, id, model, invalidate);
@@ -891,13 +752,9 @@ function setupListModel(Model, nested) {
         threshold: modelConfig.storage.offline.threshold,
         get: (id) => {
           const stringId = stringifyId(id);
-          let result = modelConfig.storage.offline.get(
-            hashCode(String(stringId)),
-          );
+          let result = modelConfig.storage.offline.get(hashCode(String(stringId)));
           if (result) {
-            result = result.map((item) =>
-              modelConfig.storage.offline.get(item),
-            );
+            result = result.map((item) => modelConfig.storage.offline.get(item));
             result.id = stringId;
             return result;
           }
@@ -933,9 +790,7 @@ function stringifyId(id) {
 
       for (const key of Object.keys(id).sort()) {
         if (typeof id[key] === "object" && id[key] !== null) {
-          throw TypeError(
-            `You must use primitive value for '${key}' key: ${typeof id[key]}`,
-          );
+          throw TypeError(`You must use primitive value for '${key}' key: ${typeof id[key]}`);
         }
         result[key] = id[key];
       }
@@ -951,14 +806,7 @@ function stringifyId(id) {
 
 const notFoundErrors = new WeakSet();
 function notFoundError(Model, stringId) {
-  const err = Error(
-    stringifyModel(
-      Model,
-      `Model instance ${
-        stringId !== undefined ? `with '${stringId}' id ` : ""
-      }does not exist`,
-    ),
-  );
+  const err = Error(stringifyModel(Model, `Model instance ${stringId !== undefined ? `with '${stringId}' id ` : ""}does not exist`));
 
   notFoundErrors.add(err);
   return err;
@@ -980,20 +828,10 @@ function get(Model, id) {
     stringId = stringifyId(id);
 
     if (!stringId && !config.list && !draftMap.get(config)) {
-      throw TypeError(
-        stringifyModel(
-          Model,
-          `Provided model definition requires non-empty id: "${stringId}"`,
-        ),
-      );
+      throw TypeError(stringifyModel(Model, `Provided model definition requires non-empty id: "${stringId}"`));
     }
   } else if (id !== undefined) {
-    throw TypeError(
-      stringifyModel(
-        Model,
-        `Provided model definition does not support id: ${JSON.stringify(id)}`,
-      ),
-    );
+    throw TypeError(stringifyModel(Model, `Provided model definition does not support id: ${JSON.stringify(id)}`));
   }
 
   const offline = config.storage.offline;
@@ -1010,10 +848,7 @@ function get(Model, id) {
     let validContexts = true;
     if (config.contexts) {
       for (const context of config.contexts) {
-        if (
-          cache.get(context, context, resolveTimestamp) ===
-          getCurrentTimestamp()
-        ) {
+        if (cache.get(context, context, resolveTimestamp) === getCurrentTimestamp()) {
           validContexts = false;
         }
       }
@@ -1023,21 +858,13 @@ function get(Model, id) {
       return cachedModel;
     }
 
-    const fallback = () =>
-      cachedModel ||
-      (offline && config.create(offline.get(stringId))) ||
-      config.placeholder(stringId);
+    const fallback = () => cachedModel || (offline && config.create(offline.get(stringId))) || config.placeholder(stringId);
 
     try {
       let result = config.storage.get(id);
 
-      if (
-        !(result instanceof Promise) &&
-        (result === undefined || typeof result !== "object")
-      ) {
-        throw TypeError(
-          `Storage 'get' method must return a Promise, an instance, or null: ${result}`,
-        );
+      if (!(result instanceof Promise) && (result === undefined || typeof result !== "object")) {
+        throw TypeError(`Storage 'get' method must return a Promise, an instance, or null: ${result}`);
       }
 
       if (typeof result !== "object" || result === null) {
@@ -1085,11 +912,7 @@ const draftMap = new WeakMap();
 
 function getValidationError(errors) {
   const keys = Object.keys(errors);
-  const e = Error(
-    `Model validation failed (${keys.join(
-      ", ",
-    )}) - read the details from 'errors' property`,
-  );
+  const e = Error(`Model validation failed (${keys.join(", ")}) - read the details from 'errors' property`);
 
   e.errors = errors;
 
@@ -1105,21 +928,14 @@ function set(model, values = {}) {
   }
 
   if (config === null) {
-    throw Error(
-      "Provided model instance has expired. Haven't you used stale value?",
-    );
+    throw Error("Provided model instance has expired. Haven't you used stale value?");
   }
 
   let isInstance = !!config;
   if (!config) config = bootstrap(model);
 
   if (config.nested) {
-    throw stringifyModel(
-      config.model,
-      TypeError(
-        "Setting provided nested model instance is not supported, use the root model instance",
-      ),
-    );
+    throw stringifyModel(config.model, TypeError("Setting provided nested model instance is not supported, use the root model instance"));
   }
 
   if (config.list) {
@@ -1127,12 +943,7 @@ function set(model, values = {}) {
   }
 
   if (!config.storage.set) {
-    throw stringifyModel(
-      config.model,
-      TypeError(
-        "Provided model definition storage does not support 'set' method",
-      ),
-    );
+    throw stringifyModel(config.model, TypeError("Provided model definition storage does not support 'set' method"));
   }
 
   if (!isInstance && !config.enumerable) {
@@ -1151,11 +962,7 @@ function set(model, values = {}) {
   let id;
 
   try {
-    if (
-      config.enumerable &&
-      !isInstance &&
-      (!values || typeof values !== "object")
-    ) {
+    if (config.enumerable && !isInstance && (!values || typeof values !== "object")) {
       throw TypeError(`Values must be an object instance: ${values}`);
     }
 
@@ -1204,30 +1011,18 @@ function set(model, values = {}) {
 
     id = localModel ? localModel.id : model.id;
 
-    let result = config.storage.set(
-      isInstance ? id : undefined,
-      localModel,
-      keys,
-    );
+    let result = config.storage.set(isInstance ? id : undefined, localModel, keys);
 
-    if (
-      !(result instanceof Promise) &&
-      (result === undefined || typeof result !== "object")
-    ) {
-      throw TypeError(
-        `Storage 'set' method must return a Promise, an instance, or null: ${result}`,
-      );
+    if (!(result instanceof Promise) && (result === undefined || typeof result !== "object")) {
+      throw TypeError(`Storage 'set' method must return a Promise, an instance, or null: ${result}`);
     }
 
     result = Promise.resolve(result)
       .then((data) => {
-        const resultModel =
-          data === localModel ? localModel : config.create(data);
+        const resultModel = data === localModel ? localModel : config.create(data);
 
         if (isInstance && resultModel && id !== resultModel.id) {
-          throw TypeError(
-            `Local and storage data must have the same id: '${id}', '${resultModel.id}'`,
-          );
+          throw TypeError(`Local and storage data must have the same id: '${id}', '${resultModel.id}'`);
         }
 
         let resultId = resultModel ? resultModel.id : id;
@@ -1236,28 +1031,13 @@ function set(model, values = {}) {
           setModelState(resultModel, "error", getValidationError(errors));
         }
 
-        if (
-          isDraft &&
-          isInstance &&
-          hasOwnProperty.call(data, "id") &&
-          (!localModel || localModel.id !== model.id)
-        ) {
+        if (isDraft && isInstance && hasOwnProperty.call(data, "id") && (!localModel || localModel.id !== model.id)) {
           resultId = model.id;
         } else if (config.storage.offline) {
           config.storage.offline.set(resultId, resultModel);
         }
 
-        return syncCache(
-          config,
-          resultId,
-          resultModel ||
-            mapError(
-              config.placeholder(resultId),
-              notFoundError(config.model, id),
-              false,
-            ),
-          true,
-        );
+        return syncCache(config, resultId, resultModel || mapError(config.placeholder(resultId), notFoundError(config.model, id), false), true);
       })
       .catch((err) => {
         err = err !== undefined ? err : Error("Undefined error");
@@ -1287,9 +1067,7 @@ function sync(model, values) {
   }
 
   if (config === null) {
-    throw Error(
-      "Provided model instance has expired. Haven't you used stale value?",
-    );
+    throw Error("Provided model instance has expired. Haven't you used stale value?");
   }
 
   if (config === undefined) {
@@ -1309,27 +1087,18 @@ function sync(model, values) {
   const resultModel = config.create(values, model);
   const id = values ? resultModel.id : model.id;
 
-  return syncCache(
-    config,
-    id,
-    resultModel ||
-      mapError(config.placeholder(id), notFoundError(config.model, id), false),
-  );
+  return syncCache(config, id, resultModel || mapError(config.placeholder(id), notFoundError(config.model, id), false));
 }
 
 function clear(model, clearValue = true) {
   if (typeof model !== "object" || model === null) {
-    throw TypeError(
-      `The first argument must be a model instance or a model definition: ${model}`,
-    );
+    throw TypeError(`The first argument must be a model instance or a model definition: ${model}`);
   }
 
   let config = definitions.get(model);
 
   if (config === null) {
-    throw Error(
-      "Provided model instance has expired. Haven't you used stale value from the outer scope?",
-    );
+    throw Error("Provided model instance has expired. Haven't you used stale value from the outer scope?");
   }
 
   if (config) {
@@ -1390,8 +1159,7 @@ function error(model, property) {
   const state = getModelState(model);
 
   if (property !== undefined) {
-    const errors =
-      typeof state.error === "object" && state.error && state.error.errors;
+    const errors = typeof state.error === "object" && state.error && state.error.errors;
 
     return property === null ? !errors && state.error : errors[property];
   }
@@ -1430,9 +1198,7 @@ function submit(draft, values = {}) {
 
   if (cache.getEntry(modelConfig, draft.id).value) {
     const model = get(modelConfig.model, draft.id);
-    result = Promise.resolve(pending(model) || model).then((resolvedModel) =>
-      set(resolvedModel, getValuesFromModel(draft, values)),
-    );
+    result = Promise.resolve(pending(model) || model).then((resolvedModel) => set(resolvedModel, getValuesFromModel(draft, values)));
   } else {
     result = set(modelConfig.model, getValuesFromModel(draft, values));
   }
@@ -1456,11 +1222,7 @@ function required(value, key) {
   return !!value || `${key} is required`;
 }
 
-function valueWithValidation(
-  defaultValue,
-  validate = required,
-  errorMessage = "",
-) {
+function valueWithValidation(defaultValue, validate = required, errorMessage = "") {
   switch (typeof defaultValue) {
     case "string":
       defaultValue = new String(defaultValue);
@@ -1472,9 +1234,7 @@ function valueWithValidation(
       defaultValue = new Boolean(defaultValue);
       break;
     default:
-      throw TypeError(
-        `Default value must be a string, number or boolean: ${typeof defaultValue}`,
-      );
+      throw TypeError(`Default value must be a string, number or boolean: ${typeof defaultValue}`);
   }
 
   let fn;
@@ -1483,14 +1243,10 @@ function valueWithValidation(
   } else if (typeof validate === "function") {
     fn = (...args) => {
       const result = validate(...args);
-      return result !== true && result !== undefined
-        ? errorMessage || result
-        : result;
+      return result !== true && result !== undefined ? errorMessage || result : result;
     };
   } else {
-    throw TypeError(
-      `The second argument must be a RegExp instance or a function: ${typeof validate}`,
-    );
+    throw TypeError(`The second argument must be a RegExp instance or a function: ${typeof validate}`);
   }
 
   validationMap.set(defaultValue, fn);
@@ -1515,9 +1271,7 @@ function store(Model, options = {}) {
   }
 
   if (options.id && !config.enumerable) {
-    throw TypeError(
-      "Store factory for singleton model definition does not support 'id' option",
-    );
+    throw TypeError("Store factory for singleton model definition does not support 'id' option");
   }
 
   const resolveId = options.id
@@ -1535,9 +1289,7 @@ function store(Model, options = {}) {
   let draft;
   if (options.draft) {
     if (config.list) {
-      throw TypeError(
-        "Draft mode is not supported for listing model definition",
-      );
+      throw TypeError("Draft mode is not supported for listing model definition");
     }
 
     draft = bootstrap({
@@ -1602,9 +1354,7 @@ function store(Model, options = {}) {
   return {
     get(host, value) {
       const id = resolveId(host, value);
-      return !config.enumerable || config.list || value
-        ? get(Model, id)
-        : undefined;
+      return !config.enumerable || config.list || value ? get(Model, id) : undefined;
     },
     set: (_, v) => v,
   };

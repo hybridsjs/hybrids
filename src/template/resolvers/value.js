@@ -13,13 +13,7 @@ function typeOf(value) {
   return type;
 }
 
-export default function resolveValue(
-  host,
-  target,
-  value,
-  lastValue,
-  useLayout,
-) {
+export default function resolveValue(host, target, value, lastValue, useLayout) {
   const type = typeOf(value);
   const lastType = typeOf(lastValue);
 

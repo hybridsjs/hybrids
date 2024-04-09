@@ -23,18 +23,12 @@ export default function mount(target, hybrids) {
     targets.delete(target);
   });
 
-  const descriptors = Object.entries(
-    Object.getOwnPropertyDescriptors(HybridsElement.prototype),
-  );
+  const descriptors = Object.entries(Object.getOwnPropertyDescriptors(HybridsElement.prototype));
 
   HybridsElement.prototype.connectedCallback.call(target);
 
   for (const [key, desc] of descriptors) {
-    if (
-      key === "constructor" ||
-      key === "connectedCallback" ||
-      key === "disconnectedCallback"
-    ) {
+    if (key === "constructor" || key === "connectedCallback" || key === "disconnectedCallback") {
       continue;
     }
 
@@ -45,10 +39,7 @@ export default function mount(target, hybrids) {
 
     if (prevHybrids) {
       const type = typeof hybrids[key];
-      const clearValue =
-        type !== "object" &&
-        type !== "function" &&
-        hybrids[key] !== prevHybrids[key];
+      const clearValue = type !== "object" && type !== "function" && hybrids[key] !== prevHybrids[key];
 
       if (clearValue) target.removeAttribute(camelToDash(key));
       invalidate(target, key, { clearValue });

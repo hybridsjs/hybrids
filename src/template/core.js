@@ -2,12 +2,7 @@ import { stringifyElement, probablyDevMode } from "../utils.js";
 import { get as getMessage, isLocalizeEnabled } from "../localize.js";
 
 import * as layout from "./layout.js";
-import {
-  getMeta,
-  getPlaceholder,
-  getTemplateEnd,
-  removeTemplate,
-} from "./utils.js";
+import { getMeta, getPlaceholder, getTemplateEnd, removeTemplate } from "./utils.js";
 
 import resolveValue from "./resolvers/value.js";
 import resolveProperty from "./resolvers/property.js";
@@ -21,22 +16,11 @@ function createSignature(parts) {
   let signature = parts[0];
   let tableMode = false;
   for (let index = 1; index < parts.length; index += 1) {
-    tableMode =
-      tableMode ||
-      signature.match(
-        /<\s*(table|th|tr|td|thead|tbody|tfoot|caption|colgroup)([^<>]|"[^"]*"|'[^']*')*>\s*$/,
-      );
+    tableMode = tableMode || signature.match(/<\s*(table|th|tr|td|thead|tbody|tfoot|caption|colgroup)([^<>]|"[^"]*"|'[^']*')*>\s*$/);
 
-    signature +=
-      (tableMode
-        ? `<!--${getPlaceholder(index - 1)}-->`
-        : getPlaceholder(index - 1)) + parts[index];
+    signature += (tableMode ? `<!--${getPlaceholder(index - 1)}-->` : getPlaceholder(index - 1)) + parts[index];
 
-    tableMode =
-      tableMode &&
-      !signature.match(
-        /<\/\s*(table|th|tr|td|thead|tbody|tfoot|caption|colgroup)\s*>/,
-      );
+    tableMode = tableMode && !signature.match(/<\/\s*(table|th|tr|td|thead|tbody|tfoot|caption|colgroup)\s*>/);
   }
 
   return signature;
@@ -52,9 +36,7 @@ function getPropertyName(string) {
 function createWalker(context) {
   return globalThis.document.createTreeWalker(
     context,
-    globalThis.NodeFilter.SHOW_ELEMENT |
-      globalThis.NodeFilter.SHOW_TEXT |
-      globalThis.NodeFilter.SHOW_COMMENT,
+    globalThis.NodeFilter.SHOW_ELEMENT | globalThis.NodeFilter.SHOW_TEXT | globalThis.NodeFilter.SHOW_COMMENT,
     null,
     false,
   );
@@ -69,9 +51,7 @@ function normalizeWhitespace(input, startIndent = 0) {
     for (i += 1; input[i] === " " && i < input.length; i += 1) {
       indent += 1;
     }
-    return input.replace(/\n +/g, (t) =>
-      t.substr(0, Math.max(t.length - indent, 1)),
-    );
+    return input.replace(/\n +/g, (t) => t.substr(0, Math.max(t.length - indent, 1)));
   }
 
   return input;
@@ -123,23 +103,15 @@ function updateAdoptedStylesheets(target, styles) {
   let adoptedStyleSheets;
 
   if (prevStyleSheets) {
-    if (
-      styleSheets &&
-      styleSheets.length === prevStyleSheets.length &&
-      styleSheets.every((s, i) => s === prevStyleSheets[i])
-    ) {
+    if (styleSheets && styleSheets.length === prevStyleSheets.length && styleSheets.every((s, i) => s === prevStyleSheets[i])) {
       return;
     }
 
-    adoptedStyleSheets = target.adoptedStyleSheets.filter(
-      (s) => !prevStyleSheets.includes(s),
-    );
+    adoptedStyleSheets = target.adoptedStyleSheets.filter((s) => !prevStyleSheets.includes(s));
   }
 
   if (styleSheets) {
-    adoptedStyleSheets = (
-      adoptedStyleSheets || target.adoptedStyleSheets
-    ).concat(styleSheets);
+    adoptedStyleSheets = (adoptedStyleSheets || target.adoptedStyleSheets).concat(styleSheets);
   }
 
   target.adoptedStyleSheets = adoptedStyleSheets;
@@ -179,9 +151,7 @@ function updateStyles(target, styles) {
   let fn = updateStyleFns.get(target);
 
   if (!fn) {
-    fn = target.adoptedStyleSheets
-      ? updateAdoptedStylesheets
-      : updateStyleElement;
+    fn = target.adoptedStyleSheets ? updateAdoptedStylesheets : updateStyleElement;
     updateStyleFns.set(target, fn);
   }
 
@@ -214,19 +184,12 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
           throw Error("Layout attribute cannot contain expressions");
         }
 
-        hostLayout = layout.insertRule(
-          layoutTemplate,
-          attr.name.substr(6),
-          value,
-          true,
-        );
+        hostLayout = layout.insertRule(layoutTemplate, attr.name.substr(6), value, true);
       }
     }
 
     if (hostLayout !== undefined && template.content.children.length > 1) {
-      throw Error(
-        "Template, which uses layout system must have only the '<template>' root element",
-      );
+      throw Error("Template, which uses layout system must have only the '<template>' root element");
     }
 
     useLayout = hostLayout || layoutTemplate.hasAttribute("layout");
@@ -247,10 +210,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
 
     if (node.nodeType === globalThis.Node.COMMENT_NODE) {
       if (PLACEHOLDER_REGEXP_EQUAL.test(node.textContent)) {
-        node.parentNode.insertBefore(
-          globalThis.document.createTextNode(node.textContent),
-          node.nextSibling,
-        );
+        node.parentNode.insertBefore(globalThis.document.createTextNode(node.textContent), node.nextSibling);
 
         compileWalker.nextNode();
         node.parentNode.removeChild(node);
@@ -266,40 +226,24 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
         node.textContent = "";
         parts[equal[1]] = [compileIndex, resolveValue];
       } else {
-        if (
-          isLocalizeEnabled() &&
-          !isMsg &&
-          !noTranslate &&
-          !text.match(/^\s*$/)
-        ) {
+        if (isLocalizeEnabled() && !isMsg && !noTranslate && !text.match(/^\s*$/)) {
           let offset;
           const key = text.trim();
-          const localizedKey = key
-            .replace(/\s+/g, " ")
-            .replace(PLACEHOLDER_REGEXP_ALL, (_, index) => {
-              index = Number(index);
-              if (offset === undefined) offset = index;
-              return `\${${index - offset}}`;
-            });
+          const localizedKey = key.replace(/\s+/g, " ").replace(PLACEHOLDER_REGEXP_ALL, (_, index) => {
+            index = Number(index);
+            if (offset === undefined) offset = index;
+            return `\${${index - offset}}`;
+          });
 
           if (!localizedKey.match(PLACEHOLDER_REGEXP_ONLY)) {
-            let context =
-              node.previousSibling &&
-              node.previousSibling.nodeType === globalThis.Node.COMMENT_NODE
-                ? node.previousSibling
-                : "";
+            let context = node.previousSibling && node.previousSibling.nodeType === globalThis.Node.COMMENT_NODE ? node.previousSibling : "";
             if (context) {
               context.parentNode.removeChild(context);
               compileIndex -= 1;
-              context = (context.textContent.split("|")[1] || "")
-                .trim()
-                .replace(/\s+/g, " ");
+              context = (context.textContent.split("|")[1] || "").trim().replace(/\s+/g, " ");
             }
 
-            const resultKey = getMessage(localizedKey, context).replace(
-              /\${(\d+)}/g,
-              (_, index) => getPlaceholder(Number(index) + offset),
-            );
+            const resultKey = getMessage(localizedKey, context).replace(/\${(\d+)}/g, (_, index) => getPlaceholder(Number(index) + offset));
 
             text = text.replace(key, resultKey);
             node.textContent = text;
@@ -324,18 +268,13 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
               if (index === 0) {
                 currentNode.textContent = part;
               } else {
-                currentNode = currentNode.parentNode.insertBefore(
-                  globalThis.document.createTextNode(part),
-                  currentNode.nextSibling,
-                );
+                currentNode = currentNode.parentNode.insertBefore(globalThis.document.createTextNode(part), currentNode.nextSibling);
 
                 compileWalker.currentNode = currentNode;
                 compileIndex += 1;
               }
 
-              const equal = currentNode.textContent.match(
-                PLACEHOLDER_REGEXP_EQUAL,
-              );
+              const equal = currentNode.textContent.match(PLACEHOLDER_REGEXP_EQUAL);
               if (equal) {
                 currentNode.textContent = "";
                 parts[equal[1]] = [compileIndex, resolveValue];
@@ -346,23 +285,14 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
     } else {
       /* istanbul ignore else */
       if (node.nodeType === globalThis.Node.ELEMENT_NODE) {
-        if (
-          !noTranslate &&
-          (node.getAttribute("translate") === "no" ||
-            node.tagName.toLowerCase() === "script" ||
-            node.tagName.toLowerCase() === "style")
-        ) {
+        if (!noTranslate && (node.getAttribute("translate") === "no" || node.tagName.toLowerCase() === "script" || node.tagName.toLowerCase() === "style")) {
           noTranslate = node;
         }
 
         /* istanbul ignore else */
         if (probablyDevMode) {
           const tagName = node.tagName.toLowerCase();
-          if (
-            tagName.match(/.+-.+/) &&
-            !globalThis.customElements.get(tagName) &&
-            !notDefinedElements.includes(tagName)
-          ) {
+          if (tagName.match(/.+-.+/) && !globalThis.customElements.get(tagName) && !notDefinedElements.includes(tagName)) {
             notDefinedElements.push(tagName);
           }
         }
@@ -387,10 +317,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
           const equal = value.match(PLACEHOLDER_REGEXP_EQUAL);
           if (equal) {
             const propertyName = getPropertyName(rawParts[equal[1]]);
-            parts[equal[1]] = [
-              compileIndex,
-              resolveProperty(name, propertyName, isSVG),
-            ];
+            parts[equal[1]] = [compileIndex, resolveProperty(name, propertyName, isSVG)];
             node.removeAttribute(attr.name);
           } else {
             const results = value.match(PLACEHOLDER_REGEXP_ALL);
@@ -404,17 +331,10 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
                   compileIndex,
                   (host, target, attrValue) => {
                     const meta = getMeta(target);
-                    meta[partialName] = (meta[partialName] || value).replace(
-                      placeholder,
-                      attrValue == null ? "" : attrValue,
-                    );
+                    meta[partialName] = (meta[partialName] || value).replace(placeholder, attrValue == null ? "" : attrValue);
 
                     if (results.length === 1 || index + 1 === results.length) {
-                      isProp =
-                        isProp ||
-                        (!isSVG &&
-                          !(target instanceof globalThis.SVGElement) &&
-                          name in target);
+                      isProp = isProp || (!isSVG && !(target instanceof globalThis.SVGElement) && name in target);
                       if (isProp) {
                         target[name] = meta[partialName];
                       } else {
@@ -438,9 +358,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
 
   if (probablyDevMode && notDefinedElements.length) {
     console.warn(
-      `Not defined ${notDefinedElements
-        .map((e) => `<${e}>`)
-        .join(", ")} element${
+      `Not defined ${notDefinedElements.map((e) => `<${e}>`).join(", ")} element${
         notDefinedElements.length > 1 ? "s" : ""
       } found in the template:\n${beautifyTemplateLog(signature, -1)}`,
     );
@@ -524,11 +442,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       try {
         marker.fn(host, marker.node, value, prevValue, useLayout);
       } catch (error) {
-        console.error(
-          `Error while updating template expression in ${stringifyElement(
-            host,
-          )}:\n${beautifyTemplateLog(signature, marker.index)}`,
-        );
+        console.error(`Error while updating template expression in ${stringifyElement(host)}:\n${beautifyTemplateLog(signature, marker.index)}`);
 
         throw error;
       }

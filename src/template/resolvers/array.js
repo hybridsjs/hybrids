@@ -19,13 +19,7 @@ function movePlaceholder(target, previousSibling) {
   }
 }
 
-export default function resolveArray(
-  host,
-  target,
-  value,
-  resolveValue,
-  useLayout,
-) {
+export default function resolveArray(host, target, value, resolveValue, useLayout) {
   let lastEntries = arrayMap.get(target);
   const entries = value.map((item, index) => ({
     id: hasOwnProperty.call(item, "id") ? item.id : index,
@@ -77,26 +71,15 @@ export default function resolveArray(
         movePlaceholder(entry.placeholder, previousSibling);
       }
       if (matchedEntry.value !== entry.value) {
-        resolveValue(
-          host,
-          entry.placeholder,
-          entry.value,
-          matchedEntry.value,
-          useLayout,
-        );
+        resolveValue(host, entry.placeholder, entry.value, matchedEntry.value, useLayout);
       }
     } else {
       entry.placeholder = globalThis.document.createTextNode("");
-      previousSibling.parentNode.insertBefore(
-        entry.placeholder,
-        previousSibling.nextSibling,
-      );
+      previousSibling.parentNode.insertBefore(entry.placeholder, previousSibling.nextSibling);
       resolveValue(host, entry.placeholder, entry.value, undefined, useLayout);
     }
 
-    previousSibling = getTemplateEnd(
-      getMeta(entry.placeholder, {}).endNode || entry.placeholder,
-    );
+    previousSibling = getTemplateEnd(getMeta(entry.placeholder, {}).endNode || entry.placeholder);
 
     if (index === 0) meta.startNode = entry.placeholder;
     if (index === lastIndex) meta.endNode = previousSibling;

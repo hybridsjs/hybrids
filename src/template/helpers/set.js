@@ -12,10 +12,7 @@ function resolveValue({ target, detail }, setter) {
       value = target.files;
       break;
     default:
-      value =
-        detail && hasOwnProperty.call(detail, "value")
-          ? detail.value
-          : target.value;
+      value = detail && hasOwnProperty.call(detail, "value") ? detail.value : target.value;
   }
 
   setter(value);
@@ -35,16 +32,12 @@ const stringCache = new Map();
 
 export default function set(property, valueOrPath) {
   if (!property) {
-    throw Error(
-      `The first argument must be a property name or an object instance: ${property}`,
-    );
+    throw Error(`The first argument must be a property name or an object instance: ${property}`);
   }
 
   if (typeof property === "object") {
     if (valueOrPath === undefined) {
-      throw Error(
-        "For model instance property the second argument must be defined",
-      );
+      throw Error("For model instance property the second argument must be defined");
     }
 
     const store = storePointer.get(property);
