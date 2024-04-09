@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.17](https://github.com/hybridsjs/hybrids/compare/v8.2.16...v8.2.17) (2024-04-09)
+
+
+### Bug Fixes
+
+* **cache:** move initial value from attribute to the element constructor ([4e111dd](https://github.com/hybridsjs/hybrids/commit/4e111dd2d511b70f7a11d53b0ba0f049a5e9d7c6))
+* **types:** ModelValue may be listing ([#250](https://github.com/hybridsjs/hybrids/issues/250)) ([f24627f](https://github.com/hybridsjs/hybrids/commit/f24627ff3dbc4353f42282fa5274653a40f15290))
+
 ### [8.2.16](https://github.com/hybridsjs/hybrids/compare/v8.2.15...v8.2.16) (2024-04-05)
 
 
