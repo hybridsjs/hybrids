@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.18](https://github.com/hybridsjs/hybrids/compare/v8.2.17...v8.2.18) (2024-04-10)
+
+
+### Bug Fixes
+
+* **store:** Pass id directly to the store.get method without type change ([da30368](https://github.com/hybridsjs/hybrids/commit/da30368fc35192b2393c522ca4acb5fe1efe9f46))
+
 ### [8.2.17](https://github.com/hybridsjs/hybrids/compare/v8.2.16...v8.2.17) (2024-04-09)
 
 
