@@ -1506,6 +1506,10 @@ function cloneModel(model) {
   return clone;
 }
 
+function resolveId(value) {
+  return typeof value === "object" ? value?.id : value ?? undefined;
+}
+
 function store(Model, options = {}) {
   const config = bootstrap(Model);
 
@@ -1519,18 +1523,6 @@ function store(Model, options = {}) {
       "Store factory for singleton model definition does not support 'id' option",
     );
   }
-
-  const resolveId = options.id
-    ? (host) => {
-        const id = options.id(host);
-        return id !== undefined && id !== null ? String(id) : undefined;
-      }
-    : (host, value) => {
-        if (value !== null && value !== undefined) {
-          return typeof value === "object" ? value.id : String(value);
-        }
-        return undefined;
-      };
 
   let draft;
   if (options.draft) {
@@ -1558,16 +1550,21 @@ function store(Model, options = {}) {
 
     return {
       get(host, value) {
-        let id = resolveId(host, value) || (value ? value.id : undefined);
+        let id =
+          (options.id ? options.id(host) : resolveId(value)) ?? undefined;
 
-        if (!id && (value === undefined || value === null)) {
-          if (config.enumerable) {
-            const draftModel = draft.create({});
-            id = draftModel.id;
+        if (id === undefined || id === "") {
+          id = value?.id ?? undefined;
 
-            syncCache(draft, draftModel.id, draftModel, false);
-          } else {
-            clear(draft.model);
+          if (value === undefined || value === null) {
+            if (config.enumerable) {
+              const draftModel = draft.create({});
+              id = draftModel.id;
+
+              syncCache(draft, draftModel.id, draftModel, false);
+            } else {
+              clear(draft.model);
+            }
           }
         }
 
@@ -1585,8 +1582,11 @@ function store(Model, options = {}) {
   if (options.id) {
     return {
       get(host, value) {
-        const id = resolveId(host);
-        const nextValue = config.list || id ? get(Model, id) : undefined;
+        const id = options.id(host) ?? undefined;
+        const nextValue =
+          config.list || (id !== "" && id !== undefined)
+            ? get(Model, id)
+            : undefined;
 
         if (nextValue !== value && ready(value) && !ready(nextValue)) {
           const tempValue = cloneModel(value);
@@ -1601,9 +1601,10 @@ function store(Model, options = {}) {
 
   return {
     get(host, value) {
-      const id = resolveId(host, value);
-      return !config.enumerable || config.list || value
-        ? get(Model, id)
+      return !config.enumerable ||
+        config.list ||
+        (value !== "" && (value ?? undefined))
+        ? get(Model, resolveId(value))
         : undefined;
     },
     set: (_, v) => v,
