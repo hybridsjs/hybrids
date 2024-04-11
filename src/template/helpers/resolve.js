@@ -19,13 +19,7 @@ export default function resolve(promise, placeholder, delay = 200) {
       if (timeout) clearTimeout(timeout);
 
       if (promiseMap.get(target) === promise) {
-        resolveTemplateValue(
-          host,
-          target,
-          value,
-          placeholder && !timeout ? placeholder : undefined,
-          useLayout,
-        );
+        resolveTemplateValue(host, target, value, placeholder && !timeout ? placeholder : undefined, useLayout);
         promiseMap.set(target, null);
       }
     });

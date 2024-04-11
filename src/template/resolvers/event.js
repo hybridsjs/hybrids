@@ -4,11 +4,7 @@ export default function resolveEventListener(eventType) {
   return (host, target, value, lastValue) => {
     if (lastValue) {
       const eventMap = targets.get(target);
-      target.removeEventListener(
-        eventType,
-        eventMap.get(lastValue),
-        lastValue.options !== undefined ? lastValue.options : false,
-      );
+      target.removeEventListener(eventType, eventMap.get(lastValue), lastValue.options !== undefined ? lastValue.options : false);
     }
 
     if (value) {
@@ -25,11 +21,7 @@ export default function resolveEventListener(eventType) {
       const callback = value.bind(null, host);
       eventMap.set(value, callback);
 
-      target.addEventListener(
-        eventType,
-        callback,
-        value.options !== undefined ? value.options : false,
-      );
+      target.addEventListener(eventType, callback, value.options !== undefined ? value.options : false);
     }
   };
 }

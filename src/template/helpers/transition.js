@@ -6,11 +6,7 @@ export default (globalThis.document &&
   function transition(template) {
     return function fn(host, target) {
       if (instance) {
-        console.warn(
-          `${stringifyElement(
-            host,
-          )}: view transition already started in ${stringifyElement(instance)}`,
-        );
+        console.warn(`${stringifyElement(host)}: view transition already started in ${stringifyElement(instance)}`);
         template(host, target);
         return;
       }

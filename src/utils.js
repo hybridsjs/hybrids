@@ -9,9 +9,7 @@ export function camelToDash(str) {
 }
 
 export function dispatch(host, eventType, options = {}) {
-  return host.dispatchEvent(
-    new globalThis.CustomEvent(eventType, { bubbles: false, ...options }),
-  );
+  return host.dispatchEvent(new globalThis.CustomEvent(eventType, { bubbles: false, ...options }));
 }
 
 export function stringifyElement(target) {
@@ -27,12 +25,7 @@ export function walkInShadow(target, cb) {
     }
   }
 
-  const walker = globalThis.document.createTreeWalker(
-    target,
-    globalThis.NodeFilter.SHOW_ELEMENT,
-    null,
-    false,
-  );
+  const walker = globalThis.document.createTreeWalker(target, globalThis.NodeFilter.SHOW_ELEMENT, null, false);
 
   while (walker.nextNode()) {
     const el = walker.currentNode;

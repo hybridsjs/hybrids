@@ -4,10 +4,7 @@ const styleMap = new WeakMap();
 
 export default function resolveStyle(host, target, value) {
   if (value === null || typeof value !== "object") {
-    throw TypeError(
-      `Style value must be an object in ${stringifyElement(target)}:`,
-      value,
-    );
+    throw TypeError(`Style value must be an object in ${stringifyElement(target)}:`, value);
   }
 
   const previousMap = styleMap.get(target) || new Map();

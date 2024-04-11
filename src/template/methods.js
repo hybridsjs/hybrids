@@ -15,8 +15,7 @@ export function css(parts, ...args) {
 
   let result = parts[0];
   for (let index = 1; index < parts.length; index++) {
-    result +=
-      (args[index - 1] !== undefined ? args[index - 1] : "") + parts[index];
+    result += (args[index - 1] !== undefined ? args[index - 1] : "") + parts[index];
   }
 
   this.styleSheets.push(result);

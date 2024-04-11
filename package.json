@@ -48,7 +48,8 @@
     "release": "npm run test && standard-version -a"
   },
   "devDependencies": {
-    "eslint": "^8.7.0",
+    "@typescript-eslint/parser": "^7.5.0",
+    "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-prettier": "^5.1.2",
@@ -61,7 +62,8 @@
     "karma-webkit-launcher": "^2.1.0",
     "log4js": "^6.2.1",
     "playwright": "^1.41.2",
-    "prettier": "^3.1.1",
+    "prettier": "^3.2.5",
+    "prettier-eslint": "^16.3.0",
     "standard-version": "^9.3.2",
     "typescript": "^5.4.3"
   },

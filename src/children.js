@@ -16,14 +16,8 @@ function walk(node, fn, options, items = [], host = node) {
   return items;
 }
 
-export default function children(
-  hybridsOrFn,
-  options = { deep: false, nested: false },
-) {
-  const fn =
-    typeof hybridsOrFn === "function"
-      ? hybridsOrFn
-      : (hybrids) => hybrids === hybridsOrFn;
+export default function children(hybridsOrFn, options = { deep: false, nested: false }) {
+  const fn = typeof hybridsOrFn === "function" ? hybridsOrFn : (hybrids) => hybrids === hybridsOrFn;
 
   return {
     get: (host) => walk(host, fn, options),

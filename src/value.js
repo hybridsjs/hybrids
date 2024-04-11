@@ -43,9 +43,7 @@ export default function value(key, desc) {
   const set = setters[type];
 
   if (!set) {
-    throw TypeError(
-      `Invalid default value for '${key}' property - it must be a string, number, boolean or undefined: ${type}`,
-    );
+    throw TypeError(`Invalid default value for '${key}' property - it must be a string, number, boolean or undefined: ${type}`);
   }
 
   const attrName = camelToDash(key);

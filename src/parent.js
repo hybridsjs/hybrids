@@ -10,19 +10,14 @@ function walk(host, fn) {
       return parentElement;
     }
 
-    parentElement =
-      parentElement.parentElement ||
-      (parentElement.parentNode && parentElement.parentNode.host);
+    parentElement = parentElement.parentElement || (parentElement.parentNode && parentElement.parentNode.host);
   }
 
   return parentElement || null;
 }
 
 export default function parent(hybridsOrFn) {
-  const fn =
-    typeof hybridsOrFn === "function"
-      ? hybridsOrFn
-      : (hybrids) => hybrids === hybridsOrFn;
+  const fn = typeof hybridsOrFn === "function" ? hybridsOrFn : (hybrids) => hybrids === hybridsOrFn;
   return {
     get: (host) => walk(host, fn),
     connect(host, key, invalidate) {

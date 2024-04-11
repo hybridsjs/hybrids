@@ -218,8 +218,7 @@ const ModelStore: Model<IModel> = {
   /// @ts-expect-error
   looseCalculatedBooleanList: () => [false, { loose: true }],
   calculatedOptionalBooleanList: () => [false],
-  undefinedCalculatedOptionalBooleanList: () =>
-    condition ? undefined : [false],
+  undefinedCalculatedOptionalBooleanList: () => (condition ? undefined : [false]),
 
   // number
 
@@ -304,8 +303,7 @@ const ModelStore: Model<IModel> = {
   /// @ts-expect-error
   undefinedCalculatedObject: () => undefined,
   calculatedOptionalObject: () => ({ prop: "", length: 0 }),
-  undefinedCalculatedOptionalObject: () =>
-    condition ? undefined : { prop: "", length: 0 },
+  undefinedCalculatedOptionalObject: () => (condition ? undefined : { prop: "", length: 0 }),
 
   // Object List
 
@@ -322,8 +320,7 @@ const ModelStore: Model<IModel> = {
   /// @ts-expect-error
   looseCalculatedObjectList: () => [{ prop: "", length: 0 }, { loose: true }],
   calculatedOptionalObjectList: () => [{ prop: "", length: 0 }],
-  undefinedCalculatedOptionalObjectList: () =>
-    condition ? undefined : [{ prop: "", length: 0 }],
+  undefinedCalculatedOptionalObjectList: () => (condition ? undefined : [{ prop: "", length: 0 }]),
 
   // Enumerable Model
 
@@ -336,8 +333,7 @@ const ModelStore: Model<IModel> = {
   /// @ts-expect-error
   undefinedCalculatedEnumerableModel: () => undefined,
   calculatedOptionalEnumerableModel: () => EnumerableStore,
-  undefinedCalculatedOptionalEnumerableModel: () =>
-    condition ? undefined : EnumerableStore,
+  undefinedCalculatedOptionalEnumerableModel: () => (condition ? undefined : EnumerableStore),
 
   // Enumerable Model List
 
@@ -352,8 +348,7 @@ const ModelStore: Model<IModel> = {
   undefinedCalculatedEnumerableModelList: () => undefined,
   looseCalculatedEnumerableModelList: () => [EnumerableStore, { loose: true }],
   calculatedOptionalEnumerableModelList: () => [EnumerableStore],
-  undefinedCalculatedOptionalEnumerableModelList: () =>
-    condition ? undefined : [EnumerableStore],
+  undefinedCalculatedOptionalEnumerableModelList: () => (condition ? undefined : [EnumerableStore]),
 
   // Singleton Model
 
@@ -366,8 +361,7 @@ const ModelStore: Model<IModel> = {
   /// @ts-expect-error
   undefinedCalculatedSingletonModel: () => undefined,
   calculatedOptionalSingletonModel: () => SingletonStore,
-  undefinedCalculatedOptionalSingletonModel: () =>
-    condition ? undefined : SingletonStore,
+  undefinedCalculatedOptionalSingletonModel: () => (condition ? undefined : SingletonStore),
 
   // Singleton Model List
 
@@ -389,8 +383,7 @@ const ModelStore: Model<IModel> = {
   /// @ts-expect-error
   calculatedOptionalSingletonModelList: () => [SingletonStore],
   /// @ts-expect-error
-  undefinedCalculatedOptionalSingletonModelList: () =>
-    condition ? undefined : [SingletonStore],
+  undefinedCalculatedOptionalSingletonModelList: () => (condition ? undefined : [SingletonStore]),
 };
 
 export default ModelStore;
