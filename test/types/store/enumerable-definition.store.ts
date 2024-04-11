@@ -1,19 +1,22 @@
+import SingletonStore, { ISingleton } from "./singleton-definition.store";
 import { Model, store } from "/types/index";
 
 export interface IEnumerable {
   id: string;
   prop: string;
   length: number;
-  relatedModel?: IEnumerable;
-  relatedModels: IEnumerable[];
+  relatedSingleton?: ISingleton;
+  relatedEnumerable?: IEnumerable;
+  relatedEnumerables: IEnumerable[];
 }
 
 const EnumerableStore: Model<IEnumerable> = {
   id: true,
   prop: "",
   length: 0,
-  relatedModel: store.ref(() => EnumerableStore),
-  relatedModels: store.ref(() => [EnumerableStore]),
+  relatedSingleton: store.ref(() => SingletonStore),
+  relatedEnumerable: store.ref(() => EnumerableStore),
+  relatedEnumerables: store.ref(() => [EnumerableStore]),
 };
 
 export default EnumerableStore;
@@ -22,6 +25,7 @@ export default EnumerableStore;
 const BrokenEnumerableStore: Model<IEnumerable> = {
   prop: "",
   length: 0,
-  relatedModel: store.ref(() => EnumerableStore),
-  relatedModels: store.ref(() => [EnumerableStore]),
+  relatedSingleton: store.ref(() => SingletonStore),
+  relatedEnumerable: store.ref(() => EnumerableStore),
+  relatedEnumerables: store.ref(() => [EnumerableStore]),
 };
