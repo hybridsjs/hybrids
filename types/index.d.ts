@@ -9,9 +9,9 @@ export interface Descriptor<E, V> {
   get?: (host: E & HTMLElement, lastValue: any) => V;
   set?: (host: E & HTMLElement, value: any, lastValue: V) => any;
   connect?(
-    host: E & HTMLElement & { __property_key__: V; },
+    host: E & HTMLElement & { __property_key__: V },
     key: "__property_key__",
-    invalidate: (options?: { force?: boolean; }) => void,
+    invalidate: (options?: { force?: boolean }) => void,
   ): Function | void;
   observe?(host: E & HTMLElement, value: V, lastValue: V): void;
 }
@@ -34,17 +34,17 @@ export type Component<E> = ComponentBase & {
     keyof Omit<E, keyof HTMLElement>,
     string
   >]: property extends "render" | "content"
-  ? E[property] extends () => HTMLElement
-  ? RenderFunction<E>
-  : Property<E, E[property]>
-  : Property<E, E[property]>;
+    ? E[property] extends () => HTMLElement
+      ? RenderFunction<E>
+      : Property<E, E[property]>
+    : Property<E, E[property]>;
 } & {
   render?: RenderFunction<E>;
   content?: RenderFunction<E>;
 };
 
 export interface HybridElement<E> {
-  new(): E & HTMLElement;
+  new (): E & HTMLElement;
   prototype: E & HTMLElement;
 }
 
@@ -56,13 +56,16 @@ export namespace define {
   function compile<E>(component: Component<E>): HybridElement<E>;
 
   function from(
-    components: { [path: string]: Component<any>; },
-    options?: { prefix?: string; root?: string | string[]; },
+    components: { [path: string]: Component<any> },
+    options?: { prefix?: string; root?: string | string[] },
   ): void;
 }
 
 /* Mount */
-export function mount<E>(target: HTMLElement, component: Component<E>): () => void;
+export function mount<E>(
+  target: HTMLElement,
+  component: Component<E>,
+): () => void;
 
 /* Factories */
 
@@ -72,76 +75,77 @@ export function parent<E, V>(
 
 export function children<E, V>(
   componentOrFn: Component<V> | ((component: Component<E>) => boolean),
-  options?: { deep?: boolean; nested?: boolean; },
+  options?: { deep?: boolean; nested?: boolean },
 ): Descriptor<E, V[]>;
 
 /* Store */
 
-export type ModelInstance = { id?: string; } & object & NonArrayObject & NonModelDefinition;
-export type EnumerableInstance = { id: string; } & ModelInstance;
-export type SingletonInstance = { id?: never; } & ModelInstance;
+export type ModelInstance = { id?: string } & object &
+  NonArrayObject &
+  NonModelDefinition;
+export type EnumerableInstance = { id: string } & ModelInstance;
+export type SingletonInstance = { id?: never } & ModelInstance;
 
 export type Unarray<T> = T extends Array<infer U> ? U : T;
-export type NonConstructor = { readonly prototype?: never; };
-export type NonArrayObject = { [Symbol.iterator]?: never; } & object;
-export type NonModelDefinition = { __store__connect__?: never; } & object;
+export type NonConstructor = { readonly prototype?: never };
+export type NonArrayObject = { [Symbol.iterator]?: never } & object;
+export type NonModelDefinition = { __store__connect__?: never } & object;
 
 export type Model<M extends ModelInstance> = NonArrayObject & {
-  [property in keyof Omit<M, "id">]-?:
-  NonNullable<M[property]> extends Array<any>
-  ? NestedArrayModel<NonNullable<M[property]>>
-  | NonConstructor & ((model: M) =>
-    undefined extends M[property]
-    ? undefined | NestedArrayModel<M[property]>
-    : NestedArrayModel<M[property]>)
+  [property in keyof Omit<M, "id">]-?: NonNullable<
+    M[property]
+  > extends Array<any>
+    ?
+        | NestedArrayModel<NonNullable<M[property]>>
+        | (NonConstructor &
+            ((
+              model: M,
+            ) => undefined extends M[property]
+              ? undefined | NestedArrayModel<M[property]>
+              : NestedArrayModel<M[property]>))
+    : NonNullable<M[property]> extends string | String
+      ? string | (NonConstructor & ((model: M) => M[property]))
+      : NonNullable<M[property]> extends number | Number
+        ? number | (NonConstructor & ((model: M) => M[property]))
+        : NonNullable<M[property]> extends boolean | Boolean
+          ? boolean | (NonConstructor & ((model: M) => M[property]))
+          : NonNullable<M[property]> extends ModelInstance
+            ?
+                | Model<NonNullable<M[property]>>
+                | (NonConstructor &
+                    ((
+                      model: M,
+                    ) => undefined extends M[property]
+                      ? undefined | Model<NonNullable<M[property]>>
+                      : Model<NonNullable<M[property]>>))
+            : NonNullable<M[property]> extends NonArrayObject
+              ?
+                  | NonNullable<M[property]>
+                  | (NonConstructor & ((model: M) => M[property]))
+              : never;
+} & (M extends EnumerableInstance
+    ? {
+        id: true;
+      }
+    : {}) & {
+    __store__connect__?: Storage<M> | Storage<M>["get"];
+  };
 
-  : NonNullable<M[property]> extends string | String
-  ? string
-  | NonConstructor & ((model: M) => M[property])
-
-  : NonNullable<M[property]> extends number | Number
-  ? number
-  | NonConstructor & ((model: M) => M[property])
-
-  : NonNullable<M[property]> extends boolean | Boolean
-  ? boolean
-  | NonConstructor & ((model: M) => M[property])
-
-  : NonNullable<M[property]> extends ModelInstance
-  ? Model<NonNullable<M[property]>>
-  | NonConstructor & ((model: M) =>
-    undefined extends M[property]
-    ? undefined | Model<NonNullable<M[property]>>
-    : Model<NonNullable<M[property]>>)
-
-  : NonNullable<M[property]> extends NonArrayObject
-  ? NonNullable<M[property]>
-  | NonConstructor & ((model: M) => M[property])
-
-  : never;
-} & (M extends EnumerableInstance ? {
-  id: true;
-} : {}) & {
-  __store__connect__?: Storage<M> | Storage<M>["get"];
-};
-
-export type NestedArrayModel<T> =
-  NonNullable<Unarray<T>> extends string | String
+export type NestedArrayModel<T> = NonNullable<Unarray<T>> extends
+  | string
+  | String
   ? T | string[] | [String | StringConstructor]
-
   : NonNullable<Unarray<T>> extends number | Number
-  ? T | number[] | [Number | NumberConstructor]
-
-  : NonNullable<Unarray<T>> extends boolean | Boolean
-  ? T | boolean[] | [Boolean | BooleanConstructor]
-
-  : NonNullable<Unarray<T>> extends EnumerableInstance
-  ? [Model<NonNullable<Unarray<T>>>] | [Model<NonNullable<Unarray<T>>>, { loose?: boolean; }]
-
-  : NonNullable<Unarray<T>> extends NonArrayObject
-  ? T
-
-  : never;
+    ? T | number[] | [Number | NumberConstructor]
+    : NonNullable<Unarray<T>> extends boolean | Boolean
+      ? T | boolean[] | [Boolean | BooleanConstructor]
+      : NonNullable<Unarray<T>> extends EnumerableInstance
+        ?
+            | [Model<NonNullable<Unarray<T>>>]
+            | [Model<NonNullable<Unarray<T>>>, { loose?: boolean }]
+        : NonNullable<Unarray<T>> extends NonArrayObject
+          ? T
+          : never;
 
 export type ModelIdentifier =
   | string
@@ -150,35 +154,36 @@ export type ModelIdentifier =
 
 export type ModelValues<M extends ModelInstance> = {
   [property in keyof M]?: NonNullable<M[property]> extends Array<any>
-  ? Array<ModelValues<Unarray<NonNullable<M[property]>>>>
-  : NonNullable<M[property]> extends ModelInstance
-  ? ModelValues<NonNullable<M[property]>>
-  : M[property];
+    ? Array<ModelValues<Unarray<NonNullable<M[property]>>>>
+    : NonNullable<M[property]> extends ModelInstance
+      ? ModelValues<NonNullable<M[property]>>
+      : M[property];
 };
 
 export type StorageValues<M extends ModelInstance> = {
-  [property in keyof M]?:
-  NonNullable<M[property]> extends EnumerableInstance
-  ? NonNullable<M[property]> | M['id']
-  : NonNullable<M[property]> extends EnumerableInstance[]
-  ? (NonNullable<Unarray<M[property]>> | M['id'])[]
-  : M[property];
+  [property in keyof M]?: NonNullable<M[property]> extends EnumerableInstance
+    ? NonNullable<M[property]> | M["id"]
+    : NonNullable<M[property]> extends EnumerableInstance[]
+      ? (NonNullable<Unarray<M[property]>> | M["id"])[]
+      : M[property];
 };
 
 export type StorageResult<M extends ModelInstance> = StorageValues<M> | null;
 
 export type Storage<M extends ModelInstance> = {
-  get?: (id: ModelIdentifier)
-    => StorageResult<M> | Promise<StorageResult<M>>;
+  get?: (id: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>;
 
-  set?: (id: ModelIdentifier, values: M | null, keys: [keyof M])
-    => StorageResult<M> | Promise<StorageResult<M>>;
+  set?: (
+    id: ModelIdentifier,
+    values: M | null,
+    keys: [keyof M],
+  ) => StorageResult<M> | Promise<StorageResult<M>>;
 
-  list?: (id: ModelIdentifier)
-    => Array<StorageResult<M>> | Promise<Array<StorageResult<M>>>;
+  list?: (
+    id: ModelIdentifier,
+  ) => Array<StorageResult<M>> | Promise<Array<StorageResult<M>>>;
 
-  observe?: (id: ModelIdentifier, model: M | null, lastModel: M | null)
-    => void;
+  observe?: (id: ModelIdentifier, model: M | null, lastModel: M | null) => void;
 
   cache?: boolean | number;
   offline?: boolean | number;
@@ -188,55 +193,85 @@ export type Storage<M extends ModelInstance> = {
 // Enumerable - This overload must be the first one, then its signature and documentation will be displayed in intelephence by default.
 export function store<E, M extends EnumerableInstance>(
   model: Model<M>,
-  options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); }
+  options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier) },
 ): Descriptor<E, M | undefined>;
 
 // Enumerable Draft
 export function store<E, M extends EnumerableInstance>(
   model: Model<M>,
-  options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier); }
+  options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier) },
 ): Descriptor<E, M>;
 
 // Enumerable Listing
 export function store<E, M extends EnumerableInstance>(
   model: [Model<M>],
-  options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); loose?: boolean; }
+  options?: {
+    draft?: false;
+    id?: keyof E | ((host: E) => ModelIdentifier);
+    loose?: boolean;
+  },
 ): Descriptor<E, M[]>;
 
 // Singleton
 export function store<E, M extends SingletonInstance>(
   model: M extends Array<any> ? never : Model<M>,
-  options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier); }
+  options?: { draft?: false; id?: keyof E | ((host: E) => ModelIdentifier) },
 ): Descriptor<E, M>;
 
 // Singleton Draft
 export function store<E, M extends SingletonInstance>(
   model: M extends Array<any> ? never : Model<M>,
-  options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier); }
+  options: { draft: true; id?: keyof E | ((host: E) => ModelIdentifier) },
 ): Descriptor<E, M>;
 
 export namespace store {
   const connect = "__store__connect__";
 
-  function get<M extends ModelInstance>(Model: Model<M>, id?: ModelIdentifier): M;
-  function get<M extends ModelInstance>(Model: [Model<M>], id?: ModelIdentifier): M[];
+  function get<M extends ModelInstance>(
+    Model: Model<M>,
+    id?: ModelIdentifier,
+  ): M;
+  function get<M extends ModelInstance>(
+    Model: [Model<M>],
+    id?: ModelIdentifier,
+  ): M[];
 
-  function set<M extends ModelInstance>(model: Model<M> | M, values: ModelValues<M> | null): Promise<M>;
-  function sync<M extends ModelInstance>(model: Model<M> | M, values: ModelValues<M> | null): M;
-  function clear<M extends ModelInstance>(model: Model<M> | [Model<M>] | M, clearValue?: boolean): void;
+  function set<M extends ModelInstance>(
+    model: Model<M> | M,
+    values: ModelValues<M> | null,
+  ): Promise<M>;
+  function sync<M extends ModelInstance>(
+    model: Model<M> | M,
+    values: ModelValues<M> | null,
+  ): M;
+  function clear<M extends ModelInstance>(
+    model: Model<M> | [Model<M>] | M,
+    clearValue?: boolean,
+  ): void;
 
   function pending<M extends ModelInstance>(model: M): false | Promise<M>;
-  function pending<M extends ModelInstance>(...models: Array<M>): false | Promise<typeof models>;
+  function pending<M extends ModelInstance>(
+    ...models: Array<M>
+  ): false | Promise<typeof models>;
 
-  function error<M extends ModelInstance>(model: M, propertyName?: keyof M | null): false | Error | any;
+  function error<M extends ModelInstance>(
+    model: M,
+    propertyName?: keyof M | null,
+  ): false | Error | any;
 
   function ready<M extends ModelInstance>(model: M): boolean;
   function ready<M extends ModelInstance>(...models: Array<M>): boolean;
 
-  function submit<M extends ModelInstance>(draft: M, values?: ModelValues<M>): Promise<M>;
+  function submit<M extends ModelInstance>(
+    draft: M,
+    values?: ModelValues<M>,
+  ): Promise<M>;
 
   function resolve<M extends ModelInstance>(model: M): Promise<M>;
-  function resolve<M extends ModelInstance>(model: Model<M>, id?: ModelIdentifier): Promise<M>;
+  function resolve<M extends ModelInstance>(
+    model: Model<M>,
+    id?: ModelIdentifier,
+  ): Promise<M>;
 
   function ref<T>(fn: () => T): T;
 
@@ -302,13 +337,13 @@ export namespace router {
     params?: UrlParams<E> & UrlOptions,
   ): URL | "";
 
-  function backUrl(options?: { nested?: boolean; } & UrlOptions): URL | "";
+  function backUrl(options?: { nested?: boolean } & UrlOptions): URL | "";
   function guardUrl(params?: UrlParams<any> & UrlOptions): URL | "";
   function currentUrl<E>(params?: UrlParams<E> & UrlOptions): URL | "";
 
   function active(
     views: ComponentBase | ComponentBase[],
-    options?: { stack?: boolean; },
+    options?: { stack?: boolean },
   ): boolean;
 
   function resolve<P>(event: Event, promise: Promise<P>): Promise<P>;
@@ -318,15 +353,15 @@ export namespace router {
 export type Messages = {
   [key: string]: {
     message:
-    | string
-    | {
-      zero?: string;
-      one?: string;
-      two?: string;
-      few?: string;
-      many?: string;
-      other?: string;
-    };
+      | string
+      | {
+          zero?: string;
+          one?: string;
+          two?: string;
+          few?: string;
+          many?: string;
+          other?: string;
+        };
     description?: string;
   };
 };
@@ -388,10 +423,7 @@ export function html<E>(
 
 export namespace html {
   function set<E>(property: keyof E, valueOrPath?: any): EventHandler<E>;
-  function set<E, M>(
-    property: M,
-    valueOrPath: string | null,
-  ): EventHandler<E>;
+  function set<E, M>(property: M, valueOrPath: string | null): EventHandler<E>;
 
   function resolve<E>(
     promise: Promise<any>,

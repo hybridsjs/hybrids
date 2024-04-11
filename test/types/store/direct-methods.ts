@@ -2,10 +2,12 @@ import { store } from "/types/index";
 import SingletonStore, { ISingleton } from "./singleton-definition.store";
 import EnumerableStore, { IEnumerable } from "./enumerable-definition.store";
 
-const SingletonModelPromise: Promise<ISingleton> = store.resolve(SingletonStore);
+const SingletonModelPromise: Promise<ISingleton> =
+  store.resolve(SingletonStore);
 const SingletonModel = await SingletonModelPromise;
 
-const EnumerableModelPromise: Promise<IEnumerable> = store.resolve(EnumerableStore);
+const EnumerableModelPromise: Promise<IEnumerable> =
+  store.resolve(EnumerableStore);
 const EnumerableModel = await EnumerableModelPromise;
 
 store.get(SingletonStore);
@@ -13,7 +15,6 @@ store.get([SingletonStore]);
 
 store.get(EnumerableStore);
 store.get([EnumerableStore]);
-
 
 // ############################################### Create Singleton ###############################################
 
@@ -36,7 +37,6 @@ store.set(SingletonStore, {
   relatedEnumerables: {},
 });
 
-
 // ############################################### Update Singleton ###############################################
 
 store.set(SingletonModel, {
@@ -58,13 +58,11 @@ store.set(SingletonModel, {
   relatedEnumerables: {},
 });
 
-
 // ############################################### Delete Singleton ###############################################
 
 // an error is expected, but when determining overload, the display of errors for incorrect values ​​in Model Update breaks
 store.set(SingletonModel, null);
 store.set(EnumerableModel, null);
-
 
 // ############################################### Create Enumerable ###############################################
 
@@ -87,7 +85,6 @@ store.set(EnumerableStore, {
   relatedEnumerables: {},
 });
 
-
 // ############################################### Update Enumerable ###############################################
 
 store.set(EnumerableModel, {
@@ -108,7 +105,6 @@ store.set(EnumerableModel, {
   /// @ts-expect-error
   relatedEnumerables: {},
 });
-
 
 // ############################################### Delete Enumerable ###############################################
 // an error is expected, but when determining overload, the display of errors for incorrect values ​​in Model Update breaks
