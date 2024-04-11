@@ -825,9 +825,9 @@ function setupListModel(Model, nested) {
 
         const result = [];
         for (const data of items) {
-          let id = data;
+          let id;
           if (typeof data === "object" && data !== null) {
-            id = data.id;
+            id = stringifyId(data.id);
             const dataConfig = definitions.get(data);
             let model = data;
             if (dataConfig) {
@@ -836,8 +836,7 @@ function setupListModel(Model, nested) {
               }
             } else {
               const lastModel =
-                modelConfig.enumerable &&
-                cache.getEntry(modelConfig, data.id).value;
+                modelConfig.enumerable && cache.getEntry(modelConfig, id).value;
               model = modelConfig.create(
                 data,
                 lastModel && modelConfig.isInstance(lastModel)
@@ -852,8 +851,13 @@ function setupListModel(Model, nested) {
             if (!modelConfig.enumerable) {
               result.push(model);
             }
-          } else if (!modelConfig.enumerable) {
-            throw TypeError(`Model instance must be an object: ${typeof data}`);
+          } else {
+            if (!modelConfig.enumerable) {
+              throw TypeError(
+                `Model instance must be an object: ${typeof data}`,
+              );
+            }
+            id = stringifyId(data);
           }
           if (modelConfig.enumerable) {
             const key = result.length;
