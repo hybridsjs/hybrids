@@ -80,10 +80,10 @@ export function children<E, V>(
 
 /* Store */
 
-export type ModelInstance = { id?: string } & object &
+export type ModelInstance = { id?: ModelIdentifier } & object &
   NonArrayObject &
   NonModelDefinition;
-export type EnumerableInstance = { id: string } & ModelInstance;
+export type EnumerableInstance = { id: ModelIdentifier } & ModelInstance;
 export type SingletonInstance = { id?: never } & ModelInstance;
 
 export type Unarray<T> = T extends Array<infer U> ? U : T;

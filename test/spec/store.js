@@ -2076,11 +2076,10 @@ describe("store:", () => {
     it("calls storage get action with object id", () => {
       const model = store.get(Model, { b: "c", a: "b" });
 
-      expect(model.id).toEqual(JSON.stringify({ a: "b", b: "c" }));
+      expect(model.id).toEqual({ a: "b", b: "c" });
 
       return store.resolve(model).then((resultModel) => {
-        expect(resultModel.id).toEqual(JSON.stringify({ a: "b", b: "c" }));
-        expect(String(resultModel)).toBe(JSON.stringify({ a: "b", b: "c" }));
+        expect(resultModel.id).toEqual({ a: "b", b: "c" });
       });
     });
 

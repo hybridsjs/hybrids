@@ -131,7 +131,6 @@ function setupOfflineKey(config, threshold) {
   return key;
 }
 
-const JSON_LIKE_REGEX = /^\{.+\}$/;
 function setupStorage(config, options) {
   if (typeof options === "function") options = { get: options };
 
@@ -151,13 +150,6 @@ function setupStorage(config, options) {
     result.observe = (model, lastModel) => {
       try {
         let id = lastModel ? lastModel.id : model.id;
-        if (JSON_LIKE_REGEX.test(id)) {
-          try {
-            id = JSON.parse(id);
-            // istanbul ignore next
-          } catch (e) {} // eslint-disable-line no-empty
-        }
-
         fn(id, model, lastModel);
       } catch (e) {
         console.error(e);
@@ -400,7 +392,7 @@ function resolveKey(Model, key, config) {
 }
 
 function stringifyModel(Model, msg) {
-  return `${msg}\n\nModel = ${JSON.stringify(Model, null, 2)}\n`;
+  return `${msg}\n\nModel definition:\n\n${JSON.stringify(Model, null, 2)}\n`;
 }
 
 const resolvedPromise = Promise.resolve();
@@ -485,9 +477,12 @@ function setupModel(Model, nested) {
         Object.defineProperty(placeholder, key, {
           get() {
             throw Error(
-              `Model instance in ${
-                getModelState(this).state
-              } state - use store.pending(), store.error(), or store.ready() guards`,
+              stringifyModel(
+                Model,
+                `Model instance in ${
+                  getModelState(this).state
+                } state - use store.pending(), store.error(), or store.ready() guards`,
+              ),
             );
           },
           enumerable: true,
@@ -497,13 +492,16 @@ function setupModel(Model, nested) {
       if (key === "id") {
         if (Model[key] !== true) {
           throw TypeError(
-            "The 'id' property in the model definition must be set to 'true' or not be defined",
+            stringifyModel(
+              Model,
+              "The 'id' property in the model definition must be set to 'true' or not be defined",
+            ),
           );
         }
         return (model, data, lastModel) => {
           let id;
           if (hasOwnProperty.call(data, "id")) {
-            id = stringifyId(data.id);
+            id = normalizeId(data.id);
           } else if (lastModel) {
             id = lastModel.id;
           } else {
@@ -745,9 +743,12 @@ const listPlaceholderPrototype = Object.getOwnPropertyNames(
   Object.defineProperty(acc, key, {
     get() {
       throw Error(
-        `Model list instance in ${
-          getModelState(this).state
-        } state - use store.pending(), store.error(), or store.ready() guards`,
+        stringifyModel(
+          get(definitions.get(this).model),
+          `Model list instance in ${
+            getModelState(this).state
+          } state - use store.pending(), store.error(), or store.ready() guards`,
+        ),
       );
     },
   });
@@ -844,7 +845,7 @@ function setupListModel(Model, nested) {
                   : undefined,
               );
               if (modelConfig.enumerable) {
-                id = model.id;
+                id = stringifyId(model.id);
                 syncCache(modelConfig, id, model, invalidate);
               }
             }
@@ -930,27 +931,26 @@ function resolveTimestamp(h, v) {
   return v || getCurrentTimestamp();
 }
 
-function stringifyId(id) {
-  switch (typeof id) {
-    case "object": {
-      const result = {};
+function normalizeId(id) {
+  if (typeof id !== "object") return id !== undefined ? String(id) : id;
 
-      for (const key of Object.keys(id).sort()) {
-        if (typeof id[key] === "object" && id[key] !== null) {
-          throw TypeError(
-            `You must use primitive value for '${key}' key: ${typeof id[key]}`,
-          );
-        }
-        result[key] = id[key];
-      }
+  const result = {};
 
-      return JSON.stringify(result);
+  for (const key of Object.keys(id).sort()) {
+    if (typeof id[key] === "object" && id[key] !== null) {
+      throw TypeError(
+        `You must use primitive value for '${key}' key: ${typeof id[key]}`,
+      );
     }
-    case "undefined":
-      return undefined;
-    default:
-      return String(id);
+    result[key] = id[key];
   }
+
+  return result;
+}
+
+function stringifyId(id) {
+  id = normalizeId(id);
+  return typeof id === "object" ? JSON.stringify(id) : id;
 }
 
 const notFoundErrors = new WeakSet();
@@ -1008,6 +1008,8 @@ function get(Model, id) {
     entry.resolved = false;
   }
 
+  id = normalizeId(id);
+
   return cache.get(config, stringId, (h, cachedModel) => {
     if (cachedModel && pending(cachedModel)) return cachedModel;
 
@@ -1030,7 +1032,7 @@ function get(Model, id) {
     const fallback = () =>
       cachedModel ||
       (offline && config.create(offline.get(stringId))) ||
-      config.placeholder(stringId);
+      config.placeholder(id);
 
     try {
       let result = config.storage.get(id);
@@ -1057,7 +1059,7 @@ function get(Model, id) {
               throw notFoundError(Model, stringId);
             }
 
-            if (data.id !== stringId) data.id = stringId;
+            if (data.id !== id) data.id = id;
             const model = config.create(data);
 
             if (offline) offline.set(stringId, model);
@@ -1069,7 +1071,7 @@ function get(Model, id) {
         return setModelState(fallback(), "pending", result);
       }
 
-      if (result.id !== stringId) result.id = stringId;
+      if (result.id !== id) result.id = id;
       const model = config.create(result);
 
       if (offline) {
