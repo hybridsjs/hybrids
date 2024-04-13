@@ -1507,12 +1507,19 @@ function valueWithValidation(
   return defaultValue;
 }
 
+function resolveId(value) {
+  return typeof value === "object" ? value?.id : value ?? undefined;
+}
+
 function resolveModel(Model, config, id, lastModel) {
+  id = resolveId(id);
+
   if (!config.enumerable && !config.list) {
     return get(Model, id);
   }
 
-  const nextModel = id || config.list ? get(Model, id) : undefined;
+  const nextModel =
+    id !== undefined || config.list ? get(Model, id) : undefined;
 
   if (
     lastModel &&
@@ -1533,23 +1540,25 @@ function resolveModel(Model, config, id, lastModel) {
   return nextModel;
 }
 
-function resolveDraft(Model, draft, id, value, lastValue) {
+function resolveDraft(Model, config, id, value, lastValue) {
+  id = resolveId(id);
+
   if (
-    !id &&
-    (draft.enumerable || !lastValue) &&
+    id === undefined &&
+    !lastValue &&
     (value === undefined || value === null)
   ) {
-    const draftModel = draft.create({});
-    id = draftModel.id;
+    if (config.enumerable) {
+      const draftModel = config.create({});
+      id = draftModel.id;
 
-    syncCache(draft, draftModel.id, draftModel, false);
+      syncCache(config, draftModel.id, draftModel, false);
+    } else {
+      clear(config.model);
+    }
   }
 
   return get(Model, id);
-}
-
-function resolveId(value) {
-  return typeof value === "object" ? value?.id : value ?? undefined;
 }
 
 function store(Model, options = {}) {
@@ -1592,19 +1601,16 @@ function store(Model, options = {}) {
 
     return {
       value: options.id
-        ? (host, value, lastValue) => {
-            let id = options.id(host);
-            return resolveDraft(Model, draft, id, value, lastValue);
-          }
-        : (host, value, lastValue) => {
-            let id =
-              value !== null && typeof value === "object"
-                ? value.id
-                : (value && String(value)) ||
-                  (lastValue ? lastValue.id : undefined);
-
-            return resolveDraft(Model, draft, id, value, lastValue);
-          },
+        ? (host, value, lastValue) =>
+            resolveDraft(Model, draft, options.id(host), value, lastValue)
+        : (host, value, lastValue) =>
+            resolveDraft(
+              Model,
+              draft,
+              value ?? lastValue?.id,
+              value,
+              lastValue,
+            ),
       connect: config.enumerable
         ? (host, key) => () => {
             clear(host[key], true);
@@ -1615,17 +1621,15 @@ function store(Model, options = {}) {
 
   return {
     value: options.id
-      ? (host) => {
-          const id = options.id(host);
-          return resolveModel(Model, config, id, cache.getCurrentEntry().value);
-        }
-      : (host, value, lastValue) => {
-          const id =
-            value !== null && typeof value === "object"
-              ? value.id
-              : (value && String(value)) || undefined;
-          return resolveModel(Model, config, id, lastValue);
-        },
+      ? (host) =>
+          resolveModel(
+            Model,
+            config,
+            options.id(host),
+            cache.getCurrentEntry().value,
+          )
+      : (host, value, lastValue) =>
+          resolveModel(Model, config, value, lastValue),
   };
 }
 
