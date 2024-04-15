@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.19](https://github.com/hybridsjs/hybrids/compare/v8.2.18...v8.2.19) (2024-04-15)
+
+
+### Bug Fixes
+
+* **store:** pass through record id as it is ([a5d9165](https://github.com/hybridsjs/hybrids/commit/a5d9165285351975aed8da446e1134fefb743c2b))
+* **store:** stringify id of list model items ([11f7625](https://github.com/hybridsjs/hybrids/commit/11f7625dd8fd91188f48d3dfc45ed6f58033af33))
+
 ### [8.2.18](https://github.com/hybridsjs/hybrids/compare/v8.2.17...v8.2.18) (2024-04-10)
 
 
