@@ -316,7 +316,7 @@ describe("define:", () => {
         expect(el.getAttribute("prop1")).toBe("a");
         expect(el.getAttribute("prop2")).toBe("1");
         expect(el.getAttribute("prop3")).toBe("");
-        expect(el.getAttribute("not-defined")).toBe("abc");
+        expect(el.getAttribute("not-defined")).toBe(null);
       });
     });
 
