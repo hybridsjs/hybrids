@@ -49,32 +49,15 @@ const update = ({ radius }) => html`
 ## Properties & Attributes
 
 ```javascript
-html`<div propertyName="${value}"></div>`;
+// el.propertyName = value, el.otherProperty = value
+html`<my-element propertyName="${value}" other-property="${value}"></my-element>`;
 ```
 
-Expression in the attribute set corresponding property of an element instance. Even though attributes are not case-sensitive, the template engine uses the exact name defined in the template.
-
-### Attribute Fallback
-
-If the property is not found in the prototype of an element, it fallbacks to the attribute value (the attribute name is not translated from camel-case to dash or in any other way). If your template contains a custom element, which only supports attributes, you can use the original name:
-
-```javascript
-html`<external-calender start-date="${myDate}"></external-calender>`
-```
-
-Custom elements defined with the library support both camel-case property and dashed attribute. However, the best option is to use the original property name, if you want to pass dynamic data to the element. On another hand, if you have a fully static value, you can set dashed attribute in the template content:
-
-```javascript
-// Attribute: static value
-html`<my-calendar start-date="2020-01-01"></my-calendar>`;
-
-// Property: the only way to create dynamically changing value
-html`<my-calendar startDate=${dynamicDate}></my-calendar>`;
-```
+Expression as the element's attribute content set corresponding existing case-sensitive property, translated camel-cased property or fallbacks to the attribute value if property is not found. This behavior maximizes compatibility with custom elements created outside of the library.
 
 ### Mixed Values
 
-If the attribute value contains additional characters or multiple expressions, the engine fallbacks to the attribute value with concatenated characters. It has precedence even over the special cases described below.
+If the attribute value contains additional characters or multiple expressions, the attribute is always used with concatenated string value. It has precedence even over the special cases described below.
 
 ```javascript
 html`<div id="el" class="button ${buttonType} ${buttonColor}"></div>`

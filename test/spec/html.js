@@ -215,6 +215,22 @@ describe("html:", () => {
 
       expect(fragment.children[0].customProperty).toBe(1);
     });
+
+    it("sets property using dashed name", () => {
+      define({
+        tag: "test-html-property",
+        customProperty: 0,
+      });
+
+      const render = html`
+        <test-html-property title=${""} custom-property=${1}>
+        </test-html-property>
+      `;
+
+      render(fragment);
+
+      expect(fragment.children[0].customProperty).toBe(1);
+    });
   });
 
   describe("class expression attribute", () => {
