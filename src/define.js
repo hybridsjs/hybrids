@@ -7,7 +7,14 @@ import value from "./value.js";
 
 export const constructors = new WeakMap();
 
+const callbacks = new WeakMap();
 const disconnects = new WeakMap();
+
+function connectedCallback(host, set) {
+  for (const fn of this.connects) set.add(fn(host));
+  for (const fn of this.observers) set.add(fn(host));
+}
+
 function compile(hybrids, HybridsElement) {
   if (HybridsElement) {
     const prevHybrids = constructors.get(HybridsElement);
@@ -22,19 +29,14 @@ function compile(hybrids, HybridsElement) {
       constructor() {
         super();
 
-        for (const key of HybridsElement.settable) {
-          if (hasOwnProperty.call(this, key)) {
-            const value = this[key];
-            delete this[key];
-            this[key] = value;
-          } else {
-            const attrName = camelToDash(key);
-            if (this.hasAttribute(attrName)) {
-              const value = this.getAttribute(attrName);
-              this[key] =
-                (value === "" && typeof this[key] === "boolean") || value;
-            }
-          }
+        for (const fn of HybridsElement.settable) {
+          fn(this);
+        }
+
+        for (const key of Object.keys(this)) {
+          const value = this[key];
+          delete this[key];
+          this[key] = value;
         }
       }
 
@@ -42,22 +44,18 @@ function compile(hybrids, HybridsElement) {
         const set = new Set();
         disconnects.set(this, set);
 
-        emitter.add(() => {
-          if (set === disconnects.get(this)) {
-            for (const fn of HybridsElement.connects) set.add(fn(this));
-            for (const fn of HybridsElement.observers) set.add(fn(this));
-          }
-        });
+        const cb = connectedCallback.bind(HybridsElement, this, set);
+        callbacks.set(this, cb);
+        emitter.add(cb);
       }
 
       disconnectedCallback() {
-        const callbacks = disconnects.get(this);
+        emitter.clear(callbacks.get(this));
 
-        for (const fn of callbacks) {
+        for (const fn of disconnects.get(this)) {
           if (fn) fn();
         }
 
-        disconnects.delete(this);
         cache.invalidateAll(this);
       }
     };
@@ -110,8 +108,6 @@ function compile(hybrids, HybridsElement) {
       );
     }
 
-    if (desc.set) settable.add(key);
-
     Object.defineProperty(HybridsElement.prototype, key, {
       get: function get() {
         return cache.get(this, key, desc.get);
@@ -124,6 +120,16 @@ function compile(hybrids, HybridsElement) {
       enumerable: true,
       configurable: true,
     });
+
+    if (desc.set) {
+      const attrName = camelToDash(key);
+      settable.add((host) => {
+        const value = host.getAttribute(attrName);
+        if (value !== null) {
+          host[key] = (value === "" && typeof host[key] === "boolean") || value;
+        }
+      });
+    }
 
     if (desc.connect) {
       connects.add((host) =>

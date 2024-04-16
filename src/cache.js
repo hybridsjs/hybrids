@@ -138,8 +138,6 @@ export function observe(target, key, getter, fn) {
   }
 
   return () => {
-    emitter.clear(entry.observe);
-
     entry.observe = undefined;
     entry.lastValue = undefined;
   };

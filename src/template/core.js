@@ -99,14 +99,24 @@ function beautifyTemplateLog(input, index) {
 }
 
 const styleSheetsMap = new Map();
+const prevStylesMap = new WeakMap();
 const prevStyleSheetsMap = new WeakMap();
 function updateAdoptedStylesheets(target, styles) {
-  const prevStyleSheets = prevStyleSheetsMap.get(target);
-  if (!prevStyleSheets && !styles) return;
+  const prevStyles = prevStylesMap.get(target);
 
-  const styleSheets =
-    styles &&
-    styles.map((style) => {
+  if (
+    (!prevStyles && !styles) ||
+    (styles?.length &&
+      prevStyles?.length &&
+      styles?.every((s, i) => prevStyles[i] === s))
+  ) {
+    return;
+  }
+
+  let styleSheets = null;
+  if (styles) {
+    styleSheets = [];
+    for (const style of styles) {
       let styleSheet = style;
       if (!(styleSheet instanceof globalThis.CSSStyleSheet)) {
         styleSheet = styleSheetsMap.get(style);
@@ -116,33 +126,37 @@ function updateAdoptedStylesheets(target, styles) {
           styleSheetsMap.set(style, styleSheet);
         }
       }
-
-      return styleSheet;
-    });
+      styleSheets.push(styleSheet);
+    }
+  }
 
   let adoptedStyleSheets;
+  const prevStyleSheets = prevStyleSheetsMap.get(target);
 
   if (prevStyleSheets) {
-    if (
-      styleSheets &&
-      styleSheets.length === prevStyleSheets.length &&
-      styleSheets.every((s, i) => s === prevStyleSheets[i])
-    ) {
-      return;
-    }
+    adoptedStyleSheets = [];
 
-    adoptedStyleSheets = target.adoptedStyleSheets.filter(
-      (s) => !prevStyleSheets.includes(s),
-    );
+    for (const styleSheet of target.adoptedStyleSheets) {
+      if (!prevStyleSheets.includes(styleSheet)) {
+        adoptedStyleSheets.push(styleSheet);
+      }
+    }
   }
 
   if (styleSheets) {
-    adoptedStyleSheets = (
-      adoptedStyleSheets || target.adoptedStyleSheets
-    ).concat(styleSheets);
+    adoptedStyleSheets =
+      adoptedStyleSheets || target.adoptedStyleSheets.length
+        ? [...target.adoptedStyleSheets]
+        : [];
+
+    for (const styleSheet of styleSheets) {
+      adoptedStyleSheets.push(styleSheet);
+    }
   }
 
   target.adoptedStyleSheets = adoptedStyleSheets;
+
+  prevStylesMap.set(target, styles);
   prevStyleSheetsMap.set(target, styleSheets);
 }
 
@@ -151,6 +165,9 @@ function updateStyleElement(target, styles) {
   let styleEl = styleElementMap.get(target);
 
   if (styles) {
+    const prevStyles = prevStylesMap.get(target);
+    if (prevStyles && styles.every((s, i) => prevStyles[i] === s)) return;
+
     if (!styleEl || styleEl.parentNode !== target) {
       styleEl = globalThis.document.createElement("style");
       styleElementMap.set(target, styleEl);
@@ -163,29 +180,13 @@ function updateStyleElement(target, styles) {
       }
     }
 
-    const result = [...styles].join("\n/*------*/\n");
+    styleEl.textContent = styles.join("\n/*------*/\n");
 
-    if (styleEl.textContent !== result) {
-      styleEl.textContent = result;
-    }
+    prevStylesMap.set(target, styles);
   } else if (styleEl) {
     styleEl.parentNode.removeChild(styleEl);
     styleElementMap.set(target, null);
   }
-}
-
-const updateStyleFns = new WeakMap();
-function updateStyles(target, styles) {
-  let fn = updateStyleFns.get(target);
-
-  if (!fn) {
-    fn = target.adoptedStyleSheets
-      ? updateAdoptedStylesheets
-      : updateStyleElement;
-    updateStyleFns.set(target, fn);
-  }
-
-  fn(target, styles);
 }
 
 export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
@@ -513,7 +514,11 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       if (useLayout) layout.inject(target);
     }
 
-    updateStyles(target, styleSheets);
+    if (target.adoptedStyleSheets) {
+      updateAdoptedStylesheets(target, styleSheets);
+    } else {
+      updateStyleElement(target, styleSheets);
+    }
 
     for (const marker of meta.markers) {
       const value = args[marker.index];
