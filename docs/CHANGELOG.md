@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.20](https://github.com/hybridsjs/hybrids/compare/v8.2.19...v8.2.20) (2024-04-16)
+
+
+### Bug Fixes
+
+* **define:** value reflects attribute in observe callback ([07b9334](https://github.com/hybridsjs/hybrids/commit/07b93340a0a02dbed28349e13c3d1b33476205bd))
+* **html:** add fallback for camel-cased property name ([bdd8716](https://github.com/hybridsjs/hybrids/commit/bdd8716951d6ba64fe7b27e78ab769a8c3fa4908))
+* **perf:** optimize loops in definition and template engine ([4bf7e86](https://github.com/hybridsjs/hybrids/commit/4bf7e866f2e9ab4ababe3da2b3807e3f957a2e15))
+
 ### [8.2.19](https://github.com/hybridsjs/hybrids/compare/v8.2.18...v8.2.19) (2024-04-15)
 
 
