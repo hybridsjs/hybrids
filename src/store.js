@@ -280,7 +280,7 @@ function setupStorage(config, options) {
 
 function memoryStorage(config) {
   return {
-    get: config.enumerable ? () => {} : () => config.create({}),
+    get: config.enumerable ? () => null : () => config.create({}),
     set: config.enumerable
       ? (id, values) => values
       : (id, values) => (values === null ? { id } : values),
@@ -1042,7 +1042,10 @@ function get(Model, id) {
         (result === undefined || typeof result !== "object")
       ) {
         throw TypeError(
-          `Storage 'get' method must return a Promise, an instance, or null: ${result}`,
+          stringifyModel(
+            Model,
+            `Storage 'get' method must return a Promise, an instance, or null: ${result}`,
+          ),
         );
       }
 
