@@ -1,7 +1,7 @@
 import { camelToDash } from "./utils.js";
 
 const setters = {
-  string: String,
+  string: (v) => String(v ?? ""),
   number: Number,
   boolean: Boolean,
   undefined: (value) => value,

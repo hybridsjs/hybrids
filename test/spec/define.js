@@ -296,6 +296,9 @@ describe("define:", () => {
     });
 
     it("updates writable properties", () => {
+      el.prop1 = undefined;
+      expect(el.prop1).toBe("");
+
       el.prop1 = "a";
       expect(el.prop1).toBe("a");
 
