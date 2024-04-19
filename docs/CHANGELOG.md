@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.21](https://github.com/hybridsjs/hybrids/compare/v8.2.20...v8.2.21) (2024-04-19)
+
+
+### Bug Fixes
+
+* **define:** Nullish value resolves to empty string ([9932b99](https://github.com/hybridsjs/hybrids/commit/9932b99ad8aa626c18fed71e95d9585c4c0bc248))
+* **store:** Error message for type error in storage set method ([dbff629](https://github.com/hybridsjs/hybrids/commit/dbff62902451681c6d5e7cf14d2181df9f2e473f))
+* **store:** Memory-based storage returns `null` for non-existing instance ([d224450](https://github.com/hybridsjs/hybrids/commit/d224450315089f477ca9ad83f6c888c852516e44))
+
 ### [8.2.20](https://github.com/hybridsjs/hybrids/compare/v8.2.19...v8.2.20) (2024-04-16)
 
 
