@@ -19,8 +19,12 @@ function setDebug(value = true) {
 
 const scrollMap = new WeakMap();
 const focusMap = new WeakMap();
-function saveLayout(target) {
+function saveLayout() {
+  const target = stacks.get(rootRouter)[0];
+  if (!target) return;
+
   const focusEl = globalThis.document.activeElement;
+
   focusMap.set(target, rootRouter.contains(focusEl) && focusEl);
 
   const map = new Map();
@@ -285,7 +289,9 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         const root = rootRouter;
 
         const goBackOnEscKey = (event) => {
-          if (event.key === "Escape") {
+          const stack = stacks.get(root);
+
+          if (stack[0] === host && event.key === "Escape") {
             event.stopPropagation();
             globalThis.history.go(-1);
           }
@@ -957,6 +963,7 @@ function connectRootRouter(host, invalidate, options) {
 
       globalThis.history.go(-offset);
     } else {
+      saveLayout();
       replace();
     }
   }
@@ -976,8 +983,7 @@ function connectRootRouter(host, invalidate, options) {
     if (offset > -1) {
       navigateBack(offset, entry, url);
     } else {
-      let stack = stacks.get(host);
-      saveLayout(stack[0]);
+      saveLayout();
 
       globalThis.history.scrollRestoration = "manual";
       globalThis.history.pushState([entry, ...state], "", url);
