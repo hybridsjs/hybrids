@@ -154,6 +154,7 @@ function extractKeys(content, i = 0) {
         }
         strict = false;
         temp = undefined;
+        exprIndex = 0;
       } else {
         temp += content[i];
       }
