@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.23](https://github.com/hybridsjs/hybrids/compare/v8.2.22...v8.2.23) (2024-05-06)
+
+
+### Bug Fixes
+
+* **cli:** extract placeholder index in ternary operator ([3d514d4](https://github.com/hybridsjs/hybrids/commit/3d514d4de03d0f0c95ef6e1868227b07d3b090f8))
+* **store:** store pointer for model placeholder ([4d42296](https://github.com/hybridsjs/hybrids/commit/4d42296196723d62a7e17662b951ec8d4f5da529))
+
 ### [8.2.22](https://github.com/hybridsjs/hybrids/compare/v8.2.21...v8.2.22) (2024-04-23)
 
 ### [8.2.21](https://github.com/hybridsjs/hybrids/compare/v8.2.20...v8.2.21) (2024-04-19)
