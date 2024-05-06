@@ -451,6 +451,7 @@ function setupModel(Model, nested) {
       placeholder: (id) => {
         const model = Object.create(placeholder);
         definitions.set(model, config);
+        storePointer.set(model, store);
 
         if (enumerable) model.id = id;
 
