@@ -309,9 +309,9 @@ describe("define:", () => {
       expect(el.notDefined).toEqual("abc");
     });
 
-    it("updates properties and reflects them to corresponding attributes", () => {
-      el.prop1 = "";
-      expect(el.prop1).toBe("");
+    it("updates writable properties", () => {
+      el.prop1 = undefined;
+      expect(el.prop1).toBe("default");
 
       el.prop1 = "a";
       expect(el.prop1).toBe("a");

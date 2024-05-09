@@ -154,8 +154,6 @@ export function observe(target, key, fn, callback) {
   }
 
   return () => {
-    emitter.clear(entry.observe);
-
     entry.observe = undefined;
     entry.lastValue = undefined;
   };

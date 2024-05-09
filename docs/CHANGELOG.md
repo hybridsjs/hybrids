@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.2.23](https://github.com/hybridsjs/hybrids/compare/v8.2.22...v8.2.23) (2024-05-06)
+
+
+### Bug Fixes
+
+* **cli:** extract placeholder index in ternary operator ([3d514d4](https://github.com/hybridsjs/hybrids/commit/3d514d4de03d0f0c95ef6e1868227b07d3b090f8))
+* **store:** store pointer for model placeholder ([4d42296](https://github.com/hybridsjs/hybrids/commit/4d42296196723d62a7e17662b951ec8d4f5da529))
+
+### [8.2.22](https://github.com/hybridsjs/hybrids/compare/v8.2.21...v8.2.22) (2024-04-23)
+
+### [8.2.21](https://github.com/hybridsjs/hybrids/compare/v8.2.20...v8.2.21) (2024-04-19)
+
+
+### Bug Fixes
+
+* **define:** Nullish value resolves to empty string ([9932b99](https://github.com/hybridsjs/hybrids/commit/9932b99ad8aa626c18fed71e95d9585c4c0bc248))
+* **store:** Error message for type error in storage set method ([dbff629](https://github.com/hybridsjs/hybrids/commit/dbff62902451681c6d5e7cf14d2181df9f2e473f))
+* **store:** Memory-based storage returns `null` for non-existing instance ([d224450](https://github.com/hybridsjs/hybrids/commit/d224450315089f477ca9ad83f6c888c852516e44))
+
+### [8.2.20](https://github.com/hybridsjs/hybrids/compare/v8.2.19...v8.2.20) (2024-04-16)
+
+
+### Bug Fixes
+
+* **define:** value reflects attribute in observe callback ([07b9334](https://github.com/hybridsjs/hybrids/commit/07b93340a0a02dbed28349e13c3d1b33476205bd))
+* **html:** add fallback for camel-cased property name ([bdd8716](https://github.com/hybridsjs/hybrids/commit/bdd8716951d6ba64fe7b27e78ab769a8c3fa4908))
+* **perf:** optimize loops in definition and template engine ([4bf7e86](https://github.com/hybridsjs/hybrids/commit/4bf7e866f2e9ab4ababe3da2b3807e3f957a2e15))
+
+### [8.2.19](https://github.com/hybridsjs/hybrids/compare/v8.2.18...v8.2.19) (2024-04-15)
+
+
+### Bug Fixes
+
+* **store:** pass through record id as it is ([a5d9165](https://github.com/hybridsjs/hybrids/commit/a5d9165285351975aed8da446e1134fefb743c2b))
+* **store:** stringify id of list model items ([11f7625](https://github.com/hybridsjs/hybrids/commit/11f7625dd8fd91188f48d3dfc45ed6f58033af33))
+
 ### [8.2.18](https://github.com/hybridsjs/hybrids/compare/v8.2.17...v8.2.18) (2024-04-10)
 
 

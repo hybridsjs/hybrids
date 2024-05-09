@@ -280,7 +280,7 @@ function setupStorage(config, options) {
 
 function memoryStorage(config) {
   return {
-    get: config.enumerable ? () => {} : () => config.create({}),
+    get: config.enumerable ? () => null : () => config.create({}),
     set: config.enumerable
       ? (id, values) => values
       : (id, values) => (values === null ? { id } : values),
@@ -455,6 +455,7 @@ function setupModel(Model, nested) {
       placeholder: (id) => {
         const model = Object.create(placeholder);
         definitions.set(model, config);
+        storePointer.set(model, store);
 
         if (enumerable) model.id = id;
 
@@ -1046,7 +1047,10 @@ function get(Model, id) {
         (result === undefined || typeof result !== "object")
       ) {
         throw TypeError(
-          `Storage 'get' method must return a Promise, an instance, or null: ${result}`,
+          stringifyModel(
+            Model,
+            `Storage 'get' method must return a Promise, an instance, or null: ${result}`,
+          ),
         );
       }
 
@@ -1225,18 +1229,33 @@ function set(model, values = {}) {
       (result === undefined || typeof result !== "object")
     ) {
       throw TypeError(
-        `Storage 'set' method must return a Promise, an instance, or null: ${result}`,
+        stringifyModel(
+          config.model,
+          `Storage 'set' method must return a Promise, an instance, or null: ${result}`,
+        ),
       );
     }
 
     result = Promise.resolve(result)
       .then((data) => {
+        if (data === undefined || typeof data !== "object") {
+          throw TypeError(
+            stringifyModel(
+              config.model,
+              `Storage 'set' method must resolve to an instance, or null: ${data}`,
+            ),
+          );
+        }
+
         const resultModel =
           data === localModel ? localModel : config.create(data);
 
         if (isInstance && resultModel && id !== resultModel.id) {
           throw TypeError(
-            `Local and storage data must have the same id: '${id}', '${resultModel.id}'`,
+            stringifyModel(
+              config.model,
+              `Local and storage data must have the same id: '${id}', '${resultModel.id}'`,
+            ),
           );
         }
 

@@ -1,6 +1,6 @@
 {
   "name": "hybrids",
-  "version": "8.2.18",
+  "version": "8.2.23",
   "description": "A JavaScript framework for creating fully-featured web applications, components libraries, and single web components with unique declarative and functional architecture",
   "type": "module",
   "exports": {
@@ -39,7 +39,8 @@
     "karma": "karma start karma.conf.cjs",
     "dev": "npm run karma -- --no-single-run --browsers ChromeHeadless",
     "dev:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run dev",
-    "lint": "eslint ./src",
+    "lint": "eslint ./src ./test ./cli --ext .js",
+    "format": "prettier --write ./src ./test ./cli",
     "test": "npm run test:cli && npm run lint && npm run karma && npm run test:typescript",
     "test:coverage": "rm -rf ./coverage && NODE_ENV=coverage npm run karma",
     "test:cli": "node ./cli/test.js",

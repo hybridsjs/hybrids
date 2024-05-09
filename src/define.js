@@ -7,7 +7,14 @@ import value from "./value.js";
 
 export const constructors = new WeakMap();
 
+const callbacks = new WeakMap();
 const disconnects = new WeakMap();
+
+function connectedCallback(host, set) {
+  for (const fn of this.connects) set.add(fn(host));
+  for (const fn of this.observers) set.add(fn(host));
+}
+
 function compile(hybrids, HybridsElement) {
   if (HybridsElement) {
     const prevHybrids = constructors.get(HybridsElement);
@@ -22,12 +29,14 @@ function compile(hybrids, HybridsElement) {
       constructor() {
         super();
 
-        for (const [key, attrName] of HybridsElement.writable.entries()) {
+        for (const key of HybridsElement.writable) {
           if (hasOwnProperty.call(this, key)) {
             const value = this[key];
             delete this[key];
             this[key] = value;
           } else {
+            const attrName = camelToDash(key);
+
             if (this.hasAttribute(attrName)) {
               const value = this.getAttribute(attrName);
               this[key] =
@@ -41,22 +50,18 @@ function compile(hybrids, HybridsElement) {
         const set = new Set();
         disconnects.set(this, set);
 
-        emitter.add(() => {
-          if (set === disconnects.get(this)) {
-            for (const fn of HybridsElement.connects) set.add(fn(this));
-            for (const fn of HybridsElement.observers) set.add(fn(this));
-          }
-        });
+        const cb = connectedCallback.bind(HybridsElement, this, set);
+        callbacks.set(this, cb);
+        emitter.add(cb);
       }
 
       disconnectedCallback() {
-        const callbacks = disconnects.get(this);
+        emitter.clear(callbacks.get(this));
 
-        for (const fn of callbacks) {
+        for (const fn of disconnects.get(this)) {
           if (fn) fn();
         }
 
-        disconnects.delete(this);
         cache.invalidateAll(this);
       }
     };
@@ -66,7 +71,7 @@ function compile(hybrids, HybridsElement) {
 
   const connects = new Set();
   const observers = new Set();
-  const writableProps = new Map();
+  const writable = new Set();
 
   for (const key of Object.keys(hybrids)) {
     if (key === "tag") continue;
@@ -85,7 +90,7 @@ function compile(hybrids, HybridsElement) {
         : value(key, desc);
 
     if (desc.writable) {
-      writableProps.set(key, camelToDash(key));
+      writable.add(key);
     }
 
     Object.defineProperty(HybridsElement.prototype, key, {
@@ -122,7 +127,7 @@ function compile(hybrids, HybridsElement) {
 
   HybridsElement.connects = connects;
   HybridsElement.observers = observers;
-  HybridsElement.writable = writableProps;
+  HybridsElement.writable = writable;
 
   return HybridsElement;
 }

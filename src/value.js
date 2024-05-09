@@ -1,38 +1,19 @@
 import { camelToDash } from "./utils.js";
 
-const constructors = {
-  string: String,
+const transformers = {
+  string: (v) => String(v ?? ""),
   number: Number,
   boolean: Boolean,
   default: (v) => v,
 };
 
-const reflects = {
-  string: (host, value, attrName) => {
-    if (value) {
-      host.setAttribute(attrName, value);
-    } else {
-      host.removeAttribute(attrName);
-    }
-  },
-  number: (host, value, attrName) => {
-    host.setAttribute(attrName, value);
-  },
-  boolean: (host, value, attrName) => {
-    if (value) {
-      host.setAttribute(attrName, "");
-    } else {
-      host.removeAttribute(attrName);
-    }
-  },
-  default: (host, value, attrName) => {
-    if (value !== undefined) {
-      host.setAttribute(attrName, value);
-    } else {
-      host.removeAttribute(attrName);
-    }
-  },
-};
+function reflect(host, value, attrName) {
+  if (!value && value !== 0) {
+    host.removeAttribute(attrName);
+  } else {
+    host.setAttribute(attrName, value === true ? "" : value);
+  }
+}
 
 export default function value(key, desc) {
   const attrName = camelToDash(key);
@@ -40,8 +21,7 @@ export default function value(key, desc) {
     typeof desc.value === "object" ? Object.freeze(desc.value) : desc.value;
   const type = typeof defaultValue;
 
-  const constructor = constructors[type] || constructors.default;
-  const reflect = reflects[type] || reflects.default;
+  const transform = transformers[type] || transformers.default;
 
   let observe = desc.observe;
 
@@ -66,7 +46,7 @@ export default function value(key, desc) {
       type === "function"
         ? defaultValue
         : (host, value) =>
-            value !== undefined ? constructor(value) : defaultValue,
+            value !== undefined ? transform(value) : defaultValue,
     observe,
     writable: type !== "function" || defaultValue.length > 1,
   };

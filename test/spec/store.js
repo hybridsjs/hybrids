@@ -156,6 +156,15 @@ describe("store:", () => {
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
+    it("returns a model in the error state for non-existing instance of memory based enumerable definition", () => {
+      Model = { id: true, value: "" };
+      const model = store.get(Model, "1");
+
+      expect(model).toBeInstanceOf(Object);
+      expect(store.error(model)).toBeInstanceOf(Error);
+      expect(store.error(model).message.includes("does not exist")).toBe(true);
+    });
+
     describe("for singleton", () => {
       beforeEach(() => {
         Model = {
