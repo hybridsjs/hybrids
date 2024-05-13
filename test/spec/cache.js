@@ -102,11 +102,11 @@ describe("cache:", () => {
 
       expect(spy).toHaveBeenCalledTimes(0);
 
-      set(target, "key", () => "new value");
+      assert(target, "key", "new value");
       get(target, "key", spy);
 
       expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith(target, undefined, "new value");
+      expect(spy).toHaveBeenCalledWith(target, "new value");
     });
 
     it("does not invalidates state for next get call", () => {
@@ -128,7 +128,7 @@ describe("cache:", () => {
       get(target, "key", spy);
 
       expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith(target, undefined, "value");
+      expect(spy).toHaveBeenCalledWith(target, undefined);
     });
   });
 
@@ -154,7 +154,7 @@ describe("cache:", () => {
       invalidate(target, "key", { clearValue: true });
 
       get(target, "key", spy);
-      expect(spy).toHaveBeenCalledWith(target, undefined, undefined);
+      expect(spy).toHaveBeenCalledWith(target, undefined);
     });
 
     it("clears dependencies", () => {

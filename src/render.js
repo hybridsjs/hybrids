@@ -25,7 +25,7 @@ export default function render(key, desc) {
   if (key === "render") {
     const options = desc.options || {};
 
-    const shadowOptions = key === "render" && {
+    const shadowOptions = {
       mode: options.mode || "open",
       delegatesFocus: options.delegatesFocus,
     };

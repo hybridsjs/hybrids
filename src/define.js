@@ -94,13 +94,9 @@ function compile(hybrids, HybridsElement) {
     }
 
     Object.defineProperty(HybridsElement.prototype, key, {
-      get: desc.writable
-        ? function get() {
-            return cache.get(this, key, desc.value);
-          }
-        : function get() {
-            return cache.get(this, key, (host) => desc.value(host));
-          },
+      get: function get() {
+        return cache.get(this, key, desc.value);
+      },
       set: desc.writable
         ? function assert(newValue) {
             cache.assert(this, key, newValue);

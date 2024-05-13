@@ -59,8 +59,8 @@ export function getEntries(target) {
 }
 
 let context = null;
-export function getCurrentEntry() {
-  return context;
+export function getCurrentValue() {
+  return context?.value;
 }
 
 export function get(target, key, fn) {
@@ -93,7 +93,7 @@ export function get(target, key, fn) {
     context = entry;
     stack.add(entry);
 
-    entry.value = fn(target, entry.assertValue, entry.value);
+    entry.value = fn(target, entry.assertValue);
     entry.resolved = true;
 
     context = lastContext;

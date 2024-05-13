@@ -323,21 +323,15 @@ function getTypeConstructor(type, key) {
   }
 }
 
-function setModelState(model, state, value = model) {
-  cache.set(
-    model,
-    "state",
-    (_, value, lastValue) => {
-      if (value.state === "error") {
-        return { state: "error", error: value.value };
-      }
+function setModelState(model, state, value) {
+  const lastConfig = cache.getEntry(model, "state").value;
 
-      value.error = !!lastValue && lastValue.error;
+  cache.assert(model, "state", {
+    state,
+    value,
+    error: (state === "error" ? value : lastConfig?.error) || false,
+  });
 
-      return value;
-    },
-    { state, value },
-  );
   return model;
 }
 
@@ -345,7 +339,7 @@ function getModelState(model) {
   return cache.get(
     model,
     "state",
-    (model, _, v = { state: "ready", value: model, error: false }) => v,
+    (model, config = { state: "ready", error: false }) => config,
   );
 }
 
@@ -932,10 +926,6 @@ function setupListModel(Model, nested) {
   return config;
 }
 
-function resolveTimestamp(h, v) {
-  return v || getCurrentTimestamp();
-}
-
 function normalizeId(id) {
   if (typeof id !== "object") return id !== undefined ? String(id) : id;
 
@@ -1015,14 +1005,16 @@ function get(Model, id) {
 
   id = normalizeId(id);
 
-  return cache.get(config, stringId, (h, assertModel, cachedModel) => {
+  return cache.get(config, stringId, () => {
+    const cachedModel = cache.getEntry(config, stringId).value;
+
     if (cachedModel && pending(cachedModel)) return cachedModel;
 
     let validContexts = true;
     if (config.contexts) {
       for (const context of config.contexts) {
         if (
-          cache.get(context, context, resolveTimestamp) ===
+          cache.get(context, context, () => getCurrentTimestamp()) ===
           getCurrentTimestamp()
         ) {
           validContexts = false;
@@ -1039,59 +1031,74 @@ function get(Model, id) {
       (offline && config.create(offline.get(stringId))) ||
       config.placeholder(id);
 
+    let result;
     try {
-      let result = config.storage.get(id);
+      result = config.storage.get(id);
+    } catch (e) {
+      return setTimestamp(mapError(fallback(), e));
+    }
 
-      if (
-        !(result instanceof Promise) &&
-        (result === undefined || typeof result !== "object")
-      ) {
-        throw TypeError(
-          stringifyModel(
-            Model,
-            `Storage 'get' method must return a Promise, an instance, or null: ${result}`,
-          ),
-        );
-      }
+    if (
+      !(result instanceof Promise) &&
+      result !== undefined &&
+      typeof result !== "object"
+    ) {
+      throw TypeError(
+        stringifyModel(
+          Model,
+          `Storage 'get' method must return a Promise, an instance, or null: ${result}`,
+        ),
+      );
+    }
 
+    try {
       if (typeof result !== "object" || result === null) {
         if (offline) offline.set(stringId, null);
         throw notFoundError(Model, stringId);
       }
-
-      if (result instanceof Promise) {
-        result = result
-          .then((data) => {
-            if (typeof data !== "object" || data === null) {
-              if (offline) offline.set(stringId, null);
-              throw notFoundError(Model, stringId);
-            }
-
-            if (data.id !== id) data.id = id;
-            const model = config.create(data);
-
-            if (offline) offline.set(stringId, model);
-
-            return syncCache(config, stringId, setTimestamp(model));
-          })
-          .catch((e) => syncCache(config, stringId, mapError(fallback(), e)));
-
-        return setModelState(fallback(), "pending", result);
-      }
-
-      if (result.id !== id) result.id = id;
-      const model = config.create(result);
-
-      if (offline) {
-        Promise.resolve().then(() => {
-          offline.set(stringId, model);
-        });
-      }
-
-      return resolve(config, setTimestamp(model), cachedModel);
     } catch (e) {
       return setTimestamp(mapError(fallback(), e));
     }
+
+    if (result instanceof Promise) {
+      result = result
+        .then((data) => {
+          if (data !== undefined && typeof data !== "object") {
+            throw TypeError(
+              stringifyModel(
+                Model,
+                `Storage 'get' method must resolve to an instance, or null: ${data}`,
+              ),
+            );
+          }
+
+          if (typeof data !== "object" || data === null) {
+            if (offline) offline.set(stringId, null);
+            throw notFoundError(Model, stringId);
+          }
+
+          if (data.id !== id) data.id = id;
+          const model = config.create(data);
+
+          if (offline) offline.set(stringId, model);
+
+          return syncCache(config, stringId, setTimestamp(model));
+        })
+        .catch((e) => syncCache(config, stringId, mapError(fallback(), e)));
+
+      return setModelState(fallback(), "pending", result);
+    }
+
+    if (result.id !== id) result.id = id;
+    const model = config.create(result);
+
+    if (offline) {
+      Promise.resolve().then(() => {
+        offline.set(stringId, model);
+      });
+    }
+
+    return resolve(config, setTimestamp(model), cachedModel);
   });
 }
 
@@ -1164,143 +1171,141 @@ function set(model, values = {}) {
   const isDraft = draftMap.get(config);
   let id;
 
-  try {
-    if (
-      config.enumerable &&
-      !isInstance &&
-      (!values || typeof values !== "object")
-    ) {
-      throw TypeError(`Values must be an object instance: ${values}`);
-    }
+  if (
+    config.enumerable &&
+    !isInstance &&
+    (!values || typeof values !== "object")
+  ) {
+    throw TypeError(`Values must be an object instance: ${values}`);
+  }
 
-    if (!isDraft && values && hasOwnProperty.call(values, "id")) {
-      throw TypeError(`Values must not contain 'id' property: ${values.id}`);
-    }
+  if (!isDraft && values && hasOwnProperty.call(values, "id")) {
+    throw TypeError(`Values must not contain 'id' property: ${values.id}`);
+  }
 
-    const localModel = config.create(values, isInstance ? model : undefined);
-    const keys = values ? Object.keys(values) : [];
+  const localModel = config.create(values, isInstance ? model : undefined);
+  const keys = values ? Object.keys(values) : [];
 
-    const errors = {};
-    const lastError = isInstance && isDraft && error(model);
+  const errors = {};
+  const lastError = isInstance && isDraft && error(model);
 
-    let hasErrors = false;
+  let hasErrors = false;
 
-    if (localModel) {
-      for (const [key, fn] of config.checks.entries()) {
-        if (keys.indexOf(key) === -1) {
-          if (lastError && lastError.errors && lastError.errors[key]) {
-            hasErrors = true;
-            errors[key] = lastError.errors[key];
-          }
-
-          if (isDraft && localModel[key] == config.model[key]) {
-            continue;
-          }
-        }
-
-        let checkResult;
-        try {
-          checkResult = fn(localModel[key], key, localModel);
-        } catch (e) {
-          checkResult = e;
-        }
-
-        if (checkResult !== true && checkResult !== undefined) {
+  if (localModel) {
+    for (const [key, fn] of config.checks.entries()) {
+      if (keys.indexOf(key) === -1) {
+        if (lastError && lastError.errors && lastError.errors[key]) {
           hasErrors = true;
-          errors[key] = checkResult || true;
+          errors[key] = lastError.errors[key];
+        }
+
+        if (isDraft && localModel[key] == config.model[key]) {
+          continue;
         }
       }
 
-      if (hasErrors && !isDraft) {
-        throw getValidationError(errors);
+      let checkResult;
+      try {
+        checkResult = fn(localModel[key], key, localModel);
+      } catch (e) {
+        checkResult = e;
       }
+
+      if (checkResult !== true && checkResult !== undefined) {
+        hasErrors = true;
+        errors[key] = checkResult || true;
+      }
+    }
+  }
+
+  let result;
+  try {
+    if (hasErrors && !isDraft) {
+      throw getValidationError(errors);
     }
 
     id = localModel ? localModel.id : model.id;
 
-    let result = config.storage.set(
-      isInstance ? id : undefined,
-      localModel,
-      keys,
-    );
-
-    if (
-      !(result instanceof Promise) &&
-      (result === undefined || typeof result !== "object")
-    ) {
-      throw TypeError(
-        stringifyModel(
-          config.model,
-          `Storage 'set' method must return a Promise, an instance, or null: ${result}`,
-        ),
-      );
-    }
-
-    result = Promise.resolve(result)
-      .then((data) => {
-        if (data === undefined || typeof data !== "object") {
-          throw TypeError(
-            stringifyModel(
-              config.model,
-              `Storage 'set' method must resolve to an instance, or null: ${data}`,
-            ),
-          );
-        }
-
-        const resultModel =
-          data === localModel ? localModel : config.create(data);
-
-        if (isInstance && resultModel && id !== resultModel.id) {
-          throw TypeError(
-            stringifyModel(
-              config.model,
-              `Local and storage data must have the same id: '${id}', '${resultModel.id}'`,
-            ),
-          );
-        }
-
-        let resultId = resultModel ? resultModel.id : id;
-
-        if (hasErrors && isDraft) {
-          setModelState(resultModel, "error", getValidationError(errors));
-        }
-
-        if (
-          isDraft &&
-          isInstance &&
-          hasOwnProperty.call(data, "id") &&
-          (!localModel || localModel.id !== model.id)
-        ) {
-          resultId = model.id;
-        } else if (config.storage.offline) {
-          config.storage.offline.set(resultId, resultModel);
-        }
-
-        return syncCache(
-          config,
-          resultId,
-          resultModel ||
-            mapError(
-              config.placeholder(resultId),
-              notFoundError(config.model, id),
-              false,
-            ),
-          true,
-        );
-      })
-      .catch((err) => {
-        err = err !== undefined ? err : Error("Undefined error");
-        if (isInstance) setModelState(model, "error", err);
-        throw err;
-      });
-
-    if (isInstance) setModelState(model, "pending", result);
-
-    return result;
+    result = config.storage.set(isInstance ? id : undefined, localModel, keys);
   } catch (e) {
     if (isInstance) setModelState(model, "error", e);
     return Promise.reject(e);
   }
+
+  if (
+    !(result instanceof Promise) &&
+    result !== undefined &&
+    typeof result !== "object"
+  ) {
+    throw TypeError(
+      stringifyModel(
+        config.model,
+        `Storage 'set' method must return a Promise, an instance, or null: ${result}`,
+      ),
+    );
+  }
+
+  result = Promise.resolve(result)
+    .then((data) => {
+      if (data !== undefined && typeof data !== "object") {
+        throw TypeError(
+          stringifyModel(
+            config.model,
+            `Storage 'set' method must resolve to an instance or null: ${data}`,
+          ),
+        );
+      }
+
+      const resultModel =
+        data === localModel ? localModel : config.create(data);
+
+      if (isInstance && resultModel && id !== resultModel.id) {
+        throw TypeError(
+          stringifyModel(
+            config.model,
+            `Local and storage data must have the same id: '${id}', '${resultModel.id}'`,
+          ),
+        );
+      }
+
+      let resultId = resultModel ? resultModel.id : id;
+
+      if (hasErrors && isDraft) {
+        setModelState(resultModel, "error", getValidationError(errors));
+      }
+
+      if (
+        isDraft &&
+        isInstance &&
+        hasOwnProperty.call(data, "id") &&
+        (!localModel || localModel.id !== model.id)
+      ) {
+        resultId = model.id;
+      } else if (config.storage.offline) {
+        config.storage.offline.set(resultId, resultModel);
+      }
+
+      return syncCache(
+        config,
+        resultId,
+        resultModel ||
+          mapError(
+            config.placeholder(resultId),
+            notFoundError(config.model, id),
+            false,
+          ),
+        true,
+      );
+    })
+    .catch((err) => {
+      err = err !== undefined ? err : Error("Undefined error");
+      if (isInstance) setModelState(model, "error", err);
+      throw err;
+    });
+
+  if (isInstance) setModelState(model, "pending", result);
+
+  return result;
 }
 
 function sync(model, values) {
@@ -1530,13 +1535,14 @@ function resolveId(value) {
   return typeof value === "object" ? value?.id : value ?? undefined;
 }
 
-function resolveModel(Model, config, id, lastModel) {
+function resolveModel(Model, config, id) {
   id = resolveId(id);
 
   if (!config.enumerable && !config.list) {
     return get(Model, id);
   }
 
+  const lastModel = cache.getCurrentValue();
   const nextModel =
     id !== undefined || config.list ? get(Model, id) : undefined;
 
@@ -1551,7 +1557,7 @@ function resolveModel(Model, config, id, lastModel) {
     const clone = Object.freeze(Object.create(lastModel));
 
     definitions.set(clone, config);
-    cache.set(clone, "state", () => getModelState(nextModel));
+    cache.assert(clone, "state", getModelState(nextModel));
 
     return clone;
   }
@@ -1559,8 +1565,9 @@ function resolveModel(Model, config, id, lastModel) {
   return nextModel;
 }
 
-function resolveDraft(Model, config, id, value, lastValue) {
-  id = resolveId(id);
+function resolveDraft(Model, config, id, value) {
+  const lastValue = cache.getCurrentValue();
+  id = resolveId(id ?? lastValue?.id);
 
   if (
     id === undefined &&
@@ -1620,16 +1627,8 @@ function store(Model, options = {}) {
 
     return {
       value: options.id
-        ? (host, value, lastValue) =>
-            resolveDraft(Model, draft, options.id(host), value, lastValue)
-        : (host, value, lastValue) =>
-            resolveDraft(
-              Model,
-              draft,
-              value ?? lastValue?.id,
-              value,
-              lastValue,
-            ),
+        ? (host, value) => resolveDraft(Model, draft, options.id(host), value)
+        : (host, value) => resolveDraft(Model, draft, value, value),
       connect: config.enumerable
         ? (host, key) => () => {
             clear(host[key], true);
@@ -1640,15 +1639,8 @@ function store(Model, options = {}) {
 
   return {
     value: options.id
-      ? (host) =>
-          resolveModel(
-            Model,
-            config,
-            options.id(host),
-            cache.getCurrentEntry().value,
-          )
-      : (host, value, lastValue) =>
-          resolveModel(Model, config, value, lastValue),
+      ? (host) => resolveModel(Model, config, options.id(host))
+      : (host, value) => resolveModel(Model, config, value),
   };
 }
 

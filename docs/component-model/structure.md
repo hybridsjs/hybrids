@@ -1,8 +1,8 @@
 # Structure
 
-The component is based on a plain object with a number of properties. The library checks the type of the property value to generate object descriptors, which then are used in the custom element class definition. It means, that the values can be primitives, functions, or if you need a full control - object descriptors.
+The component definition is based on a plain object with a number of properties. The library checks the type of the property value to generate descriptors, which then are used in the custom element class definition. The values can be primitives, functions, or if you need a full control - object descriptors.
 
-## Cache
+## Cache & Change Detection
 
 The core idea of the hybrid properties is its unique cache and change detection mechanism. It tracks dependencies between the properties (even between different custom elements) and notify about changes. Still, the value of the property is only recalculated when it is accessed and the value of its dependencies has changed. If the property does not use other properties, it won’t be recalculated, and the first cached value is always returned.
 
@@ -12,14 +12,14 @@ The cache mechanism uses equality check to compare values (`nextValue` !== `last
 
 ## Reserved Keys
 
-There are three reserved properties in the definition:
+There are three reserved property names in the definition:
 
 * `tag` - a string which sets the custom element tag name
-* `render` and `content`, which expect a function, and have additional options available
+* `render` and `content`, which expect the value as a function, and have additional options available
 
-## Descriptor
+## Property Descriptor
 
-The descriptor structure is an plain object with a `value` and number of options:
+The property descriptor structure is a plain object with the `value` and number of options:
 
 ```typescript
 {
@@ -31,19 +31,21 @@ The descriptor structure is an plain object with a `value` and number of options
       | (host, value, lastValue) => { ... };
     connect?: (host, key, invalidate) => { ... };
     observe?: (host, value, lastValue) => { ... };
-    reflect?: boolean;
+    reflect?: boolean | (value) => string;
   }
   ...,
 }
 ```
 
-For the property definition, which is not an object instance, the library translates the value to the object descriptor with the `value` option:
+### Translation
+
+If the property value is not an object instance, the library translates it to the object descriptor with the `value` option:
 
 ```javascript
 property: "something" -> property: { value: "something" }
 ```
 
-In the result, the following definitions are equivalent:
+The following definitions are equal:
 
 **Shorthand version**
 
@@ -61,23 +63,19 @@ define({
 ```javascript
 define({
   tag: "my-element",
-  name: { 
-    value: "John",
-  },
-  lastName: {
-    value: "Doe",
-  },
+  name: {  value: "John" },
+  lastName: { value: "Doe" },
   name: { 
     value: ({ firstName, lastName }) => `${firstName} ${lastName}`
   },
 });
 ```
 
-Usually, the first definition is more readable and less verbose, but the second one gives more control over the property behavior, as it allows to pass to the object descriptor additional options.
+Usually, the shorthand definition is more readable and less verbose, but the second one gives more control over the property behavior, as it allows to pass to the object descriptor additional options.
 
-## Values
+### Value
 
-### Primitives & Objects
+#### Primitives & Objects
 
 ```ts
 value: string | boolean | number | object | undefined | null
@@ -94,7 +92,7 @@ define({
 });
 ```
 
-A default value as object instance can only be set using the object descriptor `value` option:
+A default value as an object instance can only be set using full object descriptor with `value` option:
 
 ```javascript
 define({
@@ -103,26 +101,25 @@ define({
 });
 ```
 
-As the cache mechanism utilizes strong equality check, the object instances for default values are frozen during the compilation step of the component definition. Keep in mind, that it might be not compatible with some external libraries, which require mutable objects.
+The cache mechanism utilizes strong equality check, so the object instances for default values must be frozen during the compilation step of the component definition. Keep in mind, that it might be not compatible with some external libraries, which require mutable objects (You can use computed property with a function, which returns a new object instance).
 
-### Functions
+#### Function
 
 ```ts
-value: (host) => { ... } | (host, value, lastValue) => { ... }
+value: (host) => { ... } | (host, value) => { ... }
 ```
 
 * **arguments**:
   * `host` - an element instance
   * `value` - a value passed to assertion (ex., el.myProperty = 'new value')
-  * `lastValue` - last cached value of the property
 * **returns**:
   * a value of the property
 
-If the descriptor `value` option is a function, the library creates a property with the function as a getter, and optionally with a setter (if the function has more than one argument).
+If the descriptor `value` option is a function, the library creates a property with a getter, and optionally with a setter (if the function has more than one argument).
 
 #### Readonly
 
-If the function has only one argument, the property is read-only, and the function is called with the element instance. Usually, the first argument is sufficient, which also can be destructured:
+If the function has only one argument, the property is read-only, and the function is called with the element instance:
 
 ```javascript
 define({
@@ -135,7 +132,7 @@ define({
 
 #### Writable
 
-If the function has more than one argument, the property is writable, and the function is shared between the getter and setter. However, the function is called only if the value of the property is accessed - the assert value is kept in the cache until the next access.
+If the function has two arguments, the property is writable. However, the function is called only if the value of the property is accessed (getter) - the asserted value is kept in the cache until the next access.
 
 ```javascript
 define({
@@ -144,7 +141,7 @@ define({
 });
 ```
 
-It is very important that the library uses `fn.length` to detect number of arguments, so the [default parameters](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Functions/Default_parameters) and the [rest parameters](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Functions/rest_parameters) syntax cannot be used for the function arguments:
+The library uses `fn.length` to detect number of arguments, so the [default parameters](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Functions/Default_parameters) and the [rest parameters](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Functions/rest_parameters) syntax cannot be used for the function arguments:
 
 ```javascript
 // won't work (fn.length === 1)
@@ -160,11 +157,9 @@ data: (host, value) => {
 },
 ```
 
-## Attributes
+#### Attributes
 
-Properties use the corresponding dashed-cased attribute for the initial value when the custom element is connected for the very first time (expect read-only computed properties).
-
-Use the attributes only to define static values in the templates or the document, as the attribute changes are not being watched, and setting the attribute does not update the property.
+Writable properties use the corresponding dashed-cased attribute for the initial value when the custom element is being created. Use the attributes only to define static values in the templates or the document, as the attribute changes are not being watched, and setting the attribute does not update the property.
 
 Use static values in the templates:
 
@@ -182,7 +177,7 @@ el.firstName = "George";
 el.getAttribute("first-name"); 
 ```
 
-#### Booleans
+##### Booleans
 
 The library follows the HTML standard when transforming attributes to the boolean type. An empty value of an existing attribute is interpreted as `true`. For setting `false` by the attribute, you must not set the attribute at all. It means, that if you want to support the boolean attribute, it is best to set the default value of the property to `false`.
 
@@ -204,27 +199,7 @@ html`
 `
 ```
 
-### Reflect
-
-```ts
-reflect: boolean | (value) => string
-```
-
-Only if the `reflect` option is set to `true` or a transform function, the property value is reflected back to the attribute when the value changes. The attribute is also set when the element is connected, and the property value is set.
-
-You can use this feature to create CSS selectors in Shadow DOM:
-
-```javascript
-define({
-  tag: "my-element",
-  isAdmin: { value: false, reflect: true },
-  render: () => html``.css`
-    :host([is-admin]) { background: yellow; }
-  `,
-});
-```
-
-## Connect
+### Connect
 
 ```ts
 connect: (host, key, invalidate) => () => { ... }
@@ -235,9 +210,9 @@ connect: (host, key, invalidate) => () => { ... }
   * `key` - the property name
   * `invalidate` - a callback to notify that the property value should be recalculated
 
-The descriptor `connect` method should be used for setup the property when the element is connected. To clean up things, return a `disconnect` function, where you can remove attached listeners and others.
+Use the `connect` method to setup the property when the element is connected. To clean up the setup, return a `disconnect` function, where you can remove attached listeners etc.
 
-When you insert, remove, or relocate an element in the DOM tree, `connect` method and `disconnect` callback are called (by the `connectedCallback` and `disconnectedCallback` callbacks of the Custom Elements API).
+> When you insert, remove, or relocate an element in the DOM tree, `connect` method and `disconnect` callback are called (by the `connectedCallback` and `disconnectedCallback` callbacks of the Custom Elements API).
 
 ```javascript
 define({
@@ -264,7 +239,7 @@ define({
 
 If the third-party code is responsible for the property value, you can use the `invalidate` callback to notify that value should be recalculated. For example, it can be used to connect to async web APIs or external libraries.
 
-## Observe
+### Observe
 
 ```ts
 observe: (host, value, lastValue) => { ... }
@@ -275,7 +250,7 @@ observe: (host, value, lastValue) => { ... }
   * `value` - current value of the property
   * `lastValue` - last cached value of the property
 
-Use the `observe` method for calling side effects, when the property value changes. The method is called asynchronously for the first time when the element is connected, and then every time the property value changes.
+Use the `observe` method for calling side effects, when the property value changes. The method is called asynchronously for the first time when the element is connected, and every time the property value changes.
 
 > If the synchronous updates compensate, and the result value is the same as before, the function won't be called.
 
@@ -291,9 +266,27 @@ define({
 });
 ```
 
+### Reflect
+
+```ts
+reflect: boolean | (value) => string
+```
+
+Use the `reflect` option to reflect back property value to the corresponding dashed-cased attribute. Set it to `true` or to a transform function. For example, you can use this feature to create CSS selectors in the Shadow DOM:
+
+```javascript
+define({
+  tag: "my-element",
+  isAdmin: { value: false, reflect: true },
+  render: () => html``.css`
+    :host([is-admin]) { background: yellow; }
+  `,
+});
+```
+
 ## `render` & `content`
 
-The `render` and `content` properties are reserved for the internal structure of the custom element. The `value` option must be a function, which returns a result of the call to the built-in template engine or a custom update function.
+The `render` and `content` properties are reserved for the rendering structure of the custom element. The `value` option must be a function, which returns a result of the call to the built-in template engine or a custom update function.
 
 The library uses internally the `observe` pattern to called function automatically when dependencies change. As the property returns an update function, it can also be called manually, by `el.render()` or `el.content()`.
 
@@ -318,26 +311,28 @@ define({
 });
 ```
 
-For more granular control, use object descriptor with additional options:
+The `render` property allows passing additional options to `host.attachShadow()` method. Use full descriptor with `options` key:
 
 ```ts
 render: {
   value: (host) => { ... },
-  connect: ...,
-  observe: ...,
-  options:  
+  options: {
+    mode: "open" | "closed",
+    delegatesFocus: boolean,
+  },
+  ...
 }
-
-```javascript
-
-The Shadow DOM supports setting the `delegatesFocus` option. You can use it by assigning a boolean value to the `delegatesFocus` property of the function:
+```
 
 ```javascript
 import { define, html } from "hybrids";
 
 define({
   tag: "my-element",
-  render: Object.assign(() => html`<div>...</div>`, { delegatesFocus: true }),
+  render: {
+    value: html`<div>...</div>`, 
+    options: { delegatesFocus: true },
+  },
 });
 ```
 
@@ -345,7 +340,7 @@ define({
 
 Use the `content` property for rendering templates in the content of the custom element. By the design, it does not support isolated styles, slot elements, etc.
 
-However, it might be the way to build an app-like views structure, which can be rendered as a document content in light DOM, so it is easily accessible in developer tools and search engines. For example, form elements (like `<input>`) have to be in the same subtree with the `<form>` element.
+However, it is the way to build an app-like views structure, which can be rendered as a document content in light DOM. It is easily accessible in developer tools and search engines. For example, form elements (like `<input>`) have to be in the same subtree with the `<form>` element.
 
 ```javascript
 import { define, html } from "hybrids";
@@ -405,9 +400,27 @@ import { define, html } from "hybrids";
 define({
   tag: "my-element",
   input: ({ render }) => render().querySelector("#input"),
-  render: () => html`
-    <input id="input" />
-  `,
+  render: () => html`<input id="input" />`,
+});
+```
+
+### Connect & Observe
+
+You can setup property or call side effects when the element re-renders by using the `connect` and `observe` methods. Use full object descriptor with `value` option to define the function:
+
+```javascript
+define({
+  tag: "my-element",
+  render: {
+    value: () => html`<h1>Hello!</h1>`,
+    connect(host, key, invalidate) {
+      console.log("connected");
+      return () => console.log("disconnected");
+    },
+    observe(host, value, lastValue) {
+      console.log(`${value} -> ${lastValue}`);
+    },
+  },
 });
 ```
 

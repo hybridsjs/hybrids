@@ -352,64 +352,59 @@ describe("store:", () => {
         }).toThrow();
       }));
 
-    it("rejects an error when values are not an object or null", () =>
-      store.set(Model, false).catch((e) => expect(e).toBeInstanceOf(Error)));
+    it("throws an error when values are not an object or null", () =>
+      expect(() => store.set(Model, false)).toThrow());
 
-    it("rejects an error when model definition is used with null", () =>
-      store.set(Model, null).catch((e) => expect(e).toBeInstanceOf(Error)));
+    it("throws an error when model definition is used with null", () =>
+      expect(() => store.set(Model, null)).toThrow());
 
-    it("rejects an error when model instance is used with not an object", () =>
-      promise
-        .then((model) => store.set(model, false))
-        .catch((e) => expect(e).toBeInstanceOf(Error)));
-
-    it("rejects an error when values contain 'id' property", () =>
-      promise
-        .then((model) => store.set(model, model))
-        .catch((e) => expect(e).toBeInstanceOf(Error)));
-
-    it("rejects an error when array with primitives is set with wrong type", () => {
-      promise
-        .then((model) => {
-          return store
-            .set(model, {
-              nestedArrayOfPrimitives: "test",
-            })
-            .catch(() => {});
-        })
-        .catch((e) => {
-          expect(e).toBeInstanceOf(Error);
-        });
+    it("throws an error when model instance is used with not an object", async () => {
+      const model = await promise;
+      expect(() => store.set(model, false)).toThrow();
     });
 
-    it("rejects an error when array with objects is set with wrong type", () =>
-      promise
-        .then((model) =>
-          store.set(model, {
-            nestedArrayOfObjects: "test",
-          }),
-        )
-        .catch((e) => expect(e).toBeInstanceOf(Error)));
+    it("throws an error when values contain 'id' property", async () => {
+      const model = await promise;
+      expect(() => store.set(model, model)).toThrow();
+    });
 
-    it("rejects an error when array with external objects is set with wrong type", () =>
-      promise
-        .then((model) =>
-          store.set(model, {
-            nestedArrayOfExternalObjects: "test",
-          }),
-        )
-        .catch((e) => expect(e).toBeInstanceOf(Error)));
+    it("throws an error when array with primitives is set with wrong type", async () => {
+      const model = await promise;
+      expect(() =>
+        store.set(model, {
+          nestedArrayOfPrimitives: "test",
+        }),
+      ).toThrow();
+    });
 
-    it("rejects an error when array with nested objects are set with wrong type", () =>
-      promise
-        .then((model) =>
-          store.set(model, {
-            nestedArrayOfObjects: [{}, "test"],
-          }),
-        )
-        .catch((e) => expect(e).toBeInstanceOf(Error)));
+    it("throws an error when array with objects is set with wrong type", async () => {
+      const model = await promise;
+      expect(() =>
+        store.set(model, {
+          nestedArrayOfObjects: "test",
+        }),
+      ).toThrow();
+    });
 
-    it("rejects an error when set method returning undefined", () => {
+    it("rejects an error when array with external objects is set with wrong type", async () => {
+      const model = await promise;
+      expect(() =>
+        store.set(model, {
+          nestedArrayOfExternalObjects: "test",
+        }),
+      ).toThrow();
+    });
+
+    it("rejects an error when array with nested objects are set with wrong type", async () => {
+      const model = await promise;
+      expect(() =>
+        store.set(model, {
+          nestedArrayOfObjects: [{}, "test"],
+        }),
+      ).toThrow();
+    });
+
+    it("rejects an error when set method returns undefined", () => {
       Model = {
         value: "test",
         [store.connect]: {
@@ -2022,7 +2017,7 @@ describe("store:", () => {
         one: "one",
         two: "two",
         [store.connect]: {
-          get: () => {},
+          get: () => null,
           set: (id, values, keys) => {
             spy(keys);
             return values;
