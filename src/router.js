@@ -375,7 +375,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
           return params;
         },
         (host, params, lastParams) => {
-          if (!lastParams) return;
+          if (!lastParams || !globalThis.history.state) return;
 
           const state = globalThis.history.state;
           const index = state.findIndex((entry) => {

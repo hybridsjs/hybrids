@@ -634,6 +634,17 @@ describe("router:", () => {
         });
       });
 
+      it("does not throw when browser pushes null state", () => {
+        window.history.pushState(null, "", "");
+        const rootView = host.views[0];
+        rootView.globalB = "value";
+
+        return resolveTimeout(() => {
+          expect(hybrids(host.views[0])).toBe(RootView);
+          expect(hybrids(host.children[0])).toBe(RootView);
+        });
+      });
+
       it("displays root view", () =>
         resolveTimeout(() => {
           expect(hybrids(host.views[0])).toBe(RootView);
