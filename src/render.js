@@ -27,16 +27,14 @@ export default function render(key, desc) {
 
     const shadowOptions = {
       mode: options.mode || "open",
-      delegatesFocus: options.delegatesFocus,
+      delegatesFocus: options.delegatesFocus || false,
     };
 
     return {
       value: (host) => {
         const updateDOM = fn(host);
-
         return () => {
           const target = host.shadowRoot || host.attachShadow(shadowOptions);
-
           updateDOM(host, target);
           return target;
         };

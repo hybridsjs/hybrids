@@ -1,12 +1,5 @@
 import { camelToDash } from "./utils.js";
 
-const transformers = {
-  string: (v) => String(v ?? ""),
-  number: Number,
-  boolean: Boolean,
-  default: (v) => v,
-};
-
 function reflect(host, value, attrName) {
   if (!value && value !== 0) {
     host.removeAttribute(attrName);
@@ -16,16 +9,35 @@ function reflect(host, value, attrName) {
 }
 
 export default function value(key, desc) {
-  const attrName = camelToDash(key);
+  const type = typeof desc.value;
   const defaultValue =
-    typeof desc.value === "object" ? Object.freeze(desc.value) : desc.value;
-  const type = typeof defaultValue;
+    type === "object" ? Object.freeze(desc.value) : desc.value;
 
-  const transform = transformers[type] || transformers.default;
+  switch (type) {
+    case "string":
+      desc.value = (host, value) =>
+        value !== undefined ? String(value) : defaultValue;
+      break;
+    case "number":
+      desc.value = (host, value) =>
+        value !== undefined ? Number(value) : defaultValue;
+      break;
+    case "boolean":
+      desc.value = (host, value) =>
+        value !== undefined ? Boolean(value) : defaultValue;
+      break;
+    case "function":
+      desc.value = defaultValue;
+      break;
+    default:
+      desc.value = (_, value = defaultValue) => value;
+  }
 
   let observe = desc.observe;
 
   if (desc.reflect) {
+    const attrName = camelToDash(key);
+
     const fn =
       typeof desc.reflect === "function"
         ? (host, value, attrName) =>
@@ -42,11 +54,6 @@ export default function value(key, desc) {
 
   return {
     ...desc,
-    value:
-      type === "function"
-        ? defaultValue
-        : (host, value) =>
-            value !== undefined ? transform(value) : defaultValue,
     observe,
     writable: type !== "function" || defaultValue.length > 1,
   };

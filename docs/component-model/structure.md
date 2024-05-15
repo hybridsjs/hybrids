@@ -47,7 +47,7 @@ property: "something" -> property: { value: "something" }
 
 The following definitions are equal:
 
-**Shorthand version**
+#### Shorthand version
 
 ```javascript
 define({
@@ -58,7 +58,7 @@ define({
 });
 ```
 
-**Full descriptors version**
+#### Full descriptors version
 
 ```javascript
 define({

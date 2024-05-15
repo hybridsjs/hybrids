@@ -63,10 +63,19 @@ describe("define:", () => {
     }).toThrow();
   });
 
-  it("returns passed hybrids", () => {
+  it("throws when try to re-define element in the same sync cycle", () => {
     const hybrids = { tag: "test-define-twice" };
     expect(define(hybrids)).toBe(hybrids);
+    expect(() => define({ tag: "test-define-twice" })).toThrow();
+  });
+
+  it("does not throw when try to re-define element in the next async cycle", () => {
+    const hybrids = { tag: "test-define-twice" };
     expect(define(hybrids)).toBe(hybrids);
+
+    return Promise.resolve().then(() => {
+      expect(() => define({ tag: "test-define-twice" })).not.toThrow();
+    });
   });
 
   it("returns a class constructor when compile method is used", () => {

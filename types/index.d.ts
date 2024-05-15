@@ -5,7 +5,7 @@ export type Property<E, V> =
   | Descriptor<E, V>;
 
 export interface Descriptor<E, V> {
-  value?:
+  value:
     | V
     | ((host: E & HTMLElement) => V)
     | ((host: E & HTMLElement, value: any) => V);
@@ -30,6 +30,12 @@ export interface RenderFunction<E> {
 export interface RenderDescriptor<E> extends Descriptor<E, RenderFunction<E>> {
   value: RenderFunction<E>;
   reflect?: never;
+  options?: ShadowRootInit;
+}
+
+export interface ContentDescriptor<E> extends Descriptor<E, RenderFunction<E>> {
+  value: RenderFunction<E>;
+  reflect?: never;
 }
 
 export type ComponentBase = {
@@ -41,14 +47,14 @@ export type Component<E> = ComponentBase & {
   [property in Extract<
     keyof Omit<E, keyof HTMLElement>,
     string
-  >]: property extends "render" | "content"
-    ? E[property] extends () => HTMLElement
-      ? RenderFunction<E> | RenderDescriptor<E>
-      : Property<E, E[property]>
-    : Property<E, E[property]>;
+  >]: property extends "render"
+    ? RenderFunction<E> | RenderDescriptor<E>
+    : property extends "content"
+      ? RenderFunction<E> | ContentDescriptor<E>
+      : Property<E, E[property]>;
 } & {
   render?: RenderFunction<E> | RenderDescriptor<E>;
-  content?: RenderFunction<E> | RenderDescriptor<E>;
+  content?: RenderFunction<E> | ContentDescriptor<E>;
 };
 
 export interface HybridElement<E> {

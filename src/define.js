@@ -35,10 +35,9 @@ function compile(hybrids, HybridsElement) {
             delete this[key];
             this[key] = value;
           } else {
-            const attrName = camelToDash(key);
+            const value = this.getAttribute(camelToDash(key));
 
-            if (this.hasAttribute(attrName)) {
-              const value = this.getAttribute(attrName);
+            if (value !== null) {
               this[key] =
                 (value === "" && typeof this[key] === "boolean") || value;
             }
@@ -81,7 +80,9 @@ function compile(hybrids, HybridsElement) {
     if (typeof desc !== "object" || desc === null) {
       desc = { value: desc };
     } else if (!hasOwnProperty.call(desc, "value")) {
-      throw TypeError(`The 'value' option is required for '${key}' property`);
+      throw TypeError(
+        `The 'value' option is required for '${key}' property of the '${hybrids.tag}' element`,
+      );
     }
 
     desc =
@@ -158,6 +159,7 @@ function update(HybridsElement) {
   updateQueue.set(HybridsElement, constructors.get(HybridsElement));
 }
 
+const tags = new Set();
 function define(hybrids) {
   if (!hybrids.tag) {
     throw TypeError(
@@ -165,27 +167,31 @@ function define(hybrids) {
     );
   }
 
-  try {
-    const HybridsElement = globalThis.customElements.get(hybrids.tag);
+  if (tags.has(hybrids.tag)) {
+    throw TypeError(
+      `Error while defining '${hybrids.tag}' element: tag name is already defined`,
+    );
+  }
 
-    if (HybridsElement) {
-      if (constructors.get(HybridsElement)) {
-        update(HybridsElement);
-        compile(hybrids, HybridsElement);
+  if (!tags.size) deferred.then(() => tags.clear());
+  tags.add(hybrids.tag);
 
-        return hybrids;
-      }
+  const HybridsElement = globalThis.customElements.get(hybrids.tag);
 
-      throw TypeError(
-        `Custom element with '${hybrids.tag}' tag name already defined outside of the hybrids context`,
-      );
+  if (HybridsElement) {
+    if (constructors.get(HybridsElement)) {
+      update(HybridsElement);
+      compile(hybrids, HybridsElement);
+
+      return hybrids;
     }
 
-    globalThis.customElements.define(hybrids.tag, compile(hybrids));
-  } catch (e) {
-    console.error(`Error while defining '${hybrids.tag}' element:`);
-    throw e;
+    throw TypeError(
+      `Custom element with '${hybrids.tag}' tag name already defined outside of the hybrids context`,
+    );
   }
+
+  globalThis.customElements.define(hybrids.tag, compile(hybrids));
 
   return hybrids;
 }
