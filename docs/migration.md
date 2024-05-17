@@ -25,6 +25,8 @@ customName: {
 }
 ```
 
+Read more about the full object property descriptor in the [Structure](/component-model/structure.md#value) section.
+
 ### Attributes
 
 Writable properties are no longer automatically synchronized back to the attribute. You must set the `reflect` option to enable the synchronization:
@@ -44,6 +46,8 @@ Writable properties are no longer automatically synchronized back to the attribu
   ...
 }
 ```
+
+Read more about the attribute synchronization in the [Structure](/component-model/structure.md#reflect) section.
 
 ### Render and Content
 
@@ -93,7 +97,7 @@ The options are now part of the `render` descriptor instead of a need to extend 
 }
 ```
 
-### Store
+### Store Errors
 
 For better developer experience, the `store.get()` and `store.set()` methods throw type errors immediately, instead of returning a model in error state. This is not a breaking change, but the information can help you to find the issue faster.
 
@@ -190,7 +194,7 @@ The `render` factory is no longer supported - you must set `render` or `content`
 
 If you update the DOM using another property name, you must create a custom factory for the property. You can follow the old implementation of the `render` factory available here:
 
-https://github.com/hybridsjs/hybrids/blob/v6.1.0/src/render.js
+<https://github.com/hybridsjs/hybrids/blob/v6.1.0/src/render.js>
 
 #### Templates
 
@@ -252,7 +256,7 @@ import { Component } from "hybrids";
 const MyElement: Component<MyElement> = { ... };
 ```
 
-### Store
+### Store Factory
 
 #### Identifier
 

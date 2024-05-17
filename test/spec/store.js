@@ -63,6 +63,17 @@ describe("store:", () => {
       expect(() => store.get({ value: null })).toThrow();
     });
 
+    it("throws an error when get method returns string", () => {
+      Model = {
+        value: "test",
+        [store.connect]: {
+          get: () => "test",
+        },
+      };
+
+      expect(() => store.get(Model)).toThrow();
+    });
+
     it("throws when nested object is used as a primary model", () => {
       store.get(Model, "1");
       expect(() => {
@@ -386,6 +397,20 @@ describe("store:", () => {
       ).toThrow();
     });
 
+    it("throws an error when set method returns undefined", () => {
+      Model = {
+        value: "test",
+        [store.connect]: {
+          get: () => ({}),
+          set: () => {
+            return "test";
+          },
+        },
+      };
+
+      expect(() => store.set(Model)).toThrow();
+    });
+
     it("rejects an error when array with external objects is set with wrong type", async () => {
       const model = await promise;
       expect(() =>
@@ -411,6 +436,22 @@ describe("store:", () => {
           get: () => ({}),
           set: () => {
             return undefined;
+          },
+        },
+      };
+
+      return store.set(Model).catch((e) => {
+        expect(e).toBeInstanceOf(Error);
+      });
+    });
+
+    it("rejects an error when set method returns promise resolving to string", () => {
+      Model = {
+        value: "test",
+        [store.connect]: {
+          get: () => ({}),
+          set: async () => {
+            return "test";
           },
         },
       };
