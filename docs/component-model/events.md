@@ -1,8 +1,6 @@
 # Events
 
-The standard communication layer for the elements are DOM events, like `click` or `submit`. For the behavior, which should be observable dispatch custom event, which can be listened to just like other standard events.
-
-`dispatch` function from the library simplifies event generation on element instances. It creates a `CustomEvent` with selected `options` and dispatches it on the given `host` element (As the custom events are part of the HTML standard, you can generate them manually without using `dispatch` from the library).
+The `dispatch` function simplifies event generation on element instances. It creates a `CustomEvent` with selected `options` and dispatches it on the given `host` element (As the custom events are part of the HTML standard, you can generate them manually without using `dispatch` from the library).
 
 ```typescript
 dispatch(host: Element, eventType: string, [options]): boolean

@@ -4,7 +4,7 @@
 
 ### Single Component
 
-To define a web component use the `define` function from the library:
+To define a web component use the `define` function:
 
 ```typescript
 define(component: object & { tag: string }): component;
@@ -15,9 +15,7 @@ define(component: object & { tag: string }): component;
 * **returns**:
   * `component` - a passed argument to `define()` function
 
-The `tag` property only describes a custom element tag name, and it is not added to the constructor prototype. However, the `HTMLElement` prototype provides a `tagName` computed property, which returns an uppercase version of the tag name.
-
-The `define` function returns the passed definition object, so the following slick structure of the file is possible:
+The `define` function returns the passed definition object, so the following slick structure of the file is recommended:
 
 ```javascript
 import { define } from "hybrids";
@@ -28,7 +26,7 @@ export default define({
 });
 ```
 
-The above structure allows short syntax, and still allows to import the definition in another module, for example for unit testing, or the reference.
+The above short syntax allows to import the definition in another module, for example for unit testing, or the reference.
 
 ### Multiple Components
 

@@ -1,10 +1,8 @@
 # Parent & Children
 
-Parent and children factories connect related elements with the property.
+Parent and children factories connect related elements with the property value.
 
-Rather than using a custom element tag name, access to parent or children elements is made by the reference to the component definition containing property descriptors. It allows avoiding name collision between custom elements, as it is irrelevant on what name those custom elements are defined.
-
-The relation can be created only between custom elements defined by the library. Built-in elements or other custom elements are not supported.
+Access to parent or children elements is made by the reference to the component definition containing property descriptors. The relation can be created only between custom elements defined by the library. Built-in elements or other custom elements are not supported.
 
 ## Parent
 
@@ -58,8 +56,8 @@ children(componentOrFn: Object | Function: (component, host) => {...}: Boolean, 
 * **returns**:
   * a property descriptor, which resolves to `array` of `Element` instances
 
-Children factory connects children elements (only from the light DOM). Without options, only direct children of the element are in the list. `deep` option allows traversing
-deeper children. `nested` option allows adding nested children of that element if the condition is met (`nested` option works only with `deep` option turned on). It invalidates when the subtree of the element changes.
+Children factory connects children elements (only from the light DOM). Without options, only direct children of the element are in the list. `deep` option provides traversing
+deeper children. `nested` option allows you to add nested children of that element if the condition is met (`nested` option works only with `deep` option turned on). It invalidates when the subtree of the element changes.
 
 ```javascript
 import { define, children } from "hybrids";

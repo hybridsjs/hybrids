@@ -69,7 +69,7 @@ The default action for `class` and `style` attributes would not work as expected
 
 #### Class
 
-`class` attribute expression allows adding and removing class names from an element's `classList`. An expression can be a string, an array of strings, or a map of keys with boolean values:
+`class` attribute expression adds or removes class names from an element's `classList`. An expression can be a string, an array of strings, or a map of keys with boolean values:
 
 ```javascript
 const name = 'one two';
@@ -406,7 +406,7 @@ html`
 
 In the above example `submit` function creates a template with an `fn` callback. The main template can use this function in the expression with a custom callback. If so, the nested template with a button is rendered in the form element.
 
-The child template propagates element instance context from the parent. The `host` argument of the `myCallback` is the same as it would be with a function used directly in the main template. This pattern allows creating template parts, that can be easily defined in separate files and re-use across different custom elements.
+The child template propagates element instance context from the parent. The `host` argument of the `myCallback` is the same as it would be with a function used directly in the main template.
 
 ## Styling
 
@@ -539,7 +539,7 @@ define({
 
 ### Transition API
 
-The built-in `html.transition` plugin allows to utilize the [Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API). It works best with whole viewport transitions, like app-like navigation events, but it can be used for any other transition as well. The API requires to be attached only to one element in the DOM tree, so it is recommended to use it with the root element of the application (which is always attached to the DOM):
+The built-in `html.transition` plugin utilizes the [Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API). It works best with whole viewport transitions, like app-like navigation events, but it can be used for any other transition as well. The API requires to be attached only to one element in the DOM tree, so it is recommended to use it with the root element of the application (which is always attached to the DOM):
 
 ```javascript
 define({

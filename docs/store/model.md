@@ -35,7 +35,7 @@ const Model = {
 
 For enumerable models, the `id` property must be set to `true`. It means that the model can have multiple instances with unique identifiers. The store returns an instance for each identifier. The identifier can be a `string`, or an `object` record (a map of primitive values, which is normalized and serialized to `string` representation).
 
-The object record allows identifying models by multiple parameters rather than by string id. For example, `SearchResult` model definition can be identified by `{ query: "", order: "asc", ... }` map of values.
+The object record identifies models by multiple parameters rather than by string id. For example, `SearchResult` model definition can be identified by `{ query: "", order: "asc", ... }` map of values.
 
 
 ```javascript

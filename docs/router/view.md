@@ -92,7 +92,7 @@ The `url` option supports the following syntax:
 * The query parameters must be set explicitly by a comma-separated list: `/users?one,two,three`
 * The `*` character for wildcards is not supported, use path parameter instead
 
-Besides the parameters from the `url` option, you can pass any writable property of the view when navigating to it. However, the URL in the address bar is only updated for those from the `url` option. This behavior allows deciding which parameters can be copied and used for the entry point of the application (all parameters are saved in the `history.state` object).
+Besides the parameters from the `url` option, you can pass any writable property of the view when navigating to it. However, the URL in the address bar is only updated for those from the `url` option. This adds an option to decide which parameters can be copied and used for the entry point of the application (Still, all parameters are saved in the `history.state` object).
 
 The matching algorithm goes from the roots of the view structures, going from right to left in their stacks. The first matched view is used.
 
@@ -210,7 +210,7 @@ In the above example, the history entry is still replaced, but the view is loade
 
 ### `guard`
 
-The `guard` option allows specifying a synchronous function, which is called when the router is navigating to the view or children from the view's `stack`.
+The `guard` option specifies a synchronous function, which is called when the router is navigating to the view or children from the view's `stack`.
 
 If the user navigates directly to the view and a function returns a truthy value, the first view from the `stack` option is used. Otherwise, the view itself is displayed (the `guard` can throw an error, or return falsy value).
 

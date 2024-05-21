@@ -166,7 +166,7 @@ router.url(view: component, params?: object): URL | ""
 
 Use the definition reference to identify the target view, and eventually pass the parameters. As the result is an URL instance, the parameters are serialized to the query string - the complex object structures are not supported (use the [store](/store/usage.md) and pass the model identifier).
 
-Not connected view results in an empty string. It allows running unit tests over the component content property, without a need to run the whole application. It means, that the method does not throw, so if you forget to add the view to the stack option, it will silently return an empty string.
+!> Keep in mind that not connected view results in an empty string and the method does not throw
 
 ### `router.backUrl()`
 
@@ -330,7 +330,7 @@ router.debug(flag = true): void
 * **arguments**:
   * `flag` - a boolean flag, defaults to `true`
 
-The router provides a global debug mode, which logs the navigation events and allows accessing the current view in the DevTools console by the `$$0` reference (similar to the last selected element in the Elements panel).
+The router provides a global debug mode, which logs the navigation events. It simplifies access to the current view in the DevTools console by the `$$0` reference (similar to the last selected element in the Elements panel).
 
 It is advised to protect the router debug mode from the production environment by running it conditionally (according to your application setup):
 

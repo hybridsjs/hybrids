@@ -2,7 +2,7 @@
 
 ## v9.0.0
 
-The `v9` release brings simplification into the full object property descriptor and moves out some rarely used default behaviors into optional features.
+The `v9.0` release brings simplification into the full object property descriptor and moves out some rarely used default behaviors into optional features.
 
 ### Descriptors
 
@@ -51,7 +51,7 @@ Read more about the attribute synchronization in the [Structure](/component-mode
 
 ### Render and Content
 
-#### Names
+#### Keys
 
 The `render` and `content` properties are now reserved and expect an update function as a value (they cannot be used for other purpose). If you defined them as a full descriptor with custom behavior, you must rename them:
 
@@ -99,17 +99,17 @@ The options are now part of the `render` descriptor instead of a need to extend 
 
 ### Store Errors
 
-For better developer experience, the `store.get()` and `store.set()` methods throw type errors immediately, instead of returning a model in error state. This is not a breaking change, but the information can help you to find the issue faster.
+For better developer experience, the `store.get()` and `store.set()` methods throw **type errors** immediately, instead of returning a model in error state. This is not a breaking change, but the information can help you to find the issue faster.
 
 ## v8.0.0
 
 ### Browser Support
 
-The `v8` release drops support for the webcomponents polyfill. Currently, all of the modern browsers support Shadow DOM, so we can safely remove the support for the polyfill. Legacy Edge is no longer supported by the Microsoft, and support for the IE was already dropped in `v5.0.0`.
+The `v8.0` release drops support for the webcomponents polyfill. Currently, all of the modern browsers support Shadow DOM, so we can safely remove the support for the polyfill. Legacy Edge is no longer supported by the Microsoft, and support for the IE was already dropped in `v5.0.0`.
 
 ## v7.0.0
 
-The `v7` major release focuses on cleaning up and removing rarely used features. There are several breaking changes, but usually updating from earlier versions should not require code changes if you followed the translation rules in the component definition. Otherwise, use the instructions to update your code.
+The `v7.0` major release focuses on cleaning up and removing rarely used features. There are several breaking changes, but usually updating from earlier versions should not require code changes if you followed the translation rules in the component definition. Otherwise, use the instructions to update your code.
 
 ### Component Model
 

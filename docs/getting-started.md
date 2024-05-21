@@ -8,15 +8,15 @@ If your application setup uses a bundler (like [Vite](https://vitejs.dev/)), jus
 npm i hybrids
 ```
 
-Otherwise, you can use it directly from a number of CDNs, which provides packages from the registry:
+Otherwise, you can use it directly from a number of CDNs, which provide a hybrids from the registry:
 
-* [https://esm.sh/hybrids@^8](https://esm.sh/hybrids@^8) (2 requests, minified)
-* [https://cdn.skypack.dev/hybrids@^8?min](https://cdn.skypack.dev/hybrids@^8?min) (2 request, minified)
-* [https://unpkg.com/hybrids@^8](https://unpkg.com/hybrids@^8) (multiple requests, not minified)
+* [https://esm.sh/hybrids@^9](https://esm.sh/hybrids@^9) (2 requests, minified)
+* [https://cdn.skypack.dev/hybrids@^9?min](https://cdn.skypack.dev/hybrids@^9?min) (2 request, minified)
+* [https://unpkg.com/hybrids@^9](https://unpkg.com/hybrids@^9) (multiple requests, not minified)
 
 ```html
 <script type="module">
-  import { define, html } from 'https://esm.sh/hybrids@^8';
+  import { define, html } from 'https://esm.sh/hybrids@^9';
   
   define({
     tag: "hello-world",

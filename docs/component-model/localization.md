@@ -1,12 +1,14 @@
 # Localization
 
-The library supports seamless and fully featured integration with the localization process. Messages in templates are translated automatically based on the text content of elements. To translate messages with plural forms, HTML content, or generate messages for the context outside of the template use `msg` helper function.
+The library supports seamless and fully featured integration with the localization process. Messages in templates are translated automatically based on the text content. To translate messages with plural forms, HTML content, or generate messages for the context outside of the template you can use `msg` helper function.
 
-Bringing the localization into your existing application may not require any changes to the source code. Usually, what you only need is providing the translated messages, and initialize them with `localize` function. The process is global, and every component using the built-in template engine will be able to use the messages.
+Bringing the localization into your existing application may not require any changes to the source code. Usually, what you only need is to provide the translated messages, and initialize them with `localize` function. The process is global, and every component using the built-in template engine will be able to use the messages.
 
 ## Templates
 
-The text content of the elements is translated automatically while the template is compiled. This process is done only once when the first instance of the component using the template is rendered. Translations in templates does not support changing language dynamically nor plural forms or HTML content. Once the template is compiled, the template body saves the target messages, so the messages are not changed later.
+The text content of the elements is translated automatically while the template is compiled. This process is done only once when the first instance of the component using the template is rendered. Translations in templates does not support changing language dynamically nor plural forms or HTML content. 
+
+Once the template is compiled, the template body saves the target messages, so the messages are not changed later.
 
 ```javascript
 import { define, html, localize } from "hybrids";
@@ -30,9 +32,9 @@ In the above example, to translate the component content, we just need to add th
 
 ### Key
 
-The key is generated from the text content of the element. It is trimmed before matching, but the whitespace in the template is preserved. Attributes of the elements are not translated.
+The phrase key is generated from the text content. It is trimmed before matching, but the whitespace in the result template is preserved.
 
-The expressions inside of the text content are replaced with the `${\d}` placeholders with ascending index, always starting from zero (it avoids the key mismatch when new expression is added to the template). However, the order of the expressions in the translated message might be different.
+The expressions inside of the text content are replaced with the `${\d}` placeholders with ascending index, always starting from zero (it avoids the key mismatch when new expression is added to the template). However, the order of the expressions in the translated message might be changed.
 
 ```javascript
 import { define, html, localize } from "hybrids";
@@ -50,11 +52,13 @@ define({
 });
 ```
 
-In the above example, both text contents translation keys will have `${0}` placeholder: `Hello ${0}!` and `Value: ${0}, ${1}`. The order of the expressions can be changed, so for example the translated message might be `Wartości: ${1}, ${0}`.
+In the above example, both text contents translation keys will have `${0}` placeholder: `Hello ${0}!` and `Value: ${0}, ${1}`.
+
+The order of the expressions can be changed, so for example the translated message might be `Wartości: ${1}, ${0}`.
 
 ### Description & Context
 
-Use the HTML comment to provide additional metadata for the translation. It can be also used to split messages from the same text content.
+Use the HTML comment node just before the text content to provide additional metadata for the translation. It can be also used to split messages inside of the same text content.
 
 ```javascript
 import { define, html } from "hybrids";
@@ -76,15 +80,15 @@ export default define({
 });
 ```
 
-The text of the comment split by the `|` character is used as the description and context for the message.
+The comment body is split by the `|` character to set the description and context for the message.
 
-If the context is provided, the key of the message will be generated from the text content and the context split by `|` character. However, the context is never added to the missing translations. If the message with the context is not found, the message key without the context will be used.
+If the context is provided, the key of the message will be generated from the text content and the context separated by `|` character. However, the context is never added to the missing translations. If the message with the context is not found, the message key without the context will be used.
 
 In above example, the library will try to find message with a  `Second message | only-context` key. If the message is not found, the library will try to find message with a `Second message` key.
 
 ### Disable Translation
 
-The translation process omits `<script>` and `<style>` elements by default. To disable translation of subset of other elements, use `translate="no"` attribute. The translation process will be skipped for the text content and descendants of the element.
+The translation process omits `<script>` and `<style>` elements by default. To disable translation on other elements, use `translate="no"` attribute. The translation process will be skipped for the text content and descendants of the element.
 
 ```javascript
 import { define, html, localize } from "hybrids";
@@ -104,7 +108,7 @@ define({
 
 ## Manual Translation
 
-For more complex scenarios, you should manually translate the messages using the `msg` helper. The main function produces the string content of the message, so it can be  used outside of the template context.
+For more complex scenarios, you must manually translate the messages using the `msg` helper. The main function produces the string content of the message, and it can be  used outside of the template context.
 
 ```typescript
 msg`This is a message with ${value} | description | context`: string
@@ -116,7 +120,7 @@ msg`This is a message with ${value} | description | context`: string
 * **returns**:
   * a string content of the translated message
 
-If the message is a static part of the template, you should avoid the  `msg` helper, as it generates dynamic expression in the template, and it will be translated each time the template updates. Use it only for the following cases.
+!> If the message is a static part of the template, you should avoid the  `msg` helper, as it generates dynamic expression in the template, and it will be translated each time the template updates
 
 ### Attributes
 
@@ -212,7 +216,7 @@ The library generates a list of user's preferred language codes using `navigator
 
 #### Keys
 
-It is recommended to use the default message in origin language as a key. It provides a seamless integration with existing code, and allows keeping the code understandable. For the duplicates with different meaning you can use context feature. To support plural forms, you can create selective translations for your origin language and use `msg` helper.
+It is recommended to use the default message in origin language as a key. It ensures seamless integration with existing code and maintains its understandability. For the duplicates with different meaning you can use context feature. To support plural forms, you can create selective translations for your origin language and use `msg` helper.
 
 ```javascript
 import { localize } from "hybrids";

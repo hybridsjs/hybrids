@@ -228,7 +228,7 @@ For the high-frequency data, set the `cache` value to `false` or `0`. Then, each
 offline: boolean | number [ms] = false
 ```
 
-The `offline` option allows creating a persistent cache layer for offline access. Once the model instance is fetched from the source, it is stored in the `localStorage` (and it is updated each time when the model changes). When the user visits the page next time and requires the same model instance, the offline cache layer is used to return the cached value while the main source is still fetched for the data.
+The `offline` option provides a persistent cache layer for offline access. Once the model instance is fetched from the source, it is stored in the `localStorage` (and it is updated each time when the model changes). When the user visits the page next time and requires the same model instance, the offline cache layer is used to return the cached value while the main source is still fetched for the data.
 
 If the main source fails (for example, due to network problems), the value from the offline cache is used. The model still respects the states, so in that case, it will be in an `error` and `ready` state at once. It might be useful also for online users, as the last valid state of the model is returned synchronously while the main source is still called.
 

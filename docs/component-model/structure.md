@@ -6,7 +6,7 @@ The component definition is based on a plain object with a number of properties.
 
 The core idea of the hybrid properties is its unique cache and change detection mechanism. It tracks dependencies between the properties (even between different custom elements) and notify about changes. Still, the value of the property is only recalculated when it is accessed and the value of its dependencies has changed. If the property does not use other properties, it won’t be recalculated, and the first cached value is always returned.
 
-> The property is accessed automatically only if it is explicitly observed by the `observe` option in the object descriptor or if it is a dependency of another observed property.
+> The property is accessed automatically only if it is explicitly observed by the `observe` method in the object descriptor or if it is a dependency of another observed property
 
 The cache mechanism uses equality check to compare values (`nextValue` !== `lastValue`), so it enforces using **immutable data**. If the next and previous values are equal, the `observe` method won't be called.
 
@@ -17,27 +17,7 @@ There are three reserved property names in the definition:
 * `tag` - a string which sets the custom element tag name
 * `render` and `content`, which expect the value as a function, and have additional options available
 
-## Property Descriptor
-
-The property descriptor structure is a plain object with the `value` and number of options:
-
-```typescript
-{
-  property: {
-    value:
-      | string | boolean | number 
-      | object | undefined | null
-      | (host) => { ...}
-      | (host, value, lastValue) => { ... };
-    connect?: (host, key, invalidate) => { ... };
-    observe?: (host, value, lastValue) => { ... };
-    reflect?: boolean | (value) => string;
-  }
-  ...,
-}
-```
-
-### Translation
+## Translation
 
 If the property value is not an object instance, the library translates it to the object descriptor with the `value` option:
 
@@ -45,9 +25,9 @@ If the property value is not an object instance, the library translates it to th
 property: "something" -> property: { value: "something" }
 ```
 
-The following definitions are equal:
+### Shorthand Syntax
 
-#### Shorthand version
+Use primitive or `function` as a property value:
 
 ```javascript
 define({
@@ -58,7 +38,9 @@ define({
 });
 ```
 
-#### Full descriptors version
+### Full Descriptor Syntax
+
+Use the full object descriptor with the `value` option:
 
 ```javascript
 define({
@@ -71,9 +53,71 @@ define({
 });
 ```
 
-Usually, the shorthand definition is more readable and less verbose, but the second one gives more control over the property behavior, as it allows to pass to the object descriptor additional options.
+Usually, the shorthand definition is more readable and less verbose, but the second one gives more control over the property behavior, as it provides additional options.
 
-### Value
+## Attributes
+
+Writable properties use the corresponding dashed-cased attribute for the initial value when the custom element is being created. Use the attributes only to define static values in the templates or the document, as the attribute changes are not being watched, and setting the attribute does not update the property.
+
+Use static values in the templates:
+
+```html
+<my-element first-name="Mark" last-name="Twain"></my-element>
+```
+
+Update the value by setting the property:
+
+```javascript
+const el = document.getElementsByTagName("my-element")[0];
+el.firstName = "George";
+
+// returns "George"
+el.getAttribute("first-name"); 
+```
+
+### Booleans
+
+The library follows the HTML standard when transforming attributes to the boolean type. An empty value of an existing attribute is interpreted as `true`. For setting `false` by the attribute, you must not set the attribute at all. It means, that if you want to support the boolean attribute, it is best to set the default value of the property to `false`.
+
+For example, if you want to create an on/off switch, depending on the default value, create `on` or `off` property with `false` default value:
+
+```html
+<!-- off by default (on: false), set attribute to turn on -->
+<my-element on></my-element>
+
+ <!-- on by default (off: false), set attribute to turn off -->
+<my-element off><my-element>
+```
+
+In the templates you can set a `false` value regardless of the default value:
+
+```javascript
+html`
+  <my-element mySwitch="${false}"></my-element>
+`
+```
+
+## Property Descriptor
+
+The property descriptor structure is a plain object with the `value` and number of options:
+
+```typescript
+{
+  property: {
+    value:
+      | string | boolean | number 
+      | object | undefined | null
+      | (host) => { ...}
+      | (host, value) => { ... };
+    connect?: (host, key, invalidate) => { ... };
+    observe?: (host, value, lastValue) => { ... };
+    reflect?: boolean | (value) => string;
+  }
+  ...,
+}
+```
+
+### value
 
 #### Primitives & Objects
 
@@ -119,7 +163,7 @@ If the descriptor `value` option is a function, the library creates a property w
 
 #### Readonly
 
-If the function has only one argument, the property is read-only, and the function is called with the element instance:
+If the function has only one argument, the property will be read-only, and the function is called with the element instance:
 
 ```javascript
 define({
@@ -132,7 +176,7 @@ define({
 
 #### Writable
 
-If the function has two arguments, the property is writable. However, the function is called only if the value of the property is accessed (getter) - the asserted value is kept in the cache until the next access.
+If the function has two arguments, the property will be writable. However, the function is called only if the value of the property is accessed (getter) - the asserted value is kept in the cache until the next access.
 
 ```javascript
 define({
@@ -157,49 +201,7 @@ data: (host, value) => {
 },
 ```
 
-#### Attributes
-
-Writable properties use the corresponding dashed-cased attribute for the initial value when the custom element is being created. Use the attributes only to define static values in the templates or the document, as the attribute changes are not being watched, and setting the attribute does not update the property.
-
-Use static values in the templates:
-
-```html
-<my-element first-name="Mark" last-name="Twain"></my-element>
-```
-
-Update the value by setting the property:
-
-```javascript
-const el = document.getElementsByTagName("my-element")[0];
-el.firstName = "George";
-
-// returns "George"
-el.getAttribute("first-name"); 
-```
-
-##### Booleans
-
-The library follows the HTML standard when transforming attributes to the boolean type. An empty value of an existing attribute is interpreted as `true`. For setting `false` by the attribute, you must not set the attribute at all. It means, that if you want to support the boolean attribute, it is best to set the default value of the property to `false`.
-
-For example, if you want to create an on/off switch, depending on the default value, create `on` or `off` property with `false` default value:
-
-```html
-<!-- off by default (on: false), set attribute to turn on -->
-<my-element on></my-element>
-
- <!-- on by default (off: false), set attribute to turn off -->
-<my-element off><my-element>
-```
-
-In the templates you can set a `false` value regardless of the default value:
-
-```javascript
-html`
-  <my-element mySwitch="${false}"></my-element>
-`
-```
-
-### Connect
+### connect
 
 ```ts
 connect: (host, key, invalidate) => () => { ... }
@@ -225,7 +227,7 @@ define({
       ...
 
       // connect to external library and invalidate on change
-      const subscription = api.subscribe(() => invalidate());
+      const subscription = api.subscribe(invalidate);
 
       // return `disconnect` function
       return () => {
@@ -239,7 +241,7 @@ define({
 
 If the third-party code is responsible for the property value, you can use the `invalidate` callback to notify that value should be recalculated. For example, it can be used to connect to async web APIs or external libraries.
 
-### Observe
+### observe
 
 ```ts
 observe: (host, value, lastValue) => { ... }
@@ -266,7 +268,7 @@ define({
 });
 ```
 
-### Reflect
+### reflect
 
 ```ts
 reflect: boolean | (value) => string
@@ -311,7 +313,7 @@ define({
 });
 ```
 
-The `render` property allows passing additional options to `host.attachShadow()` method. Use full descriptor with `options` key:
+The `render` property provides unique `options` key for passing additional arguments to `host.attachShadow()` method:
 
 ```ts
 render: {
@@ -426,39 +428,27 @@ define({
 
 ## Factories
 
-The factory is a simple concept based on a function, which produces the property descriptor. The main goal of the factory is to hide implementation details and minimize redundant code. It allows reusing property behavior while giving the ability to pass additional parameters.
+The factory is a simple concept based on a function, which produces the property descriptor. The main goal of the factory is to hide implementation details and minimize redundant code. It allows you to reuse property behavior while giving you the ability to pass additional parameters
 
 In most cases, descriptors are similar and have limited differences, so they can be parameterized by the function arguments. Also, the factory function can use the local scope for setting variables required for the feature.
+
+> It is not required, but for better extendibility, the factory should return a full descriptor object
 
 ```javascript
 import { define } from "hybrids";
 
 function myCustomProperty(multiplier) {
   return {
-    get: (host, value) => value || 0,
-    set: (host, value) => value * multiplier,
+    value: (host, value = 0) => value * multiplier;
   };
 }
 
 define({
   tag: "my-element",
-  value: myCustomProperty(2),
+  count: myCustomProperty(2),
 });
 ```
 
-The above `value` property is defined by the factory, which returns a property descriptor. In this case, its value is equal to the result of multiplying it by the `multiplier` argument.
+The above `count` property is defined by the factory, which returns a property descriptor. In this case, its value is equal to the result of multiplying it by the `multiplier` argument.
 
-More complex structures provided by the library are defined as factories: [parent & children](./parent-children.md), [store](/store/overview.md) and [router](/router/overview.md). For example, the store allows to connect global data models with the component definition just by adding a single line of code:
-
-```javascript
-import { define, store } from "hybrids";
-import DataSource from "./models/DataSource.js";
-
-define({
-  tag: "my-element",
-  data: store(DataSource),
-  render: ({ data }) => html`
-    ${store.ready(data) && html`<div>${data.value}</div>`}
-  `,
-});
-```
+More complex features provided by the library are defined as factories: [parent & children](./parent-children.md), [store](/store/overview.md) and [router](/router/overview.md).
