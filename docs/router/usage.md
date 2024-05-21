@@ -1,4 +1,4 @@
-# Usage
+# Router Usage
 
 The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the component definition.
 

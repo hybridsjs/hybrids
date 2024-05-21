@@ -1,4 +1,4 @@
-# Definition
+# Component Definition
 
 ## Custom Elements
 

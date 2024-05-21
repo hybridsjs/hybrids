@@ -1,4 +1,4 @@
-# Storage
+# Store Storage
 
 Every model definition is connected to the storage. By default, the model definition uses memory attached to the cache layer. You can define a custom storage by the `[store.connect]` property in the model definition. It can be synchronous (memory, localStorage, etc.), or asynchronous, like external APIs.
 

@@ -1,4 +1,4 @@
-# Events
+# Component Events
 
 The `dispatch` function simplifies event generation on element instances. It creates a `CustomEvent` with selected `options` and dispatches it on the given `host` element (As the custom events are part of the HTML standard, you can generate them manually without using `dispatch` from the library).
 

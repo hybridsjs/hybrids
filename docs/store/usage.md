@@ -1,4 +1,4 @@
-# Usage
+# Store Usage
 
 The store factory provides global state management based on model definitions with support for external storage. Use the store to share the internal state between the components or create a container for the data from internal or external APIs.
 

@@ -1,4 +1,4 @@
-# TypeScript
+# Store TypeScript Support
 
 To define the store model in TypeScript create an interface and use it with `Model<V>` type:
 

@@ -1,4 +1,4 @@
-# View
+# Router View
 
 A view is a defined component connected to the router as a root, or in the `stack` option of one of the views.
 

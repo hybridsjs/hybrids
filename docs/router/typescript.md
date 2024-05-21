@@ -1,4 +1,4 @@
-# TypeScript
+# Router TypeScript Support
 
 The router factory is supported out of the box without additional types. You can define your views with the `[router.connect]` configuration object using the `define<E>()` function with the corresponding component interface:
 

@@ -1,4 +1,4 @@
-# Model
+# Store Model
 
 The model definition is based on a plain object with a JSON-like structure of default values for the instances. Each definition creates its own global space for the data. The store identifies the space by reference to the definition, so no register step is required, which should be done programmatically. You just define the model structure and start using it with the store.
 

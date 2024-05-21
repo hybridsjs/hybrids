@@ -1,4 +1,4 @@
-# TypeScript
+# Component TypeScript Support
 
 ## Component Model
 

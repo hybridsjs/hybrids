@@ -1,4 +1,4 @@
-# Structure
+# Component Structure
 
 The component definition is based on a plain object with a number of properties. The library checks the type of the property value to generate descriptors, which then are used in the custom element class definition. The values can be primitives, functions, or if you need a full control - object descriptors.
 
