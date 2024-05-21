@@ -1,6 +1,7 @@
 import {
   get,
   set,
+  assert,
   getEntries,
   invalidate,
   invalidateAll,
@@ -101,7 +102,7 @@ describe("cache:", () => {
 
       expect(spy).toHaveBeenCalledTimes(0);
 
-      set(target, "key", () => "new value");
+      assert(target, "key", "new value");
       get(target, "key", spy);
 
       expect(spy).toHaveBeenCalledTimes(1);
@@ -127,7 +128,7 @@ describe("cache:", () => {
       get(target, "key", spy);
 
       expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith(target, "value");
+      expect(spy).toHaveBeenCalledWith(target, undefined);
     });
   });
 
@@ -180,6 +181,25 @@ describe("cache:", () => {
         ]);
       });
     });
+
+    it("does not delete entry if it has contexts", () => {
+      get(target, "key", () =>
+        get(target, "otherKey", () => get(target, "deepKey", () => "value")),
+      );
+      invalidate(target, "otherKey", { deleteEntry: true });
+
+      get(target, "key", () =>
+        get(target, "otherKey", () => get(target, "deepKey", () => "value")),
+      );
+
+      return resolveTimeout(() => {
+        expect(getEntries(target).map(({ key }) => key)).toEqual([
+          "key",
+          "otherKey",
+          "deepKey",
+        ]);
+      });
+    });
   });
 
   describe("invalidateAll()", () => {
@@ -208,7 +228,7 @@ describe("cache:", () => {
       expect(() => {
         const getter = () => get(target, "dep", () => "value");
         get(target, "key", getter);
-        set(target, "dep", () => "new value");
+        assert(target, "dep", "new value");
         observe(target, "key", getter, spy);
         get(target, "key", getter);
       }).not.toThrow();
@@ -218,21 +238,21 @@ describe("cache:", () => {
       expect(() => {
         const getter = () => get(target, "dep", () => "value");
         get(target, "key", getter);
-        set(target, "dep", () => "new value");
+        assert(target, "dep", "new value");
         const unobserve = observe(target, "key", getter, spy);
         unobserve();
       }).not.toThrow();
     });
 
     it("calls observe callback after initial get before setup", () => {
-      set(target, "dep", () => "value");
+      assert(target, "dep", "value");
       const getter = () => get(target, "dep", _);
       get(target, "key", getter);
 
       observe(target, "key", getter, spy);
 
       return resolveRaf(() => {
-        set(target, "dep", () => "new value");
+        assert(target, "dep", "new value");
         return resolveRaf(() => {
           expect(spy).toHaveBeenCalledTimes(2);
         });
@@ -241,7 +261,7 @@ describe("cache:", () => {
 
     it("runs callback when value changes", () => {
       observe(target, "key", _, spy);
-      set(target, "key", _, "value");
+      assert(target, "key", "value");
 
       return resolveRaf(() => {
         expect(spy).toHaveBeenCalledTimes(1);
@@ -264,7 +284,7 @@ describe("cache:", () => {
       unobserve();
 
       value = "new value";
-      set(target, "key", _, value);
+      assert(target, "key", value);
 
       return resolveRaf(() => {
         expect(spy).toHaveBeenCalledTimes(1);
@@ -278,7 +298,7 @@ describe("cache:", () => {
 
       return resolveRaf(() => {
         expect(spy).toHaveBeenCalledTimes(0);
-        set(target, "deepKey", _, "value");
+        assert(target, "deepKey", "value");
 
         return resolveRaf(() => {
           expect(spy).toHaveBeenCalledTimes(1);
@@ -293,7 +313,7 @@ describe("cache:", () => {
       const getDep = () => get(target, "dep", getDeepDep);
       const getOther = () => get(target, "other", _);
 
-      set(target, "deepDeep", _, "one");
+      assert(target, "deepDeep", "one");
 
       observe(
         target,
@@ -308,10 +328,10 @@ describe("cache:", () => {
 
       return resolveRaf(() => {
         expect(spy).toHaveBeenCalledTimes(1);
-        set(target, "other", _, "two");
+        assert(target, "other", "two");
         return resolveRaf(() => {
           expect(spy).toHaveBeenCalledTimes(2);
-          set(target, "deepDeep", _, "three");
+          assert(target, "deepDeep", "three");
           return resolveRaf(() => {
             expect(spy).toHaveBeenCalledTimes(3);
           });
@@ -324,7 +344,7 @@ describe("cache:", () => {
 
       return resolveRaf(() => {
         unobserve();
-        set(target, "key", _, "value");
+        assert(target, "key", "value");
         return resolveRaf(() => {
           expect(spy).toHaveBeenCalledTimes(0);
         });
@@ -338,7 +358,7 @@ describe("cache:", () => {
 
       return resolveRaf(() => {
         unobserve();
-        set(target, "deepKey", _, "value");
+        assert(target, "deepKey", "value");
 
         return resolveRaf(() => {
           expect(spy).toHaveBeenCalledTimes(0);
@@ -353,7 +373,7 @@ describe("cache:", () => {
         });
 
       expect(() => observe(target, "key", getKey, spy)).not.toThrow();
-      set(target, "otherKey", _, "value");
+      assert(target, "otherKey", "value");
 
       return resolveRaf(() => {
         expect(spy).toHaveBeenCalledTimes(0);

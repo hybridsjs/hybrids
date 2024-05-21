@@ -1,19 +1,22 @@
 export type Property<E, V> =
-  | (V extends string | number | boolean | undefined ? V : never)
-  | ((host: E & HTMLElement, lastValue: V) => V)
-  | Descriptor<E, V>
-  | undefined;
+  | (V extends string | number | boolean | null | undefined ? V : never)
+  | ((host: E & HTMLElement) => V)
+  | ((host: E & HTMLElement, value: any) => V)
+  | Descriptor<E, V>;
 
 export interface Descriptor<E, V> {
-  value?: V;
-  get?: (host: E & HTMLElement, lastValue: any) => V;
-  set?: (host: E & HTMLElement, value: any, lastValue: V) => any;
+  value:
+    | V
+    | ((host: E & HTMLElement) => V)
+    | ((host: E & HTMLElement, value: any) => V);
+
   connect?(
     host: E & HTMLElement & { __property_key__: V },
     key: "__property_key__",
-    invalidate: (options?: { force?: boolean }) => void,
+    invalidate: () => void,
   ): Function | void;
   observe?(host: E & HTMLElement, value: V, lastValue: V): void;
+  reflect?: boolean | ((value: V) => string);
 }
 
 export interface UpdateFunction<E> {
@@ -22,6 +25,17 @@ export interface UpdateFunction<E> {
 
 export interface RenderFunction<E> {
   (host: E & HTMLElement): UpdateFunction<E>;
+}
+
+export interface RenderDescriptor<E> extends Descriptor<E, RenderFunction<E>> {
+  value: RenderFunction<E>;
+  reflect?: never;
+  options?: ShadowRootInit;
+}
+
+export interface ContentDescriptor<E> extends Descriptor<E, RenderFunction<E>> {
+  value: RenderFunction<E>;
+  reflect?: never;
 }
 
 export type ComponentBase = {
@@ -33,14 +47,14 @@ export type Component<E> = ComponentBase & {
   [property in Extract<
     keyof Omit<E, keyof HTMLElement>,
     string
-  >]: property extends "render" | "content"
-    ? E[property] extends () => HTMLElement
-      ? RenderFunction<E>
-      : Property<E, E[property]>
-    : Property<E, E[property]>;
+  >]: property extends "render"
+    ? RenderFunction<E> | RenderDescriptor<E>
+    : property extends "content"
+      ? RenderFunction<E> | ContentDescriptor<E>
+      : Property<E, E[property]>;
 } & {
-  render?: RenderFunction<E>;
-  content?: RenderFunction<E>;
+  render?: RenderFunction<E> | RenderDescriptor<E>;
+  content?: RenderFunction<E> | ContentDescriptor<E>;
 };
 
 export interface HybridElement<E> {
@@ -168,7 +182,10 @@ export type StorageValues<M extends ModelInstance> = {
       : M[property];
 };
 
-export type StorageResult<M extends ModelInstance> = StorageValues<M> | null;
+export type StorageResult<M extends ModelInstance> =
+  | StorageValues<M>
+  | null
+  | undefined;
 
 export type Storage<M extends ModelInstance> = {
   get?: (id: ModelIdentifier) => StorageResult<M> | Promise<StorageResult<M>>;

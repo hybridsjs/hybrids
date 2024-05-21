@@ -1,5 +1,106 @@
 # Migration Guide
 
+## v9.0.0
+
+The `v9` release brings simplification into the full object property descriptor and moves out some rarely used default behaviors into optional features.
+
+### Descriptors
+
+The `value` option is now required in the object descriptor, and it replaces the `get` and `set` methods for defining computed property:
+
+```javascript
+// before
+customName: {
+  get(host, value) {...},
+  set(host, value) {...},
+  ...
+}
+```
+
+```javascript
+// after
+customName: {
+  value(host, value) { ... },
+  ...
+}
+```
+
+Read more about the full object property descriptor in the [Structure](/component-model/structure.md#value) section.
+
+### Attributes
+
+Writable properties are no longer automatically synchronized back to the attribute. You must set the `reflect` option to enable the synchronization:
+
+```javascript
+// before
+{
+  isAdmin: false,
+  render: () => html`...`.css`:host([is-admin]) { ... }`,
+}
+```
+
+```javascript
+// after
+{
+  isAdmin: { value: false, reflect: true },
+  ...
+}
+```
+
+Read more about the attribute synchronization in the [Structure](/component-model/structure.md#reflect) section.
+
+### Render and Content
+
+#### Names
+
+The `render` and `content` properties are now reserved and expect an update function as a value (they cannot be used for other purpose). If you defined them as a full descriptor with custom behavior, you must rename them:
+
+```javascript
+// before
+{
+  render: {
+    get(host) { return "some" },
+  }
+  ...
+}
+```
+
+```javascript
+// after
+{
+  customRender: {
+    get(host) { return "some" },
+  }
+}
+```
+
+#### Shadow DOM
+
+The options are now part of the `render` descriptor instead of a need to extend the `render` function:
+
+```javascript
+// before
+{
+  render: Object.assign((host) => html`...`, { mode: "close" }),
+  ...
+}
+```
+
+```javascript
+// after
+{
+  render: {
+    value: (host) => html`...`,
+    options: { mode: "close" },
+  },
+  ...
+}
+```
+
+### Store Errors
+
+For better developer experience, the `store.get()` and `store.set()` methods throw type errors immediately, instead of returning a model in error state. This is not a breaking change, but the information can help you to find the issue faster.
+
 ## v8.0.0
 
 ### Browser Support
@@ -93,7 +194,7 @@ The `render` factory is no longer supported - you must set `render` or `content`
 
 If you update the DOM using another property name, you must create a custom factory for the property. You can follow the old implementation of the `render` factory available here:
 
-https://github.com/hybridsjs/hybrids/blob/v6.1.0/src/render.js
+<https://github.com/hybridsjs/hybrids/blob/v6.1.0/src/render.js>
 
 #### Templates
 
@@ -155,7 +256,7 @@ import { Component } from "hybrids";
 const MyElement: Component<MyElement> = { ... };
 ```
 
-### Store
+### Store Factory
 
 #### Identifier
 

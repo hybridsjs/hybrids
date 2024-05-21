@@ -29,14 +29,19 @@ function compile(hybrids, HybridsElement) {
       constructor() {
         super();
 
-        for (const fn of HybridsElement.settable) {
-          fn(this);
-        }
+        for (const key of HybridsElement.writable) {
+          if (hasOwnProperty.call(this, key)) {
+            const value = this[key];
+            delete this[key];
+            this[key] = value;
+          } else {
+            const value = this.getAttribute(camelToDash(key));
 
-        for (const key of Object.keys(this)) {
-          const value = this[key];
-          delete this[key];
-          this[key] = value;
+            if (value !== null) {
+              this[key] =
+                (value === "" && typeof this[key] === "boolean") || value;
+            }
+          }
         }
       }
 
@@ -65,71 +70,42 @@ function compile(hybrids, HybridsElement) {
 
   const connects = new Set();
   const observers = new Set();
-  const settable = new Set();
+  const writable = new Set();
 
   for (const key of Object.keys(hybrids)) {
     if (key === "tag") continue;
 
     let desc = hybrids[key];
-    const type = typeof desc;
 
-    if (type === "function") {
-      if (key === "render") {
-        desc = render(desc, true);
-      } else if (key === "content") {
-        desc = render(desc);
-      } else {
-        desc = { get: desc };
-      }
-    } else if (type !== "object" || desc === null) {
+    if (typeof desc !== "object" || desc === null) {
       desc = { value: desc };
-    } else if (desc.set) {
-      if (hasOwnProperty.call(desc, "value")) {
-        throw TypeError(
-          `Invalid property descriptor for '${key}' property - it must not have 'value' and 'set' properties at the same time.`,
-        );
-      }
-
-      const attrName = camelToDash(key);
-      const get = desc.get || ((host, value) => value);
-      desc.get = (host, value) => {
-        if (value === undefined) {
-          value = desc.set(host, host.getAttribute(attrName) || value);
-        }
-        return get(host, value);
-      };
+    } else if (!hasOwnProperty.call(desc, "value")) {
+      throw TypeError(
+        `The 'value' option is required for '${key}' property of the '${hybrids.tag}' element`,
+      );
     }
 
-    if (hasOwnProperty.call(desc, "value")) {
-      desc = value(key, desc);
-    } else if (!desc.get) {
-      throw TypeError(
-        `Invalid descriptor for '${key}' property - it must contain 'value' or 'get' option`,
-      );
+    desc =
+      key === "render" || key === "content"
+        ? render(key, desc)
+        : value(key, desc);
+
+    if (desc.writable) {
+      writable.add(key);
     }
 
     Object.defineProperty(HybridsElement.prototype, key, {
       get: function get() {
-        return cache.get(this, key, desc.get);
+        return cache.get(this, key, desc.value);
       },
-      set:
-        desc.set &&
-        function set(newValue) {
-          cache.set(this, key, desc.set, newValue);
-        },
+      set: desc.writable
+        ? function assert(newValue) {
+            cache.assert(this, key, newValue);
+          }
+        : undefined,
       enumerable: true,
       configurable: true,
     });
-
-    if (desc.set) {
-      const attrName = camelToDash(key);
-      settable.add((host) => {
-        const value = host.getAttribute(attrName);
-        if (value !== null) {
-          host[key] = (value === "" && typeof host[key] === "boolean") || value;
-        }
-      });
-    }
 
     if (desc.connect) {
       connects.add((host) =>
@@ -140,13 +116,15 @@ function compile(hybrids, HybridsElement) {
     }
 
     if (desc.observe) {
-      observers.add((host) => cache.observe(host, key, desc.get, desc.observe));
+      observers.add((host) =>
+        cache.observe(host, key, desc.value, desc.observe),
+      );
     }
   }
 
   HybridsElement.connects = connects;
   HybridsElement.observers = observers;
-  HybridsElement.settable = settable;
+  HybridsElement.writable = writable;
 
   return HybridsElement;
 }
@@ -181,12 +159,22 @@ function update(HybridsElement) {
   updateQueue.set(HybridsElement, constructors.get(HybridsElement));
 }
 
+const tags = new Set();
 function define(hybrids) {
   if (!hybrids.tag) {
     throw TypeError(
-      "Error while defining hybrids: 'tag' property with dashed tag name is required",
+      "Error while defining an element: 'tag' property with dashed tag name is required",
     );
   }
+
+  if (tags.has(hybrids.tag)) {
+    throw TypeError(
+      `Error while defining '${hybrids.tag}' element: tag name is already defined`,
+    );
+  }
+
+  if (!tags.size) deferred.then(() => tags.clear());
+  tags.add(hybrids.tag);
 
   const HybridsElement = globalThis.customElements.get(hybrids.tag);
 
@@ -204,6 +192,7 @@ function define(hybrids) {
   }
 
   globalThis.customElements.define(hybrids.tag, compile(hybrids));
+
   return hybrids;
 }
 

@@ -63,6 +63,17 @@ describe("store:", () => {
       expect(() => store.get({ value: null })).toThrow();
     });
 
+    it("throws an error when get method returns string", () => {
+      Model = {
+        value: "test",
+        [store.connect]: {
+          get: () => "test",
+        },
+      };
+
+      expect(() => store.get(Model)).toThrow();
+    });
+
     it("throws when nested object is used as a primary model", () => {
       store.get(Model, "1");
       expect(() => {
@@ -265,7 +276,7 @@ describe("store:", () => {
         expect(() => model.message).not.toThrow();
       });
 
-      it("returns an array with updated models", () => {
+      it("returns an array with created models", () => {
         expect(store.get([Model])).toEqual([]);
 
         return promise.then(() => {
@@ -352,70 +363,95 @@ describe("store:", () => {
         }).toThrow();
       }));
 
-    it("rejects an error when values are not an object or null", () =>
-      store.set(Model, false).catch((e) => expect(e).toBeInstanceOf(Error)));
+    it("throws an error when values are not an object or null", () =>
+      expect(() => store.set(Model, false)).toThrow());
 
-    it("rejects an error when model definition is used with null", () =>
-      store.set(Model, null).catch((e) => expect(e).toBeInstanceOf(Error)));
+    it("throws an error when model definition is used with null", () =>
+      expect(() => store.set(Model, null)).toThrow());
 
-    it("rejects an error when model instance is used with not an object", () =>
-      promise
-        .then((model) => store.set(model, false))
-        .catch((e) => expect(e).toBeInstanceOf(Error)));
-
-    it("rejects an error when values contain 'id' property", () =>
-      promise
-        .then((model) => store.set(model, model))
-        .catch((e) => expect(e).toBeInstanceOf(Error)));
-
-    it("rejects an error when array with primitives is set with wrong type", () => {
-      promise
-        .then((model) => {
-          return store
-            .set(model, {
-              nestedArrayOfPrimitives: "test",
-            })
-            .catch(() => {});
-        })
-        .catch((e) => {
-          expect(e).toBeInstanceOf(Error);
-        });
+    it("throws an error when model instance is used with not an object", async () => {
+      const model = await promise;
+      expect(() => store.set(model, false)).toThrow();
     });
 
-    it("rejects an error when array with objects is set with wrong type", () =>
-      promise
-        .then((model) =>
-          store.set(model, {
-            nestedArrayOfObjects: "test",
-          }),
-        )
-        .catch((e) => expect(e).toBeInstanceOf(Error)));
+    it("throws an error when values contain 'id' property", async () => {
+      const model = await promise;
+      expect(() => store.set(model, model)).toThrow();
+    });
 
-    it("rejects an error when array with external objects is set with wrong type", () =>
-      promise
-        .then((model) =>
-          store.set(model, {
-            nestedArrayOfExternalObjects: "test",
-          }),
-        )
-        .catch((e) => expect(e).toBeInstanceOf(Error)));
+    it("throws an error when array with primitives is set with wrong type", async () => {
+      const model = await promise;
+      expect(() =>
+        store.set(model, {
+          nestedArrayOfPrimitives: "test",
+        }),
+      ).toThrow();
+    });
 
-    it("rejects an error when array with nested objects are set with wrong type", () =>
-      promise
-        .then((model) =>
-          store.set(model, {
-            nestedArrayOfObjects: [{}, "test"],
-          }),
-        )
-        .catch((e) => expect(e).toBeInstanceOf(Error)));
+    it("throws an error when array with objects is set with wrong type", async () => {
+      const model = await promise;
+      expect(() =>
+        store.set(model, {
+          nestedArrayOfObjects: "test",
+        }),
+      ).toThrow();
+    });
 
-    it("rejects an error when set method returning undefined", () => {
+    it("throws an error when set method returns undefined", () => {
+      Model = {
+        value: "test",
+        [store.connect]: {
+          get: () => ({}),
+          set: () => {
+            return "test";
+          },
+        },
+      };
+
+      expect(() => store.set(Model)).toThrow();
+    });
+
+    it("rejects an error when array with external objects is set with wrong type", async () => {
+      const model = await promise;
+      expect(() =>
+        store.set(model, {
+          nestedArrayOfExternalObjects: "test",
+        }),
+      ).toThrow();
+    });
+
+    it("rejects an error when array with nested objects are set with wrong type", async () => {
+      const model = await promise;
+      expect(() =>
+        store.set(model, {
+          nestedArrayOfObjects: [{}, "test"],
+        }),
+      ).toThrow();
+    });
+
+    it("rejects an error when set method returns undefined", () => {
       Model = {
         value: "test",
         [store.connect]: {
           get: () => ({}),
           set: () => {
             return undefined;
+          },
+        },
+      };
+
+      return store.set(Model).catch((e) => {
+        expect(e).toBeInstanceOf(Error);
+      });
+    });
+
+    it("rejects an error when set method returns promise resolving to string", () => {
+      Model = {
+        value: "test",
+        [store.connect]: {
+          get: () => ({}),
+          set: async () => {
+            return "test";
           },
         },
       };
@@ -799,7 +835,7 @@ describe("store:", () => {
 
     it("removes model instance by id", () =>
       promise.then((model) => {
-        store.clear(Model, model.id);
+        store.clear(model, true);
         expect(store.error(store.get(Model, model.id))).toBeInstanceOf(Error);
       }));
 
@@ -992,7 +1028,7 @@ describe("store:", () => {
 
       const desc = store(Model, { draft: true });
       const host = {};
-      const model = desc.get(host);
+      const model = desc.value(host);
 
       return store
         .set(model, { one: "" })
@@ -1022,7 +1058,7 @@ describe("store:", () => {
 
       const desc = store(Model, { draft: true });
       const host = {};
-      const model = desc.get(host);
+      const model = desc.value(host);
 
       return store.set(model, { number: 0 }).then((nextModel) => {
         const error = store.error(nextModel);
@@ -1240,7 +1276,7 @@ describe("store:", () => {
       });
 
       describe("with id", () => {
-        it("throws when try to set value by assertion", () => {
+        it("throws an error for the same model when try to set value by assertion", () => {
           expect(() => {
             el.byprop = "1";
           }).toThrow();
@@ -1275,10 +1311,10 @@ describe("store:", () => {
         });
 
         describe("in draft mode", () => {
-          it("throws when try to set value by assertion", () => {
-            expect(() => {
-              el.draft = "1";
-            }).toThrow();
+          it("returns the same model when try to set value by assertion", () => {
+            const model = el.draft;
+            el.draft = "1";
+            expect(el.draft).toBe(model);
           });
 
           it("has global space for draft definitions", () => {
@@ -1359,8 +1395,11 @@ describe("store:", () => {
         });
 
         it("set model id from the attribute value", () => {
-          el.setAttribute("withoutid", "2");
-          expect(el.withoutid).toBe(store.get(Model, "2"));
+          el.innerHTML = `
+            <test-store-factory-enumerable withoutid="2"></test-store-factory-enumerable>
+          `;
+
+          expect(el.firstElementChild.withoutid).toBe(store.get(Model, "2"));
         });
 
         it("set model id by assertion", () => {
@@ -1407,6 +1446,17 @@ describe("store:", () => {
             expect(store.ready(el2.draftwithoutid)).toBe(true);
 
             document.body.removeChild(el2);
+          });
+
+          it("sets draft model by assert model instance", () => {
+            const model = store.get(Model, "1");
+            el.draftwithoutid = model;
+            expect(el.draftwithoutid.id).toBe(model.id);
+          });
+
+          it("sets draft model by assertion string id", () => {
+            el.draftwithoutid = "1";
+            expect(el.draftwithoutid.id).toBe("1");
           });
 
           it("updates not initialized draft new model instance", () =>
@@ -1537,7 +1587,7 @@ describe("store:", () => {
         expect(el.listwithoutid.length).toBe(2);
       });
 
-      it("throws when try to update property with id option", () => {
+      it("returns the same model when try to update property with id option", () => {
         expect(() => {
           el.listwithid = "another";
         }).toThrow();
@@ -2008,7 +2058,7 @@ describe("store:", () => {
         one: "one",
         two: "two",
         [store.connect]: {
-          get: () => {},
+          get: () => null,
           set: (id, values, keys) => {
             spy(keys);
             return values;

@@ -1,44 +1,60 @@
 import { camelToDash } from "./utils.js";
 
-const setters = {
-  string: (v) => String(v ?? ""),
-  number: Number,
-  boolean: Boolean,
-  undefined: (value) => value,
-};
+function reflect(host, value, attrName) {
+  if (!value && value !== 0) {
+    host.removeAttribute(attrName);
+  } else {
+    host.setAttribute(attrName, value === true ? "" : value);
+  }
+}
 
 export default function value(key, desc) {
   const type = typeof desc.value;
-  const set = setters[type];
+  const defaultValue =
+    type === "object" ? Object.freeze(desc.value) : desc.value;
 
-  if (!set) {
-    throw TypeError(
-      `Invalid default value for '${key}' property - it must be a string, number, boolean or undefined: ${type}`,
-    );
+  switch (type) {
+    case "string":
+      desc.value = (host, value) =>
+        value !== undefined ? String(value) : defaultValue;
+      break;
+    case "number":
+      desc.value = (host, value) =>
+        value !== undefined ? Number(value) : defaultValue;
+      break;
+    case "boolean":
+      desc.value = (host, value) =>
+        value !== undefined ? Boolean(value) : defaultValue;
+      break;
+    case "function":
+      desc.value = defaultValue;
+      break;
+    default:
+      desc.value = (_, value = defaultValue) => value;
   }
 
-  const attrName = camelToDash(key);
+  let observe = desc.observe;
 
-  function reflect(host, value) {
-    if (!value && value !== 0) {
-      host.removeAttribute(attrName);
-    } else {
-      host.setAttribute(attrName, value === true ? "" : value);
-    }
+  if (desc.reflect) {
+    const attrName = camelToDash(key);
+
+    const fn =
+      typeof desc.reflect === "function"
+        ? (host, value, attrName) =>
+            reflect(host, desc.reflect(value), attrName)
+        : reflect;
+
+    observe = desc.observe
+      ? (host, value, lastValue) => {
+          fn(host, value, attrName);
+          desc.observe(host, value, lastValue);
+        }
+      : (host, value) => reflect(host, value, attrName);
   }
 
   return {
-    get: (host, value) => (value === undefined ? desc.value : value),
-    set: (host, value) => set(value),
-    connect: desc.connect,
-    observe:
-      type === "undefined"
-        ? desc.observe
-        : desc.observe
-          ? (host, value, lastValue) => {
-              reflect(host, value);
-              desc.observe(host, value, lastValue);
-            }
-          : reflect,
+    ...desc,
+    observe,
+    writable: type !== "function" || defaultValue.length > 1,
   };
 }
