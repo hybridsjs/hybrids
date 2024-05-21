@@ -995,20 +995,20 @@ function get(Model, id) {
     );
   }
 
-  const offline = config.storage.offline;
-  const validate = config.storage.validate;
+  const { offline, validate } = config.storage;
   const entry = cache.getEntry(config, stringId);
+  const cachedModel = entry.value;
 
-  if (entry.value && !validate(entry.value)) {
+  if (
+    cachedModel &&
+    getModelState(cachedModel).state !== "pending" &&
+    !validate(cachedModel)
+  ) {
     entry.resolved = false;
   }
 
-  id = normalizeId(id);
-
   return cache.get(config, stringId, () => {
-    const cachedModel = cache.getEntry(config, stringId).value;
-
-    if (cachedModel && pending(cachedModel)) return cachedModel;
+    id = normalizeId(id);
 
     let validContexts = true;
     if (config.contexts) {
