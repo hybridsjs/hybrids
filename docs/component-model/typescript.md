@@ -84,8 +84,7 @@ import { Descriptor } from "hybrids";
 
 export default function myFactory<E>(param: string): Descriptor<E, string> {
   return {
-    get: (host, value = param) => value,
-    set: (host, value) => {
+    value: (host, value = param) => {
       return value === "something" ? "something else" : value;
     },
   };
