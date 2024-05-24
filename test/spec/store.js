@@ -803,6 +803,47 @@ describe("store:", () => {
         expect(model.id).toBe("1");
       });
     });
+
+    it("does not trigger get method of the nested model", () => {
+      const spyProject = jasmine.createSpy();
+      const spyFeature = jasmine.createSpy();
+
+      const Project = {
+        id: true,
+        feature: store.ref(() => Feature),
+        [store.connect]: () => {
+          spyProject();
+          return null;
+        },
+      };
+
+      const Feature = {
+        id: true,
+        project: store.ref(() => Project),
+        [store.connect]: () => {
+          spyFeature();
+          return null;
+        },
+      };
+
+      store.sync(Feature, {
+        id: "0",
+        project: {
+          id: "321",
+          feature: "2",
+        },
+      });
+      store.sync(Feature, {
+        id: "1",
+        project: {
+          id: "321",
+          feature: "3",
+        },
+      });
+
+      expect(spyProject).toHaveBeenCalledTimes(0);
+      expect(spyFeature).toHaveBeenCalledTimes(0);
+    });
   });
 
   describe("clear()", () => {
@@ -1816,7 +1857,7 @@ describe("store:", () => {
         expect(list.length).toBe(1);
       }));
 
-    it("returns new list when modifies already existing item", () => {
+    it("returns a new list when modifies already existing item", () => {
       const list = store.get([Model]);
       return store.set(list[0], { value: "new value" }).then(() => {
         const newList = store.get([Model]);

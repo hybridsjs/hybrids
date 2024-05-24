@@ -29,19 +29,12 @@ function resolve(config, model, lastModel) {
   return model;
 }
 
-function shallowEqual(target, compare) {
-  return Object.keys(target).every((key) => target[key] === compare[key]);
-}
-
 function resolveWithInvalidate(config, model, lastModel) {
   resolve(config, model, lastModel);
 
   if (
     config.invalidate &&
-    (!lastModel ||
-      error(model) ||
-      !config.isInstance(lastModel) ||
-      !shallowEqual(model, lastModel))
+    (config.storage.loose || !lastModel || !config.isInstance(lastModel))
   ) {
     config.invalidate();
   }
@@ -1191,7 +1184,7 @@ function set(model, values = {}) {
 
   let hasErrors = false;
 
-  if (localModel) {
+  if (localModel && config.checks.size) {
     for (const [key, fn] of config.checks.entries()) {
       if (keys.indexOf(key) === -1) {
         if (lastError && lastError.errors && lastError.errors[key]) {
