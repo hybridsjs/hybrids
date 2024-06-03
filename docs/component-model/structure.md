@@ -12,10 +12,10 @@ The cache mechanism uses equality check to compare values (`nextValue` !== `last
 
 ## Reserved Keys
 
-There are three reserved property names in the definition:
+There are two reserved property names in the definition:
 
 * `tag` - a string which sets the custom element tag name
-* `render` and `content`, which expect the value as a function, and have additional options available
+* `render` - expects its value as a function for rendering the internal structure of the custom element
 
 ## Translation
 
@@ -53,7 +53,7 @@ define({
 });
 ```
 
-Usually, the shorthand definition is more readable and less verbose, but the second one gives more control over the property behavior, as it provides additional options.
+Usually, the shorthand syntax is more readable and less verbose, but the second one gives more control over the property behavior, as it provides additional options.
 
 ## Attributes
 
@@ -286,17 +286,29 @@ define({
 });
 ```
 
-## `render` & `content`
+## `render`
 
-The `render` and `content` properties are reserved for the rendering structure of the custom element. The `value` option must be a function, which returns a result of the call to the built-in template engine or a custom update function.
+The `render` property is reserved for the creating a structure of the custom element. The `value` option must be a function, which returns a result of the call to the built-in template engine.
 
-The library uses internally the `observe` pattern to called function automatically when dependencies change. As the property returns an update function, it can also be called manually, by `el.render()` or `el.content()`.
+The library uses internally the `observe` pattern to call the function automatically when dependencies change. As the property resolves to the update function, it can also be called manually, by `el.render()` or `el.content()`.
 
-> You can use built-in [template engine](/component/templates.md) with those properties without additional code
+### Element's Content
+
+By default `render` property updates the content of the custom element:
+
+```javascript
+import { define, html } from "hybrids";
+
+define({
+  tag: "my-element",
+  name: "",
+  render: ({ name }) => html`<h1>Hello ${name}!</h1>`,
+});
+```
 
 ### Shadow DOM
 
-Use the `render` key for the internal structure of the custom element, where you can add isolated styles, slot elements, etc.
+If the root template of the element includes styles (`css` and `style` helpers, or `<style>` elements) or `<slot>` element, the library will render the content to the shadow DOM:
 
 ```javascript
 import { define, html } from "hybrids";
@@ -313,18 +325,28 @@ define({
 });
 ```
 
-The `render` property provides unique `options` key for passing additional arguments to `host.attachShadow()` method:
+!> Templates are compiled lazy, so only the root template can be used to determine the rendering mode. If your nested template includes styles or slots, you must use the `shadow` option to force rendering in the Shadow DOM
+
+### Explicit Mode
+
+Use unique `shadow` option of the `render` property to force rendering in Shadow DOM or element's content:
 
 ```ts
+// Disable Shadow DOM
 render: {
-  value: (host) => { ... },
-  options: {
-    mode: "open" | "closed",
-    delegatesFocus: boolean,
-  },
+  value: (host) => html`...`,
+  shadow: false,
   ...
 }
+
+// Enable Shadow DOM
+render: {
+  value: (host) => html`...`,
+  shadow: true,
+}
 ```
+
+You can use `shadow` option for passing custom argument to the `host.attachShadow()` method:
 
 ```javascript
 import { define, html } from "hybrids";
@@ -333,68 +355,14 @@ define({
   tag: "my-element",
   render: {
     value: html`<div>...</div>`, 
-    options: { delegatesFocus: true },
+    options: { mode: "close", delegatesFocus: true },
   },
 });
 ```
 
-### Element's Content
-
-Use the `content` property for rendering templates in the content of the custom element. By the design, it does not support isolated styles, slot elements, etc.
-
-However, it is the way to build an app-like views structure, which can be rendered as a document content in light DOM. It is easily accessible in developer tools and search engines. For example, form elements (like `<input>`) have to be in the same subtree with the `<form>` element.
-
-```javascript
-import { define, html } from "hybrids";
-
-define({
-  tag: "my-element",
-  name: "",
-  content: ({ name }) => html`<h1>Hello ${name}!</h1>`
-});
-```
-
-### Custom Function
-
-The preferred way is to use a built-in [template engine](/component/templates.md), but you can use any function to update the DOM of the custom element, which accepts the following structure:
-
-```javascript
-import React from "react";
-import ReactDOM from "react-dom";
-
-export default function reactify(fn) {
-  return (host) => {
-    // get the component using the fn and host element
-    const Component = fn(host); 
-
-    // return the update function
-    return (host, target) => {
-      ReactDOM.render(Component, target);
-    }
-  }
-}
-```
-
-```javascript
-import reactify from "./reactify.js";
-
-function MyComponent({ name }) {
-  return <div>{name}</div>;
-}
-
-define({
-  tag: "my-element",
-  render: reactify(({ name }) => <MyComponent name={name} />),
-})
-```
-
-The above example uses the [`factory` pattern](#factories), to produce a function, which accepts the host element and returns the update function, which has `host` and `target` arguments. The `target` argument in the update function can be a `host` or `host.shadowRoot` depending on the property name.
-
-!> The other properties from the `host` must be called in the main function body (not in the update function), as only then they will be correctly observed
-
 ### Reference Internals
 
-Both `render` and `content` properties can be used to reference internals of the custom element. The DOM update process is asynchronous, so to avoid rendering timing issues, always use a property as a reference to the target element. If the property depending on `render` or `content` is called before the first update, the update will be triggered manually by calling the function.
+The `render` property can be used to reference internals of the custom element. The DOM update process is asynchronous, so to avoid rendering timing issues, always use a property as a reference to the target element. If the property depending on `render` is called before the first update, the update will be triggered manually by calling the function.
 
 ```javascript
 import { define, html } from "hybrids";

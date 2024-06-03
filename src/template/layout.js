@@ -214,7 +214,7 @@ export function inject(target) {
   const sheet = getCSSStyleSheet();
 
   /* istanbul ignore else */
-  if (hasAdoptedStylesheets) {
+  if (hasAdoptedStylesheets && root.adoptedStyleSheets) {
     root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
   } else {
     if (root === globalThis.document) return;

@@ -216,7 +216,7 @@ describe("localize:", () => {
           <script>text only</script>
           <style>text only</style>
           <div>text only</div>
-        `(el);
+        `(el, false);
         expect(el.children[0].childNodes[0].textContent.trim()).toBe(
           "text only",
         );

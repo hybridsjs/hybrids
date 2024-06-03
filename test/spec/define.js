@@ -82,6 +82,15 @@ describe("define:", () => {
     expect(define.compile({ some: "" }).prototype).toBeInstanceOf(HTMLElement);
   });
 
+  it("skips the definition if the hybrids are the same", () => {
+    const hybrids = { tag: "test-define-skip" };
+    expect(define(hybrids)).toBe(hybrids);
+
+    return resolveRaf(() => {
+      expect(define(hybrids)).toBe(hybrids);
+    });
+  });
+
   it("redefines the same element", () => {
     define({
       tag: "test-define-same-deep",
@@ -92,7 +101,10 @@ describe("define:", () => {
       tag: "test-define-same",
       prop1: "test",
       prop2: "other",
-      render: () => html` <test-define-same-deep></test-define-same-deep> `,
+      render: () => html`
+        <test-define-same-deep></test-define-same-deep>
+        <slot></slot>
+      `,
     });
 
     el = document.createElement("test-define-same");
@@ -114,14 +126,14 @@ describe("define:", () => {
         expect(el.prop1).toBe(undefined);
         expect(el.prop2).toBe("test");
 
-        expect(el.shadowRoot.children[0].prop).toBe("other");
+        expect(el.render().children[0].prop).toBe("other");
       });
     });
   });
 
   it("upgrades values from the instance", () => {
     el = document.createElement("test-define-upgrade-values");
-    el.prop1 = "0";
+    el.prop1 = "1";
     el.prop2 = "asdf";
 
     document.body.appendChild(el);
@@ -132,7 +144,7 @@ describe("define:", () => {
       prop2: false,
     });
 
-    expect(el.prop1).toBe(0);
+    expect(el.prop1).toBe(1);
     expect(el.prop2).toBe(true);
   });
 
@@ -203,23 +215,17 @@ describe("define:", () => {
     document.body.appendChild(el);
 
     return resolveRaf(() => {
-      expect(el.shadowRoot.innerHTML).toBe(
-        "<div>0</div><div>0</div><div>0</div>",
-      );
+      expect(el.innerHTML).toBe("<div>0</div><div>0</div><div>0</div>");
 
       el.prop1 = 1;
 
       return resolveRaf(() => {
-        expect(el.shadowRoot.innerHTML).toBe(
-          "<div>1</div><div>1</div><div>0</div>",
-        );
+        expect(el.innerHTML).toBe("<div>1</div><div>1</div><div>0</div>");
 
         el.prop1 = 2;
 
         return resolveRaf(() => {
-          expect(el.shadowRoot.innerHTML).toBe(
-            "<div>2</div><div>2</div><div>1</div>",
-          );
+          expect(el.innerHTML).toBe("<div>2</div><div>2</div><div>1</div>");
         });
       });
     });
@@ -260,10 +266,6 @@ describe("define:", () => {
           value: () => 0,
         },
         notDefined: undefined,
-        render: ({ prop1 }) =>
-          html`<div>${prop1}</div>`, // prettier-ignore
-        content: ({ prop1 }) =>
-          html`<div>${prop1}</div>`, // prettier-ignore
       });
     });
 
@@ -429,88 +431,124 @@ describe("define:", () => {
       });
     });
 
-    it("renders to shadowRoot", () => {
-      document.body.appendChild(el);
-      expect(el.shadowRoot).toBe(null);
+    describe("render property", () => {
+      it("calls observe method for render property", () => {
+        const spy = jasmine.createSpy("observe");
+        define({
+          tag: "test-define-render-observe",
+          render: {
+            value: () => html`<div></div>`,
+            observe: spy,
+          },
+        });
 
-      return resolveRaf(() => {
-        expect(el.shadowRoot.innerHTML).toBe("<div>default</div>");
-        el.prop1 = "a";
+        el = document.createElement("test-define-render-observe");
+        document.body.appendChild(el);
 
         return resolveRaf(() => {
-          expect(el.shadowRoot.innerHTML).toBe("<div>a</div>");
+          expect(spy).toHaveBeenCalledTimes(1);
         });
       });
-    });
 
-    it("calls observe method of the render property", () => {
-      const spy = jasmine.createSpy("observe");
-      define({
-        tag: "test-define-render-observe",
-        render: {
-          value: () => html`<div></div>`,
-          observe: spy,
-        },
-      });
-
-      el = document.createElement("test-define-render-observe");
-      document.body.appendChild(el);
-
-      return resolveRaf(() => {
-        expect(spy).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    it("uses property options for render in shadowRoot", () => {
-      define({
-        tag: "test-define-render-options",
-        render: {
-          options: { delegatesFocus: true },
-          value: () => html` <div>test</div>`,
-        },
-      });
-
-      el = document.createElement("test-define-render-options");
-      document.body.appendChild(el);
-
-      el.attachShadow = jasmine.createSpy("attachShadow");
-
-      return resolveRaf(() => {
-        expect(el.attachShadow).toHaveBeenCalledOnceWith({
-          mode: "open",
-          delegatesFocus: true,
+      it("renders content to children", () => {
+        define({
+          tag: "test-define-render-content",
+          render: () => html`<div>content</div>`,
         });
-      });
-    });
 
-    it("calls observe method for render property", () => {
-      const spy = jasmine.createSpy("observe");
-      define({
-        tag: "test-define-render-observe",
-        render: {
-          value: () => html`<div></div>`,
-          observe: spy,
-        },
-      });
-
-      el = document.createElement("test-define-render-observe");
-      document.body.appendChild(el);
-
-      return resolveRaf(() => {
-        expect(spy).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    it("puts content to children", () => {
-      document.body.appendChild(el);
-      expect(el.innerHTML).toBe("");
-
-      return resolveRaf(() => {
-        expect(el.innerHTML).toBe("<div>default</div>");
-        el.prop1 = "a";
+        el = document.createElement("test-define-render-content");
+        document.body.appendChild(el);
 
         return resolveRaf(() => {
-          expect(el.innerHTML).toBe("<div>a</div>");
+          expect(el.innerHTML).toBe("<div>content</div>");
+        });
+      });
+
+      it("renders content with slot element to shadow root ", () => {
+        define({
+          tag: "test-define-render-content",
+          render: () => html`<slot></slot>`,
+        });
+
+        el = document.createElement("test-define-render-content");
+        document.body.appendChild(el);
+
+        return resolveRaf(() => {
+          expect(el.shadowRoot.innerHTML).toBe("<slot></slot>");
+        });
+      });
+
+      it("renders content with styles to shadow root", () => {
+        define({
+          tag: "test-define-render-content",
+          render: () => html`<div>content</div>`.css`:host { color: red }`,
+        });
+
+        el = document.createElement("test-define-render-content");
+        document.body.appendChild(el);
+
+        return resolveRaf(() => {
+          expect(el.shadowRoot.innerHTML).toBe("<div>content</div>");
+        });
+      });
+
+      it("renders content with styles to children", () => {
+        define({
+          tag: "test-define-render-content",
+          render: {
+            value: () => html`<div>content</div>`.css`:host { color: red }`,
+            shadow: false,
+          },
+        });
+
+        el = document.createElement("test-define-render-content");
+        document.body.appendChild(el);
+
+        return resolveRaf(() => {
+          expect(el.innerHTML).toBe(
+            "<div>content</div><style>:host { color: red }</style>",
+          );
+          expect(el.shadowRoot).toBe(null);
+        });
+      });
+
+      it("renders content to shadow root", () => {
+        define({
+          tag: "test-define-render-content",
+          render: {
+            value: () => html`<div>content</div>`,
+            shadow: true,
+          },
+        });
+
+        el = document.createElement("test-define-render-content");
+        document.body.appendChild(el);
+
+        return resolveRaf(() => {
+          expect(el.innerHTML).toBe("");
+          expect(el.shadowRoot.innerHTML).toBe("<div>content</div>");
+        });
+      });
+
+      it("uses shadow option for additional shadowRoot settings", () => {
+        define({
+          tag: "test-define-render-options",
+          render: {
+            shadow: { delegatesFocus: true },
+            value: () => html` <div>test</div>`,
+          },
+        });
+
+        el = document.createElement("test-define-render-options");
+        document.body.appendChild(el);
+
+        el.attachShadow = jasmine.createSpy("attachShadow");
+
+        return resolveRaf(() => {
+          expect(el.attachShadow).toHaveBeenCalledOnceWith({
+            mode: "open",
+            delegatesFocus: true,
+          });
         });
       });
     });

@@ -1,13 +1,13 @@
-export default function render(key, desc) {
+export default function render(desc) {
   if (desc.reflect) {
-    throw TypeError(`'reflect' option is not supported for '${key}' property`);
+    throw TypeError(`'reflect' option is not supported for 'render' property`);
   }
 
   const { value: fn, observe } = desc;
 
   if (typeof fn !== "function") {
     throw TypeError(
-      `Value for '${key}' property must be a function: ${typeof fn}`,
+      `Value for 'render' property must be a function: ${typeof fn}`,
     );
   }
 
@@ -22,35 +22,18 @@ export default function render(key, desc) {
         },
   };
 
-  if (key === "render") {
-    const options = desc.options || {};
+  const shadowOptions = desc.shadow
+    ? {
+        mode: desc.shadow.mode || "open",
+        delegatesFocus: desc.shadow.delegatesFocus || false,
+      }
+    : desc.shadow;
 
-    const shadowOptions = {
-      mode: options.mode || "open",
-      delegatesFocus: options.delegatesFocus || false,
-    };
-
-    return {
-      value: (host) => {
-        const updateDOM = fn(host);
-        return () => {
-          const target = host.shadowRoot || host.attachShadow(shadowOptions);
-          updateDOM(host, target);
-          return target;
-        };
-      },
-      ...rest,
-    };
-  } else {
-    return {
-      value: (host) => {
-        const updateDOM = fn(host);
-        return () => {
-          updateDOM(host, host);
-          return host;
-        };
-      },
-      ...rest,
-    };
-  }
+  return {
+    value: (host) => {
+      const updateDOM = fn(host);
+      return () => updateDOM(host, shadowOptions);
+    },
+    ...rest,
+  };
 }

@@ -85,10 +85,7 @@ function compile(hybrids, HybridsElement) {
       );
     }
 
-    desc =
-      key === "render" || key === "content"
-        ? render(key, desc)
-        : value(key, desc);
+    desc = key === "render" ? render(desc) : value(key, desc);
 
     if (desc.writable) {
       writable.add(key);

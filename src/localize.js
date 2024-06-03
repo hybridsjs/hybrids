@@ -1,6 +1,5 @@
 import { getPlaceholder } from "./template/utils.js";
 
-import { probablyDevMode } from "./utils.js";
 import { compile } from "./template/index.js";
 
 const dictionary = new Map();
@@ -81,7 +80,7 @@ export function get(key, context, args = []) {
       }
       if (!msg) {
         msg = key;
-        if ((dictionary.size || translate) && probablyDevMode) {
+        if (dictionary.size || translate) {
           console.warn(
             `Missing translation: "${key}"${context ? ` [${context}]` : ""}`,
           );
@@ -166,12 +165,16 @@ export function msg(parts, ...args) {
   return getString(parts, args).replace(EXP_REGEX, (_, index) => args[index]);
 }
 
+const PLACEHOLDER_SVG = getPlaceholder("svg");
+const PLACEHOLDER_MSG = getPlaceholder("msg");
+
 msg.html = function html(parts, ...args) {
   const input = getString(parts, args);
 
   return compile(
     input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
     args,
+    input + PLACEHOLDER_MSG,
     false,
     true,
   );
@@ -183,6 +186,7 @@ msg.svg = function svg(parts, ...args) {
   return compile(
     input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
     args,
+    input + PLACEHOLDER_SVG + PLACEHOLDER_MSG,
     true,
     true,
   );

@@ -1,4 +1,4 @@
-import { stringifyElement, probablyDevMode } from "../utils.js";
+import { stringifyElement } from "../utils.js";
 import { get as getMessage, isLocalizeEnabled } from "../localize.js";
 
 import * as layout from "./layout.js";
@@ -17,7 +17,7 @@ const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
 const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, "g");
 const PLACEHOLDER_REGEXP_ONLY = /^[^A-Za-z]+$/;
 
-function createSignature(parts) {
+function createContent(parts) {
   let signature = parts[0];
   let tableMode = false;
   for (let index = 1; index < parts.length; index += 1) {
@@ -190,12 +190,10 @@ function updateStyleElement(target, styles) {
 }
 
 export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
+  const content = isMsg ? rawParts : createContent(rawParts);
+
   let template = globalThis.document.createElement("template");
-  const parts = {};
-
-  const signature = isMsg ? rawParts : createSignature(rawParts);
-
-  template.innerHTML = isSVG ? `<svg>${signature}</svg>` : signature;
+  template.innerHTML = isSVG ? `<svg>${content}</svg>` : content;
 
   if (isSVG) {
     const svgRoot = template.content.firstChild;
@@ -235,9 +233,12 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
   }
 
   const compileWalker = createWalker(template.content);
+  const parts = {};
   const notDefinedElements = [];
+
   let compileIndex = 0;
   let noTranslate = null;
+  let useShadow = false;
 
   while (compileWalker.nextNode()) {
     let node = compileWalker.currentNode;
@@ -347,25 +348,26 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
     } else {
       /* istanbul ignore else */
       if (node.nodeType === globalThis.Node.ELEMENT_NODE) {
+        if (node.tagName === "STYLE" || node.tagName === "SLOT") {
+          useShadow = true;
+        }
+
         if (
           !noTranslate &&
           (node.getAttribute("translate") === "no" ||
-            node.tagName.toLowerCase() === "script" ||
-            node.tagName.toLowerCase() === "style")
+            node.tagName === "SCRIPT" ||
+            node.tagName === "STYLE")
         ) {
           noTranslate = node;
         }
 
-        /* istanbul ignore else */
-        if (probablyDevMode) {
-          const tagName = node.tagName.toLowerCase();
-          if (
-            tagName.match(/.+-.+/) &&
-            !globalThis.customElements.get(tagName) &&
-            !notDefinedElements.includes(tagName)
-          ) {
-            notDefinedElements.push(tagName);
-          }
+        const tagName = node.tagName.toLowerCase();
+        if (
+          tagName.match(/.+-.+/) &&
+          !globalThis.customElements.get(tagName) &&
+          !notDefinedElements.includes(tagName)
+        ) {
+          notDefinedElements.push(tagName);
         }
 
         for (const attr of Array.from(node.attributes)) {
@@ -437,108 +439,114 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
     compileIndex += 1;
   }
 
-  if (probablyDevMode && notDefinedElements.length) {
+  if (notDefinedElements.length) {
     console.warn(
       `Not defined ${notDefinedElements
         .map((e) => `<${e}>`)
         .join(", ")} element${
         notDefinedElements.length > 1 ? "s" : ""
-      } found in the template:\n${beautifyTemplateLog(signature, -1)}`,
+      } found in the template:\n${beautifyTemplateLog(content, -1)}`,
     );
   }
 
   const partsKeys = Object.keys(parts);
-  return function updateTemplateInstance(host, target, args, { styleSheets }) {
-    let meta = getMeta(target);
+  return Object.assign(
+    function updateTemplateInstance(host, target, args, styleSheets, shadow) {
+      let meta = getMeta(target);
 
-    if (template !== meta.template) {
-      const fragment = globalThis.document.importNode(template.content, true);
-      const renderWalker = createWalker(fragment);
-      const markers = [];
+      if (template !== meta.template) {
+        const fragment = globalThis.document.importNode(template.content, true);
+        const renderWalker = createWalker(fragment);
+        const markers = [];
 
-      let renderIndex = 0;
-      let keyIndex = 0;
-      let currentPart = parts[partsKeys[keyIndex]];
+        let renderIndex = 0;
+        let keyIndex = 0;
+        let currentPart = parts[partsKeys[keyIndex]];
 
-      while (renderWalker.nextNode()) {
-        const node = renderWalker.currentNode;
+        while (renderWalker.nextNode()) {
+          const node = renderWalker.currentNode;
 
-        while (currentPart && currentPart[0] === renderIndex) {
-          markers.push({
-            index: partsKeys[keyIndex],
-            node,
-            fn: currentPart[1],
-          });
-          keyIndex += 1;
-          currentPart = parts[partsKeys[keyIndex]];
+          while (currentPart && currentPart[0] === renderIndex) {
+            markers.push({
+              index: partsKeys[keyIndex],
+              node,
+              fn: currentPart[1],
+            });
+            keyIndex += 1;
+            currentPart = parts[partsKeys[keyIndex]];
+          }
+
+          renderIndex += 1;
         }
 
-        renderIndex += 1;
-      }
-
-      if (meta.hostLayout) {
-        host.classList.remove(meta.hostLayout);
-      }
-
-      removeTemplate(target);
-
-      meta = getMeta(target);
-
-      meta.template = template;
-      meta.markers = markers;
-
-      if (target.nodeType === globalThis.Node.TEXT_NODE) {
-        updateStyleElement(target);
-
-        meta.startNode = fragment.childNodes[0];
-        meta.endNode = fragment.childNodes[fragment.childNodes.length - 1];
-
-        let previousChild = target;
-
-        let child = fragment.childNodes[0];
-        while (child) {
-          target.parentNode.insertBefore(child, previousChild.nextSibling);
-          previousChild = child;
-          child = fragment.childNodes[0];
+        if (meta.hostLayout) {
+          host.classList.remove(meta.hostLayout);
         }
+
+        removeTemplate(target);
+
+        meta = getMeta(target);
+
+        meta.template = template;
+        meta.markers = markers;
+
+        if (target.nodeType === globalThis.Node.TEXT_NODE) {
+          updateStyleElement(target);
+
+          meta.startNode = fragment.childNodes[0];
+          meta.endNode = fragment.childNodes[fragment.childNodes.length - 1];
+
+          let previousChild = target;
+
+          let child = fragment.childNodes[0];
+          while (child) {
+            target.parentNode.insertBefore(child, previousChild.nextSibling);
+            previousChild = child;
+            child = fragment.childNodes[0];
+          }
+        } else {
+          if (useLayout) {
+            const className = `${hostLayout}-${host === target ? "c" : "s"}`;
+            host.classList.add(className);
+            meta.hostLayout = className;
+          }
+
+          target.appendChild(fragment);
+        }
+
+        if (useLayout) layout.inject(target);
+      }
+
+      if (target.adoptedStyleSheets) {
+        updateAdoptedStylesheets(target, styleSheets);
       } else {
-        if (useLayout) {
-          const className = `${hostLayout}-${host === target ? "c" : "s"}`;
-          host.classList.add(className);
-          meta.hostLayout = className;
+        updateStyleElement(target, styleSheets);
+      }
+
+      for (const marker of meta.markers) {
+        const value = args[marker.index];
+        let prevValue = undefined;
+
+        if (meta.prevArgs) {
+          prevValue = meta.prevArgs[marker.index];
+          if (prevValue === value) continue;
         }
 
-        target.appendChild(fragment);
+        try {
+          marker.fn(host, marker.node, value, prevValue, useLayout, shadow);
+        } catch (error) {
+          console.error(
+            `Error while updating template expression in ${stringifyElement(
+              host,
+            )}:\n${beautifyTemplateLog(content, marker.index)}`,
+          );
+
+          throw error;
+        }
       }
 
-      if (useLayout) layout.inject(target);
-    }
-
-    if (target.adoptedStyleSheets) {
-      updateAdoptedStylesheets(target, styleSheets);
-    } else {
-      updateStyleElement(target, styleSheets);
-    }
-
-    for (const marker of meta.markers) {
-      const value = args[marker.index];
-      const prevValue = meta.prevArgs && meta.prevArgs[marker.index];
-
-      if (meta.prevArgs && value === prevValue) continue;
-
-      try {
-        marker.fn(host, marker.node, value, prevValue, useLayout);
-      } catch (error) {
-        console.error(
-          `Error while updating template expression in ${stringifyElement(
-            host,
-          )}:\n${beautifyTemplateLog(signature, marker.index)}`,
-        );
-
-        throw error;
-      }
-    }
-
-    meta.prevArgs = args;
-  };
+      meta.prevArgs = args;
+    },
+    { useShadow },
+  );
 }
