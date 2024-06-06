@@ -2,7 +2,7 @@
 
 ## v9.0.0
 
-The `v9.0` release brings simplification into the full object property descriptor and moves out some rarely used default behaviors into optional features.
+The `v9.0` release brings simplification into the full object property descriptor, removes the `content` property, and moves out some rarely used default behaviors into optional features.
 
 ### Descriptors
 
@@ -49,11 +49,11 @@ Writable properties are no longer automatically synchronized back to the attribu
 
 Read more about the attribute synchronization in the [Structure](/component-model/structure.md#reflect) section.
 
-### Render and Content
+### Render
 
-#### Keys
+#### Key
 
-The `render` and `content` properties are now reserved and expect an update function as a value (they cannot be used for other purpose). If you defined them as a full descriptor with custom behavior, you must rename them:
+The `render` property is now reserved and expects an update function as a value (it cannot be used for other purpose). If you defined it as a full descriptor with custom behavior, you must rename the property:
 
 ```javascript
 // before
@@ -74,7 +74,39 @@ The `render` and `content` properties are now reserved and expect an update func
 }
 ```
 
-#### Shadow DOM
+#### Content
+
+From now, the `content` property has no special behavior, so it does not render. As the content by design should not include styles or `<slot>` elements, it is sufficient to just rename the property to `render` and use implicit mode for rendering:
+
+```javascript
+// before
+{
+  content: () => html`...`,
+  ...
+}
+```
+
+```javascript
+// after
+{
+  render: () => html`...`,
+  ...
+}
+```
+
+If you need to pass styles to the element's content, you can disable Shadow DOM explicitly:
+  
+```javascript
+{
+  render: {
+    value: () => html`...`.css`body { font-size: 14px }`,
+    shadow: false,
+  },
+  ...
+}
+```
+
+#### Options
 
 The options are now part of the `render` descriptor instead of a need to extend the `render` function:
 
@@ -91,7 +123,21 @@ The options are now part of the `render` descriptor instead of a need to extend 
 {
   render: {
     value: (host) => html`...`,
-    options: { mode: "close" },
+    shadow: { mode: "close" },
+  },
+  ...
+}
+```
+
+#### Custom Rendering
+
+Using custom render function is no longer officially supported. If you need to render the content in a custom way, ensure you are using rendering mode explicitly:
+
+```javascript
+{
+  render: {
+    value: reactify(<MyComponent>),
+    shadow: true,
   },
   ...
 }

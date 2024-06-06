@@ -145,7 +145,7 @@ import Home from './views/home.js';
 
 const App = {
   stack: router(Home),
-  content: () => html`
+  render: () => html`
     <template layout="column">
       ...
       ${stack}

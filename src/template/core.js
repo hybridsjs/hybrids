@@ -1,4 +1,4 @@
-import { stringifyElement, probablyDevMode } from "../utils.js";
+import { stringifyElement } from "../utils.js";
 import { get as getMessage, isLocalizeEnabled } from "../localize.js";
 
 import * as layout from "./layout.js";
@@ -17,7 +17,7 @@ const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
 const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, "g");
 const PLACEHOLDER_REGEXP_ONLY = /^[^A-Za-z]+$/;
 
-function createSignature(parts) {
+function createContents(parts) {
   let signature = parts[0];
   let tableMode = false;
   for (let index = 1; index < parts.length; index += 1) {
@@ -190,19 +190,18 @@ function updateStyleElement(target, styles) {
 }
 
 export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
+  const contents = isMsg ? rawParts : createContents(rawParts);
   let template = globalThis.document.createElement("template");
-  const parts = {};
-
-  const signature = isMsg ? rawParts : createSignature(rawParts);
-
-  template.innerHTML = isSVG ? `<svg>${signature}</svg>` : signature;
 
   if (isSVG) {
+    template.innerHTML = `<svg>${contents}</svg>`;
     const svgRoot = template.content.firstChild;
     template.content.removeChild(svgRoot);
     for (const node of Array.from(svgRoot.childNodes)) {
       template.content.appendChild(node);
     }
+  } else {
+    template.innerHTML = contents;
   }
 
   let hostLayout;
@@ -235,9 +234,13 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
   }
 
   const compileWalker = createWalker(template.content);
+  const parts = {};
   const notDefinedElements = [];
+
   let compileIndex = 0;
   let noTranslate = null;
+  let useShadow = false;
+  let slotDetected = false;
 
   while (compileWalker.nextNode()) {
     let node = compileWalker.currentNode;
@@ -348,24 +351,30 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
       /* istanbul ignore else */
       if (node.nodeType === globalThis.Node.ELEMENT_NODE) {
         if (
+          node.tagName === "STYLE" ||
+          node.tagName === "SLOT" ||
+          (node.tagName === "LINK" && node.rel === "stylesheet")
+        ) {
+          useShadow = true;
+          slotDetected = slotDetected || node.tagName === "SLOT";
+        }
+
+        if (
           !noTranslate &&
           (node.getAttribute("translate") === "no" ||
-            node.tagName.toLowerCase() === "script" ||
-            node.tagName.toLowerCase() === "style")
+            node.tagName === "SCRIPT" ||
+            node.tagName === "STYLE")
         ) {
           noTranslate = node;
         }
 
-        /* istanbul ignore else */
-        if (probablyDevMode) {
-          const tagName = node.tagName.toLowerCase();
-          if (
-            tagName.match(/.+-.+/) &&
-            !globalThis.customElements.get(tagName) &&
-            !notDefinedElements.includes(tagName)
-          ) {
-            notDefinedElements.push(tagName);
-          }
+        const tagName = node.tagName.toLowerCase();
+        if (
+          tagName.match(/.+-.+/) &&
+          !globalThis.customElements.get(tagName) &&
+          !notDefinedElements.includes(tagName)
+        ) {
+          notDefinedElements.push(tagName);
         }
 
         for (const attr of Array.from(node.attributes)) {
@@ -437,18 +446,31 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
     compileIndex += 1;
   }
 
-  if (probablyDevMode && notDefinedElements.length) {
+  if (notDefinedElements.length) {
     console.warn(
       `Not defined ${notDefinedElements
         .map((e) => `<${e}>`)
         .join(", ")} element${
         notDefinedElements.length > 1 ? "s" : ""
-      } found in the template:\n${beautifyTemplateLog(signature, -1)}`,
+      } found in the template:\n${beautifyTemplateLog(contents, -1)}`,
     );
   }
 
   const partsKeys = Object.keys(parts);
-  return function updateTemplateInstance(host, target, args, { styleSheets }) {
+  return function updateTemplateInstance(host, target, args, styleSheets) {
+    if (target) {
+      if (slotDetected && !host.shadowRoot) {
+        throw TypeError(
+          `The <slot> element found - use 'shadow' options to explicitly define Shadow DOM mode`,
+        );
+      }
+    } else {
+      target =
+        host.shadowRoot ||
+        ((useShadow || styleSheets) && host.attachShadow({ mode: "open" })) ||
+        host;
+    }
+
     let meta = getMeta(target);
 
     if (template !== meta.template) {
@@ -522,9 +544,12 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
 
     for (const marker of meta.markers) {
       const value = args[marker.index];
-      const prevValue = meta.prevArgs && meta.prevArgs[marker.index];
+      let prevValue = undefined;
 
-      if (meta.prevArgs && value === prevValue) continue;
+      if (meta.prevArgs) {
+        prevValue = meta.prevArgs[marker.index];
+        if (prevValue === value) continue;
+      }
 
       try {
         marker.fn(host, marker.node, value, prevValue, useLayout);
@@ -532,7 +557,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
         console.error(
           `Error while updating template expression in ${stringifyElement(
             host,
-          )}:\n${beautifyTemplateLog(signature, marker.index)}`,
+          )}:\n${beautifyTemplateLog(contents, marker.index)}`,
         );
 
         throw error;
@@ -540,5 +565,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
     }
 
     meta.prevArgs = args;
+
+    return target;
   };
 }

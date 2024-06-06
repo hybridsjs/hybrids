@@ -1,4 +1,4 @@
-import resolveTemplateValue from "../resolvers/value.js";
+import resolveValue from "../resolvers/value.js";
 
 const promiseMap = new WeakMap();
 export default function resolve(promise, placeholder, delay = 200) {
@@ -9,7 +9,7 @@ export default function resolve(promise, placeholder, delay = 200) {
     if (placeholder) {
       timeout = setTimeout(() => {
         timeout = undefined;
-        resolveTemplateValue(host, target, placeholder, undefined, useLayout);
+        resolveValue(host, target, placeholder, undefined, useLayout);
       }, delay);
     }
 
@@ -19,7 +19,7 @@ export default function resolve(promise, placeholder, delay = 200) {
       if (timeout) clearTimeout(timeout);
 
       if (promiseMap.get(target) === promise) {
-        resolveTemplateValue(
+        resolveValue(
           host,
           target,
           value,

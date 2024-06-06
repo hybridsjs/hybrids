@@ -545,7 +545,7 @@ The built-in `html.transition` plugin utilizes the [Transition API](https://deve
 define({
   tag: 'my-app',
   stack: router([Home]),
-  content: ({ stack }) => html`
+  render: ({ stack }) => html`
     <header>...</header>
     <main>${stack}</main>
     ...
@@ -560,7 +560,7 @@ The transition API can be customized by the CSS properties. The DOM elements mig
 ```javascript
 export default define({
   tag: 'my-app-home',
-  content: () => html`
+  render: () => html`
     <template layout="column">
       ...
       <div layout="view:card"></div>

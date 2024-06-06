@@ -28,7 +28,7 @@ The feature supports both `content` and `render` properties of the component's d
 ```js
 define({
   tag: "my-app-view",
-  content: () => html`
+  render: () => html`
     <template layout="column">
       ...
     </template>

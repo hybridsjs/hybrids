@@ -21,7 +21,7 @@ Otherwise, you can use it directly from a number of CDNs, which provide a hybrid
   define({
     tag: "hello-world",
     name: '',
-    content: ({ name }) => html`<p>Hello ${name}!</p>`,
+    render: ({ name }) => html`<p>Hello ${name}!</p>`,
   });
 </script>
 ```

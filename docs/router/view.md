@@ -10,7 +10,7 @@ import { define, html, router } from "hybrids";
 export default define({
   [router.connect]: { stack: [...] },
   tag: "my-app-view",
-  content: ({ ... }) => html`
+  render: ({ ... }) => html`
     <my-button>...</my-button>
     ...
   `,
@@ -44,7 +44,7 @@ import Users from "./User.js";
 export default define({
   [router.connect]: { stack: [Users] },
   tag: "my-home-view",
-  content: () => html`
+  render: () => html`
     <h1>Home</h1>
 
     <a href="${router.url(Users)}">Users</a>
@@ -75,7 +75,7 @@ export default define({
   tag: "my-users-view",
   page: 1,
   users: store([UserModel], { id: ({ page }) => ({ page })}),
-  content: ({ users }) => html`
+  render: ({ users }) => html`
     <h1>Users View</h1>
 
     ${store.ready(users) && users.map(user => html`
@@ -120,7 +120,7 @@ const MyUserDialog = define({
   },
   tag: "my-user-dialog",
   user: store(UserModel),
-  content: () => html`
+  render: () => html`
     <dialog>
       <p>Are you sure?</p>
       <a href="${router.url(Users)}" onclick="${deleteUser}">Yes</a>
@@ -136,7 +136,7 @@ export default define({
   },
   tag: "my-user-view",
   user: store(UserModel),
-  content: ({ user }) => html`
+  render: ({ user }) => html`
     <h1>User View</h1>
 
     <p>${store.ready(user) && user.name}</p>
@@ -165,7 +165,7 @@ export default define({
   },
   tag: "my-product-view",
   product: store(Product),
-  content: ({ product }) => html`
+  render: ({ product }) => html`
     <h1>Product View</h1>
 
     ${store.ready(product) && html`
@@ -196,7 +196,7 @@ export default define({
   [router.connect]: { replace: true },
   tag: "my-user-details-view",
   ...,
-  content: ({ user }) => html`
+  render: ({ user }) => html`
     ...
     <p>
       Follows: 
@@ -237,7 +237,7 @@ export default define({
   },
   tag: "my-login-view",
   session: store(Session, { draft: true }),
-  content: () => html`
+  render: () => html`
     <h1>Login</h1>
     <form onsubmit="${login}" action="${router.guardUrl()}">
       <input value="${session.login}" oninput="${html.set(session, "login")}" />
@@ -268,7 +268,7 @@ export const Session = {
 export default define({
   tag: "my-async-app",
   session: store(Session),
-  content: ({ session }) => 
+  render: ({ session }) => 
     store.ready(session) || store.error(session) 
     ? html`<my-app></my-app>`
     : html`<app-loader>...</app-loader>`

@@ -110,7 +110,7 @@ import Details from  "./details.js";
 const Home = define({
   [router.connect]: { stack: [Details, ...] },
   tag: "app-home",
-  content: () => html`
+  render: () => html`
     <template layout="column">
       <h1>Home</h1>
       <nav layout="row gap">
@@ -124,7 +124,7 @@ const Home = define({
 export define({
   tag: "app-router",
   stack: router(Home),
-  content: ({ stack }) => html`
+  render: ({ stack }) => html`
     <template layout="column">
       ${stack}
     </template>
@@ -145,7 +145,7 @@ Create CSS layouts in-place in templates, even without using Shadow DOM, but sti
 ```javascript
 define({
   tag: "app-home-view",
-  content: () => html`
+  render: () => html`
     <template layout="column center gap:2">
       <div layout="grow grid:1|max">
         <h1>Home</h1>

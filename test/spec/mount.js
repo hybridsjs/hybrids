@@ -16,7 +16,7 @@ describe("mount:", () => {
   it("mounts hybrids element to target element", () => {
     mount(target, {
       value: 1,
-      content: ({ value }) => html`<div>${value}</div>`,
+      render: ({ value }) => html`<div>${value}</div>`,
     });
 
     return resolveRaf(() => {
@@ -28,13 +28,13 @@ describe("mount:", () => {
     mount(target, {
       value: 1,
       test: "value",
-      content: ({ value }) => html`<div>${value}</div>`,
+      render: ({ value }) => html`<div>${value}</div>`,
     });
 
     return resolveRaf(() => {
       mount(target, {
         test: "hello",
-        content: (host) => html`<div>${host.test}</div>`,
+        render: (host) => html`<div>${host.test}</div>`,
       });
 
       return resolveRaf(() => {
@@ -49,7 +49,7 @@ describe("mount:", () => {
     const spy = jasmine.createSpy();
     const hybrids = {
       value: 1,
-      content: ({ value }) => {
+      render: ({ value }) => {
         spy();
         return html`<div>${value}</div>`;
       },

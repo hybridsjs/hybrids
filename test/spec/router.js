@@ -26,6 +26,10 @@ describe("router:", () => {
     window.history.replaceState(null, "", browserUrl);
   });
 
+  beforeEach(() => {
+    return resolveTimeout(() => {});
+  });
+
   it("throws for wrong arguments", () => {
     const el = document.createElement("div");
     expect(() => router().connect(el)).toThrow();
@@ -221,7 +225,7 @@ describe("router:", () => {
       [router.connect]: {
         stack: [Target],
       },
-      content: () => html` <a href="${router.url(B)}"></a> `,
+      render: () => html` <a href="${router.url(B)}"></a> `,
     });
 
     const B = define({
@@ -229,13 +233,13 @@ describe("router:", () => {
       [router.connect]: {
         stack: [Target],
       },
-      content: () => html` <a href="${router.url(Target)}"></a> `,
+      render: () => html` <a href="${router.url(Target)}"></a> `,
     });
 
     define({
       tag: "test-router-view-multiple-parents",
       stack: router([A, B]),
-      content: ({ stack }) => html`${stack}`,
+      render: ({ stack }) => html`${stack}`,
     });
 
     const el = document.createElement("test-router-view-multiple-parents");
@@ -291,9 +295,6 @@ describe("router:", () => {
         globalC: "",
         render: () => html`
           <test-router-nested-component></test-router-nested-component>
-          <slot></slot>
-        `,
-        content: () => html`
           <a
             href="${router.url(NestedViewTwo, { value: "1" })}"
             id="NestedViewTwo"
@@ -306,7 +307,7 @@ describe("router:", () => {
         [router.connect]: { url: "/other_url_child" },
         param: false,
         tag: "test-router-other-child-view",
-        content: () => html`
+        render: () => html`
           <a href="${router.url(MultipleView)}" id="MultipleViewFromOtherChild"
             >MultipleViewFromOtherChild</a
           >
@@ -339,8 +340,7 @@ describe("router:", () => {
         globalA: "",
         globalC: "value",
         views: router([NestedViewOne], { params: ["globalC"] }),
-        render: () => html`<slot></slot>`, // prettier-ignore
-        content: ({ views }) => html`
+        render: ({ views }) => html`
           ${views}
           <a href="${router.url(RootView)}" id="RootView">RootView</a>
           <a
@@ -362,15 +362,14 @@ describe("router:", () => {
         [router.connect]: { dialog: true },
         tag: "test-router-dialog2",
         param: 1,
-        content: () =>
-          html`<a href="${router.backUrl()}" id="Dialog2Back"></a>`,
+        render: () => html`<a href="${router.backUrl()}" id="Dialog2Back"></a>`,
       });
 
       Dialog = define({
         [router.connect]: { dialog: true },
         tag: "test-router-dialog",
         param: 1,
-        content: () => html`
+        render: () => html`
           <a href="${router.currentUrl({ param: 2 })}" id="DialogCurrent"
             >DialogCurrent</a
           >
@@ -385,7 +384,7 @@ describe("router:", () => {
         value: "",
         param: 0,
         tag: "test-router-multiple-view",
-        content: () => html`
+        render: () => html`
           <a href="${router.currentUrl()}" id="MultipleViewCurrent"
             >MultipleViewCurrent</a
           >
@@ -405,7 +404,7 @@ describe("router:", () => {
         value: "",
         param: 0,
         tag: "test-router-multiple-with-url-view",
-        content: () => html`
+        render: () => html`
           <a href="${router.currentUrl()}" id="MultipleViewCurrent"
             >MultipleViewCurrent</a
           >
@@ -438,7 +437,7 @@ describe("router:", () => {
         },
         tag: "test-router-root-view",
         globalB: "",
-        content: () => html`
+        render: () => html`
           <a href="${router.url(ChildView)}" id="ChildView">Child</a>
           <a href="${router.url(Dialog)}" id="Dialog">Dialog</a>
           <a href="${router.currentUrl({ scrollToTop: true })}" id="RootView">
@@ -506,7 +505,7 @@ describe("router:", () => {
           params: ["globalA", "globalB"],
           transition: true,
         }),
-        content: ({ views }) => html`${views}`, // prettier-ignore
+        render: ({ views }) => html`${views}`,
       });
 
       return resolveTimeout(() => {});
@@ -581,7 +580,7 @@ describe("router:", () => {
                       define({
                         tag: "test-router-app-another",
                         views: router([Another]),
-                        content: ({ views }) => html`${views}`, // prettier-ignore
+                        render: ({ views }) => html`${views}`, // prettier-ignore
                       });
 
                       host = document.createElement("test-router-app-another");
@@ -736,6 +735,8 @@ describe("router:", () => {
             expect(hybrids(host.views[0])).toBe(ChildView);
             expect(spyTop.calls.mostRecent().args[0]).toBe(0);
             expect(spyLeft.calls.mostRecent().args[0]).toBe(0);
+
+            expect(host.querySelector("div.overflow").scrollTop).toBe(100);
 
             host.querySelector("#RootView").click();
 
@@ -1339,7 +1340,7 @@ describe("router:", () => {
         Child = define({
           tag: "test-router-child-back-url",
           nestedViews: router([NestedOne]),
-          content: () => html` <a href="${router.url(Home)}">Home</a> `,
+          render: () => html` <a href="${router.url(Home)}">Home</a> `,
         });
 
         NestedTwo = define({
@@ -1360,13 +1361,13 @@ describe("router:", () => {
         Home = define({
           [router.connect]: { stack: [Child, OtherChild] },
           tag: "test-router-home-back-url",
-          content: () => html` <a href="${router.guardUrl()}">Child</a> `,
+          render: () => html` <a href="${router.guardUrl()}">Child</a> `,
         });
 
         define({
           tag: "test-router-app-back-url",
           views: router([Home]),
-          content: ({ views }) => html`${views}`, // prettier-ignore
+          render: ({ views }) => html`${views}`, // prettier-ignore
         });
       });
 
@@ -1432,7 +1433,7 @@ describe("router:", () => {
               tag: "test-router-home-view-unguarded",
             }),
           ]),
-          content: ({ views }) => html`${views}`, // prettier-ignore
+          render: ({ views }) => html`${views}`, // prettier-ignore
         });
 
         const guardedHost = document.createElement("test-router-app-unguarded");
@@ -1471,7 +1472,7 @@ describe("router:", () => {
           [router.connect]: {
             url: "/other_child",
           },
-          content: () => html`
+          render: () => html`
             <a href="${router.url(RootView)}" id="RootView">RootView</a>
           `,
         });
@@ -1485,7 +1486,7 @@ describe("router:", () => {
             },
           },
           tag: "test-router-root-view",
-          content: () => html`
+          render: () => html`
             <a href="${router.url(OtherChildView)}" id="OtherChildView"
               >OtherChildView</a
             >
@@ -1495,7 +1496,7 @@ describe("router:", () => {
         define({
           tag: "test-router-app-guard-url",
           views: router([RootView]),
-          content: ({ views }) => html`${views}`, // prettier-ignore
+          render: ({ views }) => html`${views}`, // prettier-ignore
         });
 
         host = document.createElement("test-router-app-guard-url");
@@ -1559,7 +1560,7 @@ describe("router:", () => {
 
       const NestedDebug = define({
         tag: "test-router-nested-debug-view",
-        content: () => html`
+        render: () => html`
           <a
             href="${router.url(OtherNestedDebug, { param: "test" })}"
             id="other-nested-debug"
@@ -1571,13 +1572,13 @@ describe("router:", () => {
       const HomeDebug = define({
         tag: "test-router-home-debug-view",
         stack: router([NestedDebug, OtherNestedDebug]),
-        content: ({ stack }) => html`${stack}`, // prettier-ignore
+        render: ({ stack }) => html`${stack}`, // prettier-ignore
       });
 
       define({
         tag: "test-router-debug",
         stack: router(HomeDebug),
-        content: ({ stack }) => html`${stack}`, // prettier-ignore
+        render: ({ stack }) => html`${stack}`, // prettier-ignore
       });
 
       app = document.createElement("test-router-debug");

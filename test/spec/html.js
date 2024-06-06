@@ -19,9 +19,25 @@ describe("html:", () => {
   const getArrayValues = (f) =>
     Array.from(f.children).map((child) => child.textContent);
 
+  it("throws for implicit usage of slot element in nested template", () => {
+    const render = html` <div>${html` <slot></slot> `}</div> `;
+
+    expect(() => {
+      render(fragment);
+    }).toThrow();
+  });
+
+  it("throws for implicit usage of style or slot element in nested template", () => {
+    const render = html` <div>${html` <slot></slot> `}</div> `;
+
+    expect(() => {
+      render(fragment);
+    }).toThrow();
+  });
+
   it("renders static content", () => {
     const render = html` <div>static content<!-- some comment --></div> `;
-    render({}, fragment);
+    render(fragment);
     expect(fragment.children[0].outerHTML).toBe(
       "<div>static content<!-- some comment --></div>",
     );
@@ -31,8 +47,8 @@ describe("html:", () => {
     const renderOne = () => html` <div>value:</div> `;
     const renderTwo = (value) => html` <div>value:${value}</div> `;
 
-    renderOne()({}, fragment);
-    renderTwo(0)({}, fragment);
+    renderOne()(fragment);
+    renderTwo(0)(fragment);
 
     expect(fragment.children[0].textContent).toBe("value:0");
   });
@@ -75,14 +91,14 @@ describe("html:", () => {
   it("warns when not defined element is found", () => {
     const spy = spyOn(console, "warn");
 
-    html` <not-defined-element></not-defined-element> `({}, fragment);
+    html` <not-defined-element></not-defined-element> `(fragment);
 
     expect(spy).toHaveBeenCalledTimes(1);
 
     html`
       <not-defined-element></not-defined-element>
       <not-defined-element-other></not-defined-element-other>
-    `({}, fragment);
+    `(fragment);
 
     expect(spy).toHaveBeenCalledTimes(2);
   });
@@ -96,7 +112,7 @@ describe("html:", () => {
   it("replaces resolved nested custom element template", (done) => {
     define({
       tag: "test-replace-trigger",
-      content: () => html` content `,
+      render: () => html` content `,
     });
 
     const render = (flag) => html`
@@ -118,7 +134,7 @@ describe("html:", () => {
     `;
 
     it("sets attribute", () => {
-      render("class-two", "class-three")({}, fragment);
+      render("class-two", "class-three")(fragment);
       expect(fragment.children[0].getAttribute("class")).toBe(
         "class-one class-two class-three",
       );
@@ -133,17 +149,17 @@ describe("html:", () => {
         <test-html-computed-property
           value="asd-${"test"}-${"other"}"
         ></test-html-computed-property>
-      `({}, fragment);
+      `(fragment);
       expect(fragment.children[0].value).toBe("asd-test-other");
     });
 
     it("does not set undefined value", () => {
-      render()({}, fragment);
+      render()(fragment);
       expect(fragment.children[0].getAttribute("class")).toBe("class-one  ");
     });
 
     it("clears attribute", () => {
-      render("class-two", "class-three", "some text")({}, fragment);
+      render("class-two", "class-three", "some text")(fragment);
       render("", "", "some text")(fragment);
       expect(fragment.children[0].getAttribute("class")).toBe("class-one  ");
     });
@@ -420,18 +436,22 @@ describe("html:", () => {
     beforeEach(() => render("one", "two")(fragment));
 
     it("renders values", () => {
-      expect(fragment.querySelector("div").textContent).toBe("one, two");
+      expect(fragment.shadowRoot.querySelector("div").textContent).toBe(
+        "one, two",
+      );
     });
 
     it("updates values", () => {
       render("two", "one")(fragment);
-      expect(fragment.querySelector("div").textContent).toBe("two, one");
+      expect(fragment.shadowRoot.querySelector("div").textContent).toBe(
+        "two, one",
+      );
     });
 
     it("removes values", () => {
       render(false, null)(fragment);
 
-      expect(fragment.querySelector("div").textContent).toBe(", ");
+      expect(fragment.shadowRoot.querySelector("div").textContent).toBe(", ");
     });
   });
 
@@ -440,7 +460,7 @@ describe("html:", () => {
       <div>value: ${flag && html` <span>${"one"}</span> `}</div>
     `;
 
-    beforeEach(() => render(true)({}, fragment));
+    beforeEach(() => render(true)(fragment));
 
     it("renders template", () => {
       expect(fragment.children[0].children[0].outerHTML).toBe(
@@ -715,7 +735,7 @@ describe("html:", () => {
         <div class="${"test"}">${"text"}</div>
       `;
 
-      renderTable({}, fragment);
+      renderTable(fragment);
       expect(fragment.children[0].querySelectorAll("td").length).toBe(4);
       expect(fragment.children[1].outerHTML).toBe(
         '<div class="test">text</div>',
@@ -738,7 +758,7 @@ describe("html:", () => {
         </table>
       `;
 
-      renderTable({}, fragment);
+      renderTable(fragment);
       expect(fragment.children[0].querySelectorAll("tr > td").length).toBe(4);
     });
 
@@ -757,7 +777,7 @@ describe("html:", () => {
         </table>
       `;
 
-      renderTable({}, fragment);
+      renderTable(fragment);
       expect(fragment.children[0].querySelectorAll("td").length).toBe(4);
     });
 
@@ -772,7 +792,7 @@ describe("html:", () => {
         </table>
       `;
 
-      render({}, fragment);
+      render(fragment);
       expect(fragment.children[0].querySelector("tr").innerHTML.trim()).toBe(
         "test",
       );
@@ -789,7 +809,7 @@ describe("html:", () => {
         </table>
       `;
 
-      render({}, fragment);
+      render(fragment);
       expect(fragment.children[0].querySelector("tr").innerHTML.trim()).toBe(
         "test 1 test 2",
       );
@@ -806,7 +826,7 @@ describe("html:", () => {
         </table>
       `;
 
-      render({}, fragment);
+      render(fragment);
       expect(fragment.children[0].querySelector("div.one").innerHTML).toBe(
         "two",
       );
@@ -827,56 +847,50 @@ describe("html:", () => {
     });
 
     it("renders an element", () => {
-      render(el1)({}, fragment);
+      render(el1)(fragment);
       expect(fragment.children[0].innerHTML).toEqual("<div>one</div>");
     });
 
     it("removes an element", () => {
-      render(el1)({}, fragment);
-      render()({}, fragment);
+      render(el1)(fragment);
+      render()(fragment);
 
       expect(fragment.children[0].innerHTML).toEqual("");
     });
 
     it("replaces an element with another element", () => {
-      render(el1)({}, fragment);
-      render(el2)({}, fragment);
+      render(el1)(fragment);
+      render(el2)(fragment);
 
       expect(fragment.children[0].innerHTML).toEqual("<div>two</div>");
     });
 
     it("replaces an element with nested template", () => {
-      render(el1)({}, fragment);
+      render(el1)(fragment);
       // prettier-ignore
-      render(html`<span>value</span>`)({}, fragment);
+      render(html`<span>value</span>`)(fragment);
 
       expect(fragment.children[0].innerHTML).toEqual("<span>value</span>");
     });
 
     it("does not replace an element when it is the same", () => {
-      render(el1)({}, fragment);
-      render(el1)({}, fragment);
+      render(el1)(fragment);
+      render(el1)(fragment);
 
       expect(fragment.children[0].innerHTML).toEqual("<div>one</div>");
     });
   });
 
   describe("set helper", () => {
-    let host;
-
-    beforeEach(() => {
-      host = { value: "" };
-    });
-
     it("uses value property from text input", () => {
       const render = html` <input type="text" oninput=${html.set("value")} /> `;
-      render(host, fragment);
+      render(fragment);
 
       const input = fragment.children[0];
       input.value = "John";
       dispatch(input, "input");
 
-      expect(host.value).toBe("John");
+      expect(fragment.value).toBe("John");
     });
 
     it("uses value property from radio input", () => {
@@ -895,15 +909,15 @@ describe("html:", () => {
         />
       `;
 
-      render(host, fragment);
+      render(fragment);
       fragment.children[0].click();
-      expect(host.value).toBe("one");
+      expect(fragment.value).toBe("one");
 
       fragment.children[1].click();
-      expect(host.value).toBe("two");
+      expect(fragment.value).toBe("two");
 
       dispatch(fragment.children[1], "change");
-      expect(host.value).toBe("two");
+      expect(fragment.value).toBe("two");
     });
 
     it("uses value property from checkbox input", () => {
@@ -911,12 +925,12 @@ describe("html:", () => {
         <input type="checkbox" onchange=${html.set("value")} />
       `;
 
-      render(host, fragment);
+      render(fragment);
       fragment.children[0].click();
-      expect(host.value).toBeTruthy();
+      expect(fragment.value).toBeTruthy();
 
       fragment.children[0].click();
-      expect(host.value).toBeFalsy();
+      expect(fragment.value).toBeFalsy();
     });
 
     it("uses files property from file input", () => {
@@ -924,9 +938,9 @@ describe("html:", () => {
         <input type="file" oncustomevent=${html.set("value")} />
       `;
 
-      render(host, fragment);
+      render(fragment);
       dispatch(fragment.children[0], "customevent");
-      expect(host.value).toBeInstanceOf(FileList);
+      expect(fragment.value).toBeInstanceOf(FileList);
     });
 
     it("throws when set store model instance without property name", () => {
@@ -948,7 +962,7 @@ describe("html:", () => {
         <input type="text" oninput=${html.set(model, "value")} />
       `;
 
-      render(host, fragment);
+      render(fragment);
 
       const input = fragment.children[0];
       input.value = "John";
@@ -973,7 +987,7 @@ describe("html:", () => {
         <input type="text" oninput=${html.set(model, "other")} value="Smith" />
       `;
 
-      render(host, fragment);
+      render(fragment);
 
       dispatch(fragment.children[0], "input");
       dispatch(fragment.children[1], "input");
@@ -991,7 +1005,7 @@ describe("html:", () => {
         <input type="text" oninput=${html.set(model, "nested.value")} />
       `;
 
-      render(host, fragment);
+      render(fragment);
 
       const input = fragment.children[0];
       input.value = "John";
@@ -1017,7 +1031,7 @@ describe("html:", () => {
             <button type="text" onclick=${html.set(nextModel, null)}></button>
           `;
 
-          render(host, fragment);
+          render(fragment);
           fragment.children[0].click();
 
           return store.pending(nextModel).then((finalModel) => {
@@ -1031,21 +1045,21 @@ describe("html:", () => {
       const render = html`
         <input type="text" oninput=${html.set("value", undefined)} />
       `;
-      render(host, fragment);
+      render(fragment);
 
       const input = fragment.children[0];
       dispatch(input, "input");
 
-      expect(host.value).toBe(undefined);
+      expect(fragment.value).toBe(undefined);
     });
 
     it("uses value from event detail.value", () => {
       const render = html` <div oncustomevent=${html.set("value")} /> `;
-      render(host, fragment);
+      render(fragment);
       const div = fragment.children[0];
       dispatch(div, "customevent", { detail: { value: "test" } });
 
-      expect(host.value).toBe("test");
+      expect(fragment.value).toBe("test");
     });
 
     it("saves callback in the cache", () => {
@@ -1141,13 +1155,13 @@ describe("html:", () => {
 
       define({
         tag: "test-html-transition-deep",
-        content: () => html`<div>Hello</div>`,
+        render: () => html`<div>Hello</div>`,
       });
 
       define({
         tag: "test-html-transition",
         value: "test",
-        content: ({ value }) =>
+        render: ({ value }) =>
           html`
             <template layout>
               <div>${value}</div>
@@ -1159,7 +1173,7 @@ describe("html:", () => {
           }),
       });
 
-      html`<test-html-transition></test-html-transition>`({}, el);
+      html`<test-html-transition></test-html-transition>`(el);
 
       return resolveTimeout(() => {
         expect(el.children[0].children[0].innerHTML).toEqual("test");
@@ -1177,7 +1191,7 @@ describe("html:", () => {
         html`
           <test-html-transition></test-html-transition>
           <test-html-transition></test-html-transition>
-        `({}, el);
+        `(el);
 
         return resolveTimeout(() => {
           expect(console.warn).toHaveBeenCalledTimes(1);
@@ -1187,7 +1201,7 @@ describe("html:", () => {
   });
 
   describe("style method", () => {
-    const render = () => html` <div>content</div> `;
+    const render = () => html`<div>content</div>`;
 
     it("adds single style with text content", () => {
       const container = fragment.attachShadow({ mode: "open" });
@@ -1200,62 +1214,54 @@ describe("html:", () => {
     });
 
     it("adds multiple styles with text content", () => {
-      const container = fragment.attachShadow({ mode: "open" });
+      render().style(
+        "div { color: red }",
+        "div { padding-top: 20px }",
+      )(fragment);
 
-      render().style("div { color: red }", "div { padding-top: 20px }")(
-        fragment,
-        container,
-      );
-
-      expect(getComputedStyle(container.children[0]).color).toBe(
+      expect(getComputedStyle(fragment.shadowRoot.children[0]).color).toBe(
         "rgb(255, 0, 0)",
       );
-      expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
+      expect(getComputedStyle(fragment.shadowRoot.children[0]).paddingTop).toBe(
+        "20px",
+      );
     });
 
     it("adds multiple styles with text content by multiple call", () => {
-      const container = fragment.attachShadow({ mode: "open" });
-
       render().style("div { color: red }").style("div { padding-top: 20px }")(
         fragment,
-        container,
       );
 
-      expect(getComputedStyle(container.children[0]).color).toBe(
+      expect(getComputedStyle(fragment.shadowRoot.children[0]).color).toBe(
         "rgb(255, 0, 0)",
       );
-      expect(getComputedStyle(container.children[0]).paddingTop).toBe("20px");
+      expect(getComputedStyle(fragment.shadowRoot.children[0]).paddingTop).toBe(
+        "20px",
+      );
     });
 
     it("adds styles to the shadowRoot by adoptedStyleSheets or style tags", (done) => {
-      const container = fragment.attachShadow({ mode: "open" });
-      render().style("div { color: red }")({}, container);
-
-      if (!document.adoptedStyleSheets) {
-        expect(container.children.length).toBe(2);
-      }
+      render().style("div { color: red }")(fragment);
 
       setTimeout(() => {
-        expect(getComputedStyle(container.children[0]).color).toBe(
+        expect(getComputedStyle(fragment.shadowRoot.children[0]).color).toBe(
           "rgb(255, 0, 0)",
         );
 
-        html` <div>content</div> `({}, container);
+        html`<div>content</div>`(fragment);
         return setTimeout(() => {
-          if (document.adoptedStyleSheets) {
-            expect(getComputedStyle(container.children[0]).color).toBe(
-              "rgb(0, 0, 0)",
-            );
-          }
+          expect(getComputedStyle(fragment.shadowRoot.children[0]).color).toBe(
+            "rgb(0, 0, 0)",
+          );
 
-          expect(container.children.length).toBe(1);
+          expect(fragment.shadowRoot.children.length).toBe(1);
           done();
         }, 500);
       }, 500);
     });
 
     it("adds styles by style tags to the element", (done) => {
-      render().style("div { color: red }", false)({}, fragment);
+      render().style("div { color: red }", false)(fragment, fragment);
 
       getComputedStyle(fragment.children[0]);
 
@@ -1265,15 +1271,15 @@ describe("html:", () => {
           "rgb(255, 0, 0)",
         );
 
-        render().style("div { color: red }", false)({}, fragment);
-        render().style("div { color: blue; }")({}, fragment);
+        render().style("div { color: red }", false)(fragment, fragment);
+        render().style("div { color: blue; }")(fragment, fragment);
 
         expect(fragment.children.length).toBe(2);
         expect(getComputedStyle(fragment.children[0]).color).toBe(
           "rgb(0, 0, 255)",
         );
 
-        render()({}, fragment);
+        render()(fragment, false);
 
         expect(getComputedStyle(fragment.children[0]).color).toBe(
           "rgb(0, 0, 0)",
@@ -1286,8 +1292,11 @@ describe("html:", () => {
     });
 
     it("replaces styles by style tag when template changes for element", () => {
-      render().style("div { color: red }")({}, fragment);
-      html`<div>content two</div>`.style("div { color: blue; }")({}, fragment);
+      render().style("div { color: red }")(fragment, fragment);
+      html`<div>content two</div>`.style("div { color: blue; }")(
+        fragment,
+        fragment,
+      );
 
       return resolveTimeout(() => {
         expect(getComputedStyle(fragment.children[0]).color).toBe(
@@ -1297,17 +1306,17 @@ describe("html:", () => {
     });
 
     it("replaces styles by style tag when template changes for content", () => {
-      html`${html`content`.style("custom-element { color: red }")}`(
-        {},
+      html`${html`<div>content</div>`.style("div { color: red }")}`(
         fragment,
+        fragment.attachShadow({ mode: "open" }),
       );
-      html`${html`content two`.style("custom-element { color: blue; }")}`(
-        {},
+      html`${html`<div>content two</div>`.style("div { color: blue; }")}`(
         fragment,
+        fragment.shadowRoot,
       );
 
       return resolveTimeout(() => {
-        expect(getComputedStyle(fragment.children[0]).color).toBe(
+        expect(getComputedStyle(fragment.shadowRoot.children[0]).color).toBe(
           "rgb(0, 0, 255)",
         );
       });
@@ -1315,42 +1324,46 @@ describe("html:", () => {
 
     if (document.adoptedStyleSheets) {
       it("does not replace adoptedStyleSheets array when styles are equal", () => {
-        const container = fragment.attachShadow({ mode: "open" });
         const externalStyleSheet = new CSSStyleSheet();
-        container.adoptedStyleSheets = [externalStyleSheet];
+        fragment.attachShadow({ mode: "open" });
+        fragment.shadowRoot.adoptedStyleSheets = [externalStyleSheet];
 
-        render().style("div { color: red }")({}, container);
-        const adoptedStyleSheets = container.adoptedStyleSheets;
+        render().style("div { color: red }")(fragment);
+        const adoptedStyleSheets = fragment.shadowRoot.adoptedStyleSheets;
 
-        render().style("div { color: red }")({}, container);
+        render().style("div { color: red }")(fragment);
 
-        expect(container.adoptedStyleSheets[0]).toBe(externalStyleSheet);
-        expect(container.adoptedStyleSheets[1]).toBe(adoptedStyleSheets[1]);
+        expect(fragment.shadowRoot.adoptedStyleSheets[0]).toBe(
+          externalStyleSheet,
+        );
+        expect(fragment.shadowRoot.adoptedStyleSheets[1]).toBe(
+          adoptedStyleSheets[1],
+        );
       });
 
       it("replaces adoptedStyleSheets array when styles are not equal", () => {
-        const container = fragment.attachShadow({ mode: "open" });
         const externalStyleSheet = new CSSStyleSheet();
-        container.adoptedStyleSheets = [externalStyleSheet];
+        fragment.attachShadow({ mode: "open" });
+        fragment.shadowRoot.adoptedStyleSheets = [externalStyleSheet];
 
-        render().style("div { color: red }")({}, container);
-        const StyleSheet = container.adoptedStyleSheets[0];
+        render().style("div { color: red }")(fragment);
+        const StyleSheet = fragment.shadowRoot.adoptedStyleSheets[0];
 
-        render().style("div { color: blue }")({}, container);
+        render().style("div { color: blue }")(fragment);
 
-        expect(container.adoptedStyleSheets[0]).toBe(externalStyleSheet);
-        expect(container.adoptedStyleSheets[1]).not.toBe(StyleSheet);
+        expect(fragment.shadowRoot.adoptedStyleSheets[0]).toBe(
+          externalStyleSheet,
+        );
+        expect(fragment.shadowRoot.adoptedStyleSheets[1]).not.toBe(StyleSheet);
       });
 
       it("adds styles using CSSStyleSheet instance", () => {
-        const container = fragment.attachShadow({ mode: "open" });
-
         const sheet = new CSSStyleSheet();
         sheet.replaceSync("div { color: red }");
 
-        render().style(sheet)({}, container);
+        render().style(sheet)(fragment);
 
-        expect(getComputedStyle(container.children[0]).color).toBe(
+        expect(getComputedStyle(fragment.shadowRoot.children[0]).color).toBe(
           "rgb(255, 0, 0)",
         );
       });
@@ -1400,14 +1413,12 @@ describe("html:", () => {
     });
 
     it("adds styles with nested template", () => {
-      const container = fragment.attachShadow({ mode: "open" });
-
       html`<div>${html`content`.css`div { color: red }`}</div>`(
         fragment,
-        container,
+        fragment.attachShadow({ mode: "open" }),
       );
 
-      expect(getComputedStyle(container.children[0]).color).toBe(
+      expect(getComputedStyle(fragment.shadowRoot.children[0]).color).toBe(
         "rgb(255, 0, 0)",
       );
     });
@@ -1462,7 +1473,7 @@ describe("html:", () => {
           return fn;
         });
 
-      render({}, fragment);
+      render(fragment);
 
       expect(spy1).toHaveBeenCalledTimes(1);
       expect(spy2).toHaveBeenCalledTimes(1);
@@ -1473,14 +1484,14 @@ describe("html:", () => {
   describe("svg element", () => {
     it("sets attribute from an expression", () => {
       const render = html` <svg viewBox="${"0 0 100 100"}"></svg> `;
-      render({}, fragment);
+      render(fragment);
 
       expect(fragment.children[0].getAttribute("viewBox")).toBe("0 0 100 100");
     });
 
     it("sets attribute from string with an expression", () => {
       const render = html` <svg viewBox="0 0 ${"100"} ${"100"}"></svg> `;
-      render({}, fragment);
+      render(fragment);
 
       expect(fragment.children[0].getAttribute("viewBox")).toBe("0 0 100 100");
     });

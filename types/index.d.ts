@@ -20,7 +20,7 @@ export interface Descriptor<E, V> {
 }
 
 export interface UpdateFunction<E> {
-  (host: E & HTMLElement, target: ShadowRoot | Text | E): void;
+  (host: E & HTMLElement, target?: ShadowRoot | Text | E): void;
 }
 
 export interface RenderFunction<E> {
@@ -30,12 +30,7 @@ export interface RenderFunction<E> {
 export interface RenderDescriptor<E> extends Descriptor<E, RenderFunction<E>> {
   value: RenderFunction<E>;
   reflect?: never;
-  options?: ShadowRootInit;
-}
-
-export interface ContentDescriptor<E> extends Descriptor<E, RenderFunction<E>> {
-  value: RenderFunction<E>;
-  reflect?: never;
+  shadow?: boolean | ShadowRootInit;
 }
 
 export type ComponentBase = {
@@ -49,12 +44,9 @@ export type Component<E> = ComponentBase & {
     string
   >]: property extends "render"
     ? RenderFunction<E> | RenderDescriptor<E>
-    : property extends "content"
-      ? RenderFunction<E> | ContentDescriptor<E>
-      : Property<E, E[property]>;
+    : Property<E, E[property]>;
 } & {
   render?: RenderFunction<E> | RenderDescriptor<E>;
-  content?: RenderFunction<E> | ContentDescriptor<E>;
 };
 
 export interface HybridElement<E> {

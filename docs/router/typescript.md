@@ -12,7 +12,7 @@ interface MyView {
 export default define<MyView>({
   [router.connect]: { url: "/my-view" },
   tag: "my-view",
-  content: ({ param }) => html`
+  render: ({ param }) => html`
     <p>${param}</p>
   `,
 });
@@ -60,7 +60,7 @@ interface MyView {
 const MyView: Component<MyView> = {
   [router.connect]: { url: "/my-view" },
   tag: "my-view",
-  content: ({ param }) => html`
+  render: ({ param }) => html`
     <p>${param}</p>
   `,
 };

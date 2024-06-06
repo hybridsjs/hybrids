@@ -33,7 +33,10 @@ describe("children:", () => {
         tag: "test-children-direct",
         direct: children(child),
         customName: ({ direct }) => direct && direct[0] && direct[0].customName,
-        render: ({ customName }) => html` ${customName} `,
+        render: {
+          value: ({ customName }) => html` ${customName} `,
+          shadow: true,
+        },
       });
     });
 
@@ -292,17 +295,20 @@ describe("children:", () => {
       define({
         tag: "test-dynamic-wrapper",
         items: undefined,
-        render: ({ items }) => html`
-          <test-dynamic-parent>
-            <test-dynamic-child name="one"></test-dynamic-child>
-            ${items &&
-            items.map((name) =>
-              html`
-                <test-dynamic-child name="${name}"></test-dynamic-child>
-              `.key(name),
-            )}
-          </test-dynamic-parent>
-        `,
+        render: {
+          value: ({ items }) => html`
+            <test-dynamic-parent>
+              <test-dynamic-child name="one"></test-dynamic-child>
+              ${items &&
+              items.map((name) =>
+                html`
+                  <test-dynamic-child name="${name}"></test-dynamic-child>
+                `.key(name),
+              )}
+            </test-dynamic-parent>
+          `,
+          shadow: true,
+        },
       });
     });
 

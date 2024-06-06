@@ -16,7 +16,7 @@ import Home from "./views/Home.js";
 export define({
   tag: "my-app",
   stack: router(Home),
-  content: ({ stack }) => html`
+  render: ({ stack }) => html`
     <my-app-layout>
       ${stack}
     </my-app-layout>
@@ -116,7 +116,7 @@ import TabTwoView from "./TabTwoView.js";
 export default define({
   tag: "my-module-view",
   tabs: router([TabOneView, TabTwoView]),
-  content: ({ tabs }) => html`
+  render: ({ tabs }) => html`
     <my-tabs-group>
       <a href="${router.url(TabOneView)}">Tab One</a>
       <a href="${router.url(TabTwoView)}">Tab Two</a>
@@ -265,7 +265,7 @@ export default define({
   },
   tag: "my-user-dialog",
   user: store(UserModel),
-  content: ({ user }) => html`
+  render: ({ user }) => html`
     <dialog>
       <p>Are you sure?</p>
       <a href="${router.url(Users)}" onclick="${deleteUser}">Yes</a>
@@ -307,7 +307,7 @@ const OneView = define({
 define({
   tag: "my-app",
   views: router(OneView),
-  content: ({ views }) => html`
+  render: ({ views }) => html`
     <nav>
       <my-link
         href="${router.url(OneView)}"

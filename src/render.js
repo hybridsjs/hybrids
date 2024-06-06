@@ -1,17 +1,17 @@
-export default function render(key, desc) {
+export default function render(desc) {
   if (desc.reflect) {
-    throw TypeError(`'reflect' option is not supported for '${key}' property`);
+    throw TypeError(`'reflect' option is not supported for 'render' property`);
   }
 
   const { value: fn, observe } = desc;
 
   if (typeof fn !== "function") {
     throw TypeError(
-      `Value for '${key}' property must be a function: ${typeof fn}`,
+      `Value for 'render' property must be a function: ${typeof fn}`,
     );
   }
 
-  const rest = {
+  const result = {
     connect: desc.connect,
     observe: observe
       ? (host, flush, lastFlush) => {
@@ -22,35 +22,37 @@ export default function render(key, desc) {
         },
   };
 
-  if (key === "render") {
-    const options = desc.options || {};
+  const shadow = desc.shadow
+    ? {
+        mode: desc.shadow.mode || "open",
+        delegatesFocus: desc.shadow.delegatesFocus || false,
+      }
+    : desc.shadow;
 
-    const shadowOptions = {
-      mode: options.mode || "open",
-      delegatesFocus: options.delegatesFocus || false,
+  if (shadow) {
+    result.value = (host) => {
+      const target = host.shadowRoot || host.attachShadow(shadow);
+      const update = fn(host);
+
+      return () => {
+        update(host, target);
+        return target;
+      };
     };
-
-    return {
-      value: (host) => {
-        const updateDOM = fn(host);
-        return () => {
-          const target = host.shadowRoot || host.attachShadow(shadowOptions);
-          updateDOM(host, target);
-          return target;
-        };
-      },
-      ...rest,
+  } else if (shadow === false) {
+    result.value = (host) => {
+      const update = fn(host);
+      return () => {
+        update(host, host);
+        return host;
+      };
     };
   } else {
-    return {
-      value: (host) => {
-        const updateDOM = fn(host);
-        return () => {
-          updateDOM(host, host);
-          return host;
-        };
-      },
-      ...rest,
+    result.value = (host) => {
+      const update = fn(host);
+      return () => update(host);
     };
   }
+
+  return result;
 }
