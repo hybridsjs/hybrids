@@ -165,8 +165,8 @@ export function msg(parts, ...args) {
   return getString(parts, args).replace(EXP_REGEX, (_, index) => args[index]);
 }
 
-const PLACEHOLDER_SVG = getPlaceholder("svg");
 const PLACEHOLDER_MSG = getPlaceholder("msg");
+const PLACEHOLDER_SVG = getPlaceholder("svg");
 
 msg.html = function html(parts, ...args) {
   const input = getString(parts, args);
@@ -186,7 +186,7 @@ msg.svg = function svg(parts, ...args) {
   return compile(
     input.replace(EXP_REGEX, (_, index) => getPlaceholder(index)),
     args,
-    input + PLACEHOLDER_SVG + PLACEHOLDER_MSG,
+    input + PLACEHOLDER_MSG + PLACEHOLDER_SVG,
     true,
     true,
   );

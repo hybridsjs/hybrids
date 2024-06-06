@@ -8,7 +8,7 @@ function hybrids(el) {
 
 const browserUrl = window.location.pathname;
 
-fdescribe("router:", () => {
+describe("router:", () => {
   let ChildView;
   let OtherChildView;
   let OtherChildWithLongerUrl;
@@ -281,7 +281,7 @@ fdescribe("router:", () => {
         },
         render: () => html`
           <div class="overflow" style="height: 100px; overflow: scroll">
-            <div style="height: 300px">Haha</div>
+            <div style="height: 300px"></div>
           </div>
         `,
       });
@@ -293,21 +293,14 @@ fdescribe("router:", () => {
         tag: "test-router-nested-view-one",
         globalA: "",
         globalC: "",
-        render: {
-          value: () => html`
-            <test-router-nested-component></test-router-nested-component>
-            <slot></slot>
-          `,
-          observe: (host) => {
-            const fn = html`<a
-              href="${router.url(NestedViewTwo, { value: "1" })}"
-              id="NestedViewTwo"
-              >NestedViewTwo</a
-            >`;
-
-            fn(host, false, host);
-          },
-        },
+        render: () => html`
+          <test-router-nested-component></test-router-nested-component>
+          <a
+            href="${router.url(NestedViewTwo, { value: "1" })}"
+            id="NestedViewTwo"
+            >NestedViewTwo</a
+          >
+        `,
       });
 
       OtherChildView = define({
@@ -512,7 +505,7 @@ fdescribe("router:", () => {
           params: ["globalA", "globalB"],
           transition: true,
         }),
-        render: ({ views }) => html`${views}`, // prettier-ignore
+        render: ({ views }) => html`${views}`,
       });
 
       return resolveTimeout(() => {});
@@ -742,6 +735,8 @@ fdescribe("router:", () => {
             expect(hybrids(host.views[0])).toBe(ChildView);
             expect(spyTop.calls.mostRecent().args[0]).toBe(0);
             expect(spyLeft.calls.mostRecent().args[0]).toBe(0);
+
+            expect(host.querySelector("div.overflow").scrollTop).toBe(100);
 
             host.querySelector("#RootView").click();
 

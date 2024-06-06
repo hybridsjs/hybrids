@@ -1271,7 +1271,7 @@ describe("html:", () => {
     });
 
     it("adds styles by style tags to the element", (done) => {
-      render().style("div { color: red }", false)(fragment, false);
+      render().style("div { color: red }", false)(fragment, fragment);
 
       getComputedStyle(fragment.children[0]);
 
@@ -1281,8 +1281,8 @@ describe("html:", () => {
           "rgb(255, 0, 0)",
         );
 
-        render().style("div { color: red }", false)(fragment, false);
-        render().style("div { color: blue; }")(fragment, false);
+        render().style("div { color: red }", false)(fragment, fragment);
+        render().style("div { color: blue; }")(fragment, fragment);
 
         expect(fragment.children.length).toBe(2);
         expect(getComputedStyle(fragment.children[0]).color).toBe(
@@ -1302,10 +1302,10 @@ describe("html:", () => {
     });
 
     it("replaces styles by style tag when template changes for element", () => {
-      render().style("div { color: red }")(fragment, false);
+      render().style("div { color: red }")(fragment, fragment);
       html`<div>content two</div>`.style("div { color: blue; }")(
         fragment,
-        false,
+        fragment,
       );
 
       return resolveTimeout(() => {
@@ -1316,17 +1316,17 @@ describe("html:", () => {
     });
 
     it("replaces styles by style tag when template changes for content", () => {
-      html`${html`content`.style("custom-element { color: red }")}`(
+      html`${html`<div>content</div>`.style("div { color: red }")}`(
         fragment,
-        false,
+        fragment.attachShadow({ mode: "open" }),
       );
-      html`${html`content two`.style("custom-element { color: blue; }")}`(
+      html`${html`<div>content two</div>`.style("div { color: blue; }")}`(
         fragment,
-        false,
+        fragment.shadowRoot,
       );
 
       return resolveTimeout(() => {
-        expect(getComputedStyle(fragment.children[0]).color).toBe(
+        expect(getComputedStyle(fragment.shadowRoot.children[0]).color).toBe(
           "rgb(0, 0, 255)",
         );
       });
@@ -1423,9 +1423,10 @@ describe("html:", () => {
     });
 
     it("adds styles with nested template", () => {
-      html`<div>${html`content`.css`div { color: red }`}</div>`(fragment, {
-        mode: "open",
-      });
+      html`<div>${html`content`.css`div { color: red }`}</div>`(
+        fragment,
+        fragment.attachShadow({ mode: "open" }),
+      );
 
       expect(getComputedStyle(fragment.shadowRoot.children[0]).color).toBe(
         "rgb(255, 0, 0)",

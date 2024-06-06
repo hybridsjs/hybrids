@@ -20,11 +20,7 @@ export interface Descriptor<E, V> {
 }
 
 export interface UpdateFunction<E> {
-  (
-    host: E & HTMLElement,
-    shadow: boolean | ShadowRootInit,
-    target?: ShadowRoot | Text | E,
-  ): void;
+  (host: E & HTMLElement, target?: ShadowRoot | Text | E): void;
 }
 
 export interface RenderFunction<E> {

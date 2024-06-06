@@ -1,3 +1,5 @@
+export const shadowOptions = new WeakMap();
+
 export default function render(desc) {
   if (desc.reflect) {
     throw TypeError(`'reflect' option is not supported for 'render' property`);
@@ -22,7 +24,7 @@ export default function render(desc) {
         },
   };
 
-  const shadowOptions = desc.shadow
+  const shadow = desc.shadow
     ? {
         mode: desc.shadow.mode || "open",
         delegatesFocus: desc.shadow.delegatesFocus || false,
@@ -32,7 +34,9 @@ export default function render(desc) {
   return {
     value: (host) => {
       const updateDOM = fn(host);
-      return () => updateDOM(host, shadowOptions);
+      shadowOptions.set(host, shadow);
+
+      return () => updateDOM(host);
     },
     ...rest,
   };

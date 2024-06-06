@@ -6,11 +6,12 @@ import * as methods from "./methods.js";
 
 const PLACEHOLDER = getPlaceholder();
 const PLACEHOLDER_SVG = getPlaceholder("svg");
+const PLACEHOLDER_LAYOUT = getPlaceholder("layout");
 
 const templates = new Map();
 export function compile(parts, args, id, isSVG, isMsg) {
-  function fn(host, shadow, target) {
-    id = id + fn.useLayout;
+  function fn(host, target) {
+    if (fn.useLayout) id += id + PLACEHOLDER_LAYOUT;
 
     let render = templates.get(id);
     if (!render) {
@@ -18,33 +19,14 @@ export function compile(parts, args, id, isSVG, isMsg) {
       templates.set(id, render);
     }
 
-    if (target) {
-      if (
-        (render.useShadow || fn.styleSheets) &&
-        shadow !== false &&
-        !host.shadowRoot
-      ) {
-        throw TypeError(
-          `Nested template with styles or <slot> element found - use options to explicitly define shadow DOM mode`,
-        );
-      }
-    } else {
-      if (shadow === undefined && (render.useShadow || fn.styleSheets)) {
-        shadow = { mode: "open" };
-      }
-      target = host.shadowRoot || (shadow && host.attachShadow(shadow)) || host;
-    }
-
     if (fn.plugins) {
-      fn.plugins.reduce(
+      return fn.plugins.reduce(
         (acc, plugin) => plugin(acc),
-        () => render(host, target, args, fn.styleSheets, shadow),
+        () => render(host, target, args, fn.styleSheets),
       )(host, target);
     } else {
-      render(host, target, args, fn.styleSheets, shadow);
+      return render(host, target, args, fn.styleSheets);
     }
-
-    return target;
   }
 
   return Object.assign(fn, methods);

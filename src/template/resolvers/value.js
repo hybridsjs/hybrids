@@ -19,7 +19,6 @@ export default function resolveValue(
   value,
   lastValue,
   useLayout,
-  shadow,
 ) {
   const type = typeOf(value);
   const lastType = typeOf(lastValue);
@@ -36,14 +35,14 @@ export default function resolveValue(
 
   switch (type) {
     case "array":
-      resolveArray(host, target, value, resolveValue, useLayout, shadow);
+      resolveArray(host, target, value, resolveValue, useLayout);
       break;
     case "node":
       resolveNode(host, target, value);
       break;
     case "function":
       if (useLayout) value.useLayout = true;
-      value(host, shadow, target);
+      value(host, target);
       break;
     default:
       target.textContent = type === "number" || value ? value : "";

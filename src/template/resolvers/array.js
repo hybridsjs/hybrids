@@ -25,7 +25,6 @@ export default function resolveArray(
   value,
   resolveValue,
   useLayout,
-  shadow,
 ) {
   let lastEntries = arrayMap.get(target);
   const entries = value.map((item, index) => ({
@@ -84,7 +83,6 @@ export default function resolveArray(
           entry.value,
           matchedEntry.value,
           useLayout,
-          shadow,
         );
       }
     } else {
@@ -93,14 +91,7 @@ export default function resolveArray(
         entry.placeholder,
         previousSibling.nextSibling,
       );
-      resolveValue(
-        host,
-        entry.placeholder,
-        entry.value,
-        undefined,
-        useLayout,
-        shadow,
-      );
+      resolveValue(host, entry.placeholder, entry.value, undefined, useLayout);
     }
 
     previousSibling = getTemplateEnd(

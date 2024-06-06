@@ -2,21 +2,14 @@ import resolveValue from "../resolvers/value.js";
 
 const promiseMap = new WeakMap();
 export default function resolve(promise, placeholder, delay = 200) {
-  return function fn(host, shadowOptions, target) {
+  return function fn(host, target) {
     const useLayout = fn.useLayout;
     let timeout;
 
     if (placeholder) {
       timeout = setTimeout(() => {
         timeout = undefined;
-        resolveValue(
-          host,
-          target,
-          placeholder,
-          undefined,
-          useLayout,
-          shadowOptions,
-        );
+        resolveValue(host, target, placeholder, undefined, useLayout);
       }, delay);
     }
 
@@ -32,7 +25,6 @@ export default function resolve(promise, placeholder, delay = 200) {
           value,
           placeholder && !timeout ? placeholder : undefined,
           useLayout,
-          shadowOptions,
         );
         promiseMap.set(target, null);
       }

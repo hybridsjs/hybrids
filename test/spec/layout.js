@@ -98,16 +98,12 @@ describe("layout:", () => {
     expect(nestedHost.hasAttribute("layout")).toBe(false);
   });
 
-  it("uses layout engine for nested templates when parent is in layout mode", () => {
+  it("uses layout engine for nested templates", () => {
     html`
       <template layout="row">${html`<div layout="column"></div>`}</template>
     `(host, host.attachShadow({ mode: "open" }));
 
     expect(host.shadowRoot.children[0].className).not.toBeFalsy();
-
-    const el = document.createElement("div");
-    html`<div layout="column"></div>`(el);
-    expect(el.children[0].getAttribute("layout")).toBe("column");
   });
 
   it("uses layout engine for nested array templates", () => {
@@ -164,28 +160,31 @@ describe("layout:", () => {
           flex-flow: column;
         }
       </style>
-    </template>`(host, false);
+    </template>`(host, host);
 
     host.className = `${host.className} layout-test-column`;
     expect(window.getComputedStyle(host).flexDirection).toBe("column");
   });
 
   it("set main element styles with zero specificity for shadowRoot", () => {
+    const shadowRoot = host.attachShadow({ mode: "open" });
     html`<template layout="row">
       <div></div>
     </template>`.css`
       :host {
         flex-flow: column;
       }
-    `(host);
+    `(host, shadowRoot);
 
     expect(window.getComputedStyle(host).flexDirection).toBe("column");
   });
 
   it("keeps rules when element is taken out from the document", () => {
-    html`<template layout="column"><div layout="row"></div></template>`(host, {
-      mode: "open",
-    });
+    const shadowRoot = host.attachShadow({ mode: "open" });
+    html`<template layout="column"><div layout="row"></div></template>`(
+      host,
+      shadowRoot,
+    );
     document.body.removeChild(host);
 
     return resolveTimeout(() => {
@@ -198,7 +197,8 @@ describe("layout:", () => {
   });
 
   it("not overwrite hidden selector for the host element", () => {
-    html`<template layout="row"><div></div></template>`(host, { mode: "open" });
+    const shadowRoot = host.attachShadow({ mode: "open" });
+    html`<template layout="row"><div></div></template>`(host, shadowRoot);
 
     return resolveTimeout(() => {
       expect(window.getComputedStyle(host).display).toBe("flex");
@@ -567,18 +567,18 @@ describe("layout:", () => {
         <div layout="::font:headline-m"></div>
       </template>
     `.css`
-      :root {
+      :host {
         --ui-color-red: red;
         --border-thin: 1px solid black;
         --font-headline-m: 24px sans-serif;
       }
-    `(host, false);
+    `(host);
 
-    const styles0 = window.getComputedStyle(host.children[0]);
+    const styles0 = window.getComputedStyle(host.shadowRoot.children[0]);
     expect(styles0.color).toBe("rgb(255, 0, 0)");
     expect(styles0.border).toBe("1px solid rgb(0, 0, 0)");
 
-    const styles1 = window.getComputedStyle(host.children[1]);
+    const styles1 = window.getComputedStyle(host.shadowRoot.children[1]);
     expect(styles1.font).toBe("24px sans-serif");
   });
 
