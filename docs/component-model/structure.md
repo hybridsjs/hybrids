@@ -286,19 +286,17 @@ define({
 });
 ```
 
-## `render`
+## Rendering
 
-The `render` property is reserved for the creating a structure of the custom element. The `value` option must be a function, which returns a result of the call to the built-in template engine.
+The `render` property is reserved for the creating structure of the custom element. The `value` option must be a function, which returns a result of the call to the built-in template engine.
 
-The library uses internally the `observe` pattern to call the function automatically when dependencies change. As the property resolves to the update function, it can also be called manually, by `el.render()` or `el.content()`.
+The library uses the `observe` pattern to call the function automatically when dependencies change. As the property resolves to the update function, it can also be called manually, by `el.render()`.
 
 ### Element's Content
 
-By default `render` property updates the content of the custom element:
+By default `render` property creates and updates the content of the custom element:
 
 ```javascript
-import { define, html } from "hybrids";
-
 define({
   tag: "my-element",
   name: "",
@@ -310,9 +308,9 @@ define({
 
 If the root template of the element includes styles (`css` and `style` helpers, or `<style>` elements) or `<slot>` element, the library will render the content to the shadow DOM:
 
-```javascript
-import { define, html } from "hybrids";
+The template with styles:
 
+```javascript
 define({
   tag: "my-element",
   name: "",
@@ -325,11 +323,22 @@ define({
 });
 ```
 
-!> Templates are compiled lazy, so only the root template can be used to determine the rendering mode. If your nested template includes styles or slots, you must use the `shadow` option to force rendering in the Shadow DOM
+The template with `<slot>` element:
+
+```javascript
+define({
+  tag: "my-element",
+  render: () => html`
+    <slot></slot>
+  `,
+});
+```
+
+Templates are compiled "just in time", so only the root template can be used to determine the rendering mode. If your nested template includes styles or slots, you must use the `shadow` option to force rendering in the Shadow DOM explicitly.
 
 ### Explicit Mode
 
-Use unique `shadow` option of the `render` property to force rendering in Shadow DOM or element's content:
+Use the `shadow` option of the `render` property to set rendering mode to Shadow DOM or element's content:
 
 ```ts
 // Disable Shadow DOM
@@ -339,14 +348,14 @@ render: {
   ...
 }
 
-// Enable Shadow DOM
+// Force Shadow DOM
 render: {
   value: (host) => html`...`,
   shadow: true,
 }
 ```
 
-You can use `shadow` option for passing custom argument to the `host.attachShadow()` method:
+You can use this option for passing custom values to the `host.attachShadow()` method:
 
 ```javascript
 import { define, html } from "hybrids";
@@ -355,14 +364,14 @@ define({
   tag: "my-element",
   render: {
     value: html`<div>...</div>`, 
-    options: { mode: "close", delegatesFocus: true },
+    shadow: { mode: "close", delegatesFocus: true },
   },
 });
 ```
 
 ### Reference Internals
 
-The `render` property can be used to reference internals of the custom element. The DOM update process is asynchronous, so to avoid rendering timing issues, always use a property as a reference to the target element. If the property depending on `render` is called before the first update, the update will be triggered manually by calling the function.
+The `render` property can be used to reference internals of the custom element. The DOM update process is asynchronous, so to avoid rendering timing issues, always use the property as a reference to the target element. If the property depending on `render` is called before the first update, the update will be triggered manually by calling the function.
 
 ```javascript
 import { define, html } from "hybrids";
@@ -387,8 +396,8 @@ define({
       console.log("connected");
       return () => console.log("disconnected");
     },
-    observe(host, value, lastValue) {
-      console.log(`${value} -> ${lastValue}`);
+    observe(host) {
+      console.log("rendered");
     },
   },
 });
