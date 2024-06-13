@@ -159,11 +159,11 @@ value: (host) => { ... } | (host, value) => { ... }
 * **returns**:
   * a value of the property
 
-If the descriptor `value` option is a function, the library creates a property with a getter, and optionally with a setter (if the function has more than one argument).
+If the descriptor `value` option is a function, the library creates a property with a getter, and optionally with a setter (if the function has two arguments).
 
 #### Readonly
 
-If the function has only one argument, the property will be read-only, and the function is called with the element instance:
+If the function has only one argument, the property will be read-only, and the function is called with the element instance as the first argument:
 
 ```javascript
 define({
@@ -288,11 +288,11 @@ define({
 
 ## Render
 
-The `render` property is reserved for the creating structure of the custom element.
-
-The `value` option must be a function, which returns a result of the call to the built-in template engine.
+The `render` property is reserved for the creating structure of the custom element. The `value` option must be a function, which returns a result of the call to the built-in template engine.
 
 The library uses the `observe` pattern to call the function automatically when dependencies change. As the property resolves to the update function, it can also be called manually, by `el.render()`.
+
+If the optional `shadow` option is not used, the library determines the rendering mode based on the root template structure. If the template includes styles or `<slot>` elements, the content is rendered to the Shadow DOM.
 
 ### Element's Content
 
