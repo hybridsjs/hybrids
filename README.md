@@ -16,7 +16,7 @@
 * **App-like Routing** based on the graph structure of views
 * **Layout Engine** making UI layouts development much faster
 * **Localization** with automatic translation of the templates content
-* **Hot Module Replacement** out of the box support and other DX features
+* **Hot Module Replacement** support without any additional configuration
 
 ### Documentation
 
