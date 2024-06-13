@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.0.0](https://github.com/hybridsjs/hybrids/compare/v8.2.23...v9.0.0) (2024-06-13)
+
+This major release comes with several breaking changes, which may affect your code. Follow the instructions from the [Migration Guide](/migration.md) section in the documentation.
+
+### ⚠ BREAKING CHANGES
+
+* The `content` property is no longer supported. The `render` property must be used. In some cases, usage of the `shadow` option might be required.
+* `get` and `set` methods must be replaced with `value` option. Properties no longer
+reflect value to the corresponding attribute by default. The new `reflect` option must be set to `true`.
+
+### Features
+
+* remove `content` property & add shadow mode detection to render property ([#258](https://github.com/hybridsjs/hybrids/issues/258)) ([97f8843](https://github.com/hybridsjs/hybrids/commit/97f88439189e4d86c727d532b60fe92a2b0b9e9e))
+* replace `get` and `set` methods with unified `value` option ([#232](https://github.com/hybridsjs/hybrids/issues/232)) ([258e41f](https://github.com/hybridsjs/hybrids/commit/258e41f6527672772dd9fbb6324da25cfc8e9f85))
+
+
+### Bug Fixes
+
+* **cache:** refactor access to cached model for `get` method ([57e2b72](https://github.com/hybridsjs/hybrids/commit/57e2b72d63891454641a5cb0fdf9ee4aed8a5b77))
+* **router:** prevent from throwing when browser pushes null state ([3208959](https://github.com/hybridsjs/hybrids/commit/3208959e0911ba702e67f109deb19c20effbb3aa))
+* **store:** sync method should not trigger storage get of the model ([36d6e39](https://github.com/hybridsjs/hybrids/commit/36d6e398dd315d676f896e8751f7c09a21b5b222))
+
 ### [8.2.23](https://github.com/hybridsjs/hybrids/compare/v8.2.22...v8.2.23) (2024-05-06)
 
 
@@ -425,6 +447,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [8.0.0](https://github.com/hybridsjs/hybrids/compare/v7.1.0...v8.0.0) (2022-04-28)
 
+This major release comes with several breaking changes, which may affect your code. Follow the instructions from the [Migration Guide](/migration.md) section in the documentation.
 
 ### ⚠ BREAKING CHANGES
 
@@ -493,9 +516,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [7.0.0](https://github.com/hybridsjs/hybrids/compare/v6.1.0...v7.0.0) (2021-12-08)
 
-### ⚠ BREAKING CHANGES
 
 This major release comes with several breaking changes, which may affect your code. Follow the instructions from the [Migration Guide](/migration.md) section in the documentation.
+
+### ⚠ BREAKING CHANGES
 
 ### Features
 
