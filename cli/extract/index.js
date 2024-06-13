@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { resolve } from "path";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { cwd, resolveFileOrDir } from "../utils/fs.js";
 
 const HELP_MSG = `hybrids - translation message extractor from source files

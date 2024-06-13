@@ -21,6 +21,20 @@ describe("cli command", () => {
 });
 
 describe("extract task", () => {
+  it("extracts messages from simple template string", () => {
+    const content = "const message = html`<h1>Hello ${name}</h1>`;";
+    const keys = extract(content).map(({ message }) => message);
+
+    assert.deepEqual(keys, ["Hello ${0}"]);
+  });
+
+  it("extracts messages from nested templates", () => {
+    const content = "const message = html`Hello ${html`<b>your ${name}</b>`}`;";
+    const keys = extract(content).map(({ message }) => message);
+
+    assert.deepEqual(keys, ["your ${0}", "Hello ${0}"]);
+  });
+
   it("extracts messages from ternary operator with correct placeholder index", () => {
     const content =
       "const message = condition ? msg`Hello ${name}` : msg`Bye ${name}`;";
