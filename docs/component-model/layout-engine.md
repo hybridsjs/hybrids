@@ -91,10 +91,16 @@ The compound selector is place as-is into the generated class selector, so any s
 
 ## Media Queries
 
-Similarly to the compound selector, the layout supports media queries with the value followed by `@` character. Generally, not predefined values maps to `min-width` media query (The layout engine comes with `portrait` and `landscape` built-in queries).
+In the similar way to the compound selector, the layout supports media queries with the value followed by `@` character. Not predefined values maps to `min-width` media query:
 
 ```html
 <div layout="row gap" layout@768px="column gap:2"></div>
+```
+
+The layout engine comes with `portrait` and `landscape` built-in queries:
+
+```html
+<div layout="row" layout@portrait="column gap:2" layout@landscape="row gap:3"></div>
 ```
 
 ## Arguments
