@@ -137,21 +137,20 @@ export type Model<M extends ModelInstance> = NonArrayObject & {
     __store__connect__?: Storage<M> | Storage<M>["get"];
   };
 
-export type NestedArrayModel<T> = NonNullable<Unarray<T>> extends
-  | string
-  | String
-  ? T | string[] | [String | StringConstructor]
-  : NonNullable<Unarray<T>> extends number | Number
-    ? T | number[] | [Number | NumberConstructor]
-    : NonNullable<Unarray<T>> extends boolean | Boolean
-      ? T | boolean[] | [Boolean | BooleanConstructor]
-      : NonNullable<Unarray<T>> extends EnumerableInstance
-        ?
-            | [Model<NonNullable<Unarray<T>>>]
-            | [Model<NonNullable<Unarray<T>>>, { loose?: boolean }]
-        : NonNullable<Unarray<T>> extends NonArrayObject
-          ? T
-          : never;
+export type NestedArrayModel<T> =
+  NonNullable<Unarray<T>> extends string | String
+    ? T | string[] | [String | StringConstructor]
+    : NonNullable<Unarray<T>> extends number | Number
+      ? T | number[] | [Number | NumberConstructor]
+      : NonNullable<Unarray<T>> extends boolean | Boolean
+        ? T | boolean[] | [Boolean | BooleanConstructor]
+        : NonNullable<Unarray<T>> extends EnumerableInstance
+          ?
+              | [Model<NonNullable<Unarray<T>>>]
+              | [Model<NonNullable<Unarray<T>>>, { loose?: boolean }]
+          : NonNullable<Unarray<T>> extends NonArrayObject
+            ? T
+            : never;
 
 export type ModelIdentifier =
   | string
@@ -282,7 +281,10 @@ export namespace store {
     id?: ModelIdentifier,
   ): Promise<M>;
 
-  function ref<T>(fn: () => T): T;
+  function ref<T>(fn: () => T): () => T;
+
+  function record<V>(value: V): Record<string, V>;
+  function record<V extends () => {}>(value: V): Record<string, ReturnType<V>>;
 
   interface ValidateFunction<M extends ModelInstance, T> {
     (value: T, key: string, model: M): string | boolean | void;

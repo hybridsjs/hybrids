@@ -5,7 +5,6 @@ const connect = Symbol("store.connect");
 
 const definitions = new WeakMap();
 const stales = new WeakMap();
-const refs = new WeakSet();
 
 function resolve(config, model, lastModel) {
   if (lastModel) {
@@ -343,6 +342,9 @@ function uuid(temp) {
     : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, uuid);
 }
 
+const refs = new WeakSet();
+const records = new WeakMap();
+
 function ref(fn) {
   if (typeof fn !== "function") {
     throw TypeError(`The first argument must be a function: ${typeof fn}`);
@@ -352,10 +354,40 @@ function ref(fn) {
   return fn;
 }
 
+function record(value) {
+  if (value === undefined || value === null) {
+    throw TypeError(`The value must be defined: ${value}`);
+  }
+
+  if (!refs.has(value) && typeof value === "function") {
+    throw TypeError(`A function is not supported as the value of the record`);
+  }
+
+  const model = Object.freeze({});
+  records.set(model, value);
+
+  return model;
+}
+
 const validationMap = new WeakMap();
 function resolveKey(Model, key, config) {
   let defaultValue = config.model[key];
   if (refs.has(defaultValue)) defaultValue = defaultValue();
+
+  if (records.has(defaultValue)) {
+    const value = records.get(defaultValue);
+    if (typeof value === "function") {
+      throw TypeError(
+        `A function is not supported as the value of the record for '${key}' property`,
+      );
+    }
+
+    return {
+      defaultValue: { id: true, value },
+      type: "record",
+    };
+  }
+
   let type = typeof defaultValue;
 
   if (
@@ -684,6 +716,41 @@ function setupModel(Model, nested) {
             } else {
               model[key] = lastModel ? lastModel[key] : nestedConfig.create({});
             }
+          };
+        }
+        case "record": {
+          const localConfig = bootstrap(defaultValue, true);
+
+          return (model, data, lastModel) => {
+            const record = data[key];
+            const result =
+              lastModel && lastModel[key] ? { ...lastModel[key] } : {};
+
+            if (record === null || record === undefined) {
+              model[key] = {};
+              return;
+            }
+
+            for (const id of Object.keys(record)) {
+              if (record[id] === null || record[id] === undefined) {
+                delete result[id];
+                continue;
+              }
+
+              const item = localConfig.create(
+                { id, value: record[id] },
+                result[id],
+              );
+
+              Object.defineProperty(result, id, {
+                get() {
+                  return cache.get(this, id, () => item.value);
+                },
+                enumerable: true,
+              });
+            }
+
+            model[key] = result;
           };
         }
         // eslint-disable-next-line no-fallthrough
@@ -1658,5 +1725,6 @@ export default Object.freeze(
     value: valueWithValidation,
     resolve: resolveToLatest,
     ref,
+    record,
   }),
 );

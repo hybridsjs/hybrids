@@ -244,6 +244,63 @@ If the first item of the array is an enumerable model definition, the property r
 
 The parent model's storage may provide a list of data for model instances or a list of identifiers. The update process and binding between models work the same as for a single external nested object.
 
+## Record
+
+For the structure with variable keys, use the `store.record()` method, which creates a record definition. The record is a map of all of the supported types of properties (including nested objects and arrays):
+
+```typescript
+store.record(value): object;
+```
+
+* **arguments**:
+  * `value` - any supported property value
+* **returns**:
+  * an empty object representing the record definition
+
+```javascript
+const Settings = {
+  ...,
+  flags: store.record(false),
+};
+```
+
+The record definition by default is an empty object. For example, to set individual keys of the record use the `store.set()` method:
+
+```javascript
+// Set the record value
+store.set(Settings, { flags: { a: true, b: false } });
+
+// Remove the record key
+store.set(Settings, { flags: { a: null } });
+
+// Reset the record completely
+store.set(Settings, { flags: null });
+```
+
+## Self Reference & Import Cycles
+
+The model definition is based on the plain object definition, so by the JavaScript constraints, it is not possible to create a property, which references the model itself, or use the definition from another ES module, which depends on the source file (there is an import cycle). In those situations, use the `store.ref()` method, which sets a property to the result of the passed function in time of the definition (when the model definition is used for the first time).
+
+```typescript
+store.ref(fn: () => value): fn;
+```
+
+* **arguments**:
+  * `fn` - a function returning the property definition
+* **returns**:
+  * a passed function, which is called in time of the definition
+
+```javascript
+const Model = {
+  id: true,
+  value: "",
+  // single reference
+  model: store.ref(() => Model),
+  // multiple references - wrap Model in the array inside of the function
+  models: store.ref(() => [Model]),
+};
+```
+
 ## Cache Invalidation
 
 By default, the store does not invalidate the cached value of the model instance when nested in the array external model changes. Because of the nature of the binding between models, when the nested model updates its state, the change will be reflected without a need to update the parent model's state.
@@ -269,26 +326,3 @@ store.set(pageOne.users[0], { name: 'New name' });
 
 To prevent an endless loop of fetching data, the cached value of the parent model instance only invalidates if the `store.set` method is used. Updating the state of the nested model definition by fetching new values with the `store.get` action won't invalidate the parent model. Get action still respects the `cache` option of the parent storage. If you need a high rate of accuracy of the external data, you should set a very low value of the `cache` option in the storage, or even set it to `false`.
 
-## Self Reference & Import Cycles
-
-The model definition is based on the plain object definition, so by the JavaScript constraints, it is not possible to create a property, which is a model definition of itself, or use the definition from another ES module, which depends on the source file (there is an import cycle). In those situations, use the `store.ref(fn)` method, which sets a property to the result of the passed function in time of the definition (when the model definition is used for the first time).
-
-```typescript
-store.ref(fn: () => Property): fn;
-```
-
-* **arguments**:
-  * `fn` - a function returning the property definition
-* **returns**:
-  * a passed function, which is called in time of the definition
-
-```javascript
-const Model = {
-  id: true,
-  value: "",
-  // single reference
-  model: store.ref(() => Model),
-  // multiple references - wrap Model in the array inside of the function
-  models: store.ref(() => [Model]),
-};
-```
