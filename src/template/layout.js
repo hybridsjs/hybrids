@@ -172,6 +172,8 @@ const dimensions = {
 const queries = {
   portrait: "orientation: portrait",
   landscape: "orientation: landscape",
+  hover: "hover: hover",
+  "any-hover": "any-hover: hover",
 };
 
 function dimension(value) {
