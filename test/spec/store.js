@@ -1145,6 +1145,178 @@ describe("store:", () => {
     });
   });
 
+  describe("record()", () => {
+    it("throws when argument is not set", () => {
+      expect(() => store.record()).toThrow();
+      expect(() => store.record(null)).toThrow();
+      expect(() => store.record(undefined)).toThrow();
+    });
+
+    it("throws when argument is a function", () => {
+      expect(() => store.record(() => {})).toThrow();
+    });
+
+    it("throws when model with value as a function passed to ref", () => {
+      Model = {
+        other: "",
+        values: store.record(store.ref(({ other }) => other)),
+      };
+
+      expect(() => store.get(Model)).toThrow();
+    });
+
+    describe("for primitive value", () => {
+      beforeEach(() => {
+        Model = {
+          id: true,
+          values: store.record(""),
+        };
+      });
+
+      it("creates a record property", () => {
+        return store
+          .set(Model, { values: { a: "b", c: "d" } })
+          .then((model) => {
+            expect(model.values).toEqual({ a: "b", c: "d" });
+            return store
+              .set(Model, { values: { a: "e", f: "g" } })
+              .then((otherModel) => {
+                expect(model.values).toEqual({ a: "b", c: "d" });
+                expect(otherModel.values).toEqual({ a: "e", f: "g" });
+              });
+          });
+      });
+
+      it("updates item in record property", () => {
+        return store
+          .set(Model, { values: { a: "b", c: "d" } })
+          .then((model) => store.set(model, { values: { a: "e", f: "g" } }))
+          .then((model) => {
+            expect(model.values).toEqual({ a: "e", c: "d", f: "g" });
+          });
+      });
+
+      it("deletes item in record property", () => {
+        return store
+          .set(Model, { values: { a: "b", c: "d" } })
+          .then((model) => store.set(model, { values: { a: null } }))
+          .then((model) => {
+            expect(model.values).toEqual({ c: "d" });
+          });
+      });
+
+      it("clears a record property", () => {
+        return store
+          .set(Model, { values: { a: "b", c: "d" } })
+          .then((model) => store.set(model, { values: null }))
+          .then((model) => {
+            expect(model.values).toEqual({});
+          });
+      });
+    });
+
+    describe("for nested model value", () => {
+      beforeEach(() => {
+        Model = {
+          id: true,
+          values: store.record({ value: "" }),
+        };
+      });
+
+      it("creates a record property", () => {
+        return store
+          .set(Model, { values: { a: { value: "b" }, c: { value: "d" } } })
+          .then((model) => {
+            expect(model.values).toEqual({
+              a: { value: "b" },
+              c: { value: "d" },
+            });
+          });
+      });
+
+      it("updates item in record property", () => {
+        return store
+          .set(Model, { values: { a: { value: "b" }, c: { value: "d" } } })
+          .then((model) =>
+            store.set(model, {
+              values: { a: { value: "e" }, f: { value: "g" } },
+            }),
+          )
+          .then((model) => {
+            expect(model.values).toEqual({
+              a: { value: "e" },
+              c: { value: "d" },
+              f: { value: "g" },
+            });
+          });
+      });
+
+      it("deletes item in record property", () => {
+        return store
+          .set(Model, { values: { a: { value: "b" }, c: { value: "d" } } })
+          .then((model) => store.set(model, { values: { a: null } }))
+          .then((model) => {
+            expect(model.values).toEqual({
+              c: { value: "d" },
+            });
+          });
+      });
+
+      it("clears a record property", () => {
+        return store
+          .set(Model, { values: { a: { value: "b" }, c: { value: "d" } } })
+          .then((model) => store.set(model, { values: null }))
+          .then((model) => {
+            expect(model.values).toEqual({});
+          });
+      });
+    });
+
+    describe("for external model value", () => {
+      let ExternalModel;
+      beforeEach(() => {
+        ExternalModel = {
+          id: true,
+          value: "",
+        };
+
+        Model = {
+          id: true,
+          values: store.record(ExternalModel),
+        };
+      });
+
+      it("creates a record property and preserves the relation", () => {
+        return store
+          .set(Model, { values: { a: { id: "1", value: "b" } } })
+          .then((model) => {
+            expect(store.get(ExternalModel, "1").value).toBe("b");
+            expect(model.values).toEqual({
+              a: { id: "1", value: "b" },
+            });
+
+            return store.set(model.values.a, null).then(() => {
+              expect(store.error(model.values.a)).toBeInstanceOf(Error);
+            });
+          });
+      });
+
+      it("set record property item by the external model id", () => {
+        return store
+          .set(ExternalModel, { value: "test" })
+          .then((externalModel) => {
+            return store
+              .set(Model, { values: { a: externalModel.id } })
+              .then((model) => {
+                expect(model.values).toEqual({
+                  a: { id: externalModel.id, value: "test" },
+                });
+              });
+          });
+      });
+    });
+  });
+
   describe("guards", () => {
     it("returns false if value is not an object instance", () => {
       expect(store.pending(null)).toBe(false);
