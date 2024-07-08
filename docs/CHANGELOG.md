@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.1.0](https://github.com/hybridsjs/hybrids/compare/v9.0.0...v9.1.0) (2024-07-08)
+
+
+### Features
+
+* **layout:** add `hover` and `any-hover` predefined media queries ([b3dc67c](https://github.com/hybridsjs/hybrids/commit/b3dc67cb38271bc4353ee3ca6fe9f1f4eef33fda))
+* **store:** add record property type ([#260](https://github.com/hybridsjs/hybrids/issues/260)) ([8b1f308](https://github.com/hybridsjs/hybrids/commit/8b1f3080373f4f1444572a5c145b06da48624829))
+
 ## [9.0.0](https://github.com/hybridsjs/hybrids/compare/v8.2.23...v9.0.0) (2024-06-13)
 
 This major release comes with several breaking changes, which may affect your code. Follow the instructions from the [Migration Guide](/migration.md) section in the documentation.
