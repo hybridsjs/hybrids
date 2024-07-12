@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.1](https://github.com/hybridsjs/hybrids/compare/v9.1.0...v9.1.1) (2024-07-12)
+
+
+### Bug Fixes
+
+* **store:** clear or remove records only for `null` value ([a3e0a0b](https://github.com/hybridsjs/hybrids/commit/a3e0a0b7a9c286170fc89d3052d95826205b5288))
+
 ## [9.1.0](https://github.com/hybridsjs/hybrids/compare/v9.0.0...v9.1.0) (2024-07-08)
 
 
