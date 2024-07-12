@@ -1169,6 +1169,7 @@ describe("store:", () => {
       beforeEach(() => {
         Model = {
           id: true,
+          other: true,
           values: store.record(""),
         };
       });
@@ -1211,6 +1212,15 @@ describe("store:", () => {
           .then((model) => store.set(model, { values: null }))
           .then((model) => {
             expect(model.values).toEqual({});
+          });
+      });
+
+      it("keeps the values if another property is updated", () => {
+        return store
+          .set(Model, { values: { a: "b", c: "d" } })
+          .then((model) => store.set(model, { other: "test" }))
+          .then((model) => {
+            expect(model.values).toEqual({ a: "b", c: "d" });
           });
       });
     });

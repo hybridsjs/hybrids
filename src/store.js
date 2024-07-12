@@ -722,17 +722,22 @@ function setupModel(Model, nested) {
           const localConfig = bootstrap(defaultValue, true);
 
           return (model, data, lastModel) => {
-            const record = data[key];
-            const result =
-              lastModel && lastModel[key] ? { ...lastModel[key] } : {};
-
-            if (record === null || record === undefined) {
+            if (data[key] === null) {
               model[key] = {};
               return;
             }
 
+            const record = data[key] || {};
+            let result = {};
+
+            if (lastModel) {
+              for (const id of Object.keys(lastModel[key])) {
+                result[id] = lastModel[key][id];
+              }
+            }
+
             for (const id of Object.keys(record)) {
-              if (record[id] === null || record[id] === undefined) {
+              if (record[id] === null) {
                 delete result[id];
                 continue;
               }
