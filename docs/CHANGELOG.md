@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.2](https://github.com/hybridsjs/hybrids/compare/v9.1.1...v9.1.2) (2024-08-21)
+
+
+### Bug Fixes
+
+* **cache:** throw an error when assert while getting the value ([9cc25c0](https://github.com/hybridsjs/hybrids/commit/9cc25c0b9facdcdf961504f7c1a3267a9017d96a))
+
 ### [9.1.1](https://github.com/hybridsjs/hybrids/compare/v9.1.0...v9.1.1) (2024-07-12)
 
 
