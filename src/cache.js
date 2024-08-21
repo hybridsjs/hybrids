@@ -114,7 +114,13 @@ export function get(target, key, fn) {
   return entry.value;
 }
 
-export function assert(target, key, value) {
+export function assert(target, key, value, force) {
+  if (context && !force) {
+    throw Error(
+      `Try to assert value of the '${key}' inside of the value function`,
+    );
+  }
+
   const entry = getEntry(target, key);
 
   entry.value = undefined;

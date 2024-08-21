@@ -318,11 +318,16 @@ function getTypeConstructor(type, key) {
 function setModelState(model, state, value) {
   const lastConfig = cache.getEntry(model, "state").value;
 
-  cache.assert(model, "state", {
-    state,
-    value,
-    error: (state === "error" ? value : lastConfig?.error) || false,
-  });
+  cache.assert(
+    model,
+    "state",
+    {
+      state,
+      value,
+      error: (state === "error" ? value : lastConfig?.error) || false,
+    },
+    true,
+  );
 
   return model;
 }
@@ -1622,7 +1627,7 @@ function resolveModel(Model, config, id) {
     const clone = Object.freeze(Object.create(lastModel));
 
     definitions.set(clone, config);
-    cache.assert(clone, "state", getModelState(nextModel));
+    cache.assert(clone, "state", getModelState(nextModel), true);
 
     return clone;
   }

@@ -34,6 +34,14 @@ describe("cache:", () => {
       ).toThrow();
     });
 
+    it("throws for assert value inside of the getter call", () => {
+      expect(() =>
+        get(target, "key", () => {
+          assert(target, "key", "value");
+        }),
+      ).toThrow();
+    });
+
     it("re-throws getter error with cleanup", () => {
       expect(() =>
         get(target, "key", () =>
