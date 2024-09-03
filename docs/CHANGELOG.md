@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.3](https://github.com/hybridsjs/hybrids/compare/v9.1.2...v9.1.3) (2024-09-03)
+
+
+### Bug Fixes
+
+* **utils:** add global debug mode ([77cfefa](https://github.com/hybridsjs/hybrids/commit/77cfefa00ec5373b258387859ae9a128879f2f29))
+
 ### [9.1.2](https://github.com/hybridsjs/hybrids/compare/v9.1.1...v9.1.2) (2024-08-21)
 
 
