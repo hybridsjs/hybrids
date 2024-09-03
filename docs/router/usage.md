@@ -323,20 +323,6 @@ In the above example, for both `OneView` and `TwoView` the `<my-link>` will be a
 
 ## Debug Mode
 
-```typescript
-router.debug(flag = true): void
-```
+The router in debug mode logs the navigation events. Also, it simplifies access to the current view in the DevTools console by the `$$0` reference (similar to the last selected element in the Elements panel). 
 
-* **arguments**:
-  * `flag` - a boolean flag, defaults to `true`
-
-The router provides a global debug mode, which logs the navigation events. It simplifies access to the current view in the DevTools console by the `$$0` reference (similar to the last selected element in the Elements panel).
-
-It is advised to protect the router debug mode from the production environment by running it conditionally (according to your application setup):
-
-```javascript
-import { router } from "hybrids";
-
-// The condition might differ according to your setup
-if (import.meta.env.DEV) router.debug();
-```
+You can find more information about the debug mode in the [Debug Mode](/getting-started.md#debug-mode) section of the documentation.

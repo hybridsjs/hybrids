@@ -1,5 +1,5 @@
 import * as cache from "./cache.js";
-import { storePointer, deferred } from "./utils.js";
+import { storePointer, deferred, isDebugMode } from "./utils.js";
 
 const connect = Symbol("store.connect");
 
@@ -1033,8 +1033,8 @@ function notFoundError(Model, stringId) {
   return err;
 }
 
-function mapError(model, err, suppressLog) {
-  if (suppressLog !== false && !notFoundErrors.has(err)) {
+function mapError(model, err) {
+  if (isDebugMode() && !notFoundErrors.has(err)) {
     console.error(err);
   }
 
@@ -1362,7 +1362,6 @@ function set(model, values = {}) {
           mapError(
             config.placeholder(resultId),
             notFoundError(config.model, id),
-            false,
           ),
         true,
       );
@@ -1417,7 +1416,7 @@ function sync(model, values) {
     config,
     id,
     resultModel ||
-      mapError(config.placeholder(id), notFoundError(config.model, id), false),
+      mapError(config.placeholder(id), notFoundError(config.model, id)),
   );
 }
 

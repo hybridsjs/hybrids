@@ -43,5 +43,14 @@ export function walkInShadow(target, cb) {
   }
 }
 
+let debugMode = false;
+export function debug() {
+  debugMode = true;
+}
+
+export function isDebugMode() {
+  return debugMode;
+}
+
 export const deferred = Promise.resolve();
 export const storePointer = new WeakMap();

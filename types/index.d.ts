@@ -414,6 +414,8 @@ export function dispatch(
   options?: CustomEventInit,
 ): boolean;
 
+export function debug(): void;
+
 /* Template Engine */
 
 export interface UpdateFunctionWithMethods<E> extends UpdateFunction<E> {

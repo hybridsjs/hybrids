@@ -10,4 +10,4 @@ export { localize, msg } from "./localize.js";
 
 export { html, svg } from "./template/index.js";
 
-export { dispatch } from "./utils.js";
+export { dispatch, debug } from "./utils.js";

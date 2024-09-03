@@ -1,5 +1,5 @@
 import * as cache from "./cache.js";
-import { deferred, dispatch, walkInShadow } from "./utils.js";
+import { deferred, dispatch, walkInShadow, debug } from "./utils.js";
 import { constructors } from "./define.js";
 
 const connect = Symbol("router.connect");
@@ -11,11 +11,6 @@ const routers = new WeakMap();
 
 let rootRouter = null;
 const entryPoints = new Set();
-
-let debug = false;
-function setDebug(value = true) {
-  debug = !!value;
-}
 
 const scrollMap = new WeakMap();
 const focusMap = new WeakMap();
@@ -1184,7 +1179,7 @@ function router(views, options) {
 export default Object.freeze(
   Object.assign(router, {
     connect,
-    debug: setDebug,
+    debug,
     url: getUrl,
     backUrl: getBackUrl,
     guardUrl: getGuardUrl,

@@ -573,3 +573,9 @@ define({
 ```
 
 The Error instance is not required, but it can be helpful to display the general error message.
+
+## Debug Mode
+
+The store in the debug mode logs error messages when storage `set()` or `get()` methods throw an error.
+
+You can find more information about the debug mode in the [Debug Mode](/getting-started.md#debug-mode) section of the documentation.
