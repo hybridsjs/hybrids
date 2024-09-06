@@ -49,7 +49,7 @@ export default function value(key, desc) {
           fn(host, value, attrName);
           desc.observe(host, value, lastValue);
         }
-      : (host, value) => reflect(host, value, attrName);
+      : (host, value) => fn(host, value, attrName);
   }
 
   return {

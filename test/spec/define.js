@@ -250,6 +250,10 @@ describe("define:", () => {
           reflect: (value) => "This is " + value,
           observe: (...args) => observeSpy && observeSpy(...args),
         },
+        prop6: {
+          value: "test",
+          reflect: (v) => v.toUpperCase(),
+        },
         stringReflect: { value: "test", reflect: true },
         numberReflect: { value: 0, reflect: true },
         undefinedReflect: { value: undefined, reflect: true },
@@ -285,6 +289,7 @@ describe("define:", () => {
       expect(el.prop3).toBe(false);
       expect(el.prop4).toBe("test");
       expect(el.prop5).toBe(undefined);
+      expect(el.prop6).toBe("test");
       expect(el.array).toEqual(["a", "b", "c"]);
       expect(el.computed).toBe("1 false");
       expect(el.fullDesc).toBe("fullDesc");
@@ -356,6 +361,8 @@ describe("define:", () => {
         expect(el.getAttribute("prop2")).toBe(null);
         expect(el.getAttribute("prop3")).toBe("");
         expect(el.getAttribute("prop4")).toBe("test 2");
+        expect(el.getAttribute("prop5")).toBe(null);
+        expect(el.getAttribute("prop6")).toBe("TEST");
         expect(el.getAttribute("not-defined")).toBe(null);
 
         expect(el.getAttribute("string-reflect")).toBe(null);
