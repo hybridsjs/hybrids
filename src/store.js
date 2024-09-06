@@ -564,6 +564,12 @@ function setupModel(Model, nested) {
           if (isArray) {
             const nestedType = typeof defaultValue[0];
 
+            if (nestedType === "undefined") {
+              throw TypeError(
+                `The first item of the '${key}' array must be defined`,
+              );
+            }
+
             if (nestedType !== "object") {
               if (
                 nestedType === "function" &&
@@ -646,6 +652,12 @@ function setupModel(Model, nested) {
                   [];
               }
             };
+          }
+
+          if (Object.keys(defaultValue).length === 0) {
+            throw TypeError(
+              `The object for the '${key}' must have at least one property`,
+            );
           }
 
           const nestedConfig = bootstrap(defaultValue, true);

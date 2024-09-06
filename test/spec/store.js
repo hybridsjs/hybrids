@@ -106,6 +106,14 @@ describe("store:", () => {
       expect(() => store.get({ nested: [() => {}] })).toThrow();
     });
 
+    it("throws when nested array don't have a first item", () => {
+      expect(() => store.get({ nested: [] })).toThrow();
+    });
+
+    it("throws when nested object has no properties defined", () => {
+      expect(() => store.get({ nested: {} })).toThrow();
+    });
+
     it("set to an error state when get method returning undefined", () => {
       Model = {
         value: "test",
