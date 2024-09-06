@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.4](https://github.com/hybridsjs/hybrids/compare/v9.1.3...v9.1.4) (2024-09-06)
+
+
+### Bug Fixes
+
+* **define:** call reflect method if observe is not set ([cce3efd](https://github.com/hybridsjs/hybrids/commit/cce3efde417849af9cdda557f9595adeeda75a7b))
+
 ### [9.1.3](https://github.com/hybridsjs/hybrids/compare/v9.1.2...v9.1.3) (2024-09-03)
 
 
