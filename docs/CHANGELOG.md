@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.5](https://github.com/hybridsjs/hybrids/compare/v9.1.4...v9.1.5) (2024-09-06)
+
+
+### Bug Fixes
+
+* **store:** error messages for empty array and nested objects ([bd9dc13](https://github.com/hybridsjs/hybrids/commit/bd9dc13cef24bd71ca18d6d08ce1a8bd44fdad0c))
+
 ### [9.1.4](https://github.com/hybridsjs/hybrids/compare/v9.1.3...v9.1.4) (2024-09-06)
 
 
