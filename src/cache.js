@@ -115,9 +115,9 @@ export function get(target, key, fn) {
 }
 
 export function assert(target, key, value, force) {
-  if (context && !force) {
+  if (context && context.target === target && !force) {
     throw Error(
-      `Try to assert value of the '${key}' inside of the value function`,
+      `Try to update the '${key}' property while getting the '${context.key}' property`,
     );
   }
 
