@@ -128,6 +128,36 @@ describe("html:", () => {
     });
   });
 
+  it("sets the property value of the nested element", () => {
+    define({
+      tag: "test-html-assert-nested",
+      value: "",
+    });
+
+    define({
+      tag: "test-html-assert",
+      value: "test",
+      target: ({ render }) => render().querySelector("div"),
+      render: ({ value }) =>
+        html`<test-html-assert-nested
+          value="${value}"
+        ></test-html-assert-nested>`,
+    });
+
+    const render = html`<test-html-assert></test-html-assert>`;
+
+    render(fragment);
+
+    const el = fragment.children[0];
+
+    return resolveTimeout(() => {
+      expect(() => {
+        el.value = "other";
+        el.target;
+      }).not.toThrow();
+    });
+  });
+
   describe("attribute expression with combined text value", () => {
     const render = (two, three) => html`
       <div name="test" class="class-one ${two} ${three}"></div>
