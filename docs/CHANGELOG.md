@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.6](https://github.com/hybridsjs/hybrids/compare/v9.1.5...v9.1.6) (2024-09-20)
+
+
+### Bug Fixes
+
+* **cache:** throw when update internal properties of the target ([#274](https://github.com/hybridsjs/hybrids/issues/274)) ([52f5053](https://github.com/hybridsjs/hybrids/commit/52f50535c43f12ee3948e229965f2ab29f7551e9))
+
 ### [9.1.5](https://github.com/hybridsjs/hybrids/compare/v9.1.4...v9.1.5) (2024-09-06)
 
 
