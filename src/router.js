@@ -1,6 +1,13 @@
 import * as cache from "./cache.js";
-import { deferred, dispatch, walkInShadow, debug } from "./utils.js";
 import { constructors } from "./define.js";
+
+import {
+  deferred,
+  dispatch,
+  walkInShadow,
+  debug,
+  isDebugMode,
+} from "./utils.js";
 
 const connect = Symbol("router.connect");
 const configs = new WeakMap();
@@ -1139,7 +1146,7 @@ function router(views, options) {
       return connectRootRouter(host, invalidate, options);
     },
     observe:
-      debug &&
+      isDebugMode() &&
       ((host, value, lastValue) => {
         const index = value.length - 1;
         const view = value[index];

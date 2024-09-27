@@ -44,12 +44,12 @@ export function walkInShadow(target, cb) {
 }
 
 let debugMode = false;
-export function debug() {
-  debugMode = true;
-}
-
 export function isDebugMode() {
   return debugMode;
+}
+
+export function debug() {
+  debugMode = true;
 }
 
 export const deferred = Promise.resolve();
