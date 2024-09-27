@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.7](https://github.com/hybridsjs/hybrids/compare/v9.1.6...v9.1.7) (2024-09-27)
+
+
+### Bug Fixes
+
+* **router:** check properly the debug mode for logging navigation events ([5ddd74c](https://github.com/hybridsjs/hybrids/commit/5ddd74c48ebb55b3c9d147af69aff495b8ba63c0))
+
 ### [9.1.6](https://github.com/hybridsjs/hybrids/compare/v9.1.5...v9.1.6) (2024-09-20)
 
 
