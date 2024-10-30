@@ -10,6 +10,11 @@ const EnumerableModelPromise: Promise<IEnumerable> =
   store.resolve(EnumerableStore);
 const EnumerableModel = await EnumerableModelPromise;
 
+const EnumerableModelListPromise: Promise<IEnumerable[]> = store.resolve([
+  EnumerableStore,
+]);
+const EnumerableModelList = await EnumerableModelListPromise;
+
 store.get(SingletonStore);
 store.get([SingletonStore]);
 

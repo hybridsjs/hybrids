@@ -280,6 +280,10 @@ export namespace store {
     model: Model<M>,
     id?: ModelIdentifier,
   ): Promise<M>;
+  function resolve<M extends ModelInstance>(
+    model: [Model<M>],
+    id?: ModelIdentifier,
+  ): Promise<M[]>;
 
   function ref<T>(fn: () => T): () => T;
 
