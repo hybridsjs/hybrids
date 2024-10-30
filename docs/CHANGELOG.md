@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.8](https://github.com/hybridsjs/hybrids/compare/v9.1.7...v9.1.8) (2024-10-30)
+
+
+### Bug Fixes
+
+* **types:** add enumerable model listing to store.resolve() method ([dd20611](https://github.com/hybridsjs/hybrids/commit/dd206112515505b024a35fd2b100a92b21501857))
+
 ### [9.1.7](https://github.com/hybridsjs/hybrids/compare/v9.1.6...v9.1.7) (2024-09-27)
 
 
