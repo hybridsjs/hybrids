@@ -52,6 +52,8 @@ export default define({
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/edit/hybrids-simple-counter)
 
+[![Open in Codeanywhere](https://codeanywhere.com/img/open-in-codeanywhere-btn.svg)](https://app.codeanywhere.com/#https://github.com/hybridsjs/hybrids)
+
 You can read more in the [Component Model](https://hybrids.js.org/#/component-model/definition.md) section.
 
 ### Global State Management
