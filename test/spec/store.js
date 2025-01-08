@@ -1638,6 +1638,11 @@ describe("store:", () => {
           expect(el.withoutid).toBe(store.get(Model, "2"));
         });
 
+        it("set model id by assertion with an object", () => {
+          el.withoutid = { value: "test" };
+          expect(el.withoutid).toBe(store.get(Model, { value: "test" }));
+        });
+
         it("set model by reference", () => {
           const model = store.get(Model, "1");
           el.withoutid = model;

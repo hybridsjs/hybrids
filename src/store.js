@@ -1613,7 +1613,8 @@ function valueWithValidation(
 }
 
 function resolveId(value) {
-  return typeof value === "object" ? value?.id : value ?? undefined;
+  if (value && definitions.has(value)) return value.id;
+  return value ?? undefined;
 }
 
 function resolveModel(Model, config, id) {
