@@ -66,7 +66,7 @@ export default function extract(args, options) {
         }
 
         acc[m.key] = {
-          message: options.emptyMessage ? c?.message ?? "" : m.message,
+          message: options.emptyMessage ? (c?.message ?? "") : m.message,
           ...c,
           description,
         };
