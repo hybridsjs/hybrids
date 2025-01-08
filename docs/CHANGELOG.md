@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.9](https://github.com/hybridsjs/hybrids/compare/v9.1.8...v9.1.9) (2025-01-08)
+
+
+### Bug Fixes
+
+* **store:** resolve id property of the argument only for model instance ([de98582](https://github.com/hybridsjs/hybrids/commit/de9858277f9b6cdce51f9d99c1c6b3134b63cde7))
+
 ### [9.1.8](https://github.com/hybridsjs/hybrids/compare/v9.1.7...v9.1.8) (2024-10-30)
 
 
