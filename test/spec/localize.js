@@ -122,6 +122,15 @@ describe("localize:", () => {
       expect(el.innerHTML).toBe('z linkiem <a href="test">link</a>');
     });
 
+    it("msg.html supports setting event listener", () => {
+      const el = document.createElement("div");
+      const spy = jasmine.createSpy();
+      msg.html`<button onclick="${spy}">click</button>`(el);
+
+      el.querySelector("button").click();
+      expect(spy).toHaveBeenCalledWith(el, jasmine.any(Object));
+    });
+
     it("msg.svg interprets elements", () => {
       const el = document.createElement("div");
 

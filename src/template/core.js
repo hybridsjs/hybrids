@@ -16,6 +16,7 @@ const PLACEHOLDER_REGEXP_TEXT = getPlaceholder("(\\d+)");
 const PLACEHOLDER_REGEXP_EQUAL = new RegExp(`^${PLACEHOLDER_REGEXP_TEXT}$`);
 const PLACEHOLDER_REGEXP_ALL = new RegExp(PLACEHOLDER_REGEXP_TEXT, "g");
 const PLACEHOLDER_REGEXP_ONLY = /^[^A-Za-z]+$/;
+const PLACEHOLDER_REGEXP_MSG = new RegExp(getPlaceholder("") + "\\d+");
 
 function createContents(parts) {
   let signature = parts[0];
@@ -190,7 +191,14 @@ function updateStyleElement(target, styles) {
 }
 
 export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
-  const contents = isMsg ? rawParts : createContents(rawParts);
+  let contents = "";
+  if (isMsg) {
+    contents = rawParts;
+    rawParts = rawParts.split(PLACEHOLDER_REGEXP_MSG);
+  } else {
+    contents = createContents(rawParts);
+  }
+
   let template = globalThis.document.createElement("template");
 
   if (isSVG) {
