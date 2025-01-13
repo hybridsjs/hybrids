@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.10](https://github.com/hybridsjs/hybrids/compare/v9.1.9...v9.1.10) (2025-01-13)
+
+
+### Bug Fixes
+
+* **html:** listener expressions in localized html content ([df4f650](https://github.com/hybridsjs/hybrids/commit/df4f650075579f958db8f028936bd40e050c01e5))
+
 ### [9.1.9](https://github.com/hybridsjs/hybrids/compare/v9.1.8...v9.1.9) (2025-01-08)
 
 
