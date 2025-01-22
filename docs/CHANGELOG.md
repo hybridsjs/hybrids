@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.11](https://github.com/hybridsjs/hybrids/compare/v9.1.10...v9.1.11) (2025-01-22)
+
+
+### Bug Fixes
+
+* **store:** keep values for record item update ([7c037b9](https://github.com/hybridsjs/hybrids/commit/7c037b991fc098b146dbc64b73b56e7a4bf4d539))
+
 ### [9.1.10](https://github.com/hybridsjs/hybrids/compare/v9.1.9...v9.1.10) (2025-01-13)
 
 
