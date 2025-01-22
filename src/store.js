@@ -744,24 +744,42 @@ function setupModel(Model, nested) {
               return;
             }
 
-            const record = data[key] || {};
+            if (data[key] === undefined) {
+              model[key] = lastModel?.[key] ?? {};
+              return;
+            }
+
+            if (typeof data[key] !== "object") {
+              throw TypeError(
+                `The value for the '${key}' must be an object instance: ${typeof data[key]}`,
+              );
+            }
+
+            const record = data[key];
             let result = {};
 
             if (lastModel) {
               for (const id of Object.keys(lastModel[key])) {
-                result[id] = lastModel[key][id];
+                if (!hasOwnProperty.call(record, id)) {
+                  Object.defineProperty(result, id, {
+                    get() {
+                      return lastModel[key][id];
+                    },
+                    enumerable: true,
+                    configurable: true,
+                  });
+                }
               }
             }
 
             for (const id of Object.keys(record)) {
               if (record[id] === null) {
-                delete result[id];
                 continue;
               }
 
               const item = localConfig.create(
                 { id, value: record[id] },
-                result[id],
+                { id, value: lastModel && lastModel[key][id] },
               );
 
               Object.defineProperty(result, id, {

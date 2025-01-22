@@ -1173,6 +1173,15 @@ describe("store:", () => {
       expect(() => store.get(Model)).toThrow();
     });
 
+    it("throws when record is updated with wrong type", () => {
+      Model = {
+        id: true,
+        values: store.record(""),
+      };
+
+      expect(() => store.set(Model, { values: 123 })).toThrow();
+    });
+
     describe("for primitive value", () => {
       beforeEach(() => {
         Model = {
@@ -1237,7 +1246,7 @@ describe("store:", () => {
       beforeEach(() => {
         Model = {
           id: true,
-          values: store.record({ value: "" }),
+          values: store.record({ value: "", otherValue: "test" }),
         };
       });
 
@@ -1246,15 +1255,20 @@ describe("store:", () => {
           .set(Model, { values: { a: { value: "b" }, c: { value: "d" } } })
           .then((model) => {
             expect(model.values).toEqual({
-              a: { value: "b" },
-              c: { value: "d" },
+              a: { value: "b", otherValue: "test" },
+              c: { value: "d", otherValue: "test" },
             });
           });
       });
 
       it("updates item in record property", () => {
         return store
-          .set(Model, { values: { a: { value: "b" }, c: { value: "d" } } })
+          .set(Model, {
+            values: {
+              a: { value: "b", otherValue: "a" },
+              c: { value: "d", otherValue: "b" },
+            },
+          })
           .then((model) =>
             store.set(model, {
               values: { a: { value: "e" }, f: { value: "g" } },
@@ -1262,9 +1276,9 @@ describe("store:", () => {
           )
           .then((model) => {
             expect(model.values).toEqual({
-              a: { value: "e" },
-              c: { value: "d" },
-              f: { value: "g" },
+              a: { value: "e", otherValue: "a" },
+              c: { value: "d", otherValue: "b" },
+              f: { value: "g", otherValue: "test" },
             });
           });
       });
@@ -1275,7 +1289,7 @@ describe("store:", () => {
           .then((model) => store.set(model, { values: { a: null } }))
           .then((model) => {
             expect(model.values).toEqual({
-              c: { value: "d" },
+              c: { value: "d", otherValue: "test" },
             });
           });
       });
