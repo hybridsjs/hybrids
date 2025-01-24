@@ -225,6 +225,10 @@ describe("localize:", () => {
           <script>text only</script>
           <style>text only</style>
           <div>text only</div>
+          <svg xmlns="http://www.w3.org/2000/svg">
+            <style>text only</style>
+            <text>text only</text>
+          </svg>
         `(el, el);
 
         expect(el.children[0].childNodes[0].textContent.trim()).toBe(
@@ -236,6 +240,10 @@ describe("localize:", () => {
         expect(el.children[1].innerHTML.trim()).toBe("text only");
         expect(el.children[2].innerHTML.trim()).toBe("text only");
         expect(el.children[3].innerHTML.trim()).toBe("tylko tekst");
+
+        const svg = el.children[4];
+        expect(svg.children[0].innerHTML.trim()).toBe("text only");
+        expect(svg.children[1].innerHTML.trim()).toBe("tylko tekst");
       });
     });
   });

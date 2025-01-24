@@ -370,8 +370,8 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
         if (
           !noTranslate &&
           (node.getAttribute("translate") === "no" ||
-            node.tagName === "SCRIPT" ||
-            node.tagName === "STYLE")
+            node.tagName.toLowerCase() === "script" ||
+            node.tagName.toLowerCase() === "style")
         ) {
           noTranslate = node;
         }
@@ -532,7 +532,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
           child = fragment.childNodes[0];
         }
       } else {
-        if (useLayout) {
+        if (useLayout && hostLayout) {
           const className = `${hostLayout}-${host === target ? "c" : "s"}`;
           host.classList.add(className);
           meta.hostLayout = className;

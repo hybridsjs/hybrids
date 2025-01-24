@@ -144,6 +144,11 @@ describe("layout:", () => {
     }, 0);
   });
 
+  it("does not set host element class if layout attribute is empty", () => {
+    html`<template layout>${html`<div></div>`}</template>`(host);
+    expect(host.className).toBeFalsy();
+  });
+
   it("replaces class for the host element", () => {
     html`<template layout="row"></template>`(host);
     const className = host.className;
