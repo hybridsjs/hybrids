@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.12](https://github.com/hybridsjs/hybrids/compare/v9.1.11...v9.1.12) (2025-01-24)
+
+
+### Bug Fixes
+
+* **html:** localization of svg's style elements & host layout classname ([95f8702](https://github.com/hybridsjs/hybrids/commit/95f8702e6599d1c661f861386ed470366bcdf8b3))
+
 ### [9.1.11](https://github.com/hybridsjs/hybrids/compare/v9.1.10...v9.1.11) (2025-01-22)
 
 
