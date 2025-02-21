@@ -367,13 +367,22 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
         connect,
         (host) => {
           const params = {};
+
           for (const key of stateParams) {
-            const value = mapUrlParam(host[key]).toString();
-            params[key] =
-              value !== undefined && host[key] !== hybrids[key]
-                ? String(value)
-                : undefined;
+            let value = host[key];
+
+            if (
+              value === undefined ||
+              value === hybrids[key] ||
+              (typeof value === "object" &&
+                value.toString === Object.prototype.toString)
+            ) {
+              params[key] = undefined;
+            } else {
+              params[key] = mapUrlParam(value).toString();
+            }
           }
+
           return params;
         },
         (host, params, lastParams) => {

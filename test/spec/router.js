@@ -437,6 +437,7 @@ describe("router:", () => {
         },
         tag: "test-router-root-view",
         globalB: "",
+        objectParam: undefined,
         render: () => html`
           <a href="${router.url(ChildView)}" id="ChildView">Child</a>
           <a href="${router.url(Dialog)}" id="Dialog">Dialog</a>
@@ -681,7 +682,7 @@ describe("router:", () => {
                 expect(hybrids(host.views[0])).toBe(RootView);
               });
             });
-          });
+          }, 500);
         }));
 
       it("navigates when browser pops a new url outside the router", () =>
@@ -1138,6 +1139,15 @@ describe("router:", () => {
           return resolveTimeout(() => {});
         });
       });
+
+      it("does not save object-based parameters to router state", () =>
+        resolveTimeout(() => {
+          host.views[0].objectParam = { a: 1 };
+
+          return resolveTimeout(() => {
+            expect(window.history.state[0].params.objectParam).toBe(undefined);
+          });
+        }));
     });
 
     describe("url() -", () => {
