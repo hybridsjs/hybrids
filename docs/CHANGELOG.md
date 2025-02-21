@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.13](https://github.com/hybridsjs/hybrids/compare/v9.1.12...v9.1.13) (2025-02-21)
+
+
+### Bug Fixes
+
+* **router:** handle object-based parameters in router state ([2fcb666](https://github.com/hybridsjs/hybrids/commit/2fcb666fd9e5c9c79da0c6da9741347ccefa0636))
+
 ### [9.1.12](https://github.com/hybridsjs/hybrids/compare/v9.1.11...v9.1.12) (2025-01-24)
 
 
