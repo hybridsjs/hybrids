@@ -195,6 +195,34 @@ describe("html:", () => {
     });
   });
 
+  describe("href attribute expression with multiple expressions", () => {
+    const render = (one, two) =>
+      html`<div>${html`<a href="${one}/something/${two}"></a>`}</div>`;
+
+    it("sets attribute", () => {
+      render("example.com", "test")(fragment);
+      expect(fragment.children[0].children[0].getAttribute("href")).toBe(
+        "example.com/something/test",
+      );
+    });
+
+    it("updates attribute", () => {
+      render("example.com", "test")(fragment);
+      render("example.com", "other")(fragment);
+      expect(fragment.children[0].children[0].getAttribute("href")).toBe(
+        "example.com/something/other",
+      );
+    });
+
+    it("clears attribute", () => {
+      render("example.com", "test")(fragment);
+      render("", "")(fragment);
+      expect(fragment.children[0].children[0].getAttribute("href")).toBe(
+        "/something/",
+      );
+    });
+  });
+
   describe("attribute expression with non existing property", () => {
     const render = (value) => html` <div text-property="${value}"></div> `;
 

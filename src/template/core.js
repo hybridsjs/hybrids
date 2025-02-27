@@ -424,7 +424,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
                     const meta = getMeta(target);
                     meta[partialName] = (meta[partialName] || value).replace(
                       placeholder,
-                      attrValue == null ? "" : attrValue,
+                      attrValue ?? "",
                     );
 
                     if (results.length === 1 || index + 1 === results.length) {
@@ -441,6 +441,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
                       meta[partialName] = undefined;
                     }
                   },
+                  true,
                 ];
               }
 
@@ -498,6 +499,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
             index: partsKeys[keyIndex],
             node,
             fn: currentPart[1],
+            forceUpdate: currentPart[2],
           });
           keyIndex += 1;
           currentPart = parts[partsKeys[keyIndex]];
@@ -556,7 +558,10 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
 
       if (meta.prevArgs) {
         prevValue = meta.prevArgs[marker.index];
-        if (prevValue === value) continue;
+
+        if (prevValue === value && !marker.forceUpdate) {
+          continue;
+        }
       }
 
       try {
