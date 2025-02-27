@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.14](https://github.com/hybridsjs/hybrids/compare/v9.1.13...v9.1.14) (2025-02-27)
+
+
+### Bug Fixes
+
+* **html:** force update of attribute with multiple expressions ([a022464](https://github.com/hybridsjs/hybrids/commit/a02246480e3c34d797f268f1edb1b09907927727))
+
 ### [9.1.13](https://github.com/hybridsjs/hybrids/compare/v9.1.12...v9.1.13) (2025-02-21)
 
 
