@@ -1,12 +1,12 @@
 # Layout Engine
 
-The layout engine provides creating CSS layouts in-place in templates without external dependencies. It's built in similar way to utility-first CSS frameworks, but with much more powerful features.
+The layout engine provides CSS layout rules directly in templates without external dependencies. It's built in a similar way to utility-first CSS frameworks, but with much more powerful features.
 
-It focuses on "invisible" CSS rules, like display types, alignments, positioning, sizing, etc. The rest should be defined inside of the reusable UI components by [styling](/component-model/templates.md#styling) supported by the templates.
+It focuses only on "invisible" CSS rules, like display types, alignments, positioning, sizing, etc. The rest should be defined inside of the reusable UI components by [styling](/component-model/templates.md#styling) methods supported by the templates.
 
 ## Usage
 
-You must add `<template layout></template>` element wrapper with at least one empty `layout` attribute to the root template of the component. The `<template>` element represents the host element, which also can be styled:
+Add `<template layout></template>` element wrapper with at least one empty `layout` attribute to the root template of the component. The `<template>` element represents the host element, which also can be styled:
 
 ```js
 define({
@@ -46,9 +46,9 @@ define({
 <div layout.selector=""></div>
 ```
 
-The `layout` attribute name can be extended with any correct CSS selector, which does not contain space character. 
+The `layout` attribute name can be extended with any correct CSS selector, which does not contain space character.
 
-Value of the attribute does not support expressions, as the compilation process takes place before the function runs for the first time with arguments. However, the selector is added to the generated class selector, so the rules will apply only if the conditions are met:
+The value of the attribute does not support expressions, as the compilation process takes place before the function runs for the first time with arguments. However, the selector is added to the generated class selector, so the rules will apply only if the conditions are met.
 
 ```js
 define({
@@ -86,27 +86,40 @@ Any supported CSS selector can be used, like pseudo-classes, etc:
 <div layout="row gap" layout@768px="column gap:2"></div>
 ```
 
-The media queries are supported by the part of the `layout` attribute followed by `@` character. For the convenience, the engine defaults to `min-width` media query, but it also supports predefined values:
+The media queries are supported by the part followed by `@` character. For the convenience, the engine defaults to `min-width` media query feature. Engine supports the following values:
 
-* `portrait` - `@media screen and (orientation: portrait)`
-* `landscape` - `@media screen and (orientation: landscape)`
-* `hover` - `@media screen and (hover: hover)`
-* `any-hover` - `@media screen and (any-hover: hover)`
-* `[value]` - `@media screen and (min-width: [value])`
+* `portrait` - `@media (orientation: portrait)`
+* `landscape` - `@media (orientation: landscape)`
+* `hover` - `@media (hover: hover)`
+* `any-hover` - `@media (any-hover: hover)`
+* `print` - `@media print`
+* `[value]` - `@media (min-width: [value])`
 
 ```html
 <div layout="row" layout@portrait="column gap:2" layout@landscape="row gap:3"></div>
 ```
 
+For more complex queries, use `|` character to create `AND` condition, and `:` to create `OR` condition:
+
+```html
+<div layout="row" layout@landscape|768px:1024px="column gap:2"></div>
+```
+
+The above example generates the following complex media query:
+
+```css
+@media (orientation: landscape) and (min-width: 768px), (min-width: 1024px) { ... }
+```
+
 ## Arguments
 
-The attribute value contains space-separated list of rules. The rules are applied in the order they appear in the attribute. The rules comes with useful predefined arguments, but depending on the rule, they can take a list of arguments separated by `:` character (without the whitespace):
+The attribute value contains a space-separated list of rules. The rules are applied in the order they appear in the attribute. The rules come with useful predefined arguments, but depending on the rule, they can take a list of arguments separated by `:` character (without the whitespace):
 
 ```html
 <div layout="column gap:3 items:center width:full:100px"></div>
 ```
 
-If the rule supports more than one argument, you can skip it by omitting the value:
+If the rule supports more than one argument, you can skip it by omitting the value. For instance, you can use:
 
 ```html
 <div layout="row::inline width::50%"></div>
@@ -244,7 +257,7 @@ Use following examples as a reference:
 
 ## Generic Values
 
-You can extend ruleset supported by the layout engine by using special empty rule `::`. It generates a CSS property with a value set to CSS variable based on its name. In another words, it allows to use predefined design tokens, which points to any CSS properties.
+You can extend ruleset by using special empty rule `::`. It generates a CSS property with a value set to CSS variable based on its name. In another words, it allows to use predefined design tokens, which points to any CSS properties.
 
 | Rule   | Arguments                       | Properties                    |
 |--------|--------------------------------|--------------------------------|
@@ -266,7 +279,7 @@ You can extend ruleset supported by the layout engine by using special empty rul
 <div layout="block ::color:primary ::ui:font:body"></div>
 ```
 
-The above example produces the following CSS:
+The above example generates the following CSS:
 
 ```css
 {

@@ -1,7 +1,5 @@
-const hasAdoptedStylesheets = !!(
-  globalThis.document && globalThis.document.adoptedStyleSheets
-);
 const NUMBER_REGEXP = /^\d+$/;
+
 const rules = {
   // base
   block: (props, align) => ({
@@ -170,10 +168,11 @@ const dimensions = {
 };
 
 const queries = {
-  portrait: "orientation: portrait",
-  landscape: "orientation: landscape",
-  hover: "hover: hover",
-  "any-hover": "any-hover: hover",
+  print: "print",
+  portrait: "(orientation: portrait)",
+  landscape: "(orientation: landscape)",
+  hover: "(hover: hover)",
+  "any-hover": "(any-hover: hover)",
 };
 
 function dimension(value) {
@@ -185,6 +184,10 @@ function dimension(value) {
 
   return value || "";
 }
+
+const hasAdoptedStylesheets = !!(
+  globalThis.document && globalThis.document.adoptedStyleSheets
+);
 
 let globalSheet;
 function getCSSStyleSheet() {
@@ -280,10 +283,15 @@ export function insertRule(node, query, tokens, hostMode) {
     "",
   );
 
-  const mediaSelector = mediaQueries.split(":").reduce((acc, query) => {
-    if (query === "") return acc;
-    return acc + ` and (${queries[query] || `min-width: ${query}`})`;
-  }, "@media screen");
+  const mediaSelector = mediaQueries
+    .split(":")
+    .map((query) =>
+      query
+        .split("|")
+        .map((q) => q && (queries[q] || `(min-width: ${q})`))
+        .join(" and "),
+    )
+    .join(", ");
 
   if (hostMode) {
     const shadowSelector = `:host(:where(.${className}-s${selectors}))`;
@@ -291,8 +299,8 @@ export function insertRule(node, query, tokens, hostMode) {
 
     [shadowSelector, contentSelector].forEach((selector) => {
       sheet.insertRule(
-        mediaQueries
-          ? `${mediaSelector} { ${selector} { ${cssRules} } }`
+        mediaSelector
+          ? `@media ${mediaSelector} { ${selector} { ${cssRules} } }`
           : `${selector} { ${cssRules} }`,
         sheet.cssRules.length - 1,
       );
@@ -301,8 +309,8 @@ export function insertRule(node, query, tokens, hostMode) {
     const selector = `.${className}${selectors}`;
 
     sheet.insertRule(
-      mediaQueries
-        ? `${mediaSelector} { ${selector} { ${cssRules} } }`
+      mediaSelector
+        ? `@media ${mediaSelector} { ${selector} { ${cssRules} } }`
         : `${selector} { ${cssRules} }`,
       sheet.cssRules.length - 1,
     );
