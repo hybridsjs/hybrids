@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.15](https://github.com/hybridsjs/hybrids/compare/v9.1.14...v9.1.15) (2025-03-05)
+
+
+### Bug Fixes
+
+* **layout:** complex media queries & print media type ([cc507ec](https://github.com/hybridsjs/hybrids/commit/cc507ecc284859f6c9259832156ef6b4922cc37d))
+
 ### [9.1.14](https://github.com/hybridsjs/hybrids/compare/v9.1.13...v9.1.14) (2025-02-27)
 
 
