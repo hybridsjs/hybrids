@@ -1,5 +1,6 @@
 import * as cache from "./cache.js";
 import { constructors } from "./define.js";
+import transition from "./template/helpers/transition.js";
 
 import {
   deferred,
@@ -65,42 +66,44 @@ function focusElement(target) {
   target.focus({ preventScroll: true });
 }
 
-function restoreLayout(target) {
+async function restoreLayout(target) {
   const activeEl = globalThis.document.activeElement;
+  await deferred;
 
-  deferred.then(() => {
-    focusElement(
-      focusMap.get(target) ||
-        (rootRouter.contains(activeEl) ? activeEl : rootRouter),
-    );
+  // Wait until transition has started (by document.startViewTransition call)
+  transition.instance && (await transition.instance.ready);
 
-    const map = scrollMap.get(target);
-    if (map) {
-      const config = configs.get(target);
-      const state = globalThis.history.state;
-      const entry = state.find((e) => e.id === config.id);
-      const clear = entry && entry.params.scrollToTop;
+  focusElement(
+    focusMap.get(target) ||
+      (rootRouter.contains(activeEl) ? activeEl : rootRouter),
+  );
 
-      for (const [el, { left, top }] of map) {
-        el.scrollLeft = clear ? 0 : left;
-        el.scrollTop = clear ? 0 : top;
-      }
+  const map = scrollMap.get(target);
+  if (map) {
+    const config = configs.get(target);
+    const state = globalThis.history.state;
+    const entry = state.find((e) => e.id === config.id);
+    const clear = entry && entry.params.scrollToTop;
 
-      scrollMap.delete(target);
-    } else {
-      for (const el of [
-        globalThis.document.documentElement,
-        globalThis.document.body,
-      ]) {
-        el.scrollLeft = 0;
-        el.scrollTop = 0;
-      }
+    for (const [el, { left, top }] of map) {
+      el.scrollLeft = clear ? 0 : left;
+      el.scrollTop = clear ? 0 : top;
     }
 
-    setTimeout(() => {
-      globalThis.history.scrollRestoration = "auto";
-    }, 0);
-  });
+    scrollMap.delete(target);
+  } else {
+    for (const el of [
+      globalThis.document.documentElement,
+      globalThis.document.body,
+    ]) {
+      el.scrollLeft = 0;
+      el.scrollTop = 0;
+    }
+  }
+
+  setTimeout(() => {
+    globalThis.history.scrollRestoration = "auto";
+  }, 0);
 }
 
 function mapUrlParam(value) {
@@ -879,25 +882,30 @@ function getEntryOffset(entry) {
   return offset;
 }
 
-function setTransition(stack, prevStack) {
+function setTransitionAttr(stack, prevStack) {
   const el = globalThis.document.documentElement;
 
-  if (!stack) {
+  if (stack && prevStack.length > 0) {
+    let value = "";
+
+    if (stack.length > prevStack.length) {
+      value = "forward";
+      if (configs.get(stack[0].constructor).dialog) {
+        value += " dialog";
+      }
+    } else if (stack.length < prevStack.length) {
+      value = "backward";
+      if (configs.get(prevStack[0].constructor).dialog) {
+        value += " dialog";
+      }
+    } else if (stack[0] !== prevStack[0]) {
+      value = "replace";
+    }
+
+    el.setAttribute("router-transition", value);
+  } else {
     el.removeAttribute("router-transition");
-    return;
   }
-
-  const { dialog } = configs.get(stack[0].constructor);
-
-  const transition =
-    (dialog && "dialog") ||
-    (prevStack.length &&
-      ((stack.length > prevStack.length && "forward") ||
-        (stack.length < prevStack.length && "backward") ||
-        (stack[0] !== prevStack[0] && "replace"))) ||
-    "";
-
-  el.setAttribute("router-transition", transition);
 }
 
 function connectRootRouter(host, invalidate, options) {
@@ -905,7 +913,7 @@ function connectRootRouter(host, invalidate, options) {
     const prevStack = stacks.get(host);
     const stack = resolveStack(host, globalThis.history.state, options);
 
-    if (options.transition) setTransition(stack, prevStack);
+    if (options.transition) setTransitionAttr(stack, prevStack);
     invalidate();
 
     const el = stack[0];
@@ -1077,7 +1085,7 @@ function connectRootRouter(host, invalidate, options) {
     host.removeEventListener("submit", handleNavigate);
     host.removeEventListener("navigate", executeNavigate);
 
-    setTransition(null);
+    setTransitionAttr(null);
 
     entryPoints.clear();
     rootRouter = null;

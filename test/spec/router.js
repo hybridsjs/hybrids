@@ -654,7 +654,7 @@ describe("router:", () => {
 
           expect(
             document.documentElement.getAttribute("router-transition"),
-          ).toBe("");
+          ).toBe(null);
         }));
 
       it("navigates when browser pops a new url within the router", () =>
@@ -869,7 +869,7 @@ describe("router:", () => {
                           document.documentElement.getAttribute(
                             "router-transition",
                           ),
-                        ).toBe("dialog");
+                        ).toBe("forward dialog");
 
                         host.querySelector("#Dialog2").click();
 
@@ -890,7 +890,7 @@ describe("router:", () => {
                               document.documentElement.getAttribute(
                                 "router-transition",
                               ),
-                            ).toBe("dialog");
+                            ).toBe("backward dialog");
 
                             const keyEventEsc = new KeyboardEvent("keydown", {
                               key: "Escape",

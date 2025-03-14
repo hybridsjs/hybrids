@@ -1,29 +1,29 @@
-import { deferred, stringifyElement } from "../../utils.js";
+import { stringifyElement } from "../../utils.js";
 
-let instance;
 export default (globalThis.document &&
   globalThis.document.startViewTransition !== undefined &&
   function transition(template) {
-    return function fn(host, target) {
-      if (instance) {
+    return async function fn(host, target) {
+      template.useLayout = fn.useLayout;
+
+      if (transition.instance) {
         console.warn(
-          `${stringifyElement(
-            host,
-          )}: view transition already started in ${stringifyElement(instance)}`,
+          `${stringifyElement(host)}: view transition already in progress`,
         );
-        template(host, target);
+
+        transition.instance.finished.finally(() => {
+          template(host, target);
+        });
+
         return;
       }
 
-      template.useLayout = fn.useLayout;
-      instance = host;
-
-      globalThis.document.startViewTransition(() => {
+      transition.instance = globalThis.document.startViewTransition(() => {
         template(host, target);
+      });
 
-        return deferred.then(() => {
-          instance = undefined;
-        });
+      transition.instance.finished.finally(() => {
+        transition.instance = undefined;
       });
     };
   }) ||

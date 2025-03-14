@@ -41,11 +41,19 @@ router(views: component | component[] | () => ..., options?: object): object
 
 ### `views`
 
+```typescript
+views: Component[]
+```
+
 Views passed to the router factory create the roots of the view structures. Usually, there is only one root view, but you can pass a list of them (navigating between roots always replaces the whole stack). You can find a deeper explanation of the view concept in the [View](/router/view.md) section.
 
 ### `options.url`
 
-If your application uses a mixed approach - views with and without URLs, you should specify a base URL to avoid not deterministic behavior of the router for views without the URL. Otherwise, the router will use an entry point as a base URL (which can be different according to the use case).
+```typescript
+url: string = "/"
+```
+
+If your application uses a mixed approach - views with and without URLs, you should specify a base URL to avoid non-deterministic behavior of the router for views without the URL. Otherwise, the router will use an entry point as a base URL (which can be different according to the use case).
 
 ```javascript
 define({
@@ -56,6 +64,10 @@ define({
 ```
 
 ### `options.params`
+
+```typescript
+params: String[] = []
+```
 
 Regardless of the explicit parameters when navigating to the view, you can specify an array of properties of the component, which are passed to every view as a parameter. They bypass the URL generation, so they are set by the reference, and they are not included in the URL.
 
@@ -82,6 +94,10 @@ define({
 
 ### `options.transition`
 
+```typescript
+transition: boolean = false
+```
+
 The `transition` option enables notifications about the transition type between views set in `<html router-transition="">` element's attribute with the following values:
 
 * `""` - empty when the router displays view stack for the first time
@@ -99,6 +115,27 @@ The `transition` option is useful for animations, like using [Transition API](/c
 
   [router-transition="backward"]::view-transition-new(root) {
     animation-name: fade-in, slide-from-left;
+  }
+</style>
+```
+
+When the user navigates to or from the dialog view, the attribute contains also `dialog` space-separated value:
+
+* `forward dialog` - when the user navigates to the dialog view
+* `backward dialog` - when the user navigates backward from the dialog view
+
+For mixing or separating the transitions between the main views and dialogs, you can use the `dialog` attribute selector:
+
+```html
+<style>
+  /* Targets views and dialogs */
+  [router-transition~="forward"]::view-transition-new(root) {
+    animation-name: fade-in;
+  }
+
+  /* Targets only dialogs */
+  [router-transition="forward dialog"]::view-transition-new(root) {
+    animation-name: slide-from-bottom;
   }
 </style>
 ```

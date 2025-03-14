@@ -1252,7 +1252,7 @@ describe("html:", () => {
         `(el);
 
         return resolveTimeout(() => {
-          expect(console.warn).toHaveBeenCalledTimes(1);
+          expect(console.warn).toHaveBeenCalledTimes(2);
         });
       });
     }
