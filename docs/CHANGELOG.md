@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.16](https://github.com/hybridsjs/hybrids/compare/v9.1.15...v9.1.16) (2025-03-14)
+
+
+### Bug Fixes
+
+* **router:** view transition handling ([3aab50d](https://github.com/hybridsjs/hybrids/commit/3aab50d66ca78a3960bf95c9e2f1fc6b0a24b168))
+
 ### [9.1.15](https://github.com/hybridsjs/hybrids/compare/v9.1.14...v9.1.15) (2025-03-05)
 
 
