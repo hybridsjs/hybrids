@@ -56,14 +56,86 @@ export interface HybridElement<E> {
 
 /* Define */
 
+/**
+ * Define a web component.
+ * 
+ * @example
+ * import { define } from "hybrids";
+ * 
+ * export default define({
+ *   tag: "my-element",
+ *   ...
+ * });
+ * 
+ * @param component an object with map of property descriptors with a tag name set in the `tag` property
+ * @returns a passed argument to `define()` function
+ * @description [Single Component](https://hybrids.js.org/#/component-model/definition?id=single-component)
+ */
 export function define<E>(component: Component<E>): typeof component;
 
 export namespace define {
+  /**
+   * Producing the class without defining the custom element.
+   * 
+   * This mode can be helpful for creating a custom element for external usage without depending on a tag name, or if the components library is not used directly:
+   * 
+   * @example
+   * // file: library/my-element.ts
+   * export default define.compile({
+   *     name: "",
+   *     render: ({ name }) => html`
+   *         <div>Hello ${name}!</div>
+   *     `,
+   * });
+   * 
+   * @example
+   * // file: application/my-super-element.ts
+   * import { MyElement } from "components-library";
+   * customElements.define("my-super-element", MyElement); // Register the custom element from the package
+   * 
+   * @example ```html
+   * <!-- file: application/home-page.html -->
+   * <my-super-element name="John"></my-super-element>
+   * ```
+   * 
+   * @param component an object with map of hybrid property descriptors without `tag` property
+   * @returns a constructor for the custom element (not registered in the global custom elements registry)
+   * @description [External Usage](https://hybrids.js.org/#/component-model/definition?id=external-usage)
+   */
   function compile<E>(component: Component<E>): HybridElement<E>;
 
+  /**
+   * Helper which targets application setup using a bundler, like [Vite](https://vite.dev/).
+   * 
+   * In the result, with the `define.from()` method, modules with components might skip the tag property,
+   * and should export the component definition instead of the result of the define function:
+   * 
+   * @example
+   * // file: ./components/HelloWorld.js
+   * export default {
+   *     render: () => html`<div>Hello World!</div>`,
+   * }
+   * 
+   * @example
+   * // file: ./app.js
+   * define.from(
+   *     import.meta.glob("./components/*.js", { eager: true, import: "default" }),
+   *     { root: "components" }
+   * );
+   * 
+   * @param components an object with map of components with tag names as keys (or paths to the files)
+   * @param options an optional object with options
+   * @returns a passed argument to `define.from()` function
+   * @description [Multiple Components](https://hybrids.js.org/#/component-model/definition?id=multiple-components)
+   */
   function from(
     components: { [path: string]: Component<any> },
-    options?: { prefix?: string; root?: string | string[] },
+    options?: {
+      /** a prefix added to the tag names */
+      prefix?: string;
+      /** a string or a list of strings, which is cleared from the tag names */
+      root?: string | string[]
+    },
   ): void;
 }
 
