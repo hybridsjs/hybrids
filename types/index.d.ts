@@ -1,14 +1,12 @@
 export type Property<E, V> =
   | (V extends string | number | boolean | null | undefined ? V : never)
-  | ((host: E & HTMLElement) => V)
-  | ((host: E & HTMLElement, value: any) => V)
+  | ((host: E & HTMLElement, value?: any) => V)
   | Descriptor<E, V>;
 
 export interface Descriptor<E, V> {
   value:
     | V
-    | ((host: E & HTMLElement) => V)
-    | ((host: E & HTMLElement, value: any) => V);
+    | ((host: E & HTMLElement, value?: any) => V);
 
   connect?(
     host: E & HTMLElement & { __property_key__: V },
