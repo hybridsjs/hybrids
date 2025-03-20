@@ -1,12 +1,12 @@
 import { define } from "/types";
 
 interface IMyComponent extends HTMLElement {
-    booleanProperty1: boolean
-    booleanProperty2: boolean
-    booleanProperty3: boolean
-    booleanProperty4: boolean
-    booleanProperty5: boolean
-    booleanProperty6: boolean
+    primitiveProperty1: boolean
+    primitiveProperty2: boolean
+    primitiveProperty3: boolean
+    primitiveProperty4: boolean
+    primitiveProperty5: boolean
+    primitiveProperty6: boolean
     
     nonprimitiveProperty1: {}
     nonprimitiveProperty2: {}
@@ -22,25 +22,25 @@ define<IMyComponent>({
     // Regular
 
     // value
-    booleanProperty1: false,
+    primitiveProperty1: false,
     // getter
-    booleanProperty2: ({ booleanProperty1 }) => booleanProperty1,
+    primitiveProperty2: ({ primitiveProperty1 }) => primitiveProperty1,
     // setter
-    booleanProperty3: ({ booleanProperty1 }, value?: boolean) => value ?? booleanProperty1,
+    primitiveProperty3: ({ primitiveProperty1 }, value?: boolean) => value ?? primitiveProperty1,
 
     // Regular with Descriptor
 
     // value
-    booleanProperty4: {
+    primitiveProperty4: {
         value: false
     },
     // getter
-    booleanProperty5: {
-        value: ({ booleanProperty4 }) => booleanProperty4,
+    primitiveProperty5: {
+        value: ({ primitiveProperty4 }) => primitiveProperty4,
     },
     // setter
-    booleanProperty6: {
-        value: ({ booleanProperty1 }, value?: boolean) => value ?? booleanProperty1,
+    primitiveProperty6: {
+        value: ({ primitiveProperty1 }, value?: boolean) => value ?? primitiveProperty1,
     },
 
     // Exceptional case of non-primitives
