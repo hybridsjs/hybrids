@@ -1,6 +1,7 @@
+import { IEnumerable } from "./.internals/enumerable/enumerable.entity";
+import { ISingleton } from "./.internals/singleton/singleton.entity";
+import { Singleton } from "./.internals/singleton/singleton.store";
 import { Model } from "/types/index";
-import SingletonStore, { ISingleton } from "./singleton-definition.store";
-import EnumerableStore, { IEnumerable } from "./enumerable-definition.store";
 
 interface ISomeObject {
   prop: string;
@@ -357,40 +358,40 @@ const ModelStore: Model<IModel> = {
 
   // Singleton Model
 
-  singletonModel: SingletonStore,
-  optionalSingletonModel: SingletonStore,
+  singletonModel: Singleton,
+  optionalSingletonModel: Singleton,
   /// @ts-expect-error
   undefinedOptionalSingletonModel: undefined,
 
-  calculatedSingletonModel: () => SingletonStore,
+  calculatedSingletonModel: () => Singleton,
   /// @ts-expect-error
   undefinedCalculatedSingletonModel: () => undefined,
-  calculatedOptionalSingletonModel: () => SingletonStore,
+  calculatedOptionalSingletonModel: () => Singleton,
   undefinedCalculatedOptionalSingletonModel: () =>
-    condition ? undefined : SingletonStore,
+    condition ? undefined : Singleton,
 
   // Singleton Model List
 
   /// @ts-expect-error
-  singletonModelList: [SingletonStore],
+  singletonModelList: [Singleton],
   /// @ts-expect-error
-  looseSingletonModelList: [SingletonStore, { loose: true }],
+  looseSingletonModelList: [Singleton, { loose: true }],
   /// @ts-expect-error
-  optionalSingletonModelList: [SingletonStore],
+  optionalSingletonModelList: [Singleton],
   /// @ts-expect-error
   undefinedOptionalSingletonModelList: undefined,
 
   /// @ts-expect-error
-  calculatedSingletonModelList: () => [SingletonStore],
+  calculatedSingletonModelList: () => [Singleton],
   /// @ts-expect-error
   undefinedCalculatedSingletonModelList: () => undefined,
   /// @ts-expect-error
-  looseCalculatedSingletonModelList: () => [SingletonStore, { loose: true }],
+  looseCalculatedSingletonModelList: () => [Singleton, { loose: true }],
   /// @ts-expect-error
-  calculatedOptionalSingletonModelList: () => [SingletonStore],
+  calculatedOptionalSingletonModelList: () => [Singleton],
   /// @ts-expect-error
   undefinedCalculatedOptionalSingletonModelList: () =>
-    condition ? undefined : [SingletonStore],
+    condition ? undefined : [Singleton],
 };
 
 export default ModelStore;
