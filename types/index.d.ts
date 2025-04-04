@@ -158,23 +158,16 @@ export type ModelIdentifier =
   | undefined;
 
 export type ModelValues<M extends ModelInstance> = {
-  [property in keyof M]?: NonNullable<M[property]> extends Array<any>
-    ? Array<ModelValues<Unarray<NonNullable<M[property]>>>>
+  [property in keyof M]?:
+    NonNullable<M[property]> extends Array<EnumerableInstance>
+      ? Array<ModelValues<Unarray<NonNullable<M[property]>>> | string | undefined>
     : NonNullable<M[property]> extends ModelInstance
-      ? ModelValues<NonNullable<M[property]>>
-      : M[property];
-};
-
-export type StorageValues<M extends ModelInstance> = {
-  [property in keyof M]?: NonNullable<M[property]> extends EnumerableInstance
-    ? NonNullable<M[property]> | M["id"]
-    : NonNullable<M[property]> extends EnumerableInstance[]
-      ? (NonNullable<Unarray<M[property]>> | M["id"])[]
+      ? ModelValues<NonNullable<M[property]>> | string | undefined
       : M[property];
 };
 
 export type StorageResult<M extends ModelInstance> =
-  | StorageValues<M>
+  | ModelValues<M>
   | null
   | undefined;
 
@@ -245,13 +238,31 @@ export namespace store {
   ): M[];
 
   function set<M extends ModelInstance>(
-    model: Model<M> | M,
-    values: ModelValues<M> | null,
+    model: Model<M>,
+    values: NoInfer<ModelValues<M>>,
   ): Promise<M>;
+  function set<M extends SingletonInstance>(
+    model: Model<M>,
+    values: null,
+  ): Promise<M>;
+  function set<M extends ModelInstance>(
+    model: M,
+    values: NoInfer<ModelValues<M> | null>,
+  ): Promise<M>;
+
   function sync<M extends ModelInstance>(
-    model: Model<M> | M,
-    values: ModelValues<M> | null,
+    model: Model<M>,
+    values: NoInfer<ModelValues<M>>,
   ): M;
+  function sync<M extends SingletonInstance>(
+    model: Model<M>,
+    values: null,
+  ): M;
+  function sync<M extends ModelInstance>(
+    model: M,
+    values: NoInfer<ModelValues<M> | null>,
+  ): M;
+
   function clear<M extends ModelInstance>(
     model: Model<M> | [Model<M>] | M,
     clearValue?: boolean,
