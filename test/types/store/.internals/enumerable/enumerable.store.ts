@@ -14,15 +14,3 @@ export const Enumerable: Model<IEnumerable> = {
   optionalNestedEnumerable: store.ref(() => NestedEnumerable),
   nestedEnumerables: store.ref(() => [NestedEnumerable]),
 }
-
-/// @ts-expect-error
-const BrokenEnumerable: Model<IEnumerable> = {
-  stringProperty: "",
-  numberProperty: 0,
-  self: store.ref(() => Enumerable),
-  nestedSingleton: store.ref(() => Singleton),
-  optionalNestedSingleton: store.ref(() => Singleton),
-  nestedEnumerable: store.ref(() => NestedEnumerable),
-  optionalNestedEnumerable: store.ref(() => NestedEnumerable),
-  nestedEnumerables: store.ref(() => [NestedEnumerable]),
-};

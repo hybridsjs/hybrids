@@ -5,7 +5,6 @@ export interface INestedEnumerable {
     id: string
     stringProperty: string;
     numberProperty: number;
-    self: INestedEnumerable
     nestedSingleton: ISingleton;
     optionalNestedSingleton?: ISingleton;
     nestedEnumerable: IDeepNestedEnumerable;

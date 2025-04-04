@@ -7,7 +7,6 @@ export const NestedEnumerable: Model<INestedEnumerable> = {
   id: true,
   stringProperty: "",
   numberProperty: 0,
-  self: store.ref(() => NestedEnumerable),
   nestedSingleton: store.ref(() => Singleton),
   optionalNestedSingleton: store.ref(() => Singleton),
   nestedEnumerable: store.ref(() => DeepNestedEnumerable),
