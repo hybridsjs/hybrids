@@ -1,4 +1,5 @@
 import { IEnumerable } from "./.internals/enumerable/enumerable.entity";
+import { Enumerable } from "./.internals/enumerable/enumerable.store";
 import { ISingleton } from "./.internals/singleton/singleton.entity";
 import { Singleton } from "./.internals/singleton/singleton.store";
 import { Model } from "/types/index";
@@ -328,33 +329,33 @@ const ModelStore: Model<IModel> = {
 
   // Enumerable Model
 
-  enumerableModel: EnumerableStore,
-  optionalEnumerableModel: EnumerableStore,
+  enumerableModel: Enumerable,
+  optionalEnumerableModel: Enumerable,
   /// @ts-expect-error
   undefinedOptionalEnumerableModel: undefined,
 
-  calculatedEnumerableModel: () => EnumerableStore,
+  calculatedEnumerableModel: () => Enumerable,
   /// @ts-expect-error
   undefinedCalculatedEnumerableModel: () => undefined,
-  calculatedOptionalEnumerableModel: () => EnumerableStore,
+  calculatedOptionalEnumerableModel: () => Enumerable,
   undefinedCalculatedOptionalEnumerableModel: () =>
-    condition ? undefined : EnumerableStore,
+    condition ? undefined : Enumerable,
 
   // Enumerable Model List
 
-  enumerableModelList: [EnumerableStore],
-  looseEnumerableModelList: [EnumerableStore, { loose: true }],
-  optionalEnumerableModelList: [EnumerableStore],
+  enumerableModelList: [Enumerable],
+  looseEnumerableModelList: [Enumerable, { loose: true }],
+  optionalEnumerableModelList: [Enumerable],
   /// @ts-expect-error
   undefinedOptionalEnumerableModelList: undefined,
 
-  calculatedEnumerableModelList: () => [EnumerableStore],
+  calculatedEnumerableModelList: () => [Enumerable],
   /// @ts-expect-error
   undefinedCalculatedEnumerableModelList: () => undefined,
-  looseCalculatedEnumerableModelList: () => [EnumerableStore, { loose: true }],
-  calculatedOptionalEnumerableModelList: () => [EnumerableStore],
+  looseCalculatedEnumerableModelList: () => [Enumerable, { loose: true }],
+  calculatedOptionalEnumerableModelList: () => [Enumerable],
   undefinedCalculatedOptionalEnumerableModelList: () =>
-    condition ? undefined : [EnumerableStore],
+    condition ? undefined : [Enumerable],
 
   // Singleton Model
 
