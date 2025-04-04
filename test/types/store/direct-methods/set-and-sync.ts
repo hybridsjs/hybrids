@@ -415,9 +415,11 @@ const collisionsInUpdateNestedModels = {
     // ...check collisions
     /// @ts-expect-error
     singletonPromiseInput = store.set(singleton, collisions)
+    /// @ts-expect-error
     singletonInput = store.sync(singleton, collisions)
     /// @ts-expect-error
     enumerablePromiseInput = store.set(enumerable, { id: "1", ...collisions })
+    /// @ts-expect-error
     enumerableInput = store.sync(enumerable, { id: "1", ...collisions })
   }
 
