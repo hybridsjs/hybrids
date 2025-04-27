@@ -91,41 +91,51 @@ export type EnumerableInstance = { id: ModelIdentifier } & ModelInstance;
 export type SingletonInstance = { id?: never } & ModelInstance;
 
 export type Unarray<T> = T extends Array<infer U> ? U : T;
-export type NonConstructor = { readonly prototype?: never };
+export type StrictFunction<T extends (...args: any) => any> = T & { new?: never, prototype?: never };
 export type NonArrayObject = { [Symbol.iterator]?: never } & object;
 export type NonModelDefinition = { __store__connect__?: never } & object;
 
+type DifinitionOfFieldWithDefferedType<T> =
+  NonNullable<T> extends ModelInstance
+    ? ModelDefinition<NonNullable<T>>
+  // If a model property contains strings, then in the repository the user will be able to define the property as a protected string.
+  // This will allow you to preserve as much information about values ​​of other types (boolean, number, undefined, null) as possible.
+  : string | String extends T
+    ? string
+    // By the same logic, for a field with the type (boolean, undefined, null), we propose a property protected as a number
+  : number | Number extends T
+      ? number
+  // otherwise boolean
+  : boolean | Boolean extends T
+    ? boolean
+  // if the enumerated property of the model contains strings, then in the store the user will be able to define the enumerated property as a protected string array.
+  // This will allow you to preserve as much information about values ​​of other types (boolean, number, undefined, null) as possible.
+  : NonNullable<Unarray<T>> extends EnumerableInstance
+    ? [ModelDefinition<NonNullable<Unarray<T>>>] | [ModelDefinition<NonNullable<Unarray<T>>>, { loose?: boolean }]
+  : string | String extends Unarray<T>
+    ? [string, ...Array<T>] | [StringConstructor]
+  : number | Number extends Unarray<T>
+    ? [number, ...Array<T>] | [NumberConstructor]
+  : boolean | Boolean extends Unarray<T>
+    ? [boolean, ...Array<T>] | [BooleanConstructor]
+  : never
+
 export type Model<M extends ModelInstance> = NonArrayObject & {
-  [property in keyof Omit<M, "id">]-?: NonNullable<
-    M[property]
-  > extends Array<any>
-    ?
-        | NestedArrayModel<NonNullable<M[property]>>
-        | (NonConstructor &
-            ((
-              model: M,
-            ) => undefined extends M[property]
-              ? undefined | NestedArrayModel<M[property]>
-              : NestedArrayModel<M[property]>))
+  [property in keyof Omit<M, "id">]-?:
+    NonNullable<M[property]> extends Array<any>
+      ? NestedArrayModel<NonNullable<M[property]>> | (StrictFunction<(model: M) => undefined extends M[property] ? NestedArrayModel<M[property]> : NestedArrayModel<M[property]>>)
     : NonNullable<M[property]> extends string | String
-      ? string | (NonConstructor & ((model: M) => M[property]))
-      : NonNullable<M[property]> extends number | Number
-        ? number | (NonConstructor & ((model: M) => M[property]))
-        : NonNullable<M[property]> extends boolean | Boolean
-          ? boolean | (NonConstructor & ((model: M) => M[property]))
-          : NonNullable<M[property]> extends ModelInstance
-            ?
-                | Model<NonNullable<M[property]>>
-                | (NonConstructor &
-                    ((
-                      model: M,
-                    ) => undefined extends M[property]
-                      ? undefined | Model<NonNullable<M[property]>>
-                      : Model<NonNullable<M[property]>>))
-            : NonNullable<M[property]> extends NonArrayObject
+      ? string | StrictFunction<(model: M) => string>
+    : NonNullable<M[property]> extends number | Number
+      ? number | StrictFunction<(model: M) => number>
+    : NonNullable<M[property]> extends boolean | Boolean
+      ? boolean | StrictFunction<(model: M) => boolean>
+    : NonNullable<M[property]> extends ModelInstance
+      ? Model<NonNullable<M[property]>> | (StrictFunction<(model: M) => undefined extends M[property] ? undefined | Model<NonNullable<M[property]>> : Model<NonNullable<M[property]>> >)
+    : NonNullable<M[property]> extends NonArrayObject
               ?
                   | NonNullable<M[property]>
-                  | (NonConstructor & ((model: M) => M[property]))
+                  | (StrictFunction<(model: M) => M[property]>)
               : never;
 } & (M extends EnumerableInstance
     ? {
@@ -135,13 +145,15 @@ export type Model<M extends ModelInstance> = NonArrayObject & {
     __store__connect__?: Storage<M> | Storage<M>["get"];
   };
 
+type ModelDefinition<M extends ModelInstance> = Model<M>
+
 export type NestedArrayModel<T> =
   NonNullable<Unarray<T>> extends string | String
-    ? T | string[] | [String | StringConstructor]
+    ? T | string[] | [StringConstructor]
     : NonNullable<Unarray<T>> extends number | Number
-      ? T | number[] | [Number | NumberConstructor]
+      ? T | number[] | [NumberConstructor]
       : NonNullable<Unarray<T>> extends boolean | Boolean
-        ? T | boolean[] | [Boolean | BooleanConstructor]
+        ? T | boolean[] | [BooleanConstructor]
         : NonNullable<Unarray<T>> extends EnumerableInstance
           ?
               | [Model<NonNullable<Unarray<T>>>]
@@ -156,23 +168,16 @@ export type ModelIdentifier =
   | undefined;
 
 export type ModelValues<M extends ModelInstance> = {
-  [property in keyof M]?: NonNullable<M[property]> extends Array<any>
-    ? Array<ModelValues<Unarray<NonNullable<M[property]>>>>
+  [property in keyof M]?:
+    NonNullable<M[property]> extends Array<EnumerableInstance>
+      ? Array<ModelValues<Unarray<NonNullable<M[property]>>> | string | undefined>
     : NonNullable<M[property]> extends ModelInstance
-      ? ModelValues<NonNullable<M[property]>>
-      : M[property];
-};
-
-export type StorageValues<M extends ModelInstance> = {
-  [property in keyof M]?: NonNullable<M[property]> extends EnumerableInstance
-    ? NonNullable<M[property]> | M["id"]
-    : NonNullable<M[property]> extends EnumerableInstance[]
-      ? (NonNullable<Unarray<M[property]>> | M["id"])[]
+      ? ModelValues<NonNullable<M[property]>> | string | undefined
       : M[property];
 };
 
 export type StorageResult<M extends ModelInstance> =
-  | StorageValues<M>
+  | ModelValues<M>
   | null
   | undefined;
 
@@ -243,13 +248,31 @@ export namespace store {
   ): M[];
 
   function set<M extends ModelInstance>(
-    model: Model<M> | M,
-    values: ModelValues<M> | null,
+    model: Model<M>,
+    values: NoInfer<ModelValues<M>>,
   ): Promise<M>;
+  function set<M extends SingletonInstance>(
+    model: Model<M>,
+    values: null,
+  ): Promise<M>;
+  function set<M extends ModelInstance>(
+    model: M,
+    values: NoInfer<ModelValues<M> | null>,
+  ): Promise<M>;
+
   function sync<M extends ModelInstance>(
-    model: Model<M> | M,
-    values: ModelValues<M> | null,
+    model: Model<M>,
+    values: NoInfer<ModelValues<M>>,
   ): M;
+  function sync<M extends SingletonInstance>(
+    model: Model<M>,
+    values: null,
+  ): M;
+  function sync<M extends ModelInstance>(
+    model: M,
+    values: NoInfer<ModelValues<M> | null>,
+  ): M;
+
   function clear<M extends ModelInstance>(
     model: Model<M> | [Model<M>] | M,
     clearValue?: boolean,
