@@ -5,6 +5,7 @@ const connect = Symbol("store.connect");
 
 const definitions = new WeakMap();
 const stales = new WeakMap();
+const observers = new WeakMap();
 
 function resolve(config, model, lastModel) {
   if (lastModel) {
@@ -14,14 +15,22 @@ function resolve(config, model, lastModel) {
 
   definitions.set(model, config);
 
-  if (config.storage.observe) {
+  if (observers.has(config)) {
     const modelValue = model && config.isInstance(model) ? model : null;
 
     const lastModelValue =
       lastModel && config.isInstance(lastModel) ? lastModel : null;
 
     if (modelValue !== lastModelValue) {
-      config.storage.observe(modelValue, lastModelValue);
+      let id = lastModelValue ? lastModelValue.id : modelValue.id;
+
+      observers.get(config).forEach((fn) => {
+        try {
+          fn(id, modelValue, lastModelValue);
+        } catch (e) {
+          console.error(e);
+        }
+      });
     }
   }
 
@@ -123,6 +132,23 @@ function setupOfflineKey(config, threshold) {
   return key;
 }
 
+export function observe(Model, fn) {
+  const config = bootstrap(Model);
+
+  if (typeof fn !== "function") {
+    throw TypeError(`The second argument must be a function: ${typeof fn}`);
+  }
+
+  const set = observers.get(config) || new Set();
+  set.add(fn);
+  observers.set(config, set);
+
+  return () => {
+    set.delete(fn);
+    if (set.size === 0) observers.delete(config);
+  };
+}
+
 function setupStorage(config, options) {
   if (typeof options === "function") options = { get: options };
 
@@ -136,17 +162,12 @@ function setupStorage(config, options) {
     const fn = result.observe;
     if (typeof fn !== "function") {
       throw TypeError(
-        `Storage 'observe' property must be a function: ${typeof result.observe}`,
+        `Storage 'observe' property must be a function: ${typeof fn}`,
       );
     }
-    result.observe = (model, lastModel) => {
-      try {
-        let id = lastModel ? lastModel.id : model.id;
-        fn(id, model, lastModel);
-      } catch (e) {
-        console.error(e);
-      }
-    };
+    const set = observers.get(config) || new Set();
+    set.add(fn);
+    observers.set(config, set);
   }
 
   if (result.cache === false || result.cache === 0) {
@@ -1766,5 +1787,6 @@ export default Object.freeze(
     resolve: resolveToLatest,
     ref,
     record,
+    observe,
   }),
 );

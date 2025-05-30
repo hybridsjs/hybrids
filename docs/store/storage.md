@@ -57,7 +57,7 @@ const Model = {
     get?: (id) => {...},
     set?: (id, values, keys) => {...},
     list?: (id) => {...},
-    observe?: (id, model) => {...},
+    observe?: (id, model, lastModel) => {...},
     cache?: boolean | number [ms] = true,
     offline?: boolean | number [ms] = false,
     loose?: boolean = false,
@@ -196,9 +196,9 @@ const Model = {
       return model[id];
     },
     async set(id, values) {... },
-    observe(id, model) {
+    observe(id, model, lastModel) {
       // send message to another context in web extension
-      chrome.runtime.sendMessage({ type: "model-changed", id, model });
+      chrome.runtime.sendMessage({ type: "model-changed", id, model, lastModel });
     }
   }
 }

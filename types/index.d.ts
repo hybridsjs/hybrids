@@ -4,9 +4,7 @@ export type Property<E, V> =
   | Descriptor<E, V>;
 
 export interface Descriptor<E, V> {
-  value:
-    | V
-    | ((host: E & HTMLElement, value?: any) => V);
+  value: V | ((host: E & HTMLElement, value?: any) => V);
 
   connect?(
     host: E & HTMLElement & { __property_key__: V },
@@ -307,11 +305,16 @@ export namespace store {
     validate?: ValidateFunction<M, number> | RegExp,
     errorMessage?: string,
   ): boolean;
+
+  function observe<M extends ModelInstance>(
+    model: Model<M>,
+    callback: (model: M | null, lastModel: M | null) => void,
+  ): () => void;
 }
 
 /* Router */
 
-export interface ViewOptions<> {
+export interface ViewOptions {
   url?: string;
   multiple?: boolean;
   dialog?: boolean;

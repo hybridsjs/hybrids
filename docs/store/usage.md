@@ -264,6 +264,37 @@ define({
 
 The `store.clear()` method can work as a garbage collector for unused model instances. Those that are not a dependency of any component connected to the DOM can be deleted entirely from the cache registry (as they would never exist) protecting from the memory leaks. If you set `clearValue` to `true`, those instances that are not currently attached to the components, will be permanently deleted when the `store.clear()` method is invoked.
 
+### `store.observe`
+
+The `store.observe()` method allows you to observe changes of the model instances. It is useful for cases when you want to react to changes outside of the model definition, for example, in a Service Worker or Web Extension background script.
+
+It behaves the same as [`[store.connect].observe`](/store/storage#observe), but it can be dynamically set outside of the model definition. The callback is only executed if `store.get()` or `store.set()` methods are called for the model instance after the observer is set. It means, that the observer does not trigger for the already existing model instance, but only for the next updates.
+
+```typescript
+store.observe(Model: object, callback: (id, model, lastModel) => void): () => void;
+```
+
+* **arguments**:
+  * `Model` - a model definition
+  * `callback` - a function called when the model instance is updated, with the following arguments:
+    * `id` - an identifier of the model instance
+    * `model` - a new model instance
+    * `lastModel` - the last model instance before the update
+
+* **returns**:
+  * A function to stop observing the model instance
+
+```javascript
+import User from "./user.js";
+
+const unobserve = store.observe(User, (id, model, lastModel) => {
+  console.log(`User ${id} updated`, model, lastModel);
+});
+
+// Stop observing the model instance
+unobserve();
+```
+
 ## Factory
 
 The factory defines a property descriptor connected to the store depending on the model definition configuration.
