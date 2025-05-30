@@ -3194,4 +3194,34 @@ describe("store:", () => {
       });
     });
   });
+
+  describe("observe()", () => {
+    it("throws when callback is not a function", () => {
+      expect(() => store.observe(Model, true)).toThrow();
+    });
+
+    it("subscribes an observer for the model", async () => {
+      const callback = jasmine.createSpy("callback");
+      const unsubscribe = store.observe(Model, callback);
+      const model = await store.set(Model, { value: "test" });
+
+      expect(callback).toHaveBeenCalledWith(model.id, model, null);
+      unsubscribe();
+    });
+
+    it("unsubscribes an observer", async () => {
+      const callback1 = jasmine.createSpy("callback");
+      const callback2 = jasmine.createSpy("callback");
+      const unsubscribe1 = store.observe(Model, callback1);
+      const unsubscribe2 = store.observe(Model, callback2);
+
+      unsubscribe1();
+      await store.set(Model, { value: "test" });
+      expect(callback1).toHaveBeenCalledTimes(0);
+
+      unsubscribe2();
+      await store.set(Model, { value: "test" });
+      expect(callback2).not.toHaveBeenCalledTimes(0);
+    });
+  });
 });
