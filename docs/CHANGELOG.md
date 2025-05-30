@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.17](https://github.com/hybridsjs/hybrids/compare/v9.1.16...v9.1.17) (2025-05-30)
+
+
+### Bug Fixes
+
+* **store:** add `store.observe` helper method ([#290](https://github.com/hybridsjs/hybrids/issues/290)) ([6f15a39](https://github.com/hybridsjs/hybrids/commit/6f15a39eba117a1bfa37363e37440e98e4f9b57b))
+* **types:** property and descriptor ([#287](https://github.com/hybridsjs/hybrids/issues/287)) ([fb392e3](https://github.com/hybridsjs/hybrids/commit/fb392e3ad1a6b34b70898e33109ec2a21235b811))
+
 ### [9.1.16](https://github.com/hybridsjs/hybrids/compare/v9.1.15...v9.1.16) (2025-03-14)
 
 
