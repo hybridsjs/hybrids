@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.18](https://github.com/hybridsjs/hybrids/compare/v9.1.17...v9.1.18) (2025-06-13)
+
+
+### Bug Fixes
+
+* **types:** missing `id` parameter in `store.observe` method ([558859c](https://github.com/hybridsjs/hybrids/commit/558859ca0fca014d28912528fa6e4f4c66f98ee3))
+
 ### [9.1.17](https://github.com/hybridsjs/hybrids/compare/v9.1.16...v9.1.17) (2025-05-30)
 
 
