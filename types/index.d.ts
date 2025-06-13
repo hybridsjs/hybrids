@@ -308,7 +308,11 @@ export namespace store {
 
   function observe<M extends ModelInstance>(
     model: Model<M>,
-    callback: (model: M | null, lastModel: M | null) => void,
+    callback: (
+      id: ModelIdentifier,
+      model: M | null,
+      lastModel: M | null,
+    ) => void,
   ): () => void;
 }
 
