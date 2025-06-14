@@ -1,17 +1,18 @@
+import { IEnumerable } from "./.internals/enumerable/enumerable.entity";
+import { Enumerable } from "./.internals/enumerable/enumerable.store";
 import { Model, ModelIdentifier, StorageValues, store } from "/types/index";
-import EnumerableStore, { IEnumerable } from "./enumerable-definition.store";
 
 const EnumerableModelsSource = new Map<
   ModelIdentifier,
   StorageValues<IEnumerable>
 >([
-  ["0", { id: "0", prop: "qweqwe", length: 5, relatedEnumerable: "2" }],
-  ["1", { id: "1", length: 1711014651455, relatedEnumerables: ["1", "2"] }],
-  ["2", { id: "2", prop: "swswswsws" }],
+  ["0", { id: "0", stringProperty: "qweqwe", numberProperty: 5, nestedEnumerable: "2" }],
+  ["1", { id: "1", numberProperty: 1711014651455, nestedEnumerables: ["1", "2"] }],
+  ["2", { id: "2", stringProperty: "swswswsws" }],
 ]);
 
 const EnumerableModelStore: Model<IEnumerable> = {
-  ...EnumerableStore,
+  ...Enumerable,
   [store.connect]: {
     list: (id) => [...Object.values(EnumerableModelsSource)],
     get: (id) => EnumerableModelsSource.get(id) ?? null,

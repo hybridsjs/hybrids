@@ -1,402 +1,346 @@
-import { Model } from "/types/index";
-import SingletonStore, { ISingleton } from "./singleton-definition.store";
-import EnumerableStore, { IEnumerable } from "./enumerable-definition.store";
+import { IEnumerable } from "./.internals/enumerable/enumerable.entity";
+import { Enumerable } from "./.internals/enumerable/enumerable.store";
+import { ISingleton } from "./.internals/singleton/singleton.entity";
+import { Singleton } from "./.internals/singleton/singleton.store";
+import { Model, store } from "/types/index";
+
+interface ICasesOfFieldsWithValues<T> {
+  // value = value
+  fieldWithDefaultValue: T;
+  fieldCalculatedAsValue: T;
+  optionalFieldWithDefaultValue?: T;
+  optionalFieldCalculatedAsValue?: T;
+}
+
+interface ICasesOfListedFieldsWithValues<T> {
+  // value[] = value[]
+  listedFieldWithDefaultValues: T[];
+  listedFieldCalculatedAsValues: T[];
+  listedOptionalFieldWithDefaultValues?: T[];
+  listedOptionalFieldCalculatedAsValues?: T[];
+}
+
+interface ICasesOfFieldsWithEmptyValues<T> {
+  // value = Empty
+  fieldWithDefaultEmptyValue: T;
+  fieldCalculatedAsEmptyValue: T;
+  optionalFieldWithDefaultEmptyValue?: T;
+  optionalFieldCalculatedAsEmptyValue?: T;
+}
+
+interface ICasesOfListedFieldsWithEmptyValues<T> {
+  // value[] = [Empty]
+  listedFieldWithDefaultEmptyValues: T[];
+  listedFieldCalculatedAsEmptyValues: T[];
+  listedOptionalFieldWithDefaultEmptyValues?: T[];
+  listedOptionalFieldCalculatedAsEmptyValues?: T[];
+}
+
+interface ICasesOfListedFieldsWithLoosedValues<T> {
+  // value[] = [value, { loose }]
+  loosedListedFieldWithDefaultEmptyValue: T[]
+  loosedListedFieldCalculatedAsEmptyValue?: T[]
+  loosedListedOptionalFieldWithDefaultEmptyValue: T[]
+  loosedListedOptionalFieldCalculatedAsEmptyValue?: T[]
+}
+
+interface ICasesOfFieldsWithUndefinedValues<T> {
+  // value = undefined
+  fieldWithDefaultUndefinedValue: T;
+  fieldCalculatedAsUndefinedValue: T;
+  optionalFieldWithDefaultUndefinedValue?: T;
+  optionalFieldCalculatedAsUndefinedValue?: T;
+}
+
+interface ICasesOfListedFieldsWithUndefinedValues<T> {
+  // value[] = undefined[]
+  listedFieldWithDefaultUndefinedValues: T[];
+  listedFieldCalculatedAsUndefinedValues: T[];
+  listedOptionalFieldWithDefaultUndefinedValues?: T[];
+  listedOptionalFieldCalculatedAsUndefinedValues?: T[];
+}
+
+interface IPrimitivePositiveCases extends ICasesOfFieldsWithValues<boolean>, ICasesOfListedFieldsWithValues<boolean>, ICasesOfListedFieldsWithEmptyValues<boolean> {}
+interface IPrimitiveNegativeCases extends ICasesOfFieldsWithEmptyValues<boolean>, ICasesOfListedFieldsWithLoosedValues<boolean>, ICasesOfFieldsWithUndefinedValues<boolean>, ICasesOfListedFieldsWithUndefinedValues<boolean> {}
+
+const PrimitivePositiveCases: Model<IPrimitivePositiveCases> = {
+  // boolean = boolean
+  fieldWithDefaultValue: false,
+  fieldCalculatedAsValue: ({ fieldWithDefaultValue }) => fieldWithDefaultValue,
+  optionalFieldWithDefaultValue: false,
+  optionalFieldCalculatedAsValue: ({ optionalFieldWithDefaultValue }) => optionalFieldWithDefaultValue,
+
+  // boolean[] = boolean[]
+  listedFieldWithDefaultValues: [false],
+  listedFieldCalculatedAsValues: ({ listedFieldWithDefaultValues }) => listedFieldWithDefaultValues,
+  listedOptionalFieldWithDefaultValues: [false],
+  listedOptionalFieldCalculatedAsValues: ({ listedOptionalFieldWithDefaultValues }) => listedOptionalFieldWithDefaultValues,
+
+  // boolean[] = [Boolean]
+  listedFieldWithDefaultEmptyValues: [Boolean],
+  listedFieldCalculatedAsEmptyValues: ({ listedFieldWithDefaultEmptyValues }) => listedFieldWithDefaultEmptyValues && [Boolean],
+  listedOptionalFieldWithDefaultEmptyValues: [Boolean],
+  listedOptionalFieldCalculatedAsEmptyValues: ({ listedOptionalFieldWithDefaultEmptyValues }) => listedOptionalFieldWithDefaultEmptyValues && [Boolean],
+}
+
+const PrimitiveNegativeCases: Model<IPrimitiveNegativeCases> = {
+  // boolean = Boolean
+  /// @ts-expect-error
+  fieldWithDefaultEmptyValue: Boolean,
+  /// @ts-expect-error
+  fieldCalculatedAsEmptyValue: ({ fieldWithDefaultEmptyValue }) => fieldWithDefaultEmptyValue && Boolean,
+  /// @ts-expect-error
+  optionalFieldWithDefaultEmptyValue: Boolean,
+  /// @ts-expect-error
+  optionalFieldCalculatedAsEmptyValue: ({ optionalFieldWithDefaultEmptyValue }) => optionalFieldWithDefaultEmptyValue && Boolean,
+  
+  // boolean[] = [Boolean, { loose }]
+  /// @ts-expect-error
+  loosedListedFieldWithDefaultEmptyValue: [Boolean, { loose: true }],
+  /// @ts-expect-error
+  loosedListedFieldCalculatedAsEmptyValue: ({ loosedListedFieldWithDefaultEmptyValue: loosedListedFieldWithDefaultUndefinedValues }) => loosedListedFieldWithDefaultUndefinedValues && [Boolean, { loose: true }],
+  /// @ts-expect-error
+  loosedListedOptionalFieldWithDefaultEmptyValue: [Boolean, { loose: true }],
+  /// @ts-expect-error
+  loosedListedOptionalFieldCalculatedAsEmptyValue: ({ loosedListedOptionalFieldWithDefaultEmptyValue: loosedListedOptionalFieldWithDefaultUndefinedValues }) => loosedListedOptionalFieldWithDefaultUndefinedValues && [Boolean, { loose: true }],
+  
+  // boolean = undefined
+  /// @ts-expect-error
+  fieldWithDefaultUndefinedValue: undefined,
+  /// @ts-expect-error
+  fieldCalculatedAsUndefinedValue: ({ fieldWithDefaultUndefinedValue }) => fieldWithDefaultUndefinedValue && undefined,
+  /// @ts-expect-error
+  optionalFieldWithDefaultUndefinedValue: undefined,
+  /// @ts-expect-error
+  optionalFieldCalculatedAsUndefinedValue: ({ optionalFieldWithDefaultUndefinedValue }) => optionalFieldWithDefaultUndefinedValue && undefined,
+
+  // boolean[] = undefined[]
+  /// @ts-expect-error
+  listedFieldWithDefaultUndefinedValues: [undefined],
+  /// @ts-expect-error
+  listedFieldCalculatedAsUndefinedValues: ({ listedFieldWithDefaultUndefinedValues }) => listedFieldWithDefaultUndefinedValues && [undefined],
+  /// @ts-expect-error
+  listedOptionalFieldWithDefaultUndefinedValues: [undefined],
+  /// @ts-expect-error
+  listedOptionalFieldCalculatedAsUndefinedValues: ({ listedOptionalFieldWithDefaultUndefinedValues }) => listedOptionalFieldWithDefaultUndefinedValues && [undefined],
+}
 
 interface ISomeObject {
-  prop: string;
-  length: number;
+  stringProperty: string,
+  numberProperty: number,
+}
+interface IObjectPositiveCases extends ICasesOfFieldsWithValues<ISomeObject>, ICasesOfListedFieldsWithValues<ISomeObject> {}
+interface IObjectNegativeCases extends ICasesOfFieldsWithEmptyValues<ISomeObject>, ICasesOfListedFieldsWithEmptyValues<ISomeObject>, ICasesOfListedFieldsWithLoosedValues<ISomeObject>, ICasesOfFieldsWithUndefinedValues<ISomeObject>, ICasesOfListedFieldsWithUndefinedValues<ISomeObject> {}
+
+const someObject: ISomeObject = {
+  stringProperty: "",
+  numberProperty: 1,
 }
 
-let condition = false;
+const ObjectPositiveCases: Model<IObjectPositiveCases> = {
+  // ISomeObject = someObject
+  fieldWithDefaultValue: someObject,
+  fieldCalculatedAsValue: ({ fieldWithDefaultValue }) => fieldWithDefaultValue,
+  optionalFieldWithDefaultValue: someObject,
+  optionalFieldCalculatedAsValue: ({ optionalFieldWithDefaultValue }) => optionalFieldWithDefaultValue,
 
-interface IModel {
-  id: string;
-
-  // boolean
-
-  emptyBoolean: boolean;
-  boolean: boolean;
-  looseBoolean: boolean;
-  undefinedOptionalBoolean?: boolean;
-  optionalBoolean?: boolean;
-
-  emptyCalculatedBoolean: boolean;
-  calculatedBoolean: boolean;
-  undefinedCalculatedBoolean: boolean;
-  looseCalculatedBoolean: boolean;
-  calculatedOptionalBoolean?: boolean;
-  undefinedCalculatedOptionalBoolean?: boolean;
-
-  // boolean List
-
-  emptyBooleanList: boolean[];
-  booleanList: boolean[];
-  looseBooleanList: boolean[];
-  undefinedOptionalBooleanList?: boolean[];
-  optionalBooleanList?: boolean[];
-
-  emptyCalculatedBooleanList: boolean[];
-  calculatedBooleanList: boolean[];
-  undefinedCalculatedBooleanList: boolean[];
-  looseCalculatedBooleanList: boolean[];
-  calculatedOptionalBooleanList?: boolean[];
-  undefinedCalculatedOptionalBooleanList?: boolean[];
-
-  // number
-
-  emptyNumber: number;
-  number: number;
-  looseNumber: number;
-  undefinedOptionalNumber?: number;
-  optionalNumber?: number;
-
-  emptyCalculatedNumber: number;
-  calculatedNumber: number;
-  undefinedCalculatedNumber: number;
-  looseCalculatedNumber: number;
-  calculatedOptionalNumber?: number;
-  undefinedCalculatedOptionalNumber?: number;
-
-  // number List
-
-  emptyNumberList: number[];
-  numberList: number[];
-  looseNumberList: number[];
-  undefinedOptionalNumberList?: number[];
-  optionalNumberList?: number[];
-
-  emptyCalculatedNumberList: number[];
-  calculatedNumberList: number[];
-  undefinedCalculatedNumberList: number[];
-  looseCalculatedNumberList: number[];
-  calculatedOptionalNumberList?: number[];
-  undefinedCalculatedOptionalNumberList?: number[];
-
-  // string
-
-  emptyString: string;
-  string: string;
-  looseString: string;
-  undefinedOptionalString?: string;
-  optionalString?: string;
-
-  emptyCalculatedString: string;
-  calculatedString: string;
-  undefinedCalculatedString: string;
-  looseCalculatedString: string;
-  calculatedOptionalString?: string;
-  undefinedCalculatedOptionalString?: string;
-
-  // string List
-
-  emptyStringList: string[];
-  stringList: string[];
-  looseStringList: string[];
-  undefinedOptionalStringList?: string[];
-  optionalStringList?: string[];
-
-  emptyCalculatedStringList: string[];
-  calculatedStringList: string[];
-  undefinedCalculatedStringList: string[];
-  looseCalculatedStringList: string[];
-  calculatedOptionalStringList?: string[];
-  undefinedCalculatedOptionalStringList?: string[];
-
-  // Object
-
-  object: ISomeObject;
-  looseObject: ISomeObject;
-  undefinedOptionalObject?: ISomeObject;
-  optionalObject?: ISomeObject;
-
-  calculatedObject: ISomeObject;
-  undefinedCalculatedObject: ISomeObject;
-  looseCalculatedObject: ISomeObject;
-  calculatedOptionalObject?: ISomeObject;
-  undefinedCalculatedOptionalObject?: ISomeObject;
-
-  // Object List
-
-  objectList: ISomeObject[];
-  looseObjectList: ISomeObject[];
-  undefinedOptionalObjectList?: ISomeObject[];
-  optionalObjectList?: ISomeObject[];
-
-  calculatedObjectList: ISomeObject[];
-  undefinedCalculatedObjectList: ISomeObject[];
-  looseCalculatedObjectList: ISomeObject[];
-  calculatedOptionalObjectList?: ISomeObject[];
-  undefinedCalculatedOptionalObjectList?: ISomeObject[];
-
-  // Enumerable Model
-
-  enumerableModel: IEnumerable;
-  looseEnumerableModel: IEnumerable;
-  undefinedOptionalEnumerableModel?: IEnumerable;
-  optionalEnumerableModel?: IEnumerable;
-
-  calculatedEnumerableModel: IEnumerable;
-  undefinedCalculatedEnumerableModel: IEnumerable;
-  looseCalculatedEnumerableModel: IEnumerable;
-  calculatedOptionalEnumerableModel?: IEnumerable;
-  undefinedCalculatedOptionalEnumerableModel?: IEnumerable;
-
-  // Enumerable Model List
-
-  enumerableModelList: IEnumerable[];
-  looseEnumerableModelList: IEnumerable[];
-  undefinedOptionalEnumerableModelList?: IEnumerable[];
-  optionalEnumerableModelList?: IEnumerable[];
-
-  calculatedEnumerableModelList: IEnumerable[];
-  undefinedCalculatedEnumerableModelList: IEnumerable[];
-  looseCalculatedEnumerableModelList: IEnumerable[];
-  calculatedOptionalEnumerableModelList?: IEnumerable[];
-  undefinedCalculatedOptionalEnumerableModelList?: IEnumerable[];
-
-  // Singleton Model
-
-  singletonModel: ISingleton;
-  looseSingletonModel: ISingleton;
-  undefinedOptionalSingletonModel?: ISingleton;
-  optionalSingletonModel?: ISingleton;
-
-  calculatedSingletonModel: ISingleton;
-  undefinedCalculatedSingletonModel: ISingleton;
-  looseCalculatedSingletonModel: ISingleton;
-  calculatedOptionalSingletonModel?: ISingleton;
-  undefinedCalculatedOptionalSingletonModel?: ISingleton;
-
-  // Singleton Model List
-
-  singletonModelList: ISingleton[];
-  looseSingletonModelList: ISingleton[];
-  undefinedOptionalSingletonModelList?: ISingleton[];
-  optionalSingletonModelList?: ISingleton[];
-
-  calculatedSingletonModelList: ISingleton[];
-  undefinedCalculatedSingletonModelList: ISingleton[];
-  looseCalculatedSingletonModelList: ISingleton[];
-  calculatedOptionalSingletonModelList?: ISingleton[];
-  undefinedCalculatedOptionalSingletonModelList?: ISingleton[];
+  // ISomeObject[] = someObject[]
+  listedFieldWithDefaultValues: [someObject, someObject],
+  listedFieldCalculatedAsValues: ({ listedFieldWithDefaultValues }) => listedFieldWithDefaultValues,
+  listedOptionalFieldWithDefaultValues: [someObject, someObject],
+  listedOptionalFieldCalculatedAsValues: ({ listedOptionalFieldWithDefaultValues }) => listedOptionalFieldWithDefaultValues,
 }
 
-const ModelStore: Model<IModel> = {
-  id: true,
+const ObjectNegativeCases: Model<IObjectNegativeCases> = {
+  // ISomeObject = Object
+  /// @ts-expect-error
+  fieldWithDefaultEmptyValue: Object,
+  /// @ts-expect-error
+  fieldCalculatedAsEmptyValue: ({ fieldWithDefaultEmptyValue }) => fieldWithDefaultEmptyValue && Object,
+  /// @ts-expect-error
+  optionalFieldWithDefaultEmptyValue: Object,
+  /// @ts-expect-error
+  optionalFieldCalculatedAsEmptyValue: ({ optionalFieldWithDefaultEmptyValue }) => optionalFieldWithDefaultEmptyValue && Object,
 
-  // boolean
+  // ISomeObject[] = [Object]
+  /// @ts-expect-error
+  listedFieldWithDefaultEmptyValues: [Object],
+  /// @ts-expect-error
+  listedFieldCalculatedAsEmptyValues: ({ listedFieldWithDefaultEmptyValues }) => listedFieldWithDefaultEmptyValues && [Object],
+  /// @ts-expect-error
+  listedOptionalFieldWithDefaultEmptyValues: [Object],
+  /// @ts-expect-error
+  listedOptionalFieldCalculatedAsEmptyValues: ({ listedOptionalFieldWithDefaultEmptyValues }) => listedOptionalFieldWithDefaultEmptyValues && [Object],
+  
+  // ISomeObject[] = [Object, { loose }]
+  /// @ts-expect-error
+  loosedListedFieldWithDefaultEmptyValue: [Object, { loose: true }],
+  /// @ts-expect-error
+  loosedListedFieldCalculatedAsEmptyValue: ({ loosedListedFieldWithDefaultEmptyValue }) => loosedListedFieldWithDefaultEmptyValue && [Object, { loose: true }],
+  /// @ts-expect-error
+  loosedListedOptionalFieldWithDefaultEmptyValue: [Object, { loose: true }],
+  /// @ts-expect-error
+  loosedListedOptionalFieldCalculatedAsEmptyValue: ({ loosedListedOptionalFieldWithDefaultEmptyValue }) => loosedListedOptionalFieldWithDefaultEmptyValue && [Object, { loose: true }],
+  
+  // ISomeObject = undefined
+  /// @ts-expect-error
+  fieldWithDefaultUndefinedValue: undefined,
+  /// @ts-expect-error
+  fieldCalculatedAsUndefinedValue: ({ fieldWithDefaultUndefinedValue }) => fieldWithDefaultUndefinedValue && undefined,
+  /// @ts-expect-error
+  optionalFieldWithDefaultUndefinedValue: undefined,
+  /// @ts-expect-error
+  optionalFieldCalculatedAsUndefinedValue: ({ optionalFieldWithDefaultUndefinedValue }) => optionalFieldWithDefaultUndefinedValue && undefined,
 
-  boolean: false,
+  // ISomeObject[] = undefined[]
   /// @ts-expect-error
-  emptyBoolean: Boolean,
-  optionalBoolean: false,
+  listedFieldWithDefaultUndefinedValues: [undefined],
   /// @ts-expect-error
-  undefinedOptionalBoolean: undefined,
+  listedFieldCalculatedAsUndefinedValues: ({ listedFieldWithDefaultUndefinedValues }) => listedFieldWithDefaultUndefinedValues && [undefined],
+  /// @ts-expect-error
+  listedOptionalFieldWithDefaultUndefinedValues: [undefined],
+  /// @ts-expect-error
+  listedOptionalFieldCalculatedAsUndefinedValues: ({ listedOptionalFieldWithDefaultUndefinedValues }) => listedOptionalFieldWithDefaultUndefinedValues && [undefined],
+}
 
-  calculatedBoolean: () => false,
-  /// @ts-expect-error
-  undefinedCalculatedBoolean: () => undefined,
-  /// @ts-expect-error
-  emptyCalculatedBoolean: () => Boolean,
-  calculatedOptionalBoolean: () => false,
-  undefinedCalculatedOptionalBoolean: () => (condition ? undefined : false),
+interface ISingletonPositiveCases extends ICasesOfFieldsWithEmptyValues<ISingleton> {}
+interface ISingletonNegativeCases extends ICasesOfFieldsWithValues<ISingleton>, ICasesOfListedFieldsWithValues<ISingleton>, ICasesOfListedFieldsWithEmptyValues<ISingleton>, ICasesOfListedFieldsWithLoosedValues<ISingleton>, ICasesOfFieldsWithUndefinedValues<ISingleton>, ICasesOfListedFieldsWithUndefinedValues<ISingleton> {}
 
-  // boolean List
+const singleton = store.sync(Singleton, {})
 
-  booleanList: [false],
-  emptyBooleanList: [Boolean],
-  /// @ts-expect-error
-  looseBooleanList: [false, { loose: true }],
-  optionalBooleanList: [false],
-  /// @ts-expect-error
-  undefinedOptionalBooleanList: undefined,
+const SingletonPositiveCases: Model<ISingletonPositiveCases> = {
+  // ISingleton = Singleton
+  fieldWithDefaultEmptyValue: Singleton,
+  fieldCalculatedAsEmptyValue: ({ fieldWithDefaultEmptyValue }) => fieldWithDefaultEmptyValue && Singleton,
+  optionalFieldWithDefaultEmptyValue: Singleton,
+  optionalFieldCalculatedAsEmptyValue: ({ optionalFieldWithDefaultEmptyValue }) => optionalFieldWithDefaultEmptyValue && Singleton,
+}
 
-  calculatedBooleanList: () => [false],
+const SingletonNegativeCases: Model<ISingletonNegativeCases> = {
+  // ISingleton = singleton
   /// @ts-expect-error
-  undefinedCalculatedBooleanList: () => undefined,
-  emptyCalculatedBooleanList: () => [Boolean],
+  fieldWithDefaultValue: singleton,
   /// @ts-expect-error
-  looseCalculatedBooleanList: () => [false, { loose: true }],
-  calculatedOptionalBooleanList: () => [false],
-  undefinedCalculatedOptionalBooleanList: () =>
-    condition ? undefined : [false],
+  fieldCalculatedAsValue: ({ fieldWithDefaultValue }) => fieldWithDefaultValue,
+  /// @ts-expect-error
+  optionalFieldWithDefaultValue: singleton,
+  /// @ts-expect-error
+  optionalFieldCalculatedAsValue: ({ optionalFieldWithDefaultValue }) => optionalFieldWithDefaultValue,
 
-  // number
+  // ISingleton[] = singleton[]
+  /// @ts-expect-error
+  listedFieldWithDefaultValues: [singleton, singleton],
+  /// @ts-expect-error
+  listedFieldCalculatedAsValues: ({ listedFieldWithDefaultValues }) => listedFieldWithDefaultValues,
+  /// @ts-expect-error
+  listedOptionalFieldWithDefaultValues: [singleton, singleton],
+  /// @ts-expect-error
+  listedOptionalFieldCalculatedAsValues: ({ listedOptionalFieldWithDefaultValues }) => listedOptionalFieldWithDefaultValues,
 
-  number: 0,
+  // ISingleton[] = [Singleton]
   /// @ts-expect-error
-  emptyNumber: Number,
-  optionalNumber: 0,
+  listedFieldWithDefaultEmptyValues: [Singleton],
   /// @ts-expect-error
-  undefinedOptionalNumber: undefined,
+  listedFieldCalculatedAsEmptyValues: ({ listedFieldWithDefaultEmptyValues }) => listedFieldWithDefaultEmptyValues && [Singleton],
+  /// @ts-expect-error
+  listedOptionalFieldWithDefaultEmptyValues: [Singleton],
+  /// @ts-expect-error
+  listedOptionalFieldCalculatedAsEmptyValues: ({ listedOptionalFieldWithDefaultEmptyValues }) => listedOptionalFieldWithDefaultEmptyValues && [Singleton],
+  
+  // ISingleton[] = [Singleton, { loose }]
+  /// @ts-expect-error
+  loosedListedFieldWithDefaultEmptyValue: [Singleton, { loose: true }],
+  /// @ts-expect-error
+  loosedListedFieldCalculatedAsEmptyValue: ({ loosedListedFieldWithDefaultEmptyValue }) => loosedListedFieldWithDefaultEmptyValue && [Singleton, { loose: true }],
+  /// @ts-expect-error
+  loosedListedOptionalFieldWithDefaultEmptyValue: [Singleton, { loose: true }],
+  /// @ts-expect-error
+  loosedListedOptionalFieldCalculatedAsEmptyValue: ({ loosedListedOptionalFieldWithDefaultEmptyValue }) => loosedListedOptionalFieldWithDefaultEmptyValue && [Singleton, { loose: true }],
+  
+  // ISingleton = undefined
+  /// @ts-expect-error
+  fieldWithDefaultUndefinedValue: undefined,
+  /// @ts-expect-error
+  fieldCalculatedAsUndefinedValue: ({ fieldWithDefaultUndefinedValue }) => fieldWithDefaultUndefinedValue && undefined,
+  /// @ts-expect-error
+  optionalFieldWithDefaultUndefinedValue: undefined,
+  /// @ts-expect-error
+  optionalFieldCalculatedAsUndefinedValue: ({ optionalFieldWithDefaultUndefinedValue }) => optionalFieldWithDefaultUndefinedValue && undefined,
 
-  calculatedNumber: () => 0,
+  // ISingleton[] = undefined[]
   /// @ts-expect-error
-  undefinedCalculatedNumber: () => undefined,
+  listedFieldWithDefaultUndefinedValues: [undefined],
   /// @ts-expect-error
-  emptyCalculatedNumber: () => Number,
-  calculatedOptionalNumber: () => 0,
-  undefinedCalculatedOptionalNumber: () => (condition ? undefined : 0),
+  listedFieldCalculatedAsUndefinedValues: ({ listedFieldWithDefaultUndefinedValues }) => listedFieldWithDefaultUndefinedValues && [undefined],
+  /// @ts-expect-error
+  listedOptionalFieldWithDefaultUndefinedValues: [undefined],
+  /// @ts-expect-error
+  listedOptionalFieldCalculatedAsUndefinedValues: ({ listedOptionalFieldWithDefaultUndefinedValues }) => listedOptionalFieldWithDefaultUndefinedValues && [undefined],
+}
 
-  // number List
+interface IEnumerablePositiveCases extends ICasesOfFieldsWithEmptyValues<IEnumerable>, ICasesOfListedFieldsWithEmptyValues<IEnumerable>, ICasesOfListedFieldsWithLoosedValues<IEnumerable> {}
+interface IEnumerableNegativeCases extends ICasesOfFieldsWithValues<IEnumerable>, ICasesOfListedFieldsWithValues<IEnumerable>, ICasesOfFieldsWithUndefinedValues<IEnumerable>, ICasesOfListedFieldsWithUndefinedValues<IEnumerable> {}
 
-  numberList: [0],
-  emptyNumberList: [Number],
-  /// @ts-expect-error
-  looseNumberList: [0, { loose: true }],
-  optionalNumberList: [0],
-  /// @ts-expect-error
-  undefinedOptionalNumberList: undefined,
+const enumerable = store.sync(Enumerable, {})
 
-  calculatedNumberList: () => [0],
-  /// @ts-expect-error
-  undefinedCalculatedNumberList: () => undefined,
-  emptyCalculatedNumberList: () => [Number],
-  /// @ts-expect-error
-  looseCalculatedNumberList: () => [0, { loose: true }],
-  calculatedOptionalNumberList: () => [0],
-  undefinedCalculatedOptionalNumberList: () => (condition ? undefined : [0]),
+const EnumerablePositiveCases: Model<IEnumerablePositiveCases> = {
+  // IEnumerable = Enumerable
+  fieldWithDefaultEmptyValue: Enumerable,
+  fieldCalculatedAsEmptyValue: ({ fieldWithDefaultEmptyValue }) => fieldWithDefaultEmptyValue && Enumerable,
+  optionalFieldWithDefaultEmptyValue: Enumerable,
+  optionalFieldCalculatedAsEmptyValue: ({ optionalFieldWithDefaultEmptyValue }) => optionalFieldWithDefaultEmptyValue && Enumerable,
 
-  // string
+  // IEnumerable[] = [Enumerable]
+  listedFieldWithDefaultEmptyValues: [Enumerable],
+  listedFieldCalculatedAsEmptyValues: ({ listedFieldWithDefaultEmptyValues }) => listedFieldWithDefaultEmptyValues && [Enumerable],
+  listedOptionalFieldWithDefaultEmptyValues: [Enumerable],
+  listedOptionalFieldCalculatedAsEmptyValues: ({ listedOptionalFieldWithDefaultEmptyValues }) => listedOptionalFieldWithDefaultEmptyValues && [Enumerable],
+  
+  // IEnumerable[] = [Enumerable, { loose }]
+  loosedListedFieldWithDefaultEmptyValue: [Enumerable, { loose: true }],
+  loosedListedFieldCalculatedAsEmptyValue: ({ loosedListedFieldWithDefaultEmptyValue }) => loosedListedFieldWithDefaultEmptyValue && [Enumerable, { loose: true }],
+  loosedListedOptionalFieldWithDefaultEmptyValue: [Enumerable, { loose: true }],
+  loosedListedOptionalFieldCalculatedAsEmptyValue: ({ loosedListedOptionalFieldWithDefaultEmptyValue }) => loosedListedOptionalFieldWithDefaultEmptyValue && [Enumerable, { loose: true }],
+}
 
-  string: "",
+const EnumerableNegativeCases: Model<IEnumerableNegativeCases> = {
+  // IEnumerable = enumerable
   /// @ts-expect-error
-  emptyString: String,
-  optionalString: "",
+  fieldWithDefaultValue: enumerable,
   /// @ts-expect-error
-  undefinedOptionalString: undefined,
+  fieldCalculatedAsValue: ({ fieldWithDefaultValue }) => fieldWithDefaultValue,
+  /// @ts-expect-error
+  optionalFieldWithDefaultValue: enumerable,
+  /// @ts-expect-error
+  optionalFieldCalculatedAsValue: ({ optionalFieldWithDefaultValue }) => optionalFieldWithDefaultValue,
 
-  calculatedString: () => "",
+  // IEnumerable[] = enumerable[]
   /// @ts-expect-error
-  undefinedCalculatedString: () => undefined,
+  listedFieldWithDefaultValues: [enumerable, enumerable],
   /// @ts-expect-error
-  emptyCalculatedString: () => String,
-  calculatedOptionalString: () => "",
-  undefinedCalculatedOptionalString: () => (condition ? undefined : ""),
+  listedFieldCalculatedAsValues: ({ listedFieldWithDefaultValues }) => listedFieldWithDefaultValues,
+  /// @ts-expect-error
+  listedOptionalFieldWithDefaultValues: [enumerable, enumerable],
+  /// @ts-expect-error
+  listedOptionalFieldCalculatedAsValues: ({ listedOptionalFieldWithDefaultValues }) => listedOptionalFieldWithDefaultValues,
+  
+  // IEnumerable = undefined
+  /// @ts-expect-error
+  fieldWithDefaultUndefinedValue: undefined,
+  /// @ts-expect-error
+  fieldCalculatedAsUndefinedValue: ({ fieldWithDefaultUndefinedValue }) => fieldWithDefaultUndefinedValue && undefined,
+  /// @ts-expect-error
+  optionalFieldWithDefaultUndefinedValue: undefined,
+  /// @ts-expect-error
+  optionalFieldCalculatedAsUndefinedValue: ({ optionalFieldWithDefaultUndefinedValue }) => optionalFieldWithDefaultUndefinedValue && undefined,
 
-  // string List
-
-  stringList: [""],
-  emptyStringList: [String],
+  // IEnumerable[] = undefined[]
   /// @ts-expect-error
-  looseStringList: ["", { loose: true }],
-  optionalStringList: [""],
+  listedFieldWithDefaultUndefinedValues: [undefined],
   /// @ts-expect-error
-  undefinedOptionalStringList: undefined,
-
-  calculatedStringList: () => [""],
+  listedFieldCalculatedAsUndefinedValues: ({ listedFieldWithDefaultUndefinedValues }) => listedFieldWithDefaultUndefinedValues && [undefined],
   /// @ts-expect-error
-  undefinedCalculatedStringList: () => undefined,
-  emptyCalculatedStringList: () => [String],
+  listedOptionalFieldWithDefaultUndefinedValues: [undefined],
   /// @ts-expect-error
-  looseCalculatedStringList: () => ["", { loose: true }],
-  calculatedOptionalStringList: () => [""],
-  undefinedCalculatedOptionalStringList: () => (condition ? undefined : [""]),
-
-  // Object
-
-  object: { prop: "", length: 0 },
-  optionalObject: { prop: "", length: 0 },
-  /// @ts-expect-error
-  undefinedOptionalObject: undefined,
-
-  calculatedObject: () => ({ prop: "", length: 0 }),
-  /// @ts-expect-error
-  undefinedCalculatedObject: () => undefined,
-  calculatedOptionalObject: () => ({ prop: "", length: 0 }),
-  undefinedCalculatedOptionalObject: () =>
-    condition ? undefined : { prop: "", length: 0 },
-
-  // Object List
-
-  objectList: [{ prop: "", length: 0 }],
-  /// @ts-expect-error
-  looseObjectList: [{ prop: "", length: 0 }, { loose: true }],
-  optionalObjectList: [{ prop: "", length: 0 }],
-  /// @ts-expect-error
-  undefinedOptionalObjectList: undefined,
-
-  calculatedObjectList: () => [{ prop: "", length: 0 }],
-  /// @ts-expect-error
-  undefinedCalculatedObjectList: () => undefined,
-  /// @ts-expect-error
-  looseCalculatedObjectList: () => [{ prop: "", length: 0 }, { loose: true }],
-  calculatedOptionalObjectList: () => [{ prop: "", length: 0 }],
-  undefinedCalculatedOptionalObjectList: () =>
-    condition ? undefined : [{ prop: "", length: 0 }],
-
-  // Enumerable Model
-
-  enumerableModel: EnumerableStore,
-  optionalEnumerableModel: EnumerableStore,
-  /// @ts-expect-error
-  undefinedOptionalEnumerableModel: undefined,
-
-  calculatedEnumerableModel: () => EnumerableStore,
-  /// @ts-expect-error
-  undefinedCalculatedEnumerableModel: () => undefined,
-  calculatedOptionalEnumerableModel: () => EnumerableStore,
-  undefinedCalculatedOptionalEnumerableModel: () =>
-    condition ? undefined : EnumerableStore,
-
-  // Enumerable Model List
-
-  enumerableModelList: [EnumerableStore],
-  looseEnumerableModelList: [EnumerableStore, { loose: true }],
-  optionalEnumerableModelList: [EnumerableStore],
-  /// @ts-expect-error
-  undefinedOptionalEnumerableModelList: undefined,
-
-  calculatedEnumerableModelList: () => [EnumerableStore],
-  /// @ts-expect-error
-  undefinedCalculatedEnumerableModelList: () => undefined,
-  looseCalculatedEnumerableModelList: () => [EnumerableStore, { loose: true }],
-  calculatedOptionalEnumerableModelList: () => [EnumerableStore],
-  undefinedCalculatedOptionalEnumerableModelList: () =>
-    condition ? undefined : [EnumerableStore],
-
-  // Singleton Model
-
-  singletonModel: SingletonStore,
-  optionalSingletonModel: SingletonStore,
-  /// @ts-expect-error
-  undefinedOptionalSingletonModel: undefined,
-
-  calculatedSingletonModel: () => SingletonStore,
-  /// @ts-expect-error
-  undefinedCalculatedSingletonModel: () => undefined,
-  calculatedOptionalSingletonModel: () => SingletonStore,
-  undefinedCalculatedOptionalSingletonModel: () =>
-    condition ? undefined : SingletonStore,
-
-  // Singleton Model List
-
-  /// @ts-expect-error
-  singletonModelList: [SingletonStore],
-  /// @ts-expect-error
-  looseSingletonModelList: [SingletonStore, { loose: true }],
-  /// @ts-expect-error
-  optionalSingletonModelList: [SingletonStore],
-  /// @ts-expect-error
-  undefinedOptionalSingletonModelList: undefined,
-
-  /// @ts-expect-error
-  calculatedSingletonModelList: () => [SingletonStore],
-  /// @ts-expect-error
-  undefinedCalculatedSingletonModelList: () => undefined,
-  /// @ts-expect-error
-  looseCalculatedSingletonModelList: () => [SingletonStore, { loose: true }],
-  /// @ts-expect-error
-  calculatedOptionalSingletonModelList: () => [SingletonStore],
-  /// @ts-expect-error
-  undefinedCalculatedOptionalSingletonModelList: () =>
-    condition ? undefined : [SingletonStore],
-};
-
-export default ModelStore;
-
-/// @ts-expect-error
-const EmptyStore: Model<IModel> = {
-  id: true,
-  boolean: false,
-};
+  listedOptionalFieldCalculatedAsUndefinedValues: ({ listedOptionalFieldWithDefaultUndefinedValues }) => listedOptionalFieldWithDefaultUndefinedValues && [undefined],
+}
