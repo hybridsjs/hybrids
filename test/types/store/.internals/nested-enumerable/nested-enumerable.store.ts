@@ -12,4 +12,4 @@ export const NestedEnumerable: Model<INestedEnumerable> = {
   nestedEnumerable: store.ref(() => DeepNestedEnumerable),
   optionalNestedEnumerable: store.ref(() => DeepNestedEnumerable),
   nestedEnumerables: store.ref(() => [DeepNestedEnumerable]),
-}
+};

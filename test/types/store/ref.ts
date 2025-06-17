@@ -1,4 +1,4 @@
-import { Model, store } from "/types/index";
+import { ModelDefinition, store } from "/types/index";
 
 interface IOtherModel {
   a: string;
@@ -9,11 +9,11 @@ interface IEnumerableModel {
   other: IOtherModel;
 }
 
-const IOtherModel: Model<IOtherModel> = {
+const IOtherModel: ModelDefinition<IOtherModel> = {
   a: "",
 };
 
-const IEnumerableModel: Model<IEnumerableModel> = {
+const IEnumerableModel: ModelDefinition<IEnumerableModel> = {
   id: true,
   other: store.ref(() => IOtherModel),
 };

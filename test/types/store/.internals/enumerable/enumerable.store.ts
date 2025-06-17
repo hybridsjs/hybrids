@@ -1,9 +1,9 @@
 import { NestedEnumerable } from "../nested-enumerable/nested-enumerable.store";
 import { Singleton } from "../singleton/singleton.store";
 import { IEnumerable } from "./enumerable.entity";
-import { Model, store } from "/types";
+import { ModelDefinition, store } from "/types";
 
-export const Enumerable: Model<IEnumerable> = {
+export const Enumerable: ModelDefinition<IEnumerable> = {
   id: true,
   stringProperty: "",
   numberProperty: 0,
@@ -13,4 +13,4 @@ export const Enumerable: Model<IEnumerable> = {
   nestedEnumerable: store.ref(() => NestedEnumerable),
   optionalNestedEnumerable: store.ref(() => NestedEnumerable),
   nestedEnumerables: store.ref(() => [NestedEnumerable]),
-}
+};

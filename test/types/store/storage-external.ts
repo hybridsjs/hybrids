@@ -6,8 +6,19 @@ const EnumerableModelsSource = new Map<
   ModelIdentifier,
   StorageValues<IEnumerable>
 >([
-  ["0", { id: "0", stringProperty: "qweqwe", numberProperty: 5, nestedEnumerable: "2" }],
-  ["1", { id: "1", numberProperty: 1711014651455, nestedEnumerables: ["1", "2"] }],
+  [
+    "0",
+    {
+      id: "0",
+      stringProperty: "qweqwe",
+      numberProperty: 5,
+      nestedEnumerable: "2",
+    },
+  ],
+  [
+    "1",
+    { id: "1", numberProperty: 1711014651455, nestedEnumerables: ["1", "2"] },
+  ],
   ["2", { id: "2", stringProperty: "swswswsws" }],
 ]);
 
