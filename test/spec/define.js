@@ -231,6 +231,49 @@ describe("define:", () => {
     });
   });
 
+  // Relates to https://github.com/hybridsjs/hybrids/issues/291
+  it("render method is called when both the internal property and the inherited property from the distant parent are changed", () => {
+    define({
+      tag: "test-define-render-on-changes-at-different-levels",
+      internal: "A",
+      render: ({ internal }) => html`
+        ${internal}
+        <middle-component inherited=${internal}></middle-component>
+      `,
+    });
+
+    define({
+      tag: "middle-component",
+      inherited: "",
+      render: ({ inherited }) => html`
+        ${inherited}
+        <deep-nested-component inherited=${inherited}></deep-nested-component>
+      `,
+    });
+
+    define({
+      tag: "deep-nested-component",
+      internal: "B",
+      inherited: "",
+      render: ({ internal, inherited }) => html`${inherited}${internal} `,
+    });
+
+    const root = document.createElement(
+      "test-define-render-on-changes-at-different-levels",
+    );
+    document.body.appendChild(root);
+
+    return resolveRaf(() => {
+      const deepNested = root.querySelector("deep-nested-component");
+      root.internal = 4;
+      deepNested.internal = 5;
+
+      return resolveRaf(() => {
+        expect(deepNested.innerHTML).toBe(deepNested.render().innerHTML);
+      });
+    });
+  });
+
   describe("created element", () => {
     let observeSpy;
 
