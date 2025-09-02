@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.19](https://github.com/hybridsjs/hybrids/compare/v9.1.18...v9.1.19) (2025-09-02)
+
+
+### Bug Fixes
+
+* **emitter:** reschedule calling observers for multiple changes ([#293](https://github.com/hybridsjs/hybrids/issues/293)) ([cd66004](https://github.com/hybridsjs/hybrids/commit/cd66004edc8595f56e857e2bba18aa1273509b73))
+
 ### [9.1.18](https://github.com/hybridsjs/hybrids/compare/v9.1.17...v9.1.18) (2025-06-13)
 
 
