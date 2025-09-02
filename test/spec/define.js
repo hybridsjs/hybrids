@@ -187,9 +187,6 @@ describe("define:", () => {
   });
 
   // Relates to https://github.com/hybridsjs/hybrids/issues/229
-  // with a move of clearing deps and context in cache
-  // There is still a problem with "prop3" which is not updated in render
-  // but it happens because the render was already called after the prop1 observer
   it("render method is called when observed chain of properties changes", () => {
     define({
       tag: "test-define-render-observed",
@@ -220,13 +217,61 @@ describe("define:", () => {
       el.prop1 = 1;
 
       return resolveRaf(() => {
-        expect(el.innerHTML).toBe("<div>1</div><div>1</div><div>0</div>");
+        expect(el.innerHTML).toBe("<div>1</div><div>1</div><div>1</div>");
 
         el.prop1 = 2;
 
         return resolveRaf(() => {
-          expect(el.innerHTML).toBe("<div>2</div><div>2</div><div>1</div>");
+          expect(el.innerHTML).toBe("<div>2</div><div>2</div><div>2</div>");
         });
+      });
+    });
+  });
+
+  // Relates to https://github.com/hybridsjs/hybrids/issues/291
+  it("render method is called when root and nested property has changed", () => {
+    define({
+      tag: "test-define-render-deep-root",
+      value: "A",
+      render: ({ value }) => html`
+        ${value}
+        <test-define-render-deep-one
+          value="${value}"
+        ></test-define-render-deep-one>
+      `,
+    });
+
+    define({
+      tag: "test-define-render-deep-one",
+      value: "",
+      render: ({ value }) => html`
+        ${value}
+        <test-define-render-deep-two
+          value="${value}"
+        ></test-define-render-deep-two>
+      `,
+    });
+
+    define({
+      tag: "test-define-render-deep-two",
+      value: "B",
+      other: "D",
+      render: ({ value, other }) => {
+        return html`${value}-${other}`;
+      },
+    });
+
+    el = document.createElement("test-define-render-deep-root");
+    document.body.appendChild(el);
+
+    return resolveRaf(() => {
+      const nested = el.querySelector("test-define-render-deep-two");
+
+      el.value = "C";
+      nested.other = "E";
+
+      return resolveRaf(() => {
+        expect(nested.innerHTML).toBe("C-E");
       });
     });
   });

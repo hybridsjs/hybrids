@@ -1,10 +1,14 @@
 import { deferred } from "./utils.js";
 
 let queue = new Set();
+
 export function add(fn) {
   if (queue.size === 0) {
-    queue = new Set();
     deferred.then(execute);
+  }
+
+  if (queue.has(fn)) {
+    queue.delete(fn);
   }
 
   queue.add(fn);
