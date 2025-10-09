@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.20](https://github.com/hybridsjs/hybrids/compare/v9.1.19...v9.1.20) (2025-10-09)
+
+
+### Bug Fixes
+
+* **store:** improve `loose` mode invalidation for listing models ([#294](https://github.com/hybridsjs/hybrids/issues/294)) ([8b29696](https://github.com/hybridsjs/hybrids/commit/8b29696cc7d09290f86b734dd7e861386735bfc4))
+* **store:** resolve to cached model when state is `pending` ([94efadf](https://github.com/hybridsjs/hybrids/commit/94efadfafb74eb0d24c3082e327c59d44584f30a))
+* **store:** support fo the same `id` in values for settings model instance ([f916fe6](https://github.com/hybridsjs/hybrids/commit/f916fe681334d0c357a38a23b592ae83058ca1fa))
+
 ### [9.1.19](https://github.com/hybridsjs/hybrids/compare/v9.1.18...v9.1.19) (2025-09-02)
 
 
