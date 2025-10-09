@@ -1120,8 +1120,10 @@ function get(Model, id) {
   const entry = cache.getEntry(config, stringId);
   const cachedModel = entry.value;
 
-  if (entry.resolved && cachedModel && !validate(cachedModel)) {
-    entry.resolved = false;
+  if (cachedModel) {
+    entry.resolved =
+      (entry.resolved && validate(cachedModel)) ||
+      getModelState(cachedModel).state === "pending";
   }
 
   return cache.get(config, stringId, () => {

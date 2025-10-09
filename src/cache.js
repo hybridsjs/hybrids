@@ -3,16 +3,17 @@ import * as emitter from "./emitter.js";
 const entries = new WeakMap();
 const stack = new Set();
 
-function dispatch(entry) {
+function dispatch(entry, resolved = false) {
   const contexts = [];
   let index = 0;
 
-  while (entry) {
-    entry.resolved = false;
+  entry.resolved = resolved;
 
+  while (entry) {
     if (entry.contexts) {
       for (const context of entry.contexts) {
         if (!stack.has(context) && !contexts.includes(context)) {
+          context.resolved = false;
           contexts.push(context);
         }
       }
@@ -137,7 +138,7 @@ export function sync(target, key, fn, value) {
     entry.value = nextValue;
     entry.assertValue = undefined;
 
-    dispatch(entry);
+    dispatch(entry, true);
 
     // mark as resolved to avoid double fn call in get
     entry.resolved = true;
