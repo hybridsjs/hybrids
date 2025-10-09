@@ -382,9 +382,23 @@ describe("store:", () => {
       expect(() => store.set(model, false)).toThrow();
     });
 
-    it("throws an error when values contain 'id' property", async () => {
+    it("throws an error when values contain 'id' property for singleton model", async () => {
+      Model = {};
+      expect(() => store.set(Model, { id: "test" })).toThrow();
+    });
+
+    it("throws an error when values contain 'id' property for enumerable model", async () => {
+      expect(() => store.set(Model, { id: "test" })).toThrow();
+    });
+
+    it("throws an error when updating an instance and values contain different 'id' property", async () => {
       const model = await promise;
-      expect(() => store.set(model, model)).toThrow();
+      expect(() => store.set(model, { ...model, id: "different" })).toThrow();
+    });
+
+    it("does not throw an error when updating an instance and values contain the same 'id' property", async () => {
+      const model = await promise;
+      expect(() => store.set(model, model)).not.toThrow();
     });
 
     it("throws an error when array with primitives is set with wrong type", async () => {
