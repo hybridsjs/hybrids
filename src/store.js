@@ -1287,7 +1287,13 @@ function set(model, values = {}) {
   }
 
   if (!isDraft && values && hasOwnProperty.call(values, "id")) {
-    throw TypeError(`Values must not contain 'id' property: ${values.id}`);
+    if (!config.enumerable) {
+      throw TypeError(`Values must not contain 'id' property: ${values.id}`);
+    } else if (!isInstance || values.id !== model.id) {
+      throw TypeError(
+        `You cannot change the 'id' property of the model instance: ${values.id}`,
+      );
+    }
   }
 
   const localModel = config.create(values, isInstance ? model : undefined);
