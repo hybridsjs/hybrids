@@ -1,6 +1,6 @@
 import {
   get,
-  set,
+  sync,
   assert,
   getEntries,
   invalidate,
@@ -94,12 +94,12 @@ describe("cache:", () => {
       get(target, "one", () => {
         get(target, "two", () => "value");
         get(target, "three", () => true);
-        set(target, "three", () => false);
+        sync(target, "three", () => false);
 
         return "value";
       });
 
-      set(target, "two", () => "other value");
+      sync(target, "two", () => "other value");
       get(target, "one", spy);
       expect(spy).toHaveBeenCalledTimes(1);
     });
@@ -123,7 +123,7 @@ describe("cache:", () => {
 
       expect(spy).toHaveBeenCalledTimes(0);
 
-      set(target, "key", () => "value");
+      sync(target, "key", () => "value");
       get(target, "key", spy);
 
       expect(spy).toHaveBeenCalledTimes(0);
@@ -131,7 +131,7 @@ describe("cache:", () => {
 
     it("invalidates dependant properties", () => {
       get(target, "key", () => get(target, "otherKey", () => "value"));
-      set(target, "otherKey", () => "new value");
+      sync(target, "otherKey", () => "new value");
 
       get(target, "key", spy);
 
@@ -170,7 +170,7 @@ describe("cache:", () => {
       invalidate(target, "key");
       get(target, "key", () => "value");
 
-      set(target, "otherKey", () => "new value");
+      sync(target, "otherKey", () => "new value");
       get(target, "key", spy);
 
       expect(spy).toHaveBeenCalledTimes(0);

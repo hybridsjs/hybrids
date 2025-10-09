@@ -129,7 +129,7 @@ export function assert(target, key, value, force) {
   dispatch(entry);
 }
 
-export function set(target, key, fn, value) {
+export function sync(target, key, fn, value) {
   const entry = getEntry(target, key);
   const nextValue = fn(target, value, entry.value);
 
@@ -138,6 +138,9 @@ export function set(target, key, fn, value) {
     entry.assertValue = undefined;
 
     dispatch(entry);
+
+    // mark as resolved to avoid double fn call in get
+    entry.resolved = true;
   }
 }
 

@@ -2323,6 +2323,42 @@ describe("store:", () => {
         expect(args[0]).toEqual(["two"]);
       });
     });
+
+    it("invalidates listing model when item is changed", async () => {
+      storage = {};
+
+      const ListModel = {
+        id: true,
+        value: "",
+        [store.connect]: {
+          get: (id) => storage[id],
+          set: (id, values) => {
+            storage[values.id] = values;
+            return values;
+          },
+          list: ({ query }) =>
+            Object.values(storage).filter(({ value }) => value.includes(query)),
+          loose: true,
+        },
+      };
+
+      // get empty list
+      expect(store.get([ListModel], { query: "test" })).toEqual([]);
+      // get another empty list
+      expect(store.get([ListModel], { query: "other" })).toEqual([]);
+
+      // add item matching first query
+      await store.set(ListModel, { value: "test" });
+      await store.set(ListModel, { value: "other" });
+
+      // first list is updated
+      expect(store.get([ListModel], { query: "other" }).length).toBe(1);
+
+      await resolveTimeout(() => {
+        const list = store.get([ListModel], { query: "test" });
+        expect(list[0]?.value).toEqual("test");
+      });
+    });
   });
 
   describe("connected to async storage -", () => {
