@@ -51,7 +51,7 @@ function resolveWithInvalidate(config, model, lastModel) {
 }
 
 function syncCache(config, id, model, invalidate = true) {
-  cache.set(config, id, invalidate ? resolveWithInvalidate : resolve, model);
+  cache.sync(config, id, invalidate ? resolveWithInvalidate : resolve, model);
   return model;
 }
 
@@ -1120,31 +1120,17 @@ function get(Model, id) {
   const entry = cache.getEntry(config, stringId);
   const cachedModel = entry.value;
 
-  if (
-    cachedModel &&
-    getModelState(cachedModel).state !== "pending" &&
-    !validate(cachedModel)
-  ) {
+  if (entry.resolved && cachedModel && !validate(cachedModel)) {
     entry.resolved = false;
   }
 
   return cache.get(config, stringId, () => {
     id = normalizeId(id);
 
-    let validContexts = true;
     if (config.contexts) {
       for (const context of config.contexts) {
-        if (
-          cache.get(context, context, () => getCurrentTimestamp()) ===
-          getCurrentTimestamp()
-        ) {
-          validContexts = false;
-        }
+        cache.get(context, context, getCurrentTimestamp);
       }
-    }
-
-    if (validContexts && cachedModel && validate(cachedModel)) {
-      return cachedModel;
     }
 
     const fallback = () =>
@@ -1734,6 +1720,9 @@ function store(Model, options = {}) {
       ...Model,
       [connect]: {
         get(id) {
+          const value = cache.getCurrentValue();
+          if (value) return value;
+
           const model = get(config.model, id);
           return pending(model) || model;
         },
