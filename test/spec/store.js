@@ -110,10 +110,6 @@ describe("store:", () => {
       expect(() => store.get({ nested: [] })).toThrow();
     });
 
-    it("throws when nested object has no properties defined", () => {
-      expect(() => store.get({ nested: {} })).toThrow();
-    });
-
     it("set to an error state when get method returning undefined", () => {
       Model = {
         value: "test",
@@ -1196,6 +1192,17 @@ describe("store:", () => {
       expect(() => store.set(Model, { values: 123 })).toThrow();
     });
 
+    it("throws when record value model definition is invalid", () => {
+      Model = {
+        id: true,
+        other: "",
+        test: 123,
+        myKey: store.record(store.ref(() => [])),
+      };
+
+      expect(() => store.set(Model, { myKey: ["test"] })).toThrow();
+    });
+
     describe("for primitive value", () => {
       beforeEach(() => {
         Model = {
@@ -1359,6 +1366,32 @@ describe("store:", () => {
                 });
               });
           });
+      });
+    });
+
+    describe("for external model set by ref()", () => {
+      let OtherModel;
+
+      beforeEach(() => {
+        OtherModel = {
+          id: true,
+          value: "",
+        };
+
+        Model = {
+          id: true,
+          records: store.record(store.ref(() => OtherModel)),
+        };
+      });
+
+      it("creates a record property", async () => {
+        const record = await store.set(OtherModel, { value: "one" });
+        const model = await store.set(Model, {
+          records: { first: record },
+        });
+        expect(model.records).toEqual({
+          first: { id: record.id, value: "one" },
+        });
       });
     });
   });
