@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.21](https://github.com/hybridsjs/hybrids/compare/v9.1.20...v9.1.21) (2025-11-28)
+
+
+### Bug Fixes
+
+* **store:** improve store.record() support & error messages while defining the model ([6abc818](https://github.com/hybridsjs/hybrids/commit/6abc8183da6ad8a545a3058dd2fbaabe83e96f94))
+
 ### [9.1.20](https://github.com/hybridsjs/hybrids/compare/v9.1.19...v9.1.20) (2025-10-09)
 
 
