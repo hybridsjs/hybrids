@@ -401,15 +401,11 @@ function resolveKey(Model, key, config) {
   if (refs.has(defaultValue)) defaultValue = defaultValue();
 
   if (records.has(defaultValue)) {
-    const value = records.get(defaultValue);
-    if (typeof value === "function") {
-      throw TypeError(
-        `A function is not supported as the value of the record for '${key}' property`,
-      );
-    }
+    let value = records.get(defaultValue);
+    value = typeof value === "function" ? value() : value;
 
     return {
-      defaultValue: { id: true, value },
+      defaultValue: { id: true, [key]: value },
       type: "record",
     };
   }
@@ -440,8 +436,16 @@ function resolveKey(Model, key, config) {
   return { defaultValue, type };
 }
 
+const parentModels = new WeakMap();
+
 function stringifyModel(Model, msg) {
-  return `${msg}\n\nModel definition:\n\n${JSON.stringify(Model, null, 2)}\n`;
+  const ResolvedModel = parentModels.get(Model) || Model;
+  const modelMsg = `Model definition\n${JSON.stringify(ResolvedModel, null, 2)}`
+    .split("\n")
+    .map((s) => `| ${s}`)
+    .join("\n");
+
+  return `${msg}\n\n${modelMsg}\n`;
 }
 
 const resolvedPromise = Promise.resolve();
@@ -576,7 +580,10 @@ function setupModel(Model, nested) {
         case "object": {
           if (defaultValue === null) {
             throw TypeError(
-              `The value for the '${key}' must be an object instance: ${defaultValue}`,
+              stringifyModel(
+                Model,
+                `The value for the '${key}' must be an object instance: ${defaultValue}`,
+              ),
             );
           }
 
@@ -587,7 +594,10 @@ function setupModel(Model, nested) {
 
             if (nestedType === "undefined") {
               throw TypeError(
-                `The first item of the '${key}' array must be defined`,
+                stringifyModel(
+                  Model,
+                  `The first item of the '${key}' array must be defined`,
+                ),
               );
             }
 
@@ -597,7 +607,10 @@ function setupModel(Model, nested) {
                 ![String, Number, Boolean].includes(defaultValue[0])
               ) {
                 throw TypeError(
-                  `The array item for the '${key}' must be one of the primitive types constructor: String, Number, or Boolean`,
+                  stringifyModel(
+                    Model,
+                    `The array item for the '${key}' must be one of the primitive types constructor: String, Number, or Boolean`,
+                  ),
                 );
               }
 
@@ -639,7 +652,10 @@ function setupModel(Model, nested) {
                 config.storage.offline.threshold
             ) {
               throw Error(
-                `External nested model for '${key}' property has lower offline threshold (${localConfig.storage.offline.threshold} ms) than the parent definition (${config.storage.offline.threshold} ms)`,
+                stringifyModel(
+                  Model,
+                  `External nested model for '${key}' property has lower offline threshold (${localConfig.storage.offline.threshold} ms) than the parent definition (${config.storage.offline.threshold} ms)`,
+                ),
               );
             }
 
@@ -647,7 +663,10 @@ function setupModel(Model, nested) {
               const nestedOptions = defaultValue[1];
               if (typeof nestedOptions !== "object") {
                 throw TypeError(
-                  `Options for '${key}' array property must be an object instance: ${typeof nestedOptions}`,
+                  stringifyModel(
+                    Model,
+                    `Options for '${key}' array property must be an object instance: ${typeof nestedOptions}`,
+                  ),
                 );
               }
               if (nestedOptions.loose) {
@@ -675,12 +694,6 @@ function setupModel(Model, nested) {
             };
           }
 
-          if (Object.keys(defaultValue).length === 0) {
-            throw TypeError(
-              `The object for the '${key}' must have at least one property`,
-            );
-          }
-
           const nestedConfig = bootstrap(defaultValue, true);
           if (nestedConfig.enumerable || nestedConfig.external) {
             if (
@@ -690,7 +703,10 @@ function setupModel(Model, nested) {
                 config.storage.offline.threshold
             ) {
               throw Error(
-                `External nested model for '${key}' property has lower offline threshold (${nestedConfig.storage.offline.threshold} ms) than the parent definition (${config.storage.offline.threshold} ms)`,
+                stringifyModel(
+                  Model,
+                  `External nested model for '${key}' property has lower offline threshold (${nestedConfig.storage.offline.threshold} ms) than the parent definition (${config.storage.offline.threshold} ms)`,
+                ),
               );
             }
             return (model, data, lastModel) => {
@@ -757,6 +773,7 @@ function setupModel(Model, nested) {
           };
         }
         case "record": {
+          parentModels.set(defaultValue, Model);
           const localConfig = bootstrap(defaultValue, true);
 
           return (model, data, lastModel) => {
@@ -772,7 +789,10 @@ function setupModel(Model, nested) {
 
             if (typeof data[key] !== "object") {
               throw TypeError(
-                `The value for the '${key}' must be an object instance: ${typeof data[key]}`,
+                stringifyModel(
+                  Model,
+                  `The value for the '${key}' must be an object instance: ${typeof data[key]}`,
+                ),
               );
             }
 
@@ -799,13 +819,13 @@ function setupModel(Model, nested) {
               }
 
               const item = localConfig.create(
-                { id, value: record[id] },
-                { id, value: lastModel && lastModel[key][id] },
+                { id, [key]: record[id] },
+                { id, [key]: lastModel && lastModel[key][id] },
               );
 
               Object.defineProperty(result, id, {
                 get() {
-                  return cache.get(this, id, () => item.value);
+                  return cache.get(this, id, () => item[key]);
                 },
                 enumerable: true,
               });
