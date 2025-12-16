@@ -361,7 +361,7 @@ define({
 </my-element>
 ```
 
-!> Only the root template can be used to determine the rendering mode implicitly. The nested template with styles does not force rendering in the Shadow DOM.
+> Only the root template can be used to determine the rendering mode implicitly. The nested template with styles does not force rendering in the Shadow DOM.
 
 ### Explicit Mode
 
