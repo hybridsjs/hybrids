@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.22](https://github.com/hybridsjs/hybrids/compare/v9.1.21...v9.1.22) (2026-01-07)
+
+
+### Bug Fixes
+
+* **store:** custom id for creating enumerable model ([#298](https://github.com/hybridsjs/hybrids/issues/298)) ([4427d1e](https://github.com/hybridsjs/hybrids/commit/4427d1e9d60c4c5944372a617b96ea1e678ecf7d))
+
 ### [9.1.21](https://github.com/hybridsjs/hybrids/compare/v9.1.20...v9.1.21) (2025-11-28)
 
 
