@@ -383,10 +383,6 @@ describe("store:", () => {
       expect(() => store.set(Model, { id: "test" })).toThrow();
     });
 
-    it("throws an error when values contain 'id' property for enumerable model", async () => {
-      expect(() => store.set(Model, { id: "test" })).toThrow();
-    });
-
     it("throws an error when updating an instance and values contain different 'id' property", async () => {
       const model = await promise;
       expect(() => store.set(model, { ...model, id: "different" })).toThrow();
@@ -499,6 +495,14 @@ describe("store:", () => {
         expect(model.nestedObject.id).not.toBeDefined();
         expect(model.nestedArrayOfObjects[0].id).not.toBeDefined();
       }));
+
+    it('uses provided id for objects with "id" key', () =>
+      store
+        .set(Model, { id: 123, nestedArrayOfExternalObjects: [{ id: 456 }] })
+        .then((model) => {
+          expect(model.id).toBe("123");
+          expect(model.nestedArrayOfExternalObjects[0].id).toBe("456");
+        }));
 
     it("updates single property", () =>
       promise.then((model) =>
