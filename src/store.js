@@ -1264,9 +1264,9 @@ function set(model, values = {}) {
   if (!config) config = bootstrap(model);
 
   if (config.nested) {
-    throw stringifyModel(
-      config.model,
-      TypeError(
+    throw TypeError(
+      stringifyModel(
+        config.model,
         "Setting provided nested model instance is not supported, use the root model instance",
       ),
     );
@@ -1277,9 +1277,9 @@ function set(model, values = {}) {
   }
 
   if (!config.storage.set) {
-    throw stringifyModel(
-      config.model,
-      TypeError(
+    throw TypeError(
+      stringifyModel(
+        config.model,
         "Provided model definition storage does not support 'set' method",
       ),
     );
