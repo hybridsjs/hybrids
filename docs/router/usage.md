@@ -24,6 +24,8 @@ define({
 });
 ```
 
+!> Only one root router may be connected at a time. Connecting a second element with a root router while another is already in the document throws an error. For complex layouts, use [nested routers](#nested-routers) instead.
+
 ## Factory
 
 ```typescript
@@ -51,10 +53,10 @@ Views passed to the router factory create the roots of the view structures. Usua
 ### `options.url`
 
 ```typescript
-url: string = "/"
+url: string = location.href // the current URL without the hash
 ```
 
-If your application uses a mixed approach - views with and without URLs - you should specify a base URL to avoid non-deterministic behavior of the router for views without a URL. Otherwise, the router will use the entry point as the base URL (which can differ according to the use case).
+If your application uses a mixed approach - views with and without URLs - you should specify a base URL to avoid non-deterministic behavior of the router for views without a URL. Otherwise, the router will use the current URL (without the hash) as the base URL (which can differ according to the use case).
 
 ```javascript
 define({

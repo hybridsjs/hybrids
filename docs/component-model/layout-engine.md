@@ -222,7 +222,7 @@ Use following examples as a reference:
 | width    | [base:dim.]:[min:dim.]:[max:dim.]                                      | ---                         | `width: [base]`<br>`min-width: [min]`<br>`max-width: [max]`<br>`box-sizing: border-box`      |
 | height   | [base:dim.]:[min:dim.]:[max:dim.]                                      | ---                         | `height: [base]`<br>`min-height: [min]`<br>`max-height: [max]`<br>`box-sizing: border-box`   |
 | ratio    | [value]                                                                | ---                         | `aspect-ratio: [value]`                                                                      |
-| overflow | [type:value]<br>[axis:value]:[type:value]                              | overflow:hidden             | `overflow: [type]`<br>`overflow-[axis]: [type]`<br>When `scroll` also:<br>`flex: 1 1 0`<br>`overscroll-behavior: contain`<br>`--webkit-overflow-scrolling: touch`  |
+| overflow | [type:value]<br>[axis:value]:[type:value]                              | overflow:hidden             | `overflow: [type]`<br>`overflow-[axis]: [type]`<br>When `scroll` also:<br>`flex-grow: 1`<br>`flex-basis: 0`<br>`overscroll-behavior: contain`<br>`--webkit-overflow-scrolling: touch`  |
 | margin   | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v:dimension] | margin:1<br>margin:[side]:1 | `margin: [v1] [v2] [v3] [v4]`<br>`margin-[side]: [v]`                                         |
 | padding  | [v1:dim.]:[v2:dim.]:[v3:dim.]:[v4:dim.]<br>[side:value]:[v:dimension] | padding:1<br>padding:[side]:1 | `padding: [v1] [v2] [v3] [v4]`<br>`padding-[side]: [v]`                                     |
 

@@ -427,15 +427,16 @@ Draft mode provides a copy of the model instance, or a new one with default valu
 This mode can be especially useful when working with forms. If you want to use the store to hold form values, with built-in support for validation, use draft mode. When all changes are done, use the `store.submit(draft)` method to create or update the primary model instance.
 
 ```typescript
-store.submit(model: Model): Promise<Model>
+store.submit(draft: Model, values?: object): Promise<Model>
 ```
 
 * **arguments**:
-  * `Model` - an instance of the draft model definition
+  * `draft` - an instance of the draft model definition
+  * `values` - an optional object with additional values merged on top of the draft values before submitting
 * **returns**:
   * a promise resolving with the primary model instance
 
-The `store.submit()` method takes values from the draft and creates or updates the primary model instance.
+The `store.submit()` method takes values from the draft and creates or updates the primary model instance. You can pass an optional `values` object to override or extend the draft values during submission.
 
 ```javascript
 import { User } from "./models.js";

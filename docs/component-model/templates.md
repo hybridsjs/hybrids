@@ -575,7 +575,7 @@ The engine tries to support all required features for creating rich HTML templat
 
 ### Table Family Elements
 
-`<table>`, `<tr>`, `<thead>`, `<tbody>`, `<tfoot>` and `<colgroup>` elements with expressions should not have additional text other than a whitespace:
+`<table>`, `<caption>`, `<thead>`, `<tbody>`, `<tfoot>`, `<tr>`, `<th>`, `<td>` and `<colgroup>` elements with expressions should not have additional text other than whitespace:
 
 ##### Breaks template: <!-- omit in toc -->
 

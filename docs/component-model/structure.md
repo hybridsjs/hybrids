@@ -292,7 +292,7 @@ The `render` property is reserved for creating the structure of the custom eleme
 
 The library uses the `observe` pattern to call the function automatically when dependencies change. As the property resolves to the update function, it can also be called manually via `el.render()`.
 
-If the optional `shadow` option is not used, the library determines the rendering mode based on the root template structure. If the template includes styles or `<slot>` elements, the content is rendered to the Shadow DOM.
+If the optional `shadow` option is not used, the library determines the rendering mode based on the root template structure. If the template includes styles (a `<style>` element, a `<link rel="stylesheet">`, or styles attached with the `css`/`style` helpers) or `<slot>` elements, the content is rendered to the Shadow DOM.
 
 ### Element's Content
 

@@ -269,11 +269,12 @@ store(Model: object, options?: { id?: any | (host) => any, draft?: boolean }): o
   - a hybrid property descriptor that resolves to a store model instance
 
 ```typescript
-store.submit(model: Model): Promise<Model>
+store.submit(draft: Model, values?: object): Promise<Model>
 ```
 
 - **arguments**:
-  - `Model` - an instance of the draft model definition
+  - `draft` - an instance of the draft model definition
+  - `values` - an optional object with additional values merged on top of the draft values before submitting
 - **returns**:
   - a promise that resolves with the primary model instance
 
@@ -326,7 +327,7 @@ store.value(defaultValue: string | number | boolean, validate?: fn | RegExp, err
 
 - **arguments**:
   - `defaultValue` - `string`, `number` or `boolean`
-  - `validate` - a validation function - `validate(val, key, model)`, which should return `false`, error message or throws when validation fails, or a RegExp instance. If omitted, the default validation is used, which fails for empty string and `0`.
+  - `validate` - a validation function - `validate(val, key, model)`, which should return `false`, an error message, or throw when validation fails; or a RegExp instance. If omitted, the default validation is used, which fails for falsy values (e.g., empty string, `0`, or `false`).
   - `errorMessage` - optional error message used when validation fails
 - **returns**:
   - a `String`, `Number` or `Boolean` instance
@@ -344,6 +345,7 @@ router(views: component | component[] | () => ..., options?: object): object
   - `options` - an object with the following options:
     - `url` - a string base URL used for views without their own `url` option; defaults to the current URL
     - `params` - an array of element property names, which are passed to every view as a parameter
+    - `transition` - a boolean flag to enable notifications about the transition type between views by setting the `<html router-transition="">` element's attribute
 - **returns**:
   - a hybrid property descriptor that resolves to an array of elements
 
