@@ -39,7 +39,7 @@ function increaseCount(host) {
   host.count += 1;
 }
 
-export default define({
+define({
   tag: "simple-counter",
   count: 0,
   render: ({ count }) => html`
@@ -121,7 +121,7 @@ const Home = define({
   `,
 });
 
-export default define({
+define({
   tag: "app-router",
   stack: router(Home),
   render: ({ stack }) => html`
@@ -167,7 +167,7 @@ The library supports automatic translation of the component's content, which mak
 ```javascript
 import { define, html, localize } from "hybrids";
 
-export default define({
+define({
   tag: "my-element",
   name: "",
   render: ({ name }) => html`
