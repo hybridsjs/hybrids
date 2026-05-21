@@ -1,22 +1,22 @@
 # Store Usage
 
-The store factory provides global state management based on model definitions with support for external storage. Use the store to share the internal state between the components or create a container for the data from internal or external APIs.
+The store factory provides global state management based on model definitions with support for external storage. Use the store to share internal state between components or to create a container for data from internal or external APIs.
 
-The feature follows all of the concepts of the library, including an extremely declarative approach. To use the store, just define your model, and start using it. The same cache protects synchronization, so the state of the models is always up to date inside of the web components created by the library. The store also simplifies access to different sources of data. The communication with models is the same, regardless of the source - either from sync storage like memory or from the async APIs.
+The feature follows all of the library's concepts, including an extremely declarative approach. To use the store, just define your model and start using it. The same cache protects synchronization, so the state of the models is always up to date inside the web components created by the library. The store also simplifies access to different sources of data. Communication with models is the same regardless of the source - whether sync storage like memory or async APIs.
 
 ## Overview
 
-You can interact with the store by the `store` factory and two direct methods: `store.get()` and `store.set()`.
+You can interact with the store via the `store` factory and two direct methods: `store.get()` and `store.set()`.
 
-Usually, all you need is the factory, which covers most of the cases. Direct access might be required for more advanced structures. For example, it is straightforward to create a paginated view with a list of data with the factory. Still, for infinite scroll behavior, you should display data from all of the pages, so you have to call `store.get()` directly inside of the property getter.
+Usually, all you need is the factory, which covers most cases. Direct access might be required for more advanced structures. For example, it is straightforward to create a paginated view with a list of data using the factory. Still, for infinite scroll behavior, you should display data from all of the pages, so you have to call `store.get()` directly inside the property getter.
 
 The `store` factory uses direct methods internally. Because of that, it is important to understand how they work. The most important are the following three ground rules:
 
 * `store.get()` always returns the current state of the model instance **synchronously**
-* `store.set()` always updates model instance **asynchronously** using `Promise` API
-* `store.get()` and `store.set()` always returns an **object** (model instance, placeholder or promise instance)
+* `store.set()` always updates the model instance **asynchronously** using the `Promise` API
+* `store.get()` and `store.set()` always return an **object** (a model instance, a placeholder, or a promise instance)
 
-Those unique principles unify access to async and sync sources. From the user perspective, it is irrelevant what kind of data source the model has. The store provides a placeholder type, which is returned if there is no previous value of the model instance (the model instance is not found, it is pending, or an error was returned). The placeholder protects access to its properties, so it can't be used by mistake (the guards help to use the current state of the model instance properly).
+These unique principles unify access to async and sync sources. From the user's perspective, it is irrelevant what kind of data source the model has. The store provides a placeholder type, which is returned if there is no previous value of the model instance (the model instance is not found, is pending, or an error was returned). The placeholder protects access to its properties, so it can't be used by mistake (the guards help you use the current state of the model instance properly).
 
 ## Direct Methods
 
@@ -32,7 +32,7 @@ store.get(Model: object, id?: string | object) : Model;
 * **returns**:
   * Model instance or model instance placeholder
 
-The `store.get()` method always returns an object - model instance or a model placeholder. If the model source is synchronous (memory-based or external sync source, like `localStorage`), the get method immediately returns an instance. Otherwise, before the cache has an instance of the model, the placeholder is returned instead. When the promise resolves, the next call to the store returns an instance. The cache takes care to notify the component that data has changed (if you need to use this method outside of the component definition, you can use the `store.resolve()` method to access the returned instance).
+The `store.get()` method always returns an object - a model instance or a model placeholder. If the model source is synchronous (memory-based or an external sync source, like `localStorage`), the get method immediately returns an instance. Otherwise, before the cache has an instance of the model, the placeholder is returned instead. When the promise resolves, the next call to the store returns an instance. The cache takes care of notifying the component that data has changed (if you need to use this method outside of the component definition, you can use the `store.resolve()` method to access the returned instance).
 
 ```javascript
 const GlobalState = {
@@ -52,13 +52,13 @@ define({
 });
 ```
 
-The above example uses a singleton memory-based model, so the data is available instantly. The `count` property can be returned directly inside of the host property definition. Even the `count` property of the host does not rely on other properties, the `render` property will be notified when the current value of the `GlobalState` changes (keep in mind that this approach creates a global state object, which is shared between all of the component instances).
+The above example uses a singleton memory-based model, so the data is available instantly. The `count` property can be returned directly inside the host property definition. Even though the `count` property of the host does not rely on other properties, the `render` property will be notified when the current value of `GlobalState` changes (keep in mind that this approach creates a global state object, which is shared between all of the component instances).
 
 ### `store.set`
 
-The `store.set()` method can create a new instance or update an existing model. According to the mode, the first argument should be a model definition or a model instance.
+The `store.set()` method can create a new instance or update an existing model. Depending on the mode, the first argument should be a model definition or a model instance.
 
-The set method always returns a promise regardless of the type of data source. The model values are updated within the next microtask. However, the current state of the model instance will be updated instantly. After calling the set method the `store.pending()` guard will return a truthy value (a promise instance), up to when the promise is resolved or rejected.
+The set method always returns a promise regardless of the type of data source. The model values are updated within the next microtask. However, the current state of the model instance will be updated instantly. After calling the set method, the `store.pending()` guard will return a truthy value (a promise instance) until the promise is resolved or rejected.
 
 #### Create
 
@@ -85,7 +85,7 @@ store.set(Settings, { mode: "full" }).then(settings => {
 });
 ```
 
-The singleton model has only one model instance, so it is irrelevant if you call the `store.set` method by the model definition, or the model instance - the effect will be the same. For example, in the above code snippet, `Settings` can have a previous state, but setting a new value by the model definition updates the already existing model instance.
+A singleton model has only one model instance, so it is irrelevant whether you call the `store.set` method with the model definition or the model instance - the effect will be the same. For example, in the above code snippet, `Settings` can have a previous state, but setting a new value with the model definition updates the already existing model instance.
 
 #### Update
 
@@ -99,7 +99,7 @@ store.set(modelInstance: Model, values: object | null): Promise<Model>;
 * **returns**:
   * A promise, which resolves to the model instance or placeholder (for model deletion)
 
-The only valid argument for `values` is an object or a `null` pointer, which should be used to delete the model instance. However, as the last ground principle states, the store always returns an object. If the model instance does not exist, the placeholder is returned in the error state (with an error attached).
+The only valid argument for `values` is an object or `null`, which should be used to delete the model instance. However, as the last ground principle states, the store always returns an object. If the model instance does not exist, a placeholder is returned in the error state (with an error attached).
 
 ```javascript
 function handleDeleteUser(host) {
@@ -107,24 +107,24 @@ function handleDeleteUser(host) {
 
   store.set(someUser, null).then(someUser => {
     // someUser is now a placeholder with an error attached
-    console.log(store.error(someError)); // Logs an error "Not Found ..."
+    console.log(store.error(someUser)); // Logs an error "Not Found ..."
   });
 }
 ```
 
 #### Partial Values
 
-The `store.set()` supports partial values for updating the model only with a subset of values. If your model has nested object structures, you can update them partially as well:
+The `store.set()` method supports partial values for updating the model with only a subset of values. If your model has nested object structures, you can update them partially as well:
 
 ```javascript
 store.set(myUser, { address: { street: "New Street" }});
 ```
 
-The above action will update only the `myUser.address.street` value leaving the rest properties untouched (they will be copied from the last state of the model).
+The above action will update only the `myUser.address.street` value, leaving the rest of the properties untouched (they will be copied from the last state of the model).
 
 ### `store.resolve`
 
-You can use the `store.resolve()` method to simplify access to pending model instances, which can be updated at the moment. The function returns a promise resolving into the current model instance, regardless of the pending state. It also supports multiple chains of set methods, so the result will always be the latest instance.
+You can use the `store.resolve()` method to simplify access to pending model instances that may be in the process of being updated. The function returns a promise resolving to the current model instance, regardless of the pending state. It also supports multiple chained set calls, so the result will always be the latest instance.
 
 #### Model Instance
 
@@ -188,11 +188,11 @@ async function sendUserData(id) {
 
 ### `store.sync`
 
-The storage methods are called only for the user interaction - when the model is got, or when a new value for the model instance is set. However, there might be a case, where your model instance is been updated outside of the user scope, for example by the server.
+The storage methods are called only on user interaction - when the model is fetched, or when a new value for the model instance is set. However, there might be a case where your model instance is updated outside of the user's scope, for example by the server.
 
-Using the `store.set()` method as a callback for the update will trigger the storage `set` method, which can lead to an endless loop of updates. Fortunately, the store provides a special `store.sync()` method, which does the trick. It only updates the memory cache synchronously of the model instance without calling any storage method from the `[store.connect]` configuration.
+Using the `store.set()` method as a callback for the update will trigger the storage `set` method, which can lead to an endless loop of updates. Fortunately, the store provides a special `store.sync()` method, which does the trick. It synchronously updates only the memory cache of the model instance without calling any storage method from the `[store.connect]` configuration.
 
-!> This method bypass the storage, so use it with caution, and only if you would use `store.get()` in another context. This method does not replace `store.set()`.
+!> This method bypasses the storage, so use it with caution, and only when you would otherwise use `store.get()` in another context. This method does not replace `store.set()`.
 
 ```typescript
 store.sync(modelOrDefinition: object, values: object | null) : Model;
@@ -226,11 +226,11 @@ define({
 });
 ```
 
-In the above example, even though the `Model` is connected to the external storage, when the websocket emits an event, the values of the model update without calling `[store.connect].set()`, as we expect. It is an update triggered by the server, so we don't want to send new values to the server again.
+In the above example, even though the `Model` is connected to external storage, when the websocket emits an event, the values of the model update without calling `[store.connect].set()`, as expected. It is an update triggered by the server, so we don't want to send new values back to the server.
 
 ### `store.clear`
 
-Both memory and external storage uses a global cache mechanism based on the model definition reference. Model instances are global, so the cache mechanism cannot automatically predict which instance is no longer required. Because of that, the store provides the `store.clear()` method for invalidating model instances by the model definition or specific instance of the model.
+Both memory and external storage use a global cache mechanism based on the model definition reference. Model instances are global, so the cache mechanism cannot automatically predict which instance is no longer required. Because of that, the store provides the `store.clear()` method for invalidating model instances by the model definition or by a specific instance of the model.
 
 ```typescript
 store.clear(model: object, clearValue?: boolean = true)
@@ -240,7 +240,7 @@ store.clear(model: object, clearValue?: boolean = true)
   * `model` - a model definition (for all instances) or a model instance (for a specific one)
   * `clearValue` - indicates if the cached value should be deleted (`true`), or it should only notify the cache mechanism, that the value expired, but leaves the value untouched (`false`)
 
-For example, it might be useful to set the `clearValue` to `false` for the case when you want to implement the refresh button. Then, the values stay in the cache, but the store will fetch the next version of the instance.
+For example, it might be useful to set `clearValue` to `false` when you want to implement a refresh button. Then, the values stay in the cache, but the store will fetch the next version of the instance.
 
 ```javascript
 import Email from "./email.js";
@@ -262,13 +262,13 @@ define({
 
 #### Garbage Collector
 
-The `store.clear()` method can work as a garbage collector for unused model instances. Those that are not a dependency of any component connected to the DOM can be deleted entirely from the cache registry (as they would never exist) protecting from the memory leaks. If you set `clearValue` to `true`, those instances that are not currently attached to the components, will be permanently deleted when the `store.clear()` method is invoked.
+The `store.clear()` method can work as a garbage collector for unused model instances. Those that are not a dependency of any component connected to the DOM can be deleted entirely from the cache registry (as if they had never existed), protecting against memory leaks. If you set `clearValue` to `true`, instances that are not currently attached to any component will be permanently deleted when the `store.clear()` method is invoked.
 
 ### `store.observe`
 
-The `store.observe()` method allows you to observe changes of the model instances. It is useful for cases when you want to react to changes outside of the model definition, for example, in a Service Worker or Web Extension background script.
+The `store.observe()` method allows you to observe changes to model instances. It is useful when you want to react to changes outside of the model definition, for example in a Service Worker or Web Extension background script.
 
-It behaves the same as [`[store.connect].observe`](/store/storage#observe), but it can be dynamically set outside of the model definition. The callback is only executed if `store.get()` or `store.set()` methods are called for the model instance after the observer is set. It means, that the observer does not trigger for the already existing model instance, but only for the next updates.
+It behaves the same as [`[store.connect].observe`](/store/storage.md#observe), but it can be dynamically set outside of the model definition. The callback is only executed if the `store.get()` or `store.set()` methods are called for the model instance after the observer is set. This means that the observer does not trigger for an already existing model instance, only for subsequent updates.
 
 ```typescript
 store.observe(Model: object, callback: (id, model, lastModel) => void): () => void;
@@ -389,7 +389,7 @@ html`<my-element user="1"></my-element>`;
 
 #### Rendering in-between state
 
-The significant difference between using the `store.get()` method directly and the factory, which have the `id` option is a unique behavior for returning the last resolved value when identifier changes. The get method always returns the data according to the current state of the model. However, if the `id` option is set for enumerable or listing definition, the factory caches the last value of the property, until the next value is ready. In the meantime, guards return a state of the next value. It means, that it returns the old value, but in the pending state, rather than an empty placeholder for the new value:
+The significant difference between using the `store.get()` method directly and using the factory with the `id` option is a unique behavior of returning the last resolved value when the identifier changes. The get method always returns data according to the current state of the model. However, if the `id` option is set for an enumerable or listing definition, the factory caches the last value of the property until the next value is ready. In the meantime, the guards return the state of the next value. It means that it returns the old value, but in the pending state, rather than an empty placeholder for the new value:
 
 ```javascript
 import { User } from "./models.js";
@@ -401,7 +401,7 @@ function setNextPage(host) {
 define({
   tag: "my-element",
   page: 1,
-  userList: store([User], "page"),
+  userList: store([User], { id: "page" }),
   render: ({ userList, page }) => html`
     <style>
       ul.pending { opacity: 0.5 }
@@ -418,13 +418,13 @@ define({
 });
 ```
 
-In the above example, when the `page` changes, the `userList` property still returns the last page with the pending state from the next instance. Because of that, you can avoid a situation when the user sees an empty screen with a loading indicator - the old data are displayed until the new one is ready to be displayed. However, you have an option to hide data immediately - use the `store.pending()` guard.
+In the above example, when `page` changes, the `userList` property still returns the last page with the pending state from the next instance. Because of that, you can avoid a situation where the user sees an empty screen with a loading indicator - the old data is displayed until the new data is ready. However, you also have the option to hide data immediately by using the `store.pending()` guard.
 
 ### Draft Mode
 
-The draft mode provides a copy of the model instance or a new one with default values. The model definition used in draft mode is a memory-based version of the given model definition. The draft instance is deleted from the memory when the component disconnects.
+Draft mode provides a copy of the model instance, or a new one with default values. The model definition used in draft mode is a memory-based version of the given model definition. The draft instance is deleted from memory when the component disconnects.
 
-This mode can be especially useful when working with forms. If you want to use the store to keep form values, which also supports validation, use draft mode. When all of the changes are done, use the `store.submit(draft)` method to create or update the primary model instance.
+This mode can be especially useful when working with forms. If you want to use the store to hold form values, with built-in support for validation, use draft mode. When all changes are done, use the `store.submit(draft)` method to create or update the primary model instance.
 
 ```typescript
 store.submit(model: Model): Promise<Model>
@@ -454,11 +454,11 @@ const CreateUserForm = {
   user: store(User, { draft: true }),
   render: ({ user }) => html`
     <form onsubmit="${submit}">
-      <div class="${ error: store.error(user, "firstName") }">
+      <div class="${{ error: store.error(user, "firstName") }}">
         <input defaultValue="${user.firstName}" oninput="${html.set(user, "firstName")}">
       </div>
 
-      <div class="${ error: store.error(user, "lastName") }">
+      <div class="${{ error: store.error(user, "lastName") }}">
         <input defaultValue="${user.lastName}" oninput="${html.set(user, "lastName")}">
       </div>
     </form>
@@ -466,16 +466,20 @@ const CreateUserForm = {
 }
 ```
 
-Combine `store.value()` in the definition for validation, and the `html.set(model, propertyPath)` helper from the template engine to update values without custom side effects (read more about the `html.set` for the store in the [`Event Listeners`](../template-engine/event-listeners.md#form-elements) section of the template engine documentation).
+Combine `store.value()` in the definition for validation with the `html.set(model, propertyPath)` helper from the template engine to update values without custom side effects (read more about `html.set` for the store in the [Form Elements](../component-model/templates.md#form-elements) section of the template engine documentation).
 
 ```javascript
+import MyInput from "./my-input.js";
+
+define(MyInput);
+
 define({
   tag: "my-input",
   model: null,
   name: "",
-  error: ({ model }) => store.error(model, name),
-  render: ({ model, name }) => html`
-    <div class="${ hasError: error }">
+  error: ({ model, name }) => store.error(model, name),
+  render: ({ model, name, error }) => html`
+    <div class="${{ hasError: error }}">
       <input defaultValue="${model[name]}" oninput="${html.set(model, name)}" />
       ${error && html`<p class="error-message">${error}</p>`}
     </div>
@@ -490,14 +494,14 @@ define({
     <my-input model="${user}" name="firstName"></my-input>
     <my-input model="${user}" name="lastName"></my-input>
 
-    <button onclick="${submit}>Save changes</button>
-  `.define({ MyInput }),
+    <button onclick="${submit}">Save changes</button>
+  `,
 });
 ```
 
 ## Guards
 
-The store provides three guard methods, which indicate the current state of the model instance. The returning value of those methods can be used for conditional rendering in the template. The `pending` and `error` also return additional information. The returning values are not exclusive, so there are situations when more than one guard returns a truthy value.
+The store provides three guard methods, which indicate the current state of the model instance. The return value of these methods can be used for conditional rendering in the template. The `pending` and `error` guards also return additional information. The return values are not mutually exclusive, so there are situations where more than one guard returns a truthy value.
 
 ### `store.ready`
 
@@ -510,11 +514,11 @@ store.ready(model, ...): boolean
 * **returns**:
   * `true` for valid model instances, `false` otherwise
 
-The ready guard protects access to the models with async storage before they are fetched for the first time. You can also use it with sync storage, but if you are aware of the connection type, you can omit the guard.
+The ready guard protects access to models with async storage before they are fetched for the first time. You can also use it with sync storage, but if you are aware of the connection type, you can omit the guard.
 
-The function supports passing one or more model instances. The guard returns `true` only for all resolved model instances (`AND` condition). If one of the models has changed, the previous state of the model is not valid anymore, so for that object, it will return `false`.
+The function supports passing one or more model instances. The guard returns `true` only when all model instances are resolved (`AND` condition). If one of the models has changed, the previous state of the model is no longer valid, so for that object it will return `false`.
 
-When the model instance is going to be updated (by setting a new value, or by cache invalidation), the store returns the last valid state of the model until a new version is ready. In that situation `store.ready()` still returns `true`. It is up to you if you want to display a dirty state or not by combining ready and pending guards. It works the same if the update fails (then `store.error()` will be truthy as well). In simple words, the `store.ready()` always return `true` if the model was resolved at least once.
+When a model instance is going to be updated (by setting a new value or by cache invalidation), the store returns the last valid state of the model until a new version is ready. In that situation `store.ready()` still returns `true`. It is up to you whether to display a dirty state or not by combining the ready and pending guards. It works the same if the update fails (then `store.error()` will be truthy as well). In simple terms, `store.ready()` always returns `true` if the model was resolved at least once.
 
 ```javascript
 import { User } from "./models.js";
@@ -546,9 +550,9 @@ store.pending(model, ...): boolean | Promise
 * **returns**:
   * In pending state a promise instance resolving with the next model value or a list of values, `false` otherwise
 
-The function supports passing one or more model instances. It returns a promise when at least one of the model instances (`OR` condition) is being fetched from async storage, or when the instance is set (`store.set()` method always use Promise API). If the model instance is resolved (it is in a stable state), the guard returns `false`.
+The function supports passing one or more model instances. It returns a promise when at least one of the model instances (`OR` condition) is being fetched from async storage or when the instance is being set (the `store.set()` method always uses the Promise API). If the model instance is resolved (in a stable state), the guard returns `false`.
 
-Both pending and ready guards can be truthy if the already resolved model instance is being updated.
+Both the pending and ready guards can be truthy if an already resolved model instance is being updated.
 
 ### `store.error`
 
@@ -562,9 +566,9 @@ store.error(model: Model, propertyName?: string | null): boolean | Error | any
 * **returns**:
   * An error instance or whatever has been thrown, or `false`. When `propertyName` is set, it returns `err.errors[propertyName]` or `false`
 
-The `error` guard returns a caught error when the model instance is in an error state. The error instance is created by the `store.validate()` method. The error instance is also thrown when the model instance is in an error state and the `store.error()` is called without `propertyName`.
+The `error` guard returns the caught error when the model instance is in an error state. The error instance is created by the `store.value()` method. The error instance is also returned when the model instance is in an error state and `store.error()` is called without `propertyName`.
 
-Also, this method can be used for displaying validation errors from the asynchronous API. The only requirement is, that your API client must throw the error with the following structure:
+This method can also be used for displaying validation errors from an asynchronous API. The only requirement is that your API client must throw the error with the following structure:
 
 ```javascript
 async function getFromApi() {
@@ -583,7 +587,7 @@ async function getFromApi() {
 
 #### Errors from Validation
 
-The error guard can be used for access to the validation errors of the property defined with the `store.value()` (look at the example in the [Draft Mode](#draft-mode) section). Use the second argument to set the property name of the model:
+The error guard can be used to access validation errors for a property defined with `store.value()` (look at the example in the [Draft Mode](#draft-mode) section). Use the second argument to set the property name of the model:
 
 ```javascript
 const User = {
@@ -595,7 +599,7 @@ define({
   tag: "my-element",
   user: store(User, { draft: true }),
   render: ({ user }) => html`
-    <input value="${user.name}" oninput="${html.set(user, "name")} />
+    <input value="${user.name}" oninput="${html.set(user, "name")}" />
     <div class="errors">
       ${store.error(user, "name")}
     </div>
@@ -603,10 +607,10 @@ define({
 });
 ```
 
-The Error instance is not required, but it can be helpful to display the general error message.
+The Error instance is not required, but it can be helpful for displaying a general error message.
 
 ## Debug Mode
 
-The store in the debug mode logs error messages when storage `set()` or `get()` methods throw an error.
+In debug mode, the store logs error messages when the storage `set()` or `get()` methods throw an error.
 
 You can find more information about the debug mode in the [Debug Mode](/getting-started.md#debug-mode) section of the documentation.

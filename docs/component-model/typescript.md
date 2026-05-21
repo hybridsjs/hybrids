@@ -4,10 +4,10 @@
 
 The component definition in TypeScript should combine two parts:
 
-1. An `interface` with a map of properties. The `render` and `content` can be omitted if they are not used directly.
-2. Component definition passed to `define<E>()` function, where generic type `E` is the interface
+1. An `interface` with a map of properties. The `render` property can be omitted if it is not used directly.
+2. A component definition passed to the `define<E>()` function, where the generic type `E` is the interface.
 
-A simple counter component example can be written in with the following code:
+A simple counter component example can be written with the following code:
 
 ```typescript
 import { define, html } from 'hybrids';
@@ -31,7 +31,7 @@ export default define<SimpleCounter>({
 });
 ```
 
-All public APIs support generic type `<E>` for providing the additional information from the defined interface, for example, `html<E>` or `define<E>(...)`. However, in most cases, it is not necessary to pass the generic type explicitly - the TypeScript compiler calculates it from the `define<E>(...)`.
+All public APIs support the generic type `<E>` for providing additional information from the defined interface, for example, `html<E>` or `define<E>(...)`. However, in most cases, it is not necessary to pass the generic type explicitly - the TypeScript compiler infers it from `define<E>(...)`.
 
 ### Explicit Type
 
@@ -59,7 +59,7 @@ export default define(SimpleCounter);
 
 ## Built-ins
 
-The component interface can extend `HTMLElement` for using built-in APIs but is not required. However, the `Component<E>` type must prevent overwriting properties already defined by the `HTMLElement` interface, as otherwise, they would have to be redefined in the `define<E>` function.
+The component interface can extend `HTMLElement` to use built-in APIs, but this is not required. However, the `Component<E>` type must prevent overwriting properties already defined by the `HTMLElement` interface; otherwise, they would have to be redefined in the `define<E>` function.
 
 ```typescript
 interface SimpleCounter extends HTMLElement {
@@ -67,17 +67,17 @@ interface SimpleCounter extends HTMLElement {
 }
 
 function triggerClick(host: SimpleCounter) {
-  // Without the `HTMLElement` base interface, 
+  // Without the `HTMLElement` base interface,
   // the following line would throw a compilation error:
   host.click();
-};
+}
 
 ...
 ```
 
 ## Factories
 
-You can use the `Descriptor<E,V>` type when defining property factory with the descriptor outside the definition:
+You can use the `Descriptor<E, V>` type when defining a property factory with the descriptor outside the definition:
 
 ```typescript
 import { Descriptor } from "hybrids";

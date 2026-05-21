@@ -11,7 +11,7 @@ npm i hybrids
 Otherwise, you can use it directly from a number of CDNs, which provide hybrids from the registry:
 
 * [https://esm.sh/hybrids@^9](https://esm.sh/hybrids@^9) (2 requests, minified)
-* [https://cdn.skypack.dev/hybrids@^9?min](https://cdn.skypack.dev/hybrids@^9?min) (2 request, minified)
+* [https://cdn.skypack.dev/hybrids@^9?min](https://cdn.skypack.dev/hybrids@^9?min) (2 requests, minified)
 * [https://unpkg.com/hybrids@^9](https://unpkg.com/hybrids@^9) (multiple requests, not minified)
 
 ```html
@@ -35,15 +35,15 @@ HMR is supported out of the box, but your bundler setup may require indication t
 if (import.meta.hot) import.meta.hot.accept();
 ```
 
-If the entry point imports files that do not support HMR, you can place the above snippet in a module where you define your web components. (where `define` method from the library is used).
+If the entry point imports files that do not support HMR, you can place the above snippet in a module where you define your web components (where the `define` method from the library is used).
 
 ## Browser Support
 
-The library source code uses ES modules and currently supported JavaScript syntax by all of the major browsers. You can use hybrids in all modern browsers without code transpilation and bundling.
+The library source code uses ES modules and JavaScript syntax currently supported by all major browsers. You can use hybrids in all modern browsers without code transpilation and bundling.
 
 ## Debug Mode
 
-The library provides the debug mode used by some of the modules. Usually, it enables additional logging and error messages. To enable it, run `debug()` function before any other code. It is advised to protect the debug mode from the production environment by running it conditionally (according to your application setup)
+The library provides a debug mode used by some of the modules. Usually, it enables additional logging and error messages. To enable it, run the `debug()` function before any other code. It is advised to protect the debug mode from the production environment by running it conditionally (according to your application setup).
 
 ```javascript
 import { debug } from 'hybrids';

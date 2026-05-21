@@ -1,14 +1,14 @@
 # Localization
 
-The library supports seamless and fully featured integration with the localization process. Messages in templates are translated automatically based on the text content. To translate messages with plural forms, HTML content, or generate messages for the context outside of the template you can use `msg` helper function.
+The library supports seamless and fully featured integration with the localization process. Messages in templates are translated automatically based on the text content. To translate messages with plural forms, HTML content, or to generate messages for the context outside of the template, you can use the `msg` helper function.
 
-Bringing the localization into your existing application may not require any changes to the source code. Usually, what you only need is to provide the translated messages, and initialize them with `localize` function. The process is global, and every component using the built-in template engine will be able to use the messages.
+Bringing localization into your existing application may not require any changes to the source code. Usually, all you need is to provide the translated messages and initialize them with the `localize` function. The process is global, and every component using the built-in template engine will be able to use the messages.
 
 ## Templates
 
-The text content of the elements is translated automatically while the template is compiled. This process is done only once when the first instance of the component using the template is rendered. Translations in templates does not support changing language dynamically nor plural forms or HTML content. 
+The text content of the elements is translated automatically while the template is compiled. This process is done only once, when the first instance of the component using the template is rendered. Translations in templates do not support changing the language dynamically, plural forms, or HTML content.
 
-Once the template is compiled, the template body saves the target messages, so the messages are not changed later.
+Once the template is compiled, the template body stores the target messages, so the messages are not changed later.
 
 ```javascript
 import { define, html, localize } from "hybrids";
@@ -28,13 +28,13 @@ localize("pl", {
 });
 ```
 
-In the above example, to translate the component content, we just need to add the correct message to the `localize` function, but the component structure is not changed.
+In the above example, to translate the component content we only need to add the correct message to the `localize` function; the component structure is not changed.
 
 ### Key
 
-The phrase key is generated from the text content. It is trimmed before matching, but the whitespace in the result template is preserved.
+The phrase key is generated from the text content. It is trimmed before matching, but the whitespace in the resulting template is preserved.
 
-The expressions inside of the text content are replaced with the `${\d}` placeholders with ascending index, always starting from zero (it avoids the key mismatch when new expression is added to the template). However, the order of the expressions in the translated message might be changed.
+Expressions inside the text content are replaced with `${\d}` placeholders with an ascending index, always starting from zero (this avoids key mismatches when a new expression is added to the template). However, the order of the expressions in the translated message can be changed.
 
 ```javascript
 import { define, html, localize } from "hybrids";
@@ -52,13 +52,13 @@ define({
 });
 ```
 
-In the above example, both text contents translation keys will have `${0}` placeholder: `Hello ${0}!` and `Value: ${0}, ${1}`.
+In the above example, the translation keys for both text contents will use `${0}` placeholders: `Hello ${0}!` and `Values: ${0}, ${1}`.
 
 The order of the expressions can be changed, so for example the translated message might be `Wartości: ${1}, ${0}`.
 
 ### Description & Context
 
-Use the HTML comment node just before the text content to provide additional metadata for the translation. It can be also used to split messages inside of the same text content.
+Use an HTML comment node just before the text content to provide additional metadata for the translation. It can also be used to split messages inside the same text content.
 
 ```javascript
 import { define, html } from "hybrids";
@@ -82,9 +82,9 @@ export default define({
 
 The comment body is split by the `|` character to set the description and context for the message.
 
-If the context is provided, the key of the message will be generated from the text content and the context separated by `|` character. However, the context is never added to the missing translations. If the message with the context is not found, the message key without the context will be used.
+If a context is provided, the message key will be generated from the text content and the context separated by the `|` character. However, the context is never added to the missing translations. If the message with the context is not found, the message key without the context will be used.
 
-In above example, the library will try to find message with a  `Second message | only-context` key. If the message is not found, the library will try to find message with a `Second message` key.
+In the above example, the library will first try to find a message with the `Second message | only-context` key. If the message is not found, the library will try to find a message with the `Second message` key.
 
 ### Disable Translation
 
@@ -108,23 +108,23 @@ define({
 
 ## Manual Translation
 
-For more complex scenarios, you must manually translate the messages using the `msg` helper. The main function produces the string content of the message, and it can be  used outside of the template context.
+For more complex scenarios, you must manually translate the messages using the `msg` helper. The main function produces the string content of the message, and it can be used outside of the template context.
 
 ```typescript
 msg`This is a message with ${value} | description | context`: string
 ```
 
 * **arguments**:
-  * String as a message key. The same rules for expressions as in the text content are applied. The key is trimmed, and the description or context are detected by the `|` character. If your message key must contain the `|` character, use `&#124;` escaped version
+  * String used as a message key. The same rules for expressions as in text content apply. The key is trimmed, and the description or context are detected by the `|` character. If your message key must contain the `|` character, use the `&#124;` escaped version
   * `value` - dynamic values for the message
 * **returns**:
   * a string content of the translated message
 
-!> If the message is a static part of the template, you should avoid the  `msg` helper, as it generates dynamic expression in the template, and it will be translated each time the template updates
+!> If the message is a static part of the template, you should avoid the `msg` helper, as it generates a dynamic expression in the template, and it will be translated each time the template updates.
 
 ### Attributes
 
-If the element's API requires passing translated message as a attribute content, use the `msg` helper inside of the dynamic expression.
+If the element's API requires passing the translated message as attribute content, use the `msg` helper inside the dynamic expression.
 
 ```javascript
 import { html, msg } from "hybrids";
@@ -144,19 +144,19 @@ import { define, html, msg } from "hybrids";
 define({
   tag: "my-element",
   count: 0,
-  render: () => html`
+  render: ({ count }) => html`
     <div>${msg`There are ${count} items`}</div>
   `,
 });
 ```
 
-If the `"There are ${0} items"` message is an object with plural forms, the correct form according to the `count` value will be used. Even though, the language may not support the `zero` plural form, if the count is equal to `0`, you can set it to custom message like `There are no items`. Otherwise, use the `zero` type correctly with language rules, as it can be used for another values.
+If the `"There are ${0} items"` message is an object with plural forms, the correct form according to the `count` value will be used. Even though the language may not support the `zero` plural form, if the count is equal to `0` you can set it to a custom message like `There are no items`. Otherwise, use the `zero` type according to the language rules, as it may be used for other values.
 
-The value fallbacks to `other` type if the correct type is not found. It means, that if you are aware that in your case no other than `one` or `zero` types are different, you can define only `one` and `other` type.
+The value falls back to the `other` type if the correct type is not found. It means that if you are aware that in your case only `one` or `zero` types differ, you can define only the `one` and `other` types.
 
 ### HTML & SVG Content
 
-The automatic translation in templates only takes text content into account. If your message must contain HTML or SVG content, use the `msg.html` or `msg.svg` helper methods to generate the nested template function. Keep in mind, that the whole body of the message generates the key. Returned function should be used in the same way as a `html` or `svg` functions from the template engine.
+Automatic translation in templates only takes text content into account. If your message must contain HTML or SVG content, use the `msg.html` or `msg.svg` helper methods to generate a nested template function. Keep in mind that the whole body of the message generates the key. The returned function should be used in the same way as the `html` or `svg` functions from the template engine.
 
 ```javascript
 import { define, html, msg } from "hybrids";
@@ -173,13 +173,13 @@ define({
 });
 ```
 
-The above `msg.html` helper will search for `"Click <a href="${0}">here</a> to accept terms and conditions"` message key in the dictionary. Use dynamic expressions to avoid passing distracting information to the key, like the anchor URL.
+The above `msg.html` helper will search for the `"Click <a href="${0}">here</a> to accept terms and conditions"` message key in the dictionary. Use dynamic expressions to avoid putting distracting information in the key, such as the anchor URL.
 
-!> Both `msg.html` and `msg.svg` methods must not sanitize the content, so they are open for the XSS attack, if the message contains any malicious code. It is recommended to avoid using them if it is not required.
+!> Both `msg.html` and `msg.svg` methods do not sanitize the content, so they are open to an XSS attack if the message contains any malicious code. It is recommended to avoid using them when not required.
 
 ## Messages
 
-Use `localize` function to add translated messages to the dictionary, or define your custom translation function. The function must be called before templates are complied (before the first render of the element) and before invoking the `msg` helper.
+Use the `localize` function to add translated messages to the dictionary, or define your custom translation function. The function must be called before templates are compiled (before the first render of the element) and before invoking the `msg` helper.
 
 ### Built-in format
 
@@ -210,26 +210,26 @@ localize(lang: string, messages: object): void
 
 #### Format
 
-The messages format is similar to the [`chrome.i18n`](https://developer.chrome.com/docs/extensions/reference/i18n/) file structure with custom support for placeholders and plural forms. The `description` field is optional, and it is not used in the translation process, but it can be autogenerated from the code. The `message` for plural forms must be an object with the `one`, `two`, `few`, `many` or `other` keys according to the locale rules.
+The messages format is similar to the [`chrome.i18n`](https://developer.chrome.com/docs/extensions/reference/i18n/) file structure, with custom support for placeholders and plural forms. The `description` field is optional and is not used in the translation process, but it can be auto-generated from the code. The `message` for plural forms must be an object with the `one`, `two`, `few`, `many`, or `other` keys according to the locale rules.
 
-The library generates a list of user's preferred language codes using `navigator.languages` and `navigator.language` properties with added locales without the regions (if not defined). The massage is searched in the dictionary in order of the list of languages. It means, that if translations are not complete, messages might be displayed in multiple languages.
+The library generates a list of the user's preferred language codes using the `navigator.languages` and `navigator.language` properties, with added locales without regions (if not defined). The message is searched in the dictionary in the order of the list of languages. It means that if translations are not complete, messages might be displayed in multiple languages.
 
 #### Keys
 
-It is recommended to use the default message in origin language as a key. It ensures seamless integration with existing code and maintains its understandability. For the duplicates with different meaning you can use context feature. To support plural forms, you can create selective translations for your origin language and use `msg` helper.
+It is recommended to use the default message in the origin language as a key. It ensures seamless integration with existing code and maintains readability. For duplicates with a different meaning, you can use the context feature. To support plural forms, you can create selective translations for your origin language and use the `msg` helper.
 
 ```javascript
 import { localize } from "hybrids";
 
 localize("pl", {
-  "Home page: {
+  "Home page": {
     message: "Strona główna",
   },
   ...,
 });
 ```
 
-If you use structured keys, like `home.header.title` instead of the message itself, you can provide special `"default"` locale. Then, it is added to the end of the list of languages, so it will be used as a last fallback.
+If you use structured keys, like `home.header.title`, instead of the message itself, you can provide a special `"default"` locale. It is added to the end of the list of languages, so it will be used as the last fallback.
 
 ```javascript
 import { localize } from "hybrids";
@@ -244,9 +244,9 @@ localize("default", {
 
 #### Async Sources
 
-The `localize` function does not support async sources out of the box. However, if your application setup requires fetching translation messages, you can create the components structure, which will delay the translation until the data is fetched.
+The `localize` function does not support async sources out of the box. However, if your application setup requires fetching translation messages, you can create a component structure that delays the translation until the data is fetched.
 
-The `localize.languages` property keeps the current list of the preferred languages, which can be used to fetch proper translation messages.
+The `localize.languages` property holds the current list of preferred languages, which can be used to fetch the proper translation messages.
 
 ```javascript
 import { define, html, localize } from "hybrids";
@@ -267,11 +267,11 @@ define({
 });
 ```
 
-The main `<app-root>` component will be rendered after the translation is loaded, so the first templates compilation will be invoked after the messages are added to the dictionary. However, the `<app-loader>` must not contain messages, as they will not be translated.
+The main `<app-root>` component will be rendered after the translations are loaded, so the first template compilation will be invoked after the messages are added to the dictionary. However, the `<app-loader>` must not contain messages, as they will not be translated.
 
 ### Custom Function
 
-For a custom translation method, or integration with third party libraries, pass a custom function to the `localize` function.
+For a custom translation method, or integration with third-party libraries, pass a custom function to the `localize` function.
 
 ```typescript
 localize(translate: function, options?: object): void
@@ -287,15 +287,15 @@ localize(translate: function, options?: object): void
   * `options` - an optional object with the following fields:
     * `format` - expected custom format of the message (for now, it only supports `"chrome.i18n"` value)
 
-The translate function bypass the translation process, so the language detection is not applied and it should be done manually. The translate function is global, and it can be only one at the time (still, you can overwrite it).
+The translate function bypasses the translation process, so language detection is not applied and it should be done manually. The translate function is global, and there can be only one at a time (still, you can overwrite it).
 
-The function is called if the message is not found in the dictionary. If you relay only on the external translation process, you can skip passing messages in built-in format entirely, or mix both approaches.
+The function is called if the message is not found in the dictionary. If you rely only on the external translation process, you can skip passing messages in the built-in format entirely, or mix both approaches.
 
 The translate function should return a string with the translation or a function that receives a number and returns the translation.
 
 #### `options.format`
 
-The `chrome.i18n` API puts a number of restrictions into the key naming. The library supports automatic transform of the key with its context value into the supported format. Set the setting `options.format` to `"chrome.i18n"` and pass the transform function, which takes a key as the first argument.
+The `chrome.i18n` API places a number of restrictions on key naming. The library supports automatic transformation of the key with its context value into the supported format. Set the `options.format` setting to `"chrome.i18n"` and pass the transform function, which takes the key as its first argument.
 
 ```javascript
 import { localize } from "hybrids";
@@ -311,11 +311,11 @@ npx hybrids extract --format=chrome.i18n ./src ./src/_locales/en/messages.json
 
 ## Extracting
 
-The library provides handy CLI command to extract messages from the source code to the built-in format. It supports JavaScript and TypeScript syntax.
+The library provides a handy CLI command to extract messages from source code into the built-in format. It supports JavaScript and TypeScript syntax.
 
-> The command relay on simplified in-house parser, so not supported edge cases are welcome to be reported
+> The command relies on a simplified in-house parser, so unsupported edge cases are welcome to be reported.
 
-Run `npx hybrids extract ./src` or add it to the `package.json` as a one of the `scripts` field, like: `"extract": "hybrids extract ./src"`.
+Run `npx hybrids extract ./src` or add it to `package.json` as one of the `scripts` entries, like: `"extract": "hybrids extract ./src"`.
 
 Run the command without additional arguments to see the usage:
 

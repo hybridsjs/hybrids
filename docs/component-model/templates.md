@@ -1,8 +1,8 @@
 # Templates
 
-The library provides `html` and `svg` functions for defining templates (both have the same interface, but `svg` uses SVG namespace). They use tagged template literals syntax to create DOM and update dynamic parts leaving static content untouched.
+The library provides `html` and `svg` functions for defining templates (both have the same interface, but `svg` uses the SVG namespace). They use the tagged template literals syntax to create the DOM and update dynamic parts, leaving static content untouched.
 
-> For the best development experience, check if your code editor supports highlighting HTML in tagged template literals.
+> For the best development experience, check whether your code editor supports highlighting HTML in tagged template literals.
 
 ## Usage
 
@@ -44,7 +44,7 @@ const update = ({ radius }) => html`
 `;
 ```
 
-`<svg>` container element has to be created with `html` function. Use `svg` function only for creating internal structure of the `<svg>` element.
+The `<svg>` container element has to be created with the `html` function. Use the `svg` function only for creating the internal structure of the `<svg>` element.
 
 ## Properties & Attributes
 
@@ -53,7 +53,7 @@ const update = ({ radius }) => html`
 html`<my-element propertyName="${value}" other-property="${value}"></my-element>`;
 ```
 
-Expression as the element's attribute content set corresponding existing case-sensitive property, translated camel-cased property or fallbacks to the attribute value if property is not found. This behavior maximizes compatibility with custom elements created outside of the library.
+An expression as the element's attribute content sets the corresponding existing case-sensitive property, the translated camelCased property, or falls back to the attribute value if the property is not found. This behavior maximizes compatibility with custom elements created outside of the library.
 
 ### Mixed Values
 
@@ -65,11 +65,11 @@ html`<div id="el" class="button ${buttonType} ${buttonColor}"></div>`
 
 ### Special Cases
 
-The default action for `class` and `style` attributes would not work as expected, as they are implemented differently in the DOM. `class` attribute reflects `classList` and `className` properties. The `style` property returns `CSSStyleDeclaration` rather than simple string value. Because of that, the template engine supports them differently.
+The default action for the `class` and `style` attributes would not work as expected, as they are implemented differently in the DOM. The `class` attribute reflects the `classList` and `className` properties. The `style` property returns a `CSSStyleDeclaration` rather than a simple string value. Because of that, the template engine supports them differently.
 
 #### Class
 
-`class` attribute expression adds or removes class names from an element's `classList`. An expression can be a string, an array of strings, or a map of keys with boolean values:
+The `class` attribute expression adds or removes class names from an element's `classList`. An expression can be a string, an array of strings, or a map of keys with boolean values:
 
 ```javascript
 const name = 'one two';
@@ -81,7 +81,7 @@ html`<div class="${name || array || map}"></div>`;
 
 #### Style
 
-`style` attribute expression sets style properties by the `CSSStyleDeclaration` API. An expression has to be an object with dashed or camel-case keys with values.
+The `style` attribute expression sets style properties via the `CSSStyleDeclaration` API. An expression has to be an object with dashed or camelCase keys with values.
 
 ```javascript
 const styles = {
@@ -92,11 +92,11 @@ const styles = {
 html`<div style="${styles}"></div>`;
 ```
 
-However, the preferred way to style elements is using the `<style>` element inside of the template body. Read more in [Styling](styling.md) section.
+However, the preferred way to style elements is using the `<style>` element inside the template body. Read more in the [Styling](#styling) section.
 
 ## Event Listeners
 
-An expression in the `on*` attribute resolves to event listener set by the `host.addEventListener(eventType, callback, options)` with the part of the attribute after `on` prefix as an event type (exact characters) and `options` set to `false`. A function returned by the expression is called in an event listener `callback`.
+An expression in an `on*` attribute resolves to an event listener set by `host.addEventListener(eventType, callback, options)`, with the part of the attribute after the `on` prefix as the event type (exact characters) and `options` set to `false`. The function returned by the expression is called as the event listener `callback`.
 
 ```javascript
 function send(host, event) {
@@ -114,14 +114,14 @@ define({
       ...
     </form>
   `,
-};
+});
 ```
 
-The first argument of the callback function is the custom element instance (event target element is available at `event.target`). Access to the element in the render function is not required, so callback can be defined as a pure function.
+The first argument of the callback function is the custom element instance (the event target element is available at `event.target`). Access to the element in the render function is not required, so the callback can be defined as a pure function.
 
 ### Options
 
-You can pass custom `options` to `addEventListener` API by defining the `options` property of the function.
+You can pass custom `options` to the `addEventListener` API by defining the `options` property of the function.
 
 It can be a boolean value (it defaults to `false`):
 
@@ -157,7 +157,7 @@ Read [MDN documentation](https://developer.mozilla.org/docs/Web/API/EventTarget/
 
 ### Form Elements
 
-The template may contain built-in form elements or custom elements with a value, which should be bound to one of the properties of the host.
+The template may contain built-in form elements or custom elements with a value, which should be bound to one of the host's properties.
 
 You can create a callback manually for updating the host property value:
 
@@ -176,7 +176,7 @@ define({
 });
 ```
 
-Using the above pattern may become verbose if your template contains many values to bind. The engine provides the `html.set()` helper method, which generates a callback function for setting host property from the value of the element or set store model property value.
+Using the above pattern may become verbose if your template contains many values to bind. The engine provides the `html.set()` helper method, which generates a callback function for setting a host property from the value of the element or for setting a store model property value.
 
 #### Property Name
 
@@ -192,9 +192,9 @@ html.set(propertyName: string, value?: any): Function
 
 The `html.set()` supports generic elements and unique behavior of the form elements:
 
-* for `<input type="radio">` and `<input type="checkbox">` the value is related to its `checked` value
-* For `<input type="file">`  the `event.target.files` is used instead of the `event.target.value`
-* For the rest elements, it uses `event.detail.value` if defined, or eventually `target.value` as default
+* For `<input type="radio">` and `<input type="checkbox">`, the value is related to its `checked` value
+* For `<input type="file">`, `event.target.files` is used instead of `event.target.value`
+* For the remaining elements, it uses `event.detail.value` if defined, or `target.value` as the default
 
 ```javascript
 define({
@@ -244,10 +244,10 @@ html.set(model: object, propertyPath: string | null): Function
 ```
 
 * **arguments**:
-  * `model` - a [store](../store/introduction.md) model instance
+  * `model` - a [store](../store/usage.md) model instance
   * `propertyPath`
-    * a `string` path to the property of the model, usually a single name, like `"firstName"`; for nested property use dot notation, for example `"address.street"`
-    * `use null` for model deletion, like `html.set(user, null)`
+    * a `string` path to the property of the model, usually a single name, like `"firstName"`; for a nested property use dot notation, for example `"address.street"`
+    * use `null` for model deletion, like `html.set(user, null)`
 * **returns**:
   * a callback function compatible with template engine event listener
 
@@ -277,24 +277,24 @@ define({
 
 ## Values
 
-An expression in the content of the element, which is not a function, or a Node instance, resolves to `textContent`. Falsy values other than the number `0` are not displayed (`textContent` is set to empty string). Those rules apply in the same way for the values in the arrays.
+An expression in the content of an element that is not a function or a Node instance resolves to `textContent`. Falsy values other than the number `0` are not displayed (`textContent` is set to an empty string). These rules apply in the same way to values in arrays.
 
 ```javascript
 html`<div>Name: ${name}, Count: ${count}</div>`;
 ```
 
-HTML code can be created by the `innerHTML` property. However, use it with caution, as it might open an XSS attack:
+HTML code can be created via the `innerHTML` property. However, use it with caution, as it might open up an XSS attack:
 
 ```javascript
-// Use it with caution, it might open XSS attack
+// Use it with caution, it might open up an XSS attack
 html`<div innerHTML="${htmlCode}"></div>`;
 ```
 
-An expression with a function resolves to [nested template](./nested-templates.md).
+An expression with a function resolves to a [nested template](#nested-templates).
 
 ### Nodes
 
-If the expression returns a Node instance, it is attached to the corresponding place in the DOM. It can be useful for web components, which requires a reference to inner DOM elements:
+If the expression returns a Node instance, it is attached to the corresponding place in the DOM. It can be useful for web components that require a reference to inner DOM elements:
 
 ```javascript
 define({
@@ -321,16 +321,16 @@ define({
 
 ### Promises
 
-Promise as a value of an expression is not supported. However, the template engine supports promises by the `html.resolve` method.
+A Promise as a value of an expression is not supported. However, the template engine supports promises via the `html.resolve` method.
 
 ```typescript
 html.resolve(promise: Promise, placeholder: Function, delay = 200): Function
 ```
 
 * **arguments**:
-  * `promise` - promise, which should resolve to content expression value
-  * `placeholder` - update function for render content until promise is resolved or rejected
-  * `delay` - delay in milliseconds, after which placeholder is rendered
+  * `promise` - a promise, which should resolve to the content expression value
+  * `placeholder` - an update function that renders content until the promise is resolved or rejected
+  * `delay` - delay in milliseconds after which the placeholder is rendered
 * **returns**:
   * update function compatible with content expression
 
@@ -359,7 +359,7 @@ html`<div>${isValid && ...}</div>`;
 
 ## Iteration
 
-For iteration, an expression should return an `array` with a list of expressions. Items can be primitive values, nested templates as well as nested arrays.
+For iteration, an expression should return an `array` with a list of expressions. Items can be primitive values, nested templates, or nested arrays.
 
 ```javascript
 html`
@@ -373,7 +373,7 @@ html`
 
 ### Keys
 
-By default, array `index` identifies expressions for re-render. However, you can use the `key` method provided by the result of the `html` call for efficient re-order (it sets a key and returns update function). When the list changes and a key is found, the existing template is updated rather than a new one is created.
+By default, the array `index` identifies expressions for re-render. However, you can use the `key` method provided by the result of the `html` call for efficient re-ordering (it sets a key and returns the update function). When the list changes and a key is found, the existing template is updated rather than a new one being created.
 
 ```javascript
 html`
@@ -387,7 +387,7 @@ html`
 
 ## Nested Templates
 
-Expressions in the body of an element can return a function, which takes two arguments - `host` and `target` (text node position marker). The update function returned by the `html` is compatible with this API, and it can be used to create nested templates.
+Expressions in the body of an element can return a function that takes two arguments - `host` and `target` (a text node position marker). The update function returned by `html` is compatible with this API, and it can be used to create nested templates.
 
 ```javascript
 const submit = (fn) => html`
@@ -404,17 +404,17 @@ html`
 `;
 ```
 
-In the above example `submit` function creates a template with an `fn` callback. The main template can use this function in the expression with a custom callback. If so, the nested template with a button is rendered in the form element.
+In the above example, the `submit` function creates a template with an `fn` callback. The main template can use this function in an expression with a custom callback. If so, the nested template with a button is rendered inside the form element.
 
-The child template propagates element instance context from the parent. The `host` argument of the `myCallback` is the same as it would be with a function used directly in the main template.
+The child template propagates the element instance context from the parent. The `host` argument of `myCallback` is the same as it would be with a function used directly in the main template.
 
 ## Styling
 
-For styling template content you can create `<style>` elements directly in the template, or pass the content of the CSS.
+To style template content, you can create `<style>` elements directly in the template, or pass the content of the CSS.
 
 ### CSS Content
 
-The preferred way to put styles is to use `css` helper from the result of the `html` or `svg` function:
+The preferred way to add styles is to use the `css` helper from the result of the `html` or `svg` function:
 
 ```typescript
 html`...`.css`div { color: ${value}; }`: Function
@@ -437,9 +437,9 @@ define({
 });
 ```
 
-It is the most performant way, as if the Constructable Stylesheets are supported (currently, only Safari not yet supported it), generated CSS is shared between all of the elements with the same style.
+It is the most performant way: if Constructable Stylesheets are supported (currently, only Safari does not yet support them), the generated CSS is shared between all elements with the same style.
 
-For CSS content generated outside of the template, use `style` helper method:
+For CSS content generated outside of the template, use the `style` helper method:
 
 ```typescript
 html`...`.style(...styles: Array<string | CSSStyleSheet>): Function
@@ -476,13 +476,13 @@ If the browser supports [Constructable Stylesheets](https://wicg.github.io/const
 * The CSS content must not include `@import` statement (it was recently [deprecated](https://github.com/WICG/construct-stylesheets/issues/119#issuecomment-588352418) for Constructable Stylesheets)
 * The `html``.style()` helper must be called for the root template of the custom element (it fallbacks to `<style>` element for nested templates)
 
-For the string input, the template engine creates an instance of `CSSStyleSheet` only once and shares it among all instances of the custom element (you can also pass the `CSSStyleSheet` instance, but then you must take care of the browser support by yourself).
+For string input, the template engine creates an instance of `CSSStyleSheet` only once and shares it among all instances of the custom element (you can also pass a `CSSStyleSheet` instance, but then you must take care of browser support yourself).
 
-The style helper supports passing the `CSSStyleSheet` instance, but it will work only for the mode described above. Do not use it if you target multiple environments, where it might not be yet supported.
+The style helper supports passing a `CSSStyleSheet` instance, but it will only work in the mode described above. Do not use it if you target multiple environments where it might not yet be supported.
 
 ### Style Element
 
-Create `<style>` element inside of the main template using the Shadow DOM:
+Create a `<style>` element inside the main template using the Shadow DOM:
 
 ```javascript
 define({
@@ -498,7 +498,7 @@ define({
 
 ## Plugins
 
-The template engine's `html` and `svg` function returns an update function, which is later called with proper arguments by the library (when used in `render` or `content` properties). If you need to have more control over the update process, you use custom function, which internally uses result of the `html` or `svg` function.
+The template engine's `html` and `svg` functions return an update function, which is later called with proper arguments by the library (when used in the `render` property). If you need more control over the update process, you can use a custom function that internally uses the result of the `html` or `svg` function.
 
 ```javascript
 function myPlugin(fn) {
@@ -517,7 +517,7 @@ define({
 })
 ```
 
-For the simpler syntax, you can use `.use()` helper method. it can be chained, so a list of plugins will be applied in order.
+For simpler syntax, you can use the `.use()` helper method. It can be chained, so a list of plugins will be applied in order.
 
 ```typescript
 html`...`.use(plugin: (fn: ((host, target) => void) => (host, target) => void): Function
@@ -539,7 +539,7 @@ define({
 
 ### Transition API
 
-The built-in `html.transition` plugin utilizes the [Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API). It works best with whole viewport transitions, like app-like navigation events, but it can be used for any other transition as well. The API requires to be attached only to one element in the DOM tree, so it is recommended to use it with the root element of the application (which is always attached to the DOM):
+The built-in `html.transition` plugin uses the [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API). It works best with whole-viewport transitions, like app-style navigation events, but it can be used for any other transition as well. The API must be attached to only one element in the DOM tree, so it is recommended to use it with the root element of the application (which is always attached to the DOM):
 
 ```javascript
 define({
@@ -553,9 +553,9 @@ define({
 });
 ```
 
-!> The transition API will be trigger only when element, which uses `html.transition` updates. In the above example, it will be triggered only when `stack` property changes. Any change to internal elements of the `stack` will not trigger the transition.
+!> The transition API will only be triggered when an element that uses `html.transition` updates. In the above example, it will be triggered only when the `stack` property changes. Any change to internal elements of the `stack` will not trigger the transition.
 
-The transition API can be customized by the CSS properties. The DOM elements might have custom view transition names. The [layout engine](./layout-engine.md) supports `view` rule, which sets it:
+The transition API can be customized via CSS properties. DOM elements can have custom view transition names. The [layout engine](./layout-engine.md) supports the `view` rule, which sets it:
 
 ```javascript
 export default define({
@@ -571,7 +571,7 @@ export default define({
 
 ## Limitations
 
-The engine tries to support all required features for creating reach HTML templates, but there are a few cases where expressions cannot be used or have some limitations.
+The engine tries to support all required features for creating rich HTML templates, but there are a few cases where expressions cannot be used or have some limitations.
 
 ### Table Family Elements
 
@@ -591,7 +591,7 @@ html`<tr>${cellOne} ${cellTwo}</tr>`;
 
 ### Template Element
 
-Expressions inside of the `<template>` element are not supported:
+Expressions inside the `<template>` element are not supported:
 
 ##### Breaks template: <!-- omit in toc -->
 

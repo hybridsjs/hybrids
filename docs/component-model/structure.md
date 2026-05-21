@@ -4,7 +4,7 @@ The component definition is based on a plain object with a number of properties.
 
 ## Cache & Change Detection
 
-The core idea of the hybrid properties is its unique cache and change detection mechanism. It tracks dependencies between the properties (even between different custom elements) and notify about changes. Still, the value of the property is only recalculated when it is accessed and the value of its dependencies has changed. If the property does not use other properties, it won’t be recalculated, and the first cached value is always returned.
+The core idea of hybrid properties is its unique cache and change detection mechanism. It tracks dependencies between the properties (even between different custom elements) and notifies about changes. Still, the value of the property is only recalculated when it is accessed and the value of its dependencies has changed. If the property does not use other properties, it won't be recalculated, and the first cached value is always returned.
 
 > The property is accessed automatically only if it is explicitly observed by the `observe` method in the object descriptor or if it is a dependency of another observed property
 
@@ -27,7 +27,7 @@ property: "something" -> property: { value: "something" }
 
 ### Shorthand Syntax
 
-Use primitive or `function` as a property value:
+Use a primitive or `function` as a property value:
 
 ```javascript
 define({
@@ -57,7 +57,7 @@ Usually, the shorthand syntax is more readable and less verbose, but the second 
 
 ## Attributes
 
-Writable properties use the corresponding dashed-cased attribute for the initial value when the custom element is being created. Use the attributes only to define static values in the templates or the document, as the attribute changes are not being watched, and setting the attribute does not update the property.
+Writable properties use the corresponding dash-cased attribute for the initial value when the custom element is being created. Use the attributes only to define static values in the templates or the document, as attribute changes are not watched, and setting the attribute does not update the property.
 
 Use static values in the templates:
 
@@ -77,7 +77,7 @@ el.getAttribute("first-name");
 
 ### Booleans
 
-The library follows the HTML standard when transforming attributes to the boolean type. An empty value of an existing attribute is interpreted as `true`. For setting `false` by the attribute, you must not set the attribute at all. It means, that if you want to support the boolean attribute, it is best to set the default value of the property to `false`.
+The library follows the HTML standard when transforming attributes to the boolean type. An empty value of an existing attribute is interpreted as `true`. To set `false` via the attribute, you must not set the attribute at all. It means that if you want to support the boolean attribute, it is best to set the default value of the property to `false`.
 
 For example, if you want to create an on/off switch, depending on the default value, create `on` or `off` property with `false` default value:
 
@@ -85,8 +85,8 @@ For example, if you want to create an on/off switch, depending on the default va
 <!-- off by default (on: false), set attribute to turn on -->
 <my-element on></my-element>
 
- <!-- on by default (off: false), set attribute to turn off -->
-<my-element off><my-element>
+<!-- on by default (off: false), set attribute to turn off -->
+<my-element off></my-element>
 ```
 
 In the templates you can set a `false` value regardless of the default value:
@@ -125,7 +125,7 @@ The property descriptor structure is a plain object with the `value` and number 
 value: string | boolean | number | object | undefined | null
 ```
 
-If the descriptor `value` option is a primitive, undefined, null or an object instance, the library creates a writable property with defined default value. For the primitives, the value type is protected and proper conversion is performed when a new value is set.
+If the descriptor `value` option is a primitive, undefined, null, or an object instance, the library creates a writable property with the defined default value. For primitives, the value type is protected and proper conversion is performed when a new value is set.
 
 ```javascript
 define({
@@ -136,7 +136,7 @@ define({
 });
 ```
 
-A default value as an object instance can only be set using full object descriptor with `value` option:
+A default value as an object instance can only be set using the full object descriptor with the `value` option:
 
 ```javascript
 define({
@@ -145,7 +145,7 @@ define({
 });
 ```
 
-The cache mechanism utilizes strong equality check, so the object instances for default values must be frozen during the compilation step of the component definition. Keep in mind, that it might be not compatible with some external libraries, which require mutable objects (You can use computed property with a function, which returns a new object instance).
+The cache mechanism uses a strong equality check, so object instances for default values must be frozen during the compilation step of the component definition. Keep in mind that it might not be compatible with some external libraries that require mutable objects (you can use a computed property with a function, which returns a new object instance).
 
 #### Function
 
@@ -155,7 +155,7 @@ value: (host) => { ... } | (host, value) => { ... }
 
 * **arguments**:
   * `host` - an element instance
-  * `value` - a value passed to assertion (ex., el.myProperty = 'new value')
+  * `value` - a value passed to assignment (e.g., `el.myProperty = 'new value'`)
 * **returns**:
   * a value of the property
 
@@ -176,7 +176,7 @@ define({
 
 #### Writable
 
-If the function has two arguments, the property will be writable. However, the function is called only if the value of the property is accessed (getter) - the asserted value is kept in the cache until the next access.
+If the function has two arguments, the property will be writable. However, the function is called only when the value of the property is accessed (getter) - the assigned value is kept in the cache until the next access.
 
 ```javascript
 define({
@@ -185,7 +185,7 @@ define({
 });
 ```
 
-The library uses `fn.length` to detect number of arguments, so the [default parameters](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Functions/Default_parameters) and the [rest parameters](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Functions/rest_parameters) syntax cannot be used for the function arguments:
+The library uses `fn.length` to detect the number of arguments, so [default parameters](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Functions/Default_parameters) and [rest parameters](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Functions/rest_parameters) syntax cannot be used for the function arguments:
 
 ```javascript
 // won't work (fn.length === 1)
@@ -212,9 +212,9 @@ connect: (host, key, invalidate) => () => { ... }
   * `key` - the property name
   * `invalidate` - a callback to notify that the property value should be recalculated
 
-Use the `connect` method to setup the property when the element is connected. To clean up the setup, return a `disconnect` function, where you can remove attached listeners etc.
+Use the `connect` method to set up the property when the element is connected. To clean up the setup, return a `disconnect` function, where you can remove attached listeners, etc.
 
-> When you insert, remove, or relocate an element in the DOM tree, `connect` method and `disconnect` callback are called (by the `connectedCallback` and `disconnectedCallback` callbacks of the Custom Elements API).
+> When you insert, remove, or relocate an element in the DOM tree, the `connect` method and `disconnect` callback are called (by the `connectedCallback` and `disconnectedCallback` callbacks of the Custom Elements API).
 
 ```javascript
 define({
@@ -239,7 +239,7 @@ define({
 });
 ```
 
-If the third-party code is responsible for the property value, you can use the `invalidate` callback to notify that value should be recalculated. For example, it can be used to connect to async web APIs or external libraries.
+If third-party code is responsible for the property value, you can use the `invalidate` callback to notify that the value should be recalculated. For example, it can be used to connect to async web APIs or external libraries.
 
 ### observe
 
@@ -252,9 +252,9 @@ observe: (host, value, lastValue) => { ... }
   * `value` - current value of the property
   * `lastValue` - last cached value of the property
 
-Use the `observe` method for calling side effects, when the property value changes. The method is called asynchronously for the first time when the element is connected, and every time the property value changes.
+Use the `observe` method for calling side effects when the property value changes. The method is called asynchronously for the first time when the element is connected, and every time the property value changes.
 
-> If the synchronous updates compensate, and the result value is the same as before, the function won't be called.
+> If synchronous updates compensate and the resulting value is the same as before, the function won't be called.
 
 ```javascript
 define({
@@ -274,7 +274,7 @@ define({
 reflect: boolean | (value) => string
 ```
 
-Use the `reflect` option to reflect back property value to the corresponding dashed-cased attribute. Set it to `true` or to a transform function. For example, you can use this feature to create CSS selectors in the Shadow DOM:
+Use the `reflect` option to reflect the property value back to the corresponding dash-cased attribute. Set it to `true` or to a transform function. For example, you can use this feature to create CSS selectors in the Shadow DOM:
 
 ```javascript
 define({
@@ -288,9 +288,9 @@ define({
 
 ## Render
 
-The `render` property is reserved for the creating structure of the custom element. The `value` option must be a function, which returns a result of the call to the built-in template engine.
+The `render` property is reserved for creating the structure of the custom element. The `value` option must be a function, which returns the result of a call to the built-in template engine.
 
-The library uses the `observe` pattern to call the function automatically when dependencies change. As the property resolves to the update function, it can also be called manually, by `el.render()`.
+The library uses the `observe` pattern to call the function automatically when dependencies change. As the property resolves to the update function, it can also be called manually via `el.render()`.
 
 If the optional `shadow` option is not used, the library determines the rendering mode based on the root template structure. If the template includes styles or `<slot>` elements, the content is rendered to the Shadow DOM.
 
@@ -314,7 +314,7 @@ define({
 
 ### Shadow DOM
 
-If the root template of the element includes styles or `<slot>` elements, the library renders the content to the shadow DOM:
+If the root template of the element includes styles or `<slot>` elements, the library renders the content to the Shadow DOM:
 
 The template with inline styles:
 
@@ -361,7 +361,7 @@ define({
 </my-element>
 ```
 
-!> Only the root template can be used to determine the rendering mode implicitly. The nested template with styles does not force rendering in the Shadow DOM.
+!> Only the root template can be used to determine the rendering mode implicitly. A nested template with styles does not force rendering in the Shadow DOM.
 
 ### Explicit Mode
 
@@ -384,7 +384,7 @@ render: {
 
 #### Nested Templates
 
-If only your nested template includes styles, you must use the `shadow` option to force rendering in the Shadow DOM explicitly:
+If only your nested template includes styles, you must use the `shadow` option to explicitly force rendering in the Shadow DOM:
 
 ```javascript
 define({
@@ -403,7 +403,7 @@ define({
 
 #### Shadow DOM Options
 
-You can use `shadow` option for passing custom arguments to the `host.attachShadow()` method:
+You can use the `shadow` option to pass custom arguments to the `host.attachShadow()` method:
 
 ```javascript
 import { define, html } from "hybrids";
@@ -411,15 +411,15 @@ import { define, html } from "hybrids";
 define({
   tag: "my-element",
   render: {
-    value: html`<div>...</div>`, 
-    shadow: { mode: "close", delegatesFocus: true },
+    value: () => html`<div>...</div>`,
+    shadow: { mode: "closed", delegatesFocus: true },
   },
 });
 ```
 
 ### Reference Internals
 
-The `render` property can be used to reference internals of the custom element. The DOM update process is asynchronous, so to avoid rendering timing issues, always use the property as a reference to the target element. If the property depending on `render` is called before the first update, the update will be triggered manually by calling the function.
+The `render` property can be used to reference internals of the custom element. The DOM update process is asynchronous, so to avoid rendering timing issues, always use the property as a reference to the target element. If a property depending on `render` is called before the first update, the update will be triggered manually by calling the function.
 
 ```javascript
 import { define, html } from "hybrids";
@@ -433,7 +433,7 @@ define({
 
 ### Connect & Observe
 
-You can setup property or call side effects when the element re-renders by using the `connect` and `observe` methods. Use full object descriptor with `value` option to define the function:
+You can set up the property or call side effects when the element re-renders by using the `connect` and `observe` methods. Use the full object descriptor with the `value` option to define the function:
 
 ```javascript
 define({
@@ -453,18 +453,18 @@ define({
 
 ## Factories
 
-The factory is a simple concept based on a function, which produces the property descriptor. The main goal of the factory is to hide implementation details and minimize redundant code. It allows you to reuse property behavior while giving you the ability to pass additional parameters
+A factory is a simple concept based on a function that produces the property descriptor. The main goal of the factory is to hide implementation details and minimize redundant code. It allows you to reuse property behavior while giving you the ability to pass additional parameters.
 
 In most cases, descriptors are similar and have limited differences, so they can be parameterized by the function arguments. Also, the factory function can use the local scope for setting variables required for the feature.
 
-> It is not required, but for better extendibility, the factory should return a full descriptor object
+> It is not required, but for better extensibility, the factory should return a full descriptor object.
 
 ```javascript
 import { define } from "hybrids";
 
 function myCustomProperty(multiplier) {
   return {
-    value: (host, value = 0) => value * multiplier;
+    value: (host, value = 0) => value * multiplier,
   };
 }
 
@@ -476,4 +476,4 @@ define({
 
 The above `count` property is defined by the factory, which returns a property descriptor. In this case, its value is equal to the result of multiplying it by the `multiplier` argument.
 
-More complex features provided by the library are defined as factories: [parent & children](./parent-children.md), [store](/store/overview.md) and [router](/router/overview.md).
+More complex features provided by the library are defined as factories: [parent & children](./parent-children.md), [store](/store/usage.md), and [router](/router/usage.md).

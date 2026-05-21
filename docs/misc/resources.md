@@ -12,4 +12,4 @@
 ## Videos
 
 * [Taste the Future with Functional Web Components](https://youtu.be/WZ1MEHuxHGg) *(EN, ConFrontJS Conference)*
-* [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) *(PL, WarsawJS Meetup #46)
+* [Hybrids - Web Components with Simple and Functional API](https://youtu.be/ni0d34Yrugk) *(PL, WarsawJS Meetup #46)*

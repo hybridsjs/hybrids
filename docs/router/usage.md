@@ -1,19 +1,19 @@
 # Router Usage
 
-The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views, which have their own routing configuration in the component definition.
+The router provides a global navigation system for client-side applications. Rather than just matching URLs with the corresponding components, it depends on a tree-like structure of views that have their own routing configuration in the component definition.
 
-The router state is represented by the stack of views. If a user go deeper in the tree, the view is pushed to the stack. If the navigation goes up, the stack is cleared. However, the result stack array returns only the current view and dialogs (on the top of the current view). The rest of the views on the stack are kept in the memory with the current state, scroll positions and the last focused element.
+The router state is represented by a stack of views. If the user goes deeper in the tree, the view is pushed onto the stack. If the navigation goes up, the stack is cleared. However, the resulting stack array returns only the current view and any dialogs (on top of the current view). The remaining views on the stack are kept in memory along with their current state, scroll positions, and last focused element.
 
-The stack of views is connected with the browser history, so the current stack and browser history is always in-sync. Because of the relations between the views, the router knows when to navigate forward or backward to reflect the structure.
+The stack of views is connected to the browser history, so the current stack and browser history are always in sync. Because of the relations between the views, the router knows when to navigate forward or backward to reflect the structure.
 
-To start using the router, just add a property defined with the router factory to your main component of the application, and display the current stack of views:
+To start using the router, just add a property defined with the router factory to your main application component and display the current stack of views:
 
 ```javascript
 import { define, html, router } from "hybrids";
 
 import Home from "./views/Home.js";
 
-export define({
+define({
   tag: "my-app",
   stack: router(Home),
   render: ({ stack }) => html`
@@ -31,11 +31,11 @@ router(views: component | component[] | () => ..., options?: object): object
 ```
 
 * **arguments**:
-  * `views` - a defined component or an array of defined components. You can wrap `views` in a function to avoid uninitialized ES modules issue
-  * `options` - an object with following options:
-    * `url` - a string base URL used for views without own `url` option, defaults to current URL
-    * `params` - an array of property names of the element, which are passed to every view as a parameter
-    * `transition` - a boolean flag to enable notifications about the transition type between views by setting `<html router-transition="">` element's attribute
+  * `views` - a defined component or an array of defined components. You can wrap `views` in a function to avoid the uninitialized ES modules issue
+  * `options` - an object with the following options:
+    * `url` - a string base URL used for views without their own `url` option; defaults to the current URL
+    * `params` - an array of element property names, which are passed to every view as a parameter
+    * `transition` - a boolean flag to enable notifications about the transition type between views by setting the `<html router-transition="">` element's attribute
 * **returns**:
   * a hybrid property descriptor, which resolves to an array of elements
 
@@ -47,13 +47,14 @@ views: Component[]
 
 Views passed to the router factory create the roots of the view structures. Usually, there is only one root view, but you can pass a list of them (navigating between roots always replaces the whole stack). You can find a deeper explanation of the view concept in the [View](/router/view.md) section.
 
+
 ### `options.url`
 
 ```typescript
 url: string = "/"
 ```
 
-If your application uses a mixed approach - views with and without URLs, you should specify a base URL to avoid non-deterministic behavior of the router for views without the URL. Otherwise, the router will use an entry point as a base URL (which can be different according to the use case).
+If your application uses a mixed approach - views with and without URLs - you should specify a base URL to avoid non-deterministic behavior of the router for views without a URL. Otherwise, the router will use the entry point as the base URL (which can differ according to the use case).
 
 ```javascript
 define({
@@ -69,7 +70,7 @@ define({
 params: String[] = []
 ```
 
-Regardless of the explicit parameters when navigating to the view, you can specify an array of properties of the component, which are passed to every view as a parameter. They bypass the URL generation, so they are set by the reference, and they are not included in the URL.
+Regardless of the explicit parameters used when navigating to a view, you can specify an array of properties of the component that are passed to every view as a parameter. They bypass URL generation, so they are set by reference and are not included in the URL.
 
 ```javascript
 import { define, store, router } from "hybrids";
@@ -98,14 +99,14 @@ define({
 transition: boolean = false
 ```
 
-The `transition` option enables notifications about the transition type between views set in `<html router-transition="">` element's attribute with the following values:
+The `transition` option enables notifications about the transition type between views, set on the `<html router-transition="">` element's attribute with the following values:
 
-* `""` - empty when the router displays view stack for the first time
-* `forward` - when the user navigates to nested view
-* `backward` - when the user navigates backward to parent view
+* `""` - empty when the router displays the view stack for the first time
+* `forward` - when the user navigates to a nested view
+* `backward` - when the user navigates backward to a parent view
 * `replace` - when the user replaces the current view
 
-The `transition` option is useful for animations, like using [Transition API](/component-model/templates.md#transition-api), which should be triggered only when the user navigates between views.
+The `transition` option is useful for animations, such as when using the [Transition API](/component-model/templates.md#transition-api), which should be triggered only when the user navigates between views.
 
 ```html
 <style>
@@ -119,12 +120,12 @@ The `transition` option is useful for animations, like using [Transition API](/c
 </style>
 ```
 
-When the user navigates to or from the dialog view, the attribute contains also `dialog` space-separated value:
+When the user navigates to or from a dialog view, the attribute also contains a space-separated `dialog` value:
 
-* `forward dialog` - when the user navigates to the dialog view
-* `backward dialog` - when the user navigates backward from the dialog view
+* `forward dialog` - when the user navigates to a dialog view
+* `backward dialog` - when the user navigates backward from a dialog view
 
-For mixing or separating the transitions between the main views and dialogs, you can use the `dialog` attribute selector:
+To mix or separate the transitions between main views and dialogs, you can use the `dialog` attribute selector:
 
 ```html
 <style>
@@ -142,7 +143,7 @@ For mixing or separating the transitions between the main views and dialogs, you
 
 ## Nested Routers
 
-For complex layouts, the router factory can be used inside of the views already connected to the parent router. This feature differs from setting views in the `stack` option of the view. The nested router displays content inside of the host view as content, not a separate view in the stack.
+For complex layouts, the router factory can be used inside views that are already connected to a parent router. This feature differs from setting views in the view's `stack` option. The nested router displays content inside the host view as content, not as a separate view in the stack.
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -166,7 +167,7 @@ export default define({
 
 ## Events
 
-The router dispatches the `navigate` event on the host element, which can be used for the external purposes:
+The router dispatches a `navigate` event on the host element, which can be used for external purposes:
 
 ```javascript
 function onNavigate(event) {
@@ -179,15 +180,15 @@ app.addEventListener("navigate", onNavigate);
 
 ## Navigation
 
-The router provides a set of methods to navigate to the views. Generally, those methods generate an URL instance, which can be used in anchors as `href` attribute and forms as an `action` attribute.
+The router provides a set of methods for navigating to views. Generally, these methods generate a URL instance, which can be used in anchors as the `href` attribute and in forms as the `action` attribute.
 
-The component with the router listens to `click` and `submit` events, so when a user clicks on an anchor or submits the form, the router resolves the URL and navigates to the target view (going forward or backward in the history using the structure of views).
+The component with the router listens to `click` and `submit` events, so when a user clicks on an anchor or submits a form, the router resolves the URL and navigates to the target view (going forward or backward in the history using the view structure).
 
-> The `submit` event does not cross the Shadow DOM boundary, so the recommended way is to use the `content` property in component definitions for the templates.
+> The `submit` event does not cross the Shadow DOM boundary, so the recommended way is to render templates in the light DOM (without styles or `<slot>` elements in the root template).
 
 ### `scrollToTop`
 
-Besides specific parameters for the view, the router navigation methods support the `scrollToTop` option in the params, which clears the main scroll position of the view when it is navigated. As the views on the stack hold scroll positions, it might be useful, if you want to force the view to scroll to the top, but it is a parent view, which might be already in the memory. However, if the new view is pushed to the stack, the main vertical scroll position is cleared automatically, so you don't need to use this option then.
+Besides specific parameters for the view, the router navigation methods support the `scrollToTop` option in the params, which clears the main scroll position of the view when navigating to it. As views on the stack retain scroll positions, this can be useful if you want to force the view to scroll to the top, but it is a parent view that may already be in memory. However, if a new view is pushed onto the stack, the main vertical scroll position is cleared automatically, so you don't need to use this option in that case.
 
 ### `router.url()`
 
@@ -199,11 +200,11 @@ router.url(view: component, params?: object): URL | ""
   * `view` - a component definition
   * `params` - an object with parameters to pass to the view
 * **returns**:
-  * an URL instance or an empty string
+  * a URL instance or an empty string
 
-Use the definition reference to identify the target view, and eventually pass the parameters. As the result is an URL instance, the parameters are serialized to the query string - the complex object structures are not supported (use the [store](/store/usage.md) and pass the model identifier).
+Use the definition reference to identify the target view, and optionally pass the parameters. As the result is a URL instance, the parameters are serialized to the query string - complex object structures are not supported (use the [store](/store/usage.md) and pass the model identifier instead).
 
-!> Keep in mind that not connected view results in an empty string and the method does not throw
+!> Keep in mind that an unconnected view results in an empty string, and the method does not throw.
 
 ### `router.backUrl()`
 
@@ -214,13 +215,13 @@ router.backUrl(options?: { nested?: boolean, scrollToTop?: boolean }): URL | ""
 * **arguments**:
   * `options` - an object with `nested` or `scrollToTop` options, both defaults to `false`
 * **returns**:
-  * an URL instance or an empty string
+  * a URL instance or an empty string
 
-The `backUrl` method is useful if you have views, which can be navigated from multiple points (the target view is listed in more than one `stack` option in the view definitions), or you create a shared layout element for the views. Then, you can use this method to generate an URL to the previous view from the stack.
+The `backUrl` method is useful if you have views that can be navigated to from multiple points (the target view is listed in more than one `stack` option in the view definitions), or if you create a shared layout element for the views. Then, you can use this method to generate a URL to the previous view from the stack.
 
-If the current view is the only one on the stack, the last parent of the target view is used (going from left to right in the view hierarchy). The root views always return an empty string.
+If the current view is the only one on the stack, the last parent of the target view is used (going from left to right in the view hierarchy). Root views always return an empty string.
 
-The `nested` option only applies if the previous and current view uses nested routing. By default, the method will skip entries in the stack, where the main router view is the same, so it always returns the URL for another view. If the `nested` option is set to `true`, it generates the URL for another view from the deepest nested router.
+The `nested` option only applies if the previous and current view use nested routing. By default, the method skips entries in the stack where the main router view is the same, so it always returns the URL for a different view. If the `nested` option is set to `true`, it generates the URL for a different view from the deepest nested router.
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -251,9 +252,9 @@ router.currentUrl(params?: object): URL | ""
 * **arguments**:
   * `params` - an object with parameters to pass to the view
 * **returns**:
-  * an URL instance or an empty string
+  * a URL instance or an empty string
 
-The `currentUrl` method generates an URL for the current view without using the definition explicitly. The parameters are the same as in the `url` method. It can be useful for reusable components, which are used in multiple views, or for avoiding a need to create a reference to the definition in the module.
+The `currentUrl` method generates a URL for the current view without using the definition explicitly. The parameters are the same as in the `url` method. It can be useful for reusable components that are used in multiple views, or for avoiding the need to create a reference to the definition in the module.
 
 ### `router.guardUrl()`
 
@@ -264,9 +265,9 @@ router.guardUrl(params?: object): URL | ""
 * **arguments**:
   * `params` - an object with parameters to pass to the view
 * **returns**:
-  * an URL instance or an empty string
+  * a URL instance or an empty string
 
-The `guardUrl` method should be used in guarded views (with the `guard` function in the configuration). It dynamically chooses the target view. If the user failed to navigate to some view from the stack, this view is used. Otherwise, it defaults to the first view from the stack.
+The `guardUrl` method should be used in guarded views (with the `guard` function in the configuration). It dynamically chooses the target view. If the user failed to navigate to some view from the stack, that view is used. Otherwise, it defaults to the first view from the stack.
 
 You can read more about the `guard` option in the [View](./view.md#guard) section.
 
@@ -282,9 +283,9 @@ router.resolve(event: Event, promise: Promise): Promise
 * **returns**:
   * a chained promise from the arguments
 
-Use the `resolve` method if you need to perform asynchronous action while navigating to the target view. The navigation is only performed if the promise resolves.
+Use the `resolve` method if you need to perform an asynchronous action while navigating to the target view. The navigation is only performed if the promise resolves.
 
-Keep in mind, that the URL for navigation is taken from the event target, so you still need to use another method in the template to generate a link:
+Keep in mind that the URL for navigation is taken from the event target, so you still need to use another method in the template to generate a link:
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -314,7 +315,7 @@ export default define({
 });
 ```
 
-The above dialog uses the `resolve` method when a user clicks on the `Yes` link. The router will navigate to the Users view only if the user model is successfully deleted. Otherwise, the dialog displays an error message.
+The above dialog uses the `resolve` method when the user clicks on the `Yes` link. The router will navigate to the Users view only if the user model is successfully deleted. Otherwise, the dialog displays an error message.
 
 ### `router.active()`
 
@@ -328,7 +329,7 @@ router.active(views: view | view[], options?: { stack?: boolean }): boolean
 * **returns**:
   * a boolean flag
 
-Use the `active` method to create conditional logic in the templates. The method returns `true` when one of the views is the current view. If the `stack` option is turned on, the method also returns `true` if the current view is one of the views in the stack. It means, that if you use a parent view, each child from the stack will activate the flag.
+Use the `active` method to create conditional logic in templates. The method returns `true` when one of the views is the current view. If the `stack` option is turned on, the method also returns `true` if the current view is one of the views in the stack. This means that if you use a parent view, each child in the stack will activate the flag.
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -356,10 +357,10 @@ define({
 });
 ```
 
-In the above example, for both `OneView` and `TwoView` the `<my-link>` will be active, as the second view is in the stack of the first one.
+In the above example, for both `OneView` and `TwoView` the `<my-link>` will be active, as the second view is in the stack of the first.
 
 ## Debug Mode
 
-The router in debug mode logs the navigation events. Also, it simplifies access to the current view in the DevTools console by the `$$0` reference (similar to the last selected element in the Elements panel). 
+In debug mode, the router logs the navigation events. It also simplifies access to the current view in the DevTools console via the `$$0` reference (similar to the last selected element in the Elements panel).
 
 You can find more information about the debug mode in the [Debug Mode](/getting-started.md#debug-mode) section of the documentation.

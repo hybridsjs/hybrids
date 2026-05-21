@@ -9,28 +9,28 @@ define(component: object & { tag: string }): component;
 ```
 
 - **arguments**:
-  - `component` - an object with map of hybrid property descriptors with a tag name set to `tag` property
+  - `component` - an object with a map of hybrid property descriptors and a tag name set in the `tag` property
 - **returns**:
-  - `component` - a passed argument to `define()` function
+  - `component` - the passed argument to the `define()` function
 
 ```typescript
 define.from(components: object, options?: { prefix?: string; root?: string | string[]}): components;
 ```
 
 - **arguments**:
-  - `components` - an object with map of components with tag names as keys (or paths to the files)
-  - `options` - an optional object with options
+  - `components` - an object map of components with tag names as keys (or paths to the files)
+  - `options` - an optional object with settings
     - `prefix` - a prefix added to the tag names
-    - `root` - a string or a list of strings, which is cleared from the tag names
+    - `root` - a string or a list of strings, which are removed from the tag names
 - **returns**:
-  - `components` - a passed argument to `define.from()` function
+  - `components` - the passed argument to the `define.from()` function
 
 ```typescript
 define.compile(component: object): HTMLElement;
 ```
 
 - **arguments**:
-  - `component` - an object with map of hybrid property descriptors without `tag` property
+  - `component` - an object with a map of hybrid property descriptors without the `tag` property
 - **returns**:
   - `HTMLElement` - a constructor for the custom element (not registered in the global custom elements registry)
 
@@ -39,8 +39,8 @@ mount(target: HTMLElement, component: object): void;
 ```
 
 - **arguments**:
-  - `target` - an DOM element to attach the component definition, usually it should be `document.body`
-  - `component` - an object with map of hybrid property descriptors without `tag` property
+  - `target` - a DOM element to attach the component definition to; usually it should be `document.body`
+  - `component` - an object with a map of hybrid property descriptors without the `tag` property
 
 ## Parent
 
@@ -49,9 +49,9 @@ parent(componentOrFn: Object | Function: (component, host) => {...}: Boolean): O
 ```
 
 - **arguments**:
-  - `componentOrFn` - reference to an object containing property descriptors or a function, which returns `true` when current `component` meets the condition
+  - `componentOrFn` - a reference to an object containing property descriptors, or a function that returns `true` when the current `component` meets the condition
 - **returns**:
-  - a property descriptor, which resolves to `null` or `Element` instance
+  - a property descriptor that resolves to `null` or an `Element` instance
 
 ## Children
 
@@ -60,12 +60,12 @@ children(componentOrFn: Object | Function: (component, host) => {...}: Boolean, 
 ```
 
 - **arguments**:
-  - `componentOrFn` - reference to an object containing property descriptors or a function, which returns `true` when current `component` meets the condition
+  - `componentOrFn` - a reference to an object containing property descriptors, or a function that returns `true` when the current `component` meets the condition
   - `options` - object with available keys:
     - `deep` - boolean, defaults to `false`
     - `nested` - boolean, defaults to `false`
 - **returns**:
-  - a property descriptor, which resolves to `array` of `Element` instances
+  - a property descriptor that resolves to an `array` of `Element` instances
 
 ## Templates
 
@@ -74,19 +74,10 @@ html`<div property="${value}">${value}</div>` : Function
 ```
 
 - **arguments**:
-  - HTML content as a template content
-  - `value` - dynamic values as a property values or element content
+  - HTML content as the template content
+  - `value` - dynamic values used as property values or element content
 - **returns**:
-  - an update function, which takes `host` and `target` arguments
-
-```typescript
-html`...`.define(map: Object): Function
-```
-
-- **arguments**:
-  - `map` - object with hybrids definitions or custom element's constructors
-- **returns**:
-  - update function compatible with content expression
+  - an update function that takes `host` and `target` arguments
 
 ```typescript
 html`...`.style(...styles: Array<string | CSSStyleSheet>): Function
@@ -101,80 +92,79 @@ html`...`.style(...styles: Array<string | CSSStyleSheet>): Function
 html`...`.css`div { color: red; padding-top: ${value}; }`: Function
 ```
 
+- **arguments**:
+  - CSS content as tagged template literals
+  - `value` - dynamic values concatenated with the template literal
+- **returns**:
+  - an update function compatible with the content expression
+
 ```typescript
 html`...`.use(plugin: (fn: ((host, target) => void) => (host, target) => void): Function
 ```
 
 - **arguments**:
-  - `plugin` - a function, which takes the original update function and returns a new update function
+  - `plugin` - a function that takes the original update function and returns a new update function
 - **returns**:
-  - an update function compatible with content expression
-
-
-- **arguments**:
-  - CSS content in tagged template literals
-  - `value` - dynamic values concatenated with the template literal
-- **returns**:
-  - an update function compatible with content expression
+  - an update function compatible with the content expression
 
 ```typescript
 html.resolve(promise: Promise, placeholder: Function, delay = 200): Function
 ```
 
 - **arguments**:
-  - `promise` - promise, which should resolve to content expression value
-  - `placeholder` - update function for render content until promise is resolved or rejected
-  - `delay` - delay in milliseconds, after which placeholder is rendered
+  - `promise` - a promise, which should resolve to the content expression value
+  - `placeholder` - an update function that renders content until the promise is resolved or rejected
+  - `delay` - delay in milliseconds after which the placeholder is rendered
 - **returns**:
-  - update function compatible with content expression
+  - an update function compatible with the content expression
 
 ```typescript
 html.set(propertyName: string, value?: any): Function
 ```
 
 - **arguments**:
-  - `propertyName` - a target host property name
+  - `propertyName` - the target host property name
   - `value` - a custom value, which will be set instead of `event.target.value`
 - **returns**:
-  - a callback function compatible with template engine event listener
+  - a callback function compatible with the template engine's event listener
 
 ```typescript
 svg`<circle property="${value}">${value}</circle>` : Function
 ```
 
 - **arguments**:
-  - SVG content as a template content
-  - `value` - dynamic values as a property values or element content
+  - SVG content as the template content
+  - `value` - dynamic values used as property values or element content
 - **returns**:
-  - an update function, which takes `host` and `target` arguments
+  - an update function that takes `host` and `target` arguments
 
 ```typescript
 svg`...`.style(styles: string, [styles: string]...): Function
 ```
 
 - **arguments**:
-  - `styles` - text content of CSS stylesheet
+  - `styles` - text content of CSS stylesheets
 - **returns**:
-  - update function compatible with content expression
+  - an update function compatible with the content expression
 
 ```typescript
 svg`...`.css`path { color: ${value}; }`: Function
 ```
 
 - **arguments**:
-  - CSS content in tagged template literals
+  - CSS content as tagged template literals
   - `value` - dynamic values concatenated with the template literal
 - **returns**:
-  - an update function compatible with content expression
+  - an update function compatible with the content expression
 
 ```typescript
 svg`...`.use(plugin: (fn: ((host, target) => void) => (host, target) => void): Function
 ```
 
 - **arguments**:
-  - `plugin` - a function, which takes the original update function and returns a new update function
+  - `plugin` - a function that takes the original update function and returns a new update function
 - **returns**:
-  - an update function compatible with content expression
+  - an update function compatible with the content expression
 
 ## Dispatch
 
@@ -184,14 +174,14 @@ dispatch(host: Element, eventType: string, [options]): Boolean
 
 - **arguments**:
   - `host` - element instance
-  - `eventType` - type of the event to be dispatched
-  - `options` - a dictionary, having the following optional fields:
-    - `bubbles` - a boolean indicating whether the event bubbles. The default is false
-    - `cancelable` - a boolean indicating whether the event can be cancelled. The default is false
-    - `composed` - a boolean indicating whether the event will trigger listeners outside of a shadow root The default is false
-    - `detail` - a custom data, which will be passed to an event listener
+  - `eventType` - the type of the event to be dispatched
+  - `options` - a dictionary with the following optional fields:
+    - `bubbles` - a boolean indicating whether the event bubbles. Defaults to `false`
+    - `cancelable` - a boolean indicating whether the event can be canceled. Defaults to `false`
+    - `composed` - a boolean indicating whether the event will trigger listeners outside of a shadow root. Defaults to `false`
+    - `detail` - custom data, which will be passed to the event listener
 - **returns**:
-  - `false` if event is cancelable and at least one of the event handlers which handled this event called `preventDefault()`, otherwise it returns `true`
+  - `false` if the event is cancelable and at least one of the event handlers that handled this event called `preventDefault()`; otherwise it returns `true`
 
 ## Store
 
@@ -203,9 +193,9 @@ store.get(Model: object, id?: string | object) : object;
 
 - **arguments**:
   - `Model: object` - a model definition
-  - `id: string | object` - a string or an object representing identifier of the model instance
+  - `id: string | object` - a string or an object representing the identifier of the model instance
 - **returns**:
-  - Model instance or model instance placeholder
+  - a model instance or model instance placeholder
 
 ```typescript
 store.set(Model: object, values: object) : Promise;
@@ -215,7 +205,7 @@ store.set(Model: object, values: object) : Promise;
   - `Model: object` - a model definition
   - `values: object` - an object with partial values of the model instance
 - **returns**:
-  - A promise, which resolves with the model instance
+  - a promise that resolves with the model instance
 
 ```typescript
 store.set(modelInstance: object, values: object | null): Promise;
@@ -223,9 +213,9 @@ store.set(modelInstance: object, values: object | null): Promise;
 
 - **arguments**:
   - `modelInstance: object` - a model instance
-  - `values: object | null` - an object with partial values of the model instance or `null` for deleting the model
+  - `values: object | null` - an object with partial values of the model instance, or `null` to delete the model
 - **returns**:
-  - A promise, which resolves to the model instance or placeholder (for model deletion)
+  - a promise that resolves to the model instance or placeholder (for model deletion)
 
 ```typescript
 store.resolve(model: Model): Promise<Model>
@@ -234,7 +224,7 @@ store.resolve(model: Model): Promise<Model>
 - **arguments**:
   - `model` - a model instance
 - **returns**:
-  - A promise instance resolving with the latest model value or rejecting with an error
+  - a promise instance that resolves with the latest model value or rejects with an error
 
 ```typescript
 store.resolve(Model: object, id?: string | object): Promise<Model>
@@ -242,9 +232,9 @@ store.resolve(Model: object, id?: string | object): Promise<Model>
 
 - **arguments**:
   - `Model` - a model definition
-  - `id` - a string or an object representing identifier of the model instance
+  - `id` - a string or an object representing the identifier of the model instance
 - **returns**:
-  - A promise instance resolving with the latest model value or rejecting with an error
+  - a promise instance that resolves with the latest model value or rejects with an error
 
 ```typescript
 store.sync(modelOrDefinition: object, values: object | null) : Model;
@@ -252,9 +242,9 @@ store.sync(modelOrDefinition: object, values: object | null) : Model;
 
 - **arguments**:
   - `modelOrDefinition` - a model instance or model definition
-  - `values` - an object with partial values of the model instance or `null` for deleting the model
+  - `values` - an object with partial values of the model instance, or `null` to delete the model
 - **returns**:
-  - Model instance or model instance placeholder
+  - a model instance or model instance placeholder
 
 ```typescript
 store.clear(model: object, clearValue?: boolean = true)
@@ -272,11 +262,11 @@ store(Model: object, options?: { id?: any | (host) => any, draft?: boolean }): o
 
 - **arguments**:
   - `Model` - a model definition
-  - `options` - an object with following options:
+  - `options` - an object with the following options:
     - `id` - a `host` property name, or a function returning the identifier using the `host`
-    - `draft` - a boolean switch for the draft mode, where the property returns a copy of the model instance for the form manipulation
+    - `draft` - a boolean switch for draft mode, where the property returns a copy of the model instance for form manipulation
 - **returns**:
-  - a hybrid property descriptor, which resolves to a store model instance
+  - a hybrid property descriptor that resolves to a store model instance
 
 ```typescript
 store.submit(model: Model): Promise<Model>
@@ -285,7 +275,7 @@ store.submit(model: Model): Promise<Model>
 - **arguments**:
   - `Model` - an instance of the draft model definition
 - **returns**:
-  - a promise resolving with the primary model instance
+  - a promise that resolves with the primary model instance
 
 ### Guards
 
@@ -296,7 +286,7 @@ store.ready(model, ...): boolean
 - **arguments**:
   - `model: object` - a model instance
 - **returns**:
-  - `true` for valid model instances, `false` otherwise
+  - `true` for valid model instances; `false` otherwise
 
 ```typescript
 store.pending(model, ...): boolean | Promise
@@ -305,7 +295,7 @@ store.pending(model, ...): boolean | Promise
 - **arguments**:
   - `model: object` - a model instance
 - **returns**:
-  - In pending state a promise instance resolving with the next model value or a list of values, `false` otherwise
+  - In the pending state, a promise instance that resolves with the next model value or a list of values; `false` otherwise
 
 ```typescript
 store.error(model: Model, propertyName?: string | null): boolean | Error | any
@@ -313,9 +303,9 @@ store.error(model: Model, propertyName?: string | null): boolean | Error | any
 
 - **arguments**:
   - `model` - a model instance
-  - `propertyName` - a property name of the failed validation defined with `store.value()` method or `null` to return only general error message
+  - `propertyName` - a property name of the failed validation defined with the `store.value()` method, or `null` to return only the general error message
 - **returns**:
-  - An error instance or whatever has been thrown, or `false`. When `propertyName` is set, it returns `err.errors[propertyName]` or `false`
+  - an error instance or whatever has been thrown, or `false`. When `propertyName` is set, it returns `err.errors[propertyName]` or `false`
 
 ### Ref
 
@@ -326,7 +316,7 @@ store.ref(fn: () => Property): fn;
 - **arguments**:
   - `fn` - a function returning the property definition
 - **returns**:
-  - Passed function specially marked, to use the result of the call instead of creating computed property
+  - the passed function, specially marked so that the result of the call is used instead of creating a computed property
 
 ### Value
 
@@ -351,11 +341,11 @@ router(views: component | component[] | () => ..., options?: object): object
 
 - **arguments**:
   - `views` - a defined component or an array of defined components. You can wrap `views` in a function to avoid using imports from uninitialized ES modules
-  - `options` - an object with following options:
-    - `url` - a string base URL used for views without own `url` option, defaults to current URL
-    - `params` - an array of property names of the element, which are passed to every view as a parameter
+  - `options` - an object with the following options:
+    - `url` - a string base URL used for views without their own `url` option; defaults to the current URL
+    - `params` - an array of element property names, which are passed to every view as a parameter
 - **returns**:
-  - a hybrid property descriptor, which resolves to an array of elements
+  - a hybrid property descriptor that resolves to an array of elements
 
 ### Navigation
 
@@ -367,16 +357,16 @@ router.url(view: component, params?: object): URL | ""
   - `view` - a component definition
   - `params` - an object with parameters to pass to the view
 - **returns**:
-  - an URL instance or an empty string
+  - a URL instance or an empty string
 
 ```typescript
 router.backUrl(options?: { nested?: boolean, scrollToTop?: boolean }): URL | ""
 ```
 
 - **arguments**:
-  - `options` - an object with `nested` or `scrollToTop` options, both defaults to `false`
+  - `options` - an object with `nested` or `scrollToTop` options; both default to `false`
 - **returns**:
-  - an URL instance or an empty string
+  - a URL instance or an empty string
 
 ```typescript
 router.currentUrl(params?: object): URL | ""
@@ -385,7 +375,7 @@ router.currentUrl(params?: object): URL | ""
 - **arguments**:
   - `params` - an object with parameters to pass to the view
 - **returns**:
-  - an URL instance or an empty string
+  - a URL instance or an empty string
 
 ```typescript
 router.guardUrl(params?: object): URL | ""
@@ -394,14 +384,14 @@ router.guardUrl(params?: object): URL | ""
 - **arguments**:
   - `params` - an object with parameters to pass to the view
 - **returns**:
-  - an URL instance or an empty string
+  - a URL instance or an empty string
 
 ```typescript
 router.resolve(event: Event, promise: Promise): Promise
 ```
 
 - **arguments**:
-  - `event` -`click` event from an anchor, or `submit` event from a form element
+  - `event` - a `click` event from an anchor, or a `submit` event from a form element
   - `promise` - a promise
 - **returns**:
   - a chained promise from the arguments
@@ -412,15 +402,6 @@ router.active(views: view | view[], options?: { stack?: boolean }): boolean
 
 - **arguments**:
   - `views` - a view definition or an array of view definitions
-  - `options` an optional object with `stack` boolean setting
+  - `options` - an optional object with a `stack` boolean setting
 - **returns**:
   - a boolean flag
-
-### Debug
-
-```typescript
-router.debug(flag = true): void
-```
-
-- **arguments**:
-  - `flag` - a boolean flag, defaults to `true`

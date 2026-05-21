@@ -2,11 +2,11 @@
 
 ## v9.0.0
 
-The `v9.0` release brings simplification into the full object property descriptor, removes the `content` property, and moves out some rarely used default behaviors into optional features.
+The `v9.0` release simplifies the full object property descriptor, removes the `content` property, and moves some rarely used default behaviors out into optional features.
 
 ### Descriptors
 
-The `value` option is now required in the object descriptor, and it replaces the `get` and `set` methods for defining computed property:
+The `value` option is now required in the object descriptor, and it replaces the `get` and `set` methods for defining a computed property:
 
 ```javascript
 // before
@@ -53,7 +53,7 @@ Read more about the attribute synchronization in the [Structure](/component-mode
 
 #### Key
 
-The `render` property is now reserved and expects an update function as a value (it cannot be used for other purpose). If you defined it as a full descriptor with custom behavior, you must rename the property:
+The `render` property is now reserved and expects an update function as a value (it cannot be used for other purposes). If you defined it as a full descriptor with custom behavior, you must rename the property:
 
 ```javascript
 // before
@@ -76,7 +76,7 @@ The `render` property is now reserved and expects an update function as a value 
 
 #### Content
 
-From now, the `content` property has no special behavior, so it does not render. As the content by design should not include styles or `<slot>` elements, it is sufficient to just rename the property to `render` and use implicit mode for rendering:
+From now on, the `content` property has no special behavior, so it does not render. As the content by design should not include styles or `<slot>` elements, it is sufficient to just rename the property to `render` and use implicit mode for rendering:
 
 ```javascript
 // before
@@ -108,7 +108,7 @@ If you need to pass styles to the element's content, you can disable Shadow DOM 
 
 #### Options
 
-The options are now part of the `render` descriptor instead of a need to extend the `render` function:
+The options are now part of the `render` descriptor instead of being attached to the `render` function:
 
 ```javascript
 // before
@@ -131,7 +131,7 @@ The options are now part of the `render` descriptor instead of a need to extend 
 
 #### Custom Rendering
 
-Using custom render function is no longer officially supported. If you need to render the content in a custom way, ensure you are using rendering mode explicitly:
+Using a custom render function is no longer officially supported. If you need to render the content in a custom way, ensure you are using the rendering mode explicitly:
 
 ```javascript
 {
@@ -151,7 +151,7 @@ For better developer experience, the `store.get()` and `store.set()` methods thr
 
 ### Browser Support
 
-The `v8.0` release drops support for the webcomponents polyfill. Currently, all of the modern browsers support Shadow DOM, so we can safely remove the support for the polyfill. Legacy Edge is no longer supported by the Microsoft, and support for the IE was already dropped in `v5.0.0`.
+The `v8.0` release drops support for the Web Components polyfill. Currently, all modern browsers support Shadow DOM, so we can safely remove the support for the polyfill. Legacy Edge is no longer supported by Microsoft, and support for IE was already dropped in `v5.0.0`.
 
 ## v7.0.0
 
@@ -211,7 +211,7 @@ The `property` factory is replaced by the `value` option in the object descripto
   customProperty: undefined
   ```
 
-  If you need protection over the passed data, it is recommended to use the store, and define your property by the store factory.
+  If you need protection over the passed data, it is recommended to use the store and define your property with the store factory.
 
 * An array instance as a value is no longer supported. Use the `set` method of the object descriptor:
 
@@ -230,7 +230,8 @@ The `property` factory is replaced by the `value` option in the object descripto
         value = value.split(" ");
       }
 
-      return [...value],
+      return [...value];
+    },
   }
   ```
 

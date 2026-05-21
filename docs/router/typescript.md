@@ -1,6 +1,6 @@
 # Router TypeScript Support
 
-The router factory is supported out of the box without additional types. You can define your views with the `[router.connect]` configuration object using the `define<E>()` function with the corresponding component interface:
+The router factory is supported out of the box without additional types. You can define your views with the `[router.connect]` configuration object using the `define<E>()` function and the corresponding component interface:
 
 ```typescript
 import { define, html, router } from "hybrids";
@@ -20,7 +20,7 @@ export default define<MyView>({
 
 ## Factory
 
-The property with the router factory must have set the type of the property at least to `HTMLElement[]`:
+The property using the router factory must have its type set to at least `HTMLElement[]`:
 
 ```typescript
 import { define, html, router } from "hybrids";
@@ -44,11 +44,11 @@ export default define<MyApp>({
 
 ## Common Pitfalls
 
-When you create an import cycle, where views import each other, you can get an error like this:
+When you create an import cycle where views import each other, you can get an error like this:
 
 > MyView implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its initializer
 
-It happens because the `stack` option or the template body can direct or indirect reference to itself. If so, you must define your view outside of the `define` function and then use it with the default export:
+This happens because the `stack` option or the template body can directly or indirectly reference itself. If so, you must define your view outside of the `define` function and then use it with the default export:
 
 ```typescript
 import { define, html, router, Component } from "hybrids";

@@ -1,6 +1,6 @@
 # Store TypeScript Support
 
-To define the store model in TypeScript create an interface and use it with `Model<V>` type:
+To define the store model in TypeScript, create an interface and use it with the `Model<V>` type:
 
 ```typescript
 import { store, Model } from "hybrids";
@@ -8,7 +8,7 @@ import { store, Model } from "hybrids";
 interface User {
   id: string;
   name: string;
-};
+}
 
 const User: Model<User> = {
   id: true,
@@ -19,10 +19,10 @@ const User: Model<User> = {
 export default User;
 ```
 
-The above structure is recommended, as in the result the `User` interface will be automatically matched with the default export, so in the component definitions, you can simply use `User` both for the value and type:
+The above structure is recommended because, as a result, the `User` interface will be automatically matched with the default export, so in component definitions you can simply use `User` for both the value and the type:
 
 ```typescript
-import { define, store } from "hybrids";
+import { define, html, store } from "hybrids";
 import User from "./models/User";
 
 interface MyElement {

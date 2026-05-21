@@ -15,15 +15,15 @@
 [![coverage status](https://coveralls.io/repos/github/hybridsjs/hybrids/badge.svg?branch=main)](https://coveralls.io/github/hybridsjs/hybrids?branch=main)
 [![npm version](https://img.shields.io/npm/v/hybrids.svg?style=flat)](https://www.npmjs.com/package/hybrids)
 
-> An extraordinary JavaScript framework for creating client-side web applications, UI components libraries, or single web components with unique mixed declarative and functional architecture
+> An extraordinary JavaScript framework for creating client-side web applications, UI component libraries, or single web components with a unique mixed declarative and functional architecture
 
 **Hybrids** provides a complete set of features for building modern web applications:
 
 * **Component Model** based on plain objects and pure functions
 * **Global State Management** with external storages, offline caching, relations, and more
 * **App-like Routing** based on the graph structure of views
-* **Layout Engine** making UI layouts development much faster
-* **Localization** with automatic translation of the templates content
+* **Layout Engine** making UI layout development much faster
+* **Localization** with automatic translation of the template content
 * **Hot Module Replacement** support without any additional configuration
 
 ## Quick Look
@@ -62,7 +62,7 @@ You can read more in the [Component Model](/component-model/definition.md) secti
 
 ### Global State Management
 
-A global state management uses declarative model definitions with support for async external storages, relations, offline caching, and many more:
+Global state management uses declarative model definitions with support for async external storages, relations, offline caching, and more:
 
 ```javascript
 import { define, store, html } from "hybrids";
@@ -71,7 +71,7 @@ const User = {
   id: true,
   firstName: "",
   lastName: "",
-  [store.connect] : {
+  [store.connect]: {
     get: id => fetch(`/users/${id}`).then(...),
   },
 };
@@ -100,7 +100,7 @@ You can read more in the [Store](/store/usage.md) section.
 
 ### App-like Routing
 
-Rather than just matching URLs with the corresponding components, the router depends on a tree-like structure of views, which have their own routing configuration. It makes the URLs optional, have out-the-box support for dialogs, protected views, and many more.
+Rather than just matching URLs with the corresponding components, the router depends on a tree-like structure of views, which have their own routing configuration. It makes the URLs optional, and provides out-of-the-box support for dialogs, protected views, and more.
 
 ```javascript
 import { define, html, router } from "hybrids";
@@ -121,7 +121,7 @@ const Home = define({
   `,
 });
 
-export define({
+export default define({
   tag: "app-router",
   stack: router(Home),
   render: ({ stack }) => html`
@@ -162,7 +162,7 @@ You can read more in the [Layout Engine](/component-model/layout-engine.md) sect
 
 ### Localization
 
-The library supports automatic translation of the component's content, which makes translation seamless and easy to integrate. Additionally, it provides a way to add dynamic messages with plural forms, HTML content, or use messages outside of the template context. Also, it comes with handy CLI tool to extract messages from the source code!
+The library supports automatic translation of the component's content, which makes translation seamless and easy to integrate. Additionally, it provides a way to add dynamic messages with plural forms, HTML content, or to use messages outside of the template context. It also comes with a handy CLI tool to extract messages from the source code!
 
 ```javascript
 import { define, html, localize } from "hybrids";
@@ -186,7 +186,7 @@ You can read more in the [Localization](/component-model/localization.md) sectio
 
 ## Community
 
-Do you need help? Something went wrong? Feel free to create [an issue](https://github.com/hybridsjs/hybrids/issues/new) in the github repository or join the [Gitter](https://gitter.im/hybridsjs/hybrids) channel.
+Do you need help? Something went wrong? Feel free to create [an issue](https://github.com/hybridsjs/hybrids/issues/new) in the GitHub repository or join the [Gitter](https://gitter.im/hybridsjs/hybrids) channel.
 
 ## License
 
