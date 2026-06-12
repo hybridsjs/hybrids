@@ -1859,6 +1859,47 @@ describe("store:", () => {
           expect(el.draft).toEqual({ value: "test 2" });
         });
       });
+
+      it("in draft mode sets nested array model", async () => {
+        const NestedModel = {
+          id: true,
+          value: "",
+        };
+
+        Model = {
+          value: "test",
+          nested: [NestedModel],
+          [store.connect]: {
+            get: () => {
+              return { value: "test 2" };
+            },
+            set: (id, values) => values,
+          },
+        };
+
+        define({
+          tag: "test-store-factory-singleton-draft-nested-array",
+          draft: store(Model, { draft: true }),
+        });
+
+        el = document.createElement(
+          "test-store-factory-singleton-draft-nested-array",
+        );
+
+        expect(el.draft).toEqual({ value: "test 2", nested: [] });
+
+        const nestedModel = await store.set(NestedModel, { value: "nested" });
+        const updatedDraft = await store.set(el.draft, {
+          nested: [nestedModel],
+        });
+
+        expect(updatedDraft).toEqual({
+          value: "test 2",
+          nested: [{ id: nestedModel.id, value: "nested" }],
+        });
+
+        expect(updatedDraft.nested[0]).toBe(nestedModel);
+      });
     });
 
     describe("for listing model", () => {
