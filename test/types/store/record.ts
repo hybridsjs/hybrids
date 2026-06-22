@@ -1,18 +1,25 @@
-import { Model, define, store } from "/types/index";
+import { PickIndexes, FieldDefinition, GuardedModel, ModelDefinition, define, store, StoreRecord } from "/types/index";
+
+type A = { a: string }
 
 interface IEnumerableModel {
   id: string;
-  values: Record<string, { a: string }>;
+  property: string
+  values: Record<string, A>;
 }
 
-const IEnumerableModel: Model<IEnumerableModel> = {
+type B = FieldDefinition<A>
+
+const IEnumerableModel: ModelDefinition<IEnumerableModel> = {
   id: true,
+  property: "",
   values: store.record({ a: "test" }),
 };
 
-const IOtherModel: Model<IEnumerableModel> = {
+const IOtherModel: ModelDefinition<IEnumerableModel> = {
   id: true,
-  values: store.record(store.ref(() => ({ a: "test" }))),
+  property: "",
+  values: store.ref(() => store.record(({ a: "test" }))),
 };
 
 interface IAComponent extends HTMLElement {
