@@ -839,6 +839,20 @@ describe("html:", () => {
       expect(fragment.children[0].querySelectorAll("td").length).toBe(4);
     });
 
+    it("should render custom elements with table tag prefix", () => {
+      define({ tag: "thead-element" });
+
+      const render = (value, className) => html`
+        <thead-element>${value}</thead-element>
+        <div class="${className}"></div>
+      `;
+
+      render("content", "test")(fragment);
+
+      expect(fragment.children[0].textContent).toBe("content");
+      expect(fragment.children[1].getAttribute("class")).toBe("test");
+    });
+
     it("should set single expression in <tr> element", () => {
       const render = html`
         <table>
