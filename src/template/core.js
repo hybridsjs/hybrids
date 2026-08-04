@@ -25,7 +25,7 @@ function createContents(parts) {
     tableMode =
       tableMode ||
       signature.match(
-        /<\s*(table|th|tr|td|thead|tbody|tfoot|caption|colgroup)([^<>]|"[^"]*"|'[^']*')*>\s*$/,
+        /<\s*(table|th|tr|td|thead|tbody|tfoot|caption|colgroup)(?=[\s>\/])([^<>]|"[^"]*"|'[^']*')*>\s*$/,
       );
 
     signature +=
