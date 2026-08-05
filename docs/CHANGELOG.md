@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.1.23](https://github.com/hybridsjs/hybrids/compare/v9.1.22...v9.1.23) (2026-08-05)
+
+
+### Bug Fixes
+
+* **store:** improve thrown errors ([3f1df78](https://github.com/hybridsjs/hybrids/commit/3f1df78137e2967925291a5939518012b57dab98))
+* **template:** avoid treating table-prefixed custom elements as table tags ([#306](https://github.com/hybridsjs/hybrids/issues/306)) ([6ba99e5](https://github.com/hybridsjs/hybrids/commit/6ba99e59a38876936b5d26aaab2ca525f896440f))
+* **tests:** drain view transition state between transition helper tests ([#309](https://github.com/hybridsjs/hybrids/issues/309)) ([9105f49](https://github.com/hybridsjs/hybrids/commit/9105f49168f098e63f4b41bbf35c1e0af2806c80))
+
 ### [9.1.22](https://github.com/hybridsjs/hybrids/compare/v9.1.21...v9.1.22) (2026-01-07)
 
 
