@@ -834,7 +834,6 @@ function setupModel(Model, nested) {
             model[key] = result;
           };
         }
-        // eslint-disable-next-line no-fallthrough
         default: {
           const Constructor = getTypeConstructor(type, key);
           return (model, data, lastModel) => {
@@ -1531,7 +1530,7 @@ function pending(...models) {
         isPending = true;
         return value;
       }
-    } catch (e) {} // eslint-disable-line no-empty
+    } catch {} // eslint-disable-line no-empty
 
     return Promise.resolve(model);
   });

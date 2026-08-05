@@ -981,7 +981,6 @@ describe("store:", () => {
     });
 
     it("throws when string instance is directly used", () => {
-      // eslint-disable-next-line no-new-wrappers
       Model = { some: new String("") };
       expect(() => store.get(Model)).toThrow();
     });
@@ -1547,7 +1546,7 @@ describe("store:", () => {
           value: "test",
           [store.connect]: {
             get: (id) => Promise.resolve({ id, value: "test" }),
-            set: (id, values) => ({ ...values, id: id || idCount++ }), // eslint-disable-line no-plusplus
+            set: (id, values) => ({ ...values, id: id || idCount++ }),
           },
         };
 
@@ -2906,10 +2905,10 @@ describe("store:", () => {
         },
       };
 
-      let model = store.get(Model, "1");
+      store.get(Model, "1");
       isOffline = true;
       store.clear(Model, false);
-      model = store.get(Model, "1");
+      const model = store.get(Model, "1");
 
       expect(store.error(model)).toBeInstanceOf(Error);
       expect(model.model).toBe(model);
