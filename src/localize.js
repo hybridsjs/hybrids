@@ -12,7 +12,7 @@ const languages = (() => {
   // istanbul ignore next
   try {
     list = globalThis.navigator.languages || [globalThis.navigator.language];
-  } catch (e) {
+  } catch {
     list = [];
   }
 
