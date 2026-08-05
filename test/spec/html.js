@@ -1218,8 +1218,14 @@ describe("html:", () => {
       document.body.appendChild(el);
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       document.body.removeChild(el);
+
+      // The helper keeps the current transition in the module scope, so it must
+      // be drained here - otherwise it leaks into the next test and changes
+      // how many times the "already in progress" warning is triggered
+      const { instance } = html.transition;
+      if (instance) await instance.finished.catch(() => {});
     });
 
     it("should render component", () => {
@@ -1266,7 +1272,9 @@ describe("html:", () => {
         `(el);
 
         return resolveTimeout(() => {
-          expect(console.warn).toHaveBeenCalledTimes(2);
+          // The first element starts the transition, so only the second one
+          // hits the "already in progress" branch
+          expect(console.warn).toHaveBeenCalledTimes(1);
         });
       });
     }
