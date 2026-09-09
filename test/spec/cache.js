@@ -2,6 +2,7 @@ import {
   get,
   sync,
   assert,
+  getEntry,
   getEntries,
   invalidate,
   invalidateAll,
@@ -20,6 +21,51 @@ describe("cache:", () => {
   });
 
   describe("get()", () => {
+    it("uses stable weak references for dependency contexts", () => {
+      const model = {};
+      const getter = () => get(model, "value", () => "value");
+
+      get(target, "key", getter);
+      const entry = getEntry(target, "key");
+      const dependency = getEntry(model, "value");
+      const [ref] = dependency.contexts;
+
+      expect(ref instanceof WeakRef).toBe(true);
+      expect(ref.deref()).toBe(entry);
+      expect(entry.deps.has(dependency)).toBe(true);
+
+      invalidate(target, "key");
+      get(target, "key", getter);
+
+      expect([...dependency.contexts]).toEqual([ref]);
+      expect([...entry.depsContexts]).toEqual([dependency.contexts]);
+    });
+
+    it("removes obsolete dependency contexts", () => {
+      const model = {};
+      get(target, "key", () => get(model, "value", () => "value"));
+      invalidate(target, "key");
+      get(target, "key", () => "other value");
+
+      expect(getEntry(model, "value").contexts.size).toBe(0);
+      expect(getEntry(target, "key").depsContexts.size).toBe(0);
+    });
+
+    it("removes dependency contexts when a getter throws", () => {
+      const model = {};
+      expect(() =>
+        get(target, "key", () =>
+          get(model, "value", () => {
+            throw Error();
+          }),
+        ),
+      ).toThrow();
+
+      expect(getEntry(model, "value").contexts.size).toBe(0);
+      expect(getEntry(target, "key").deps.size).toBe(0);
+      expect(getEntry(target, "key").depsContexts.size).toBe(0);
+    });
+
     it("throws for circular call", () => {
       expect(() =>
         get(target, "key", () => get(target, "key", () => {})),
@@ -157,6 +203,39 @@ describe("cache:", () => {
   });
 
   describe("invalidate()", () => {
+    it("prunes collected contexts while invalidating live dependants", () => {
+      const model = {};
+      get(target, "key", () => get(model, "value", () => "value"));
+      const dependency = getEntry(model, "value");
+      const ref = { deref: () => undefined };
+      dependency.contexts.add(ref);
+
+      invalidate(model, "value");
+
+      expect(dependency.contexts.has(ref)).toBe(false);
+      expect(getEntry(target, "key").resolved).toBe(false);
+    });
+
+    it("deletes entries whose remaining contexts have been collected", () => {
+      get(target, "key", () => "value");
+      invalidate(target, "key", { deleteEntry: true });
+      getEntry(target, "key").contexts = new Set([{ deref: () => undefined }]);
+
+      return resolveTimeout(() => {
+        expect(getEntries(target)).toEqual([]);
+      });
+    });
+
+    it("removes both dependency links when deleting an entry", () => {
+      const model = {};
+      get(target, "key", () => get(model, "value", () => "value"));
+      const entry = getEntry(target, "key");
+      invalidate(model, "value", { deleteEntry: true });
+
+      expect(entry.deps.size).toBe(0);
+      expect(entry.depsContexts.size).toBe(0);
+    });
+
     it("clears cached value", () => {
       get(target, "key", () => "value");
       invalidate(target, "key", { clearValue: true });
