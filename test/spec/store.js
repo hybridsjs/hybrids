@@ -1833,6 +1833,35 @@ describe("store:", () => {
         });
       });
 
+      it("uses weak cache references when element is removed", () => {
+        expect(el.model).toEqual({ value: "test" });
+        const entry = cache.getEntry(el, "model");
+        const dependencies = [...entry.deps];
+        el.remove();
+
+        expect(dependencies.length).toBeGreaterThan(0);
+        expect(entry.ref instanceof WeakRef).toBe(true);
+        expect(entry.ref.deref()).toBe(entry);
+        for (const dependency of dependencies) {
+          expect(dependency.contexts.has(entry.ref)).toBe(true);
+          expect(dependency.contexts.has(entry)).toBe(false);
+        }
+      });
+
+      it("updates a retained element after removal and reconnection", () => {
+        expect(el.model).toEqual({ value: "test" });
+
+        return resolveRaf(() => {
+          el.remove();
+          expect(el.model).toEqual({ value: "test" });
+
+          return store.set(Model, { value: "new value" }).then(() => {
+            document.body.appendChild(el);
+            expect(el.model).toEqual({ value: "new value" });
+          });
+        });
+      });
+
       it("in draft mode uses default values for external storage", () => {
         Model = {
           value: "test",

@@ -3,6 +3,20 @@ import * as emitter from "./emitter.js";
 const entries = new WeakMap();
 const stack = new Set();
 
+const registry = new FinalizationRegistry(({ ref, depsContexts }) => {
+  for (const contexts of depsContexts) contexts.delete(ref);
+});
+
+function* getContexts(entry) {
+  if (!entry.contexts) return;
+
+  for (const ref of entry.contexts) {
+    const context = ref.deref();
+    if (context) yield context;
+    else entry.contexts.delete(ref);
+  }
+}
+
 function dispatch(entry, resolved = false) {
   const contexts = [];
   let index = 0;
@@ -10,12 +24,10 @@ function dispatch(entry, resolved = false) {
   entry.resolved = resolved;
 
   while (entry) {
-    if (entry.contexts) {
-      for (const context of entry.contexts) {
-        if (!stack.has(context) && !contexts.includes(context)) {
-          context.resolved = false;
-          contexts.push(context);
-        }
+    for (const context of getContexts(entry)) {
+      if (!stack.has(context) && !contexts.includes(context)) {
+        context.resolved = false;
+        contexts.push(context);
       }
     }
 
@@ -45,8 +57,17 @@ export function getEntry(target, key) {
       resolved: false,
       contexts: undefined,
       deps: undefined,
+      depsContexts: new Set(),
+      ref: undefined,
       observe: undefined,
     };
+
+    entry.ref = new WeakRef(entry);
+    registry.register(entry, {
+      ref: entry.ref,
+      depsContexts: entry.depsContexts,
+    });
+
     map.set(key, entry);
   }
 
@@ -71,17 +92,19 @@ export function get(target, key, fn) {
     if (!entry.contexts) entry.contexts = new Set();
     if (!context.deps) context.deps = new Set();
 
-    entry.contexts.add(context);
+    entry.contexts.add(context.ref);
     context.deps.add(entry);
+    context.depsContexts.add(entry.contexts);
   }
 
   if (entry.resolved) return entry.value;
 
   if (entry.deps) {
     for (const depEntry of entry.deps) {
-      depEntry.contexts.delete(entry);
+      depEntry.contexts.delete(entry.ref);
     }
     entry.deps.clear();
+    entry.depsContexts.clear();
   }
 
   const lastContext = context;
@@ -106,7 +129,8 @@ export function get(target, key, fn) {
 
     if (context) {
       context.deps.delete(entry);
-      entry.contexts.delete(context);
+      context.depsContexts.delete(entry.contexts);
+      entry.contexts.delete(context.ref);
     }
 
     throw e;
@@ -169,22 +193,22 @@ export function observe(target, key, fn, callback) {
   };
 }
 
-const gc = new Set();
+const pendingDeletes = new Set();
 function deleteEntry(entry) {
-  if (!gc.size) {
+  if (!pendingDeletes.size) {
     setTimeout(() => {
-      for (const e of gc) {
-        if (!e.contexts || e.contexts.size === 0) {
+      for (const e of pendingDeletes) {
+        if (getContexts(e).next().done) {
           const targetMap = entries.get(e.target);
           targetMap.delete(e.key);
         }
       }
 
-      gc.clear();
+      pendingDeletes.clear();
     });
   }
 
-  gc.add(entry);
+  pendingDeletes.add(entry);
 }
 
 function invalidateEntry(entry, options) {
@@ -199,17 +223,17 @@ function invalidateEntry(entry, options) {
   if (options.deleteEntry) {
     if (entry.deps) {
       for (const depEntry of entry.deps) {
-        depEntry.contexts.delete(entry);
+        depEntry.contexts.delete(entry.ref);
       }
       entry.deps = undefined;
+      entry.depsContexts.clear();
     }
 
-    if (entry.contexts) {
-      for (const context of entry.contexts) {
-        context.deps.delete(entry);
-      }
-      entry.contexts = undefined;
+    for (const context of getContexts(entry)) {
+      context.deps.delete(entry);
+      context.depsContexts.delete(entry.contexts);
     }
+    entry.contexts = undefined;
 
     deleteEntry(entry);
   }
