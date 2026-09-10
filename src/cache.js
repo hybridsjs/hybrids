@@ -7,16 +7,6 @@ const registry = new FinalizationRegistry(({ ref, depsContexts }) => {
   for (const contexts of depsContexts) contexts.delete(ref);
 });
 
-function* getContexts(entry) {
-  if (!entry.contexts) return;
-
-  for (const ref of entry.contexts) {
-    const context = ref.deref();
-    if (context) yield context;
-    else entry.contexts.delete(ref);
-  }
-}
-
 function dispatch(entry, resolved = false) {
   const contexts = [];
   let index = 0;
@@ -24,10 +14,15 @@ function dispatch(entry, resolved = false) {
   entry.resolved = resolved;
 
   while (entry) {
-    for (const context of getContexts(entry)) {
-      if (!stack.has(context) && !contexts.includes(context)) {
-        context.resolved = false;
-        contexts.push(context);
+    if (entry.contexts) {
+      for (const ref of entry.contexts) {
+        const context = ref.deref();
+        if (!context) {
+          entry.contexts.delete(ref);
+        } else if (!stack.has(context) && !contexts.includes(context)) {
+          context.resolved = false;
+          contexts.push(context);
+        }
       }
     }
 
@@ -200,7 +195,14 @@ function deleteEntry(entry) {
   if (!pendingDeletes.size) {
     setTimeout(() => {
       for (const e of pendingDeletes) {
-        if (getContexts(e).next().done) {
+        if (e.contexts) {
+          for (const ref of e.contexts) {
+            if (ref.deref()) break;
+            e.contexts.delete(ref);
+          }
+        }
+
+        if (!e.contexts || e.contexts.size === 0) {
           const targetMap = entries.get(e.target);
           targetMap.delete(e.key);
         }
@@ -231,9 +233,16 @@ function invalidateEntry(entry, options) {
       entry.depsContexts.clear();
     }
 
-    for (const context of getContexts(entry)) {
-      context.deps.delete(entry);
-      context.depsContexts.delete(entry.contexts);
+    if (entry.contexts) {
+      for (const ref of entry.contexts) {
+        const context = ref.deref();
+        if (context) {
+          context.deps.delete(entry);
+          context.depsContexts.delete(entry.contexts);
+        } else {
+          entry.contexts.delete(ref);
+        }
+      }
     }
     entry.contexts = undefined;
 

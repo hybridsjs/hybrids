@@ -255,12 +255,15 @@ describe("cache:", () => {
       const model = {};
       get(target, "key", () => get(model, "value", () => "value"));
       const dependency = getEntry(model, "value");
-      const ref = { deref: () => undefined };
-      dependency.contexts.add(ref);
+      const liveRef = getEntry(target, "key").ref;
+      dependency.contexts.clear();
+      dependency.contexts.add({ deref: () => undefined });
+      dependency.contexts.add(liveRef);
+      dependency.contexts.add({ deref: () => undefined });
 
       invalidate(model, "value");
 
-      expect(dependency.contexts.has(ref)).toBe(false);
+      expect([...dependency.contexts]).toEqual([liveRef]);
       expect(getEntry(target, "key").resolved).toBe(false);
     });
 
@@ -271,6 +274,23 @@ describe("cache:", () => {
 
       return resolveTimeout(() => {
         expect(getEntries(target)).toEqual([]);
+      });
+    });
+
+    it("keeps entries with a live context after pruning collected ones", () => {
+      get(target, "key", () => "value");
+      invalidate(target, "key", { deleteEntry: true });
+      const entry = getEntry(target, "key");
+      const deadRef = { deref: () => undefined };
+      entry.contexts = new Set([deadRef]);
+
+      get(target, "dependant", () => get(target, "key", () => "value"));
+
+      return resolveTimeout(() => {
+        expect(getEntries(target)).toContain(entry);
+        expect([...entry.contexts]).toEqual([
+          getEntry(target, "dependant").ref,
+        ]);
       });
     });
 
