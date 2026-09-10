@@ -186,6 +186,54 @@ describe("cache:", () => {
     });
   });
 
+  describe("dispatch", () => {
+    it("visits shared dependants once in breadth-first order", () => {
+      const getRoot = () => get(target, "root", (_, value) => value);
+      const getLeft = () => get(target, "left", () => getRoot() + 1);
+      const getRight = () => get(target, "right", () => getRoot() + 2);
+      const getShared = () =>
+        get(target, "shared", () => getLeft() + getRight());
+
+      assert(target, "root", 0);
+      getShared();
+
+      const order = [];
+      for (const key of ["root", "left", "right", "shared"]) {
+        const entry = getEntry(target, key);
+        let resolved = entry.resolved;
+        Object.defineProperty(entry, "resolved", {
+          get: () => resolved,
+          set(value) {
+            resolved = value;
+            order.push(key);
+          },
+        });
+      }
+
+      assert(target, "root", 1);
+
+      expect(order).toEqual(["root", "left", "right", "shared"]);
+      expect(getShared()).toBe(5);
+    });
+
+    it("invalidates all dependants of a shared root", () => {
+      const hosts = Array.from({ length: 256 }, () => ({}));
+      const getter = () => get(target, "root", (_, value) => value);
+      assert(target, "root", "initial");
+
+      for (const host of hosts) {
+        expect(get(host, "value", getter)).toBe("initial");
+      }
+
+      assert(target, "root", "updated");
+
+      for (const host of hosts) {
+        expect(getEntry(host, "value").resolved).toBe(false);
+        expect(get(host, "value", getter)).toBe("updated");
+      }
+    });
+  });
+
   describe("getEntries()", () => {
     it("returns empty array for new object", () => {
       expect(getEntries({})).toEqual([]);
@@ -375,6 +423,36 @@ describe("cache:", () => {
 
       return resolveRaf(() => {
         expect(spy).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it("cancels queued work when unobserved", () => {
+      const getter = jasmine.createSpy("getter").and.callFake(_);
+      const unobserve = observe(target, "key", getter, spy);
+      getter.calls.reset();
+
+      assert(target, "key", "value");
+      unobserve();
+
+      return resolveRaf(() => {
+        expect(getter).not.toHaveBeenCalled();
+        expect(spy).not.toHaveBeenCalled();
+      });
+    });
+
+    it("cancels queued dependency updates when unobserved", () => {
+      const getter = jasmine
+        .createSpy("getter")
+        .and.callFake(() => get(target, "dep", _));
+      const unobserve = observe(target, "key", getter, spy);
+      getter.calls.reset();
+
+      assert(target, "dep", "value");
+      unobserve();
+
+      return resolveRaf(() => {
+        expect(getter).not.toHaveBeenCalled();
+        expect(spy).not.toHaveBeenCalled();
       });
     });
 
