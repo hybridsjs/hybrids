@@ -63,6 +63,9 @@ function compile(hybrids, HybridsElement) {
 
         cache.invalidateAll(this);
       }
+
+      // Keep state when moved with `moveBefore()` instead of disconnect/connect
+      connectedMoveCallback() {}
     };
   }
 

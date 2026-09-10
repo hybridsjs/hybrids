@@ -2,18 +2,24 @@ import { getMeta, removeTemplate, getTemplateEnd } from "../utils.js";
 
 export const arrayMap = new WeakMap();
 
+// moveBefore preserves state of custom elements (connectedMoveCallback) and iframes
+const moveNode = globalThis.Element?.prototype.moveBefore
+  ? (parent, node, ref) => parent.moveBefore(node, ref)
+  : (parent, node, ref) => parent.insertBefore(node, ref);
+
 function movePlaceholder(target, previousSibling) {
   const meta = getMeta(target);
   const startNode = meta.startNode;
   const endNode = getTemplateEnd(meta.endNode);
+  const parent = previousSibling.parentNode;
 
-  previousSibling.parentNode.insertBefore(target, previousSibling.nextSibling);
+  moveNode(parent, target, previousSibling.nextSibling);
 
   let prevNode = target;
   let node = startNode;
   while (node) {
     const nextNode = node.nextSibling;
-    prevNode.parentNode.insertBefore(node, prevNode.nextSibling);
+    moveNode(parent, node, prevNode.nextSibling);
     prevNode = node;
     node = nextNode !== endNode.nextSibling && nextNode;
   }

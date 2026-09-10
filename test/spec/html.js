@@ -631,6 +631,43 @@ describe("html:", () => {
         html` ${[1, 2, 3].map(() => html``.key(1))} `(fragment);
       }).not.toThrow();
     });
+
+    it("preserves custom elements state when moving items", () => {
+      if (!("moveBefore" in Element.prototype)) return;
+
+      const connect = jasmine.createSpy("connect");
+      const disconnect = jasmine.createSpy("disconnect");
+
+      define({
+        tag: "test-html-move-item",
+        value: {
+          value: undefined,
+          connect: () => {
+            connect();
+            return disconnect;
+          },
+        },
+      });
+
+      const renderItems = (items) => html`
+        ${items.map((v) =>
+          html`<test-html-move-item>${v}</test-html-move-item>`.key(v),
+        )}
+      `;
+
+      renderItems([1, 2, 3])(fragment);
+
+      return resolveTimeout(() => {
+        expect(connect).toHaveBeenCalledTimes(3);
+        renderItems([3, 1, 2])(fragment);
+
+        return resolveTimeout(() => {
+          expect(getArrayValues(fragment)).toEqual(["3", "1", "2"]);
+          expect(connect).toHaveBeenCalledTimes(3);
+          expect(disconnect).toHaveBeenCalledTimes(0);
+        });
+      });
+    });
   });
 
   describe("nested array content expression", () => {

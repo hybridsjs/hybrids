@@ -33,7 +33,8 @@ export default function mount(target, hybrids) {
     if (
       key === "constructor" ||
       key === "connectedCallback" ||
-      key === "disconnectedCallback"
+      key === "disconnectedCallback" ||
+      key === "connectedMoveCallback"
     ) {
       continue;
     }
