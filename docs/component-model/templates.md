@@ -277,7 +277,7 @@ define({
 
 ## Values
 
-An expression in the content of an element that is not a function or a Node instance resolves to `textContent`. Falsy values other than the number `0` are not displayed (`textContent` is set to an empty string). These rules apply in the same way to values in arrays.
+An expression in the content of an element that is not a function, a Promise or a Node instance resolves to `textContent`. Falsy values other than the number `0` are not displayed (`textContent` is set to an empty string). These rules apply in the same way to values in arrays.
 
 ```javascript
 html`<div>Name: ${name}, Count: ${count}</div>`;
@@ -290,7 +290,7 @@ HTML code can be created via the `innerHTML` property. However, use it with caut
 html`<div innerHTML="${htmlCode}"></div>`;
 ```
 
-An expression with a function resolves to a [nested template](#nested-templates).
+An expression with a function resolves to a [nested template](#nested-templates), and an expression with a promise resolves to its [result](#promises).
 
 ### Nodes
 
@@ -321,7 +321,21 @@ define({
 
 ### Promises
 
-A Promise as a value of an expression is not supported. However, the template engine supports promises via the `html.resolve` method.
+If the expression returns a Promise, the previous content stays in place until the promise resolves. Then, the resolved value is rendered by the same rules as for other content expressions (it can be a nested template, an array, a Node instance, or a primitive value). If the expression is updated before the promise resolves, the result of the pending promise is ignored.
+
+```javascript
+html`
+  <div>
+    ${asyncApi()
+      .then((value) => html`<div>${value}</div>`)
+      .catch(() => html`<div>Error!</div>`)}
+  </div>
+`
+```
+
+Rejected promises are not handled by the template engine, so use the `catch()` method to render an error state.
+
+If a placeholder should be rendered while the promise is pending, use the `html.resolve` method:
 
 ```typescript
 html.resolve(promise: Promise, placeholder: Function, delay = 200): Function

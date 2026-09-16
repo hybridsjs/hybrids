@@ -1,6 +1,7 @@
 import { removeTemplate } from "../utils.js";
 import resolveArray, { arrayMap } from "./array.js";
 import resolveNode from "./node.js";
+import resolvePromise, { promiseMap } from "./promise.js";
 
 function typeOf(value) {
   const type = typeof value;
@@ -8,6 +9,7 @@ function typeOf(value) {
   if (type === "object") {
     if (Array.isArray(value)) return "array";
     if (value instanceof globalThis.Node) return "node";
+    if (value instanceof Promise) return "promise";
   }
 
   return type;
@@ -21,7 +23,19 @@ export default function resolveValue(
   useLayout,
 ) {
   const type = typeOf(value);
-  const lastType = typeOf(lastValue);
+  let lastType = typeOf(lastValue);
+
+  if (lastType === "promise") {
+    lastValue = promiseMap.get(target).lastValue;
+    lastType = typeOf(lastValue);
+
+    if (type !== "promise") promiseMap.delete(target);
+  }
+
+  if (type === "promise") {
+    resolvePromise(host, target, value, lastValue, resolveValue, useLayout);
+    return;
+  }
 
   if (lastType !== "undefined" && type !== lastType) {
     if (type !== "function") removeTemplate(target);
