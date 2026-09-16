@@ -158,6 +158,8 @@ define({
 
 In the above example, the `list` method uses the API's search feature. Using the listing type, we can display a result page with movies filtered by query and year. However, the result of the listing mode cannot contain additional metadata. For such a case, create a separate definition with a nested array of models.
 
+By default, updating or creating a single model instance (for example, one of the movies from the list above) does not invalidate the cached result of the `list` method - only changes made directly to the list's own model instance do. Set the storage's [`loose`](#loose) option to `true` if the list result must be invalidated whenever one of its model instances changes.
+
 ```javascript
 import Movie from "./movie.js";
 
