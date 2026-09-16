@@ -1181,6 +1181,109 @@ describe("html:", () => {
     });
   });
 
+  describe("promise value", () => {
+    const render = (value) => html`${value}`;
+    const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+    it("renders resolved template", async () => {
+      render(Promise.resolve(html`<div>one</div>`))(fragment);
+      expect(fragment.innerHTML).toBe("");
+
+      await tick();
+      expect(fragment.children[0].textContent).toBe("one");
+    });
+
+    it("renders resolved primitive and array values", async () => {
+      render(Promise.resolve("text"))(fragment);
+      await tick();
+      expect(fragment.innerHTML).toBe("text");
+
+      render(Promise.resolve(["a", "b"]))(fragment);
+      await tick();
+      expect(fragment.innerHTML).toBe("ab");
+
+      render(Promise.resolve(0))(fragment);
+      await tick();
+      expect(fragment.innerHTML).toBe("0");
+    });
+
+    it("keeps previous content until the promise resolves", async () => {
+      render("one")(fragment);
+      expect(fragment.innerHTML).toBe("one");
+
+      let resolve;
+      render(new Promise((r) => (resolve = r)))(fragment);
+      expect(fragment.innerHTML).toBe("one");
+
+      resolve(html`<div>two</div>`);
+      await tick();
+      expect(fragment.children[0].textContent).toBe("two");
+    });
+
+    it("reuses DOM element between resolved templates", async () => {
+      const renderItem = (value) => html`<div>${value}</div>`;
+
+      render(Promise.resolve(renderItem("one")))(fragment);
+      await tick();
+      const el = fragment.children[0];
+
+      render(Promise.resolve(renderItem("two")))(fragment);
+      await tick();
+
+      expect(fragment.children[0]).toBe(el);
+      expect(el.textContent).toBe("two");
+    });
+
+    it("clears resolved content when the next value is a different type", async () => {
+      render(Promise.resolve(html`<div>one</div>`))(fragment);
+      await tick();
+      expect(fragment.children.length).toBe(1);
+
+      render("text")(fragment);
+      expect(fragment.innerHTML).toBe("text");
+
+      render(Promise.resolve(["a", "b"]))(fragment);
+      await tick();
+      expect(fragment.innerHTML).toBe("ab");
+
+      render(Promise.resolve(null))(fragment);
+      await tick();
+      expect(fragment.innerHTML).toBe("");
+    });
+
+    it("ignores stale promise when a newer promise is set", async () => {
+      let resolveFirst;
+      render(new Promise((r) => (resolveFirst = r)))(fragment);
+      render(Promise.resolve("two"))(fragment);
+
+      await tick();
+      expect(fragment.innerHTML).toBe("two");
+
+      resolveFirst("one");
+      await tick();
+      expect(fragment.innerHTML).toBe("two");
+    });
+
+    it("ignores pending promise when a plain value is set", async () => {
+      let resolveFirst;
+      render(new Promise((r) => (resolveFirst = r)))(fragment);
+      render("two")(fragment);
+      expect(fragment.innerHTML).toBe("two");
+
+      resolveFirst(html`<div>one</div>`);
+      await tick();
+      expect(fragment.innerHTML).toBe("two");
+    });
+
+    it("supports promises as array items", async () => {
+      render([Promise.resolve("a"), "b", Promise.resolve(html`<div>c</div>`)])(
+        fragment,
+      );
+      await tick();
+      expect(fragment.innerHTML).toBe("ab<div>c</div>");
+    });
+  });
+
   describe("resolve helper", () => {
     const render = (promise, value, placeholder) => html`
       ${html.resolve(

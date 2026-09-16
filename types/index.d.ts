@@ -1015,6 +1015,8 @@ export namespace html {
 
   /**
    * Renders the placeholder until the promise resolves to the content.
+   * A promise can also be passed directly to the content expression,
+   * but then the placeholder is not supported.
    *
    * @param promise - a promise resolving to the content of the expression
    * @param placeholder - a template rendered while the promise is pending
