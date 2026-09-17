@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [9.2.0](https://github.com/hybridsjs/hybrids/compare/v9.1.23...v9.2.0) (2026-09-17)
+
+
+### Features
+
+* **html:** support promises directly in content expressions ([#312](https://github.com/hybridsjs/hybrids/issues/312)) ([e6967ec](https://github.com/hybridsjs/hybrids/commit/e6967ec9e8d605ea7ab545a1e7bb063812a16a0f))
+* **html:** use moveBefore API for array reorder ([f6fac8b](https://github.com/hybridsjs/hybrids/commit/f6fac8b64b4cac8282dce50ee379103327738c12))
+* **router:** add navigate() method for programmatic navigation ([5fa3c7f](https://github.com/hybridsjs/hybrids/commit/5fa3c7f83b3e7e97fd1e20149737086c13e29439))
+
+
+### Bug Fixes
+
+* **cache:** cancel queued observers on unsubscribe ([3879a8f](https://github.com/hybridsjs/hybrids/commit/3879a8f8aab208c4b34c4b30d1a0200ce5211c6e))
+* **cache:** improve ref performance ([56564b7](https://github.com/hybridsjs/hybrids/commit/56564b70089e6cf4f4d3b8c0a64ac423497df6a6))
+* **cache:** prevent retained elements with weak dependency contexts ([#311](https://github.com/hybridsjs/hybrids/issues/311)) ([778ebd4](https://github.com/hybridsjs/hybrids/commit/778ebd4fa29f4db7c6948845aa2ca700d8102d79))
+* **template:** avoid backtracking in table-mode detection ([#314](https://github.com/hybridsjs/hybrids/issues/314)) ([07a8416](https://github.com/hybridsjs/hybrids/commit/07a8416499e01dc404cbc69fe84602702cecd27c))
+
 ### [9.1.23](https://github.com/hybridsjs/hybrids/compare/v9.1.22...v9.1.23) (2026-08-05)
 
 
