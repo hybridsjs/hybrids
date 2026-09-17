@@ -273,6 +273,34 @@ The `guardUrl` method should be used in guarded views (with the `guard` function
 
 You can read more about the `guard` option in the [View](./view.md#guard) section.
 
+### `router.navigate()`
+
+```typescript
+router.navigate(view: component, params?: object): void
+```
+
+* **arguments**:
+  * `view` - a component definition
+  * `params` - an object with parameters to pass to the view
+
+The `navigate` method navigates to the target view programmatically. The arguments are the same as in the `url` method, and the result is identical to a user clicking an anchor with the generated URL - the `navigate` event is dispatched on the host element, and the router goes forward or backward in the history using the view structure.
+
+Use it only when the navigation cannot be expressed as an anchor or a form, e.g., after an asynchronous action, which is not triggered by the user (like a timeout or a WebSocket message). For user-initiated actions, prefer the `href` and `action` attributes with the `resolve` method, as they keep the navigation accessible and visible to the browser.
+
+```javascript
+import { router, store } from "hybrids";
+
+import Login from "./Login.js";
+
+function signOut(host) {
+  return store.set(host.session, null).then(() => {
+    router.navigate(Login);
+  });
+}
+```
+
+!> Unlike the URL methods, the `navigate` method throws if the root router is not connected to the document or the view is not a part of the router. It also throws when it is called while the router is dispatching the `navigate` event (e.g., inside of the event listener), which protects from infinite navigation loops.
+
 ### `router.resolve()`
 
 ```typescript

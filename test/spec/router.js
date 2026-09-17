@@ -1287,6 +1287,90 @@ describe("router:", () => {
       });
     });
 
+    describe("navigate() -", () => {
+      it("throws when no router is connected", () => {
+        window.history.replaceState(null, "", browserUrl);
+        expect(() => router.navigate(RootView)).toThrow();
+      });
+
+      describe("with connected router", () => {
+        beforeEach(() => {
+          window.history.replaceState(null, "", browserUrl);
+          host = document.createElement("test-router-app");
+          document.body.appendChild(host);
+
+          return resolveTimeout(() => {});
+        });
+
+        afterEach(() => {
+          document.body.removeChild(host);
+        });
+
+        it("throws for not connected view", () => {
+          expect(() => router.navigate({ tag: "test-router-nope" })).toThrow();
+        });
+
+        it("navigates to the view with params and dispatches event", () => {
+          const spy = jasmine.createSpy("navigate");
+          host.addEventListener("navigate", spy);
+
+          router.navigate(MultipleViewWithUrl, { value: "test", param: 1 });
+
+          expect(spy).toHaveBeenCalledTimes(1);
+          expect(spy.calls.mostRecent().args[0].detail.url.pathname).toBe(
+            "/multiple/test/test",
+          );
+
+          return resolveTimeout(() => {
+            expect(hybrids(host.views[0])).toBe(MultipleViewWithUrl);
+            expect(host.views[0].value).toBe("test");
+            expect(host.views[0].param).toBe(1);
+            expect(window.location.pathname).toBe("/multiple/test/test");
+          });
+        });
+
+        it("navigates to the view without url option", () => {
+          router.navigate(ChildView);
+
+          return resolveTimeout(() => {
+            expect(hybrids(host.views[0])).toBe(ChildView);
+            expect(window.history.state[0].id).toBe("test-router-child-view");
+          });
+        });
+
+        it("navigates back to the parent view", () => {
+          router.navigate(ChildView);
+
+          return resolveTimeout(() => {
+            router.navigate(RootView);
+
+            return resolveTimeout(() => {
+              expect(hybrids(host.views[0])).toBe(RootView);
+              expect(window.history.state.length).toBe(1);
+            });
+          });
+        });
+
+        it("throws when called inside of the navigate event listener", () => {
+          let error;
+          host.addEventListener("navigate", () => {
+            try {
+              router.navigate(RootView);
+            } catch (e) {
+              error = e;
+            }
+          });
+
+          router.navigate(ChildView);
+          expect(error).toBeInstanceOf(Error);
+
+          return resolveTimeout(() => {
+            expect(hybrids(host.views[0])).toBe(ChildView);
+          });
+        });
+      });
+    });
+
     describe("active() -", () => {
       afterEach(() => {
         if (host && host.parentElement) {

@@ -389,6 +389,14 @@ router.guardUrl(params?: object): URL | ""
   - a URL instance or an empty string
 
 ```typescript
+router.navigate(view: component, params?: object): void
+```
+
+- **arguments**:
+  - `view` - a component definition
+  - `params` - an object with parameters to pass to the view
+
+```typescript
 router.resolve(event: Event, promise: Promise): Promise
 ```
 

@@ -700,6 +700,20 @@ function getEntryFromURL(url) {
   return config.getEntry(config.match(url));
 }
 
+let navigating = false;
+function dispatchNavigate(entry, url) {
+  navigating = true;
+
+  try {
+    dispatch(rootRouter, "navigate", {
+      bubbles: true,
+      detail: { entry, url },
+    });
+  } finally {
+    navigating = false;
+  }
+}
+
 function handleNavigate(event) {
   if (event.defaultPrevented) return;
 
@@ -722,13 +736,29 @@ function handleNavigate(event) {
     const entry = getEntryFromURL(url);
     if (entry) {
       event.preventDefault();
-
-      dispatch(rootRouter, "navigate", {
-        bubbles: true,
-        detail: { entry, url },
-      });
+      dispatchNavigate(entry, url);
     }
   }
+}
+
+function navigateTo(view, params = {}) {
+  if (!rootRouter) {
+    throw Error("The root router is not connected to the document");
+  }
+
+  const config = configs.get(view);
+  if (!config) {
+    throw TypeError(`Provided view is not connected to the router: ${view}`);
+  }
+
+  if (navigating) {
+    throw Error(
+      `Navigation to <${config.id}> is not allowed while the router is navigating`,
+    );
+  }
+
+  const url = config.url(params);
+  dispatchNavigate(getEntryFromURL(url), url);
 }
 
 let activePromise;
@@ -1208,6 +1238,7 @@ export default Object.freeze(
     backUrl: getBackUrl,
     guardUrl: getGuardUrl,
     currentUrl: getCurrentUrl,
+    navigate: navigateTo,
     resolve: resolveEvent,
     active,
   }),
