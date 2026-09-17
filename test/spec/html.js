@@ -890,6 +890,51 @@ describe("html:", () => {
       expect(fragment.children[1].getAttribute("class")).toBe("test");
     });
 
+    it("should compile a template with a table followed by many attributed tags quickly", () => {
+      // The table-mode detection regex must not backtrack exponentially when a table with a
+      // quoted attribute is followed by tags with several quoted attributes (#313).
+      const render = html`
+        <table class="table">
+          <tr>
+            <td class="num">1</td>
+          </tr>
+        </table>
+        <button class="a" title="1"></button
+        ><button class="a" title="2"></button>
+        <button class="a" title="3"></button
+        ><button class="a" title="4"></button>
+        <button class="a" title="5"></button
+        ><button class="a" title="6"></button>
+        <button class="a" title="7"></button
+        ><button class="a" title="8"></button>
+        <button class="a" title="9"></button
+        ><button class="a" title="10"></button>
+        <button class="a" title="11"></button
+        ><button class="a" title="12"></button>
+        <button class="a" title="13"></button
+        ><button class="a" title="14"></button>
+        <button class="a" title="15"></button
+        ><button class="a" title="16"></button>
+        <button class="a" title="17"></button
+        ><button class="a" title="18"></button>
+        <button class="a" title="19"></button
+        ><button class="a" title="20"></button>
+        <button class="a" title="21"></button
+        ><button class="a" title="22"></button>
+        <button class="a" title="23"></button
+        ><button class="a" title="24"></button>
+        <b>${"content"}</b>
+      `;
+
+      const start = performance.now();
+      render(fragment);
+      const elapsed = performance.now() - start;
+
+      expect(fragment.querySelector("b").textContent).toBe("content");
+      expect(fragment.querySelectorAll("button").length).toBe(24);
+      expect(elapsed).toBeLessThan(1000);
+    });
+
     it("should set single expression in <tr> element", () => {
       const render = html`
         <table>
