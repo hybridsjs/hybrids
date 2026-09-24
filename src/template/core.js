@@ -22,22 +22,18 @@ function createContents(parts) {
   let signature = parts[0];
   let tableMode = false;
   for (let index = 1; index < parts.length; index += 1) {
+    const text = parts[index - 1].replace(/<!--[\s\S]*?-->/g, "");
     tableMode =
-      tableMode ||
+      (tableMode && !text.trim()) ||
       signature.match(
         /<\s*(table|th|tr|td|thead|tbody|tfoot|caption|colgroup)(?=[\s>/])([^<>"']|"[^"]*"|'[^']*')*>\s*$/,
-      );
+      ) ||
+      text.match(/<\/\s*(th|tr|td|thead|tbody|tfoot|caption|colgroup)\s*>\s*$/);
 
     signature +=
       (tableMode
         ? `<!--${getPlaceholder(index - 1)}-->`
         : getPlaceholder(index - 1)) + parts[index];
-
-    tableMode =
-      tableMode &&
-      !signature.match(
-        /<\/\s*(table|th|tr|td|thead|tbody|tfoot|caption|colgroup)\s*>/,
-      );
   }
 
   return signature;
