@@ -1760,5 +1760,22 @@ describe("html:", () => {
 
       expect(fragment.children[0].getAttribute("viewBox")).toBe("0 0 100 100");
     });
+
+    it("sets attribute of a nested svg element from an expression", () => {
+      const render = html`
+        <svg viewBox="0 0 100 100">
+          <rect x="${10}" width="${20}"></rect>
+          <polyline points="${"0,0 10,10"}"></polyline>
+        </svg>
+      `;
+      render(fragment);
+
+      const rect = fragment.querySelector("rect");
+      expect(rect.getAttribute("x")).toBe("10");
+      expect(rect.getAttribute("width")).toBe("20");
+      expect(fragment.querySelector("polyline").getAttribute("points")).toBe(
+        "0,0 10,10",
+      );
+    });
   });
 });

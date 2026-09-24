@@ -32,7 +32,7 @@ export default function resolveProperty(attrName, propertyName, isSVG) {
       let isProp = undefined;
       return (host, target, value) => {
         if (isProp === undefined) {
-          isProp = target.tagName !== "svg";
+          isProp = !(target instanceof globalThis.SVGElement);
           if (isProp) {
             isProp = propertyName in target;
             if (!isProp) {
