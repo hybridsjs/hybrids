@@ -53,7 +53,7 @@ The `<svg>` container element has to be created with the `html` function. Use th
 html`<my-element propertyName="${value}" other-property="${value}"></my-element>`;
 ```
 
-An expression as the element's attribute content sets the corresponding existing case-sensitive property, the translated camelCased property, or falls back to the attribute value if the property is not found. This behavior maximizes compatibility with custom elements created outside of the library.
+An expression as the element's attribute content sets the corresponding existing case-sensitive property, the translated camelCased property, or falls back to the attribute value if the property is not found or is read-only (like `form` or `list` of the `<input>` element). This behavior maximizes compatibility with custom elements created outside of the library.
 
 ### Mixed Values
 

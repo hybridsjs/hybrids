@@ -1,3 +1,4 @@
+import { isWritable } from "../utils.js";
 import resolveEventListener from "./event.js";
 import resolveClassList from "./class.js";
 import resolveStyleList from "./style.js";
@@ -34,12 +35,12 @@ export default function resolveProperty(attrName, propertyName, isSVG) {
         if (isProp === undefined) {
           isProp = target.tagName !== "svg";
           if (isProp) {
-            isProp = propertyName in target;
+            isProp = isWritable(target, propertyName);
             if (!isProp) {
               propertyName = attrName.replace(/-./g, (match) =>
                 match[1].toUpperCase(),
               );
-              isProp = propertyName in target;
+              isProp = isWritable(target, propertyName);
             }
           }
         }

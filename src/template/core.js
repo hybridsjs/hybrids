@@ -6,6 +6,7 @@ import {
   getMeta,
   getPlaceholder,
   getTemplateEnd,
+  isWritable,
   removeTemplate,
 } from "./utils.js";
 
@@ -432,7 +433,7 @@ export function compileTemplate(rawParts, isSVG, isMsg, useLayout) {
                         isProp ||
                         (!isSVG &&
                           !(target instanceof globalThis.SVGElement) &&
-                          name in target);
+                          isWritable(target, name));
                       if (isProp) {
                         target[name] = meta[partialName];
                       } else {

@@ -45,5 +45,16 @@ export function removeTemplate(target) {
   }
 }
 
+export function isWritable(target, key) {
+  if (key in target) {
+    for (let proto = target; proto; proto = Object.getPrototypeOf(proto)) {
+      const desc = Object.getOwnPropertyDescriptor(proto, key);
+      if (desc) return !!(desc.writable || desc.set);
+    }
+  }
+
+  return false;
+}
+
 const TIMESTAMP = Date.now();
 export const getPlaceholder = (id = 0) => `H-${TIMESTAMP}-${id}`;

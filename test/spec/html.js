@@ -183,6 +183,11 @@ describe("html:", () => {
       expect(fragment.children[0].value).toBe("asd-test-other");
     });
 
+    it("sets attribute for read-only property", () => {
+      html` <input list="list-${"one"}" /> `(fragment);
+      expect(fragment.children[0].getAttribute("list")).toBe("list-one");
+    });
+
     it("does not set undefined value", () => {
       render()(fragment);
       expect(fragment.children[0].getAttribute("class")).toBe("class-one  ");
@@ -299,6 +304,33 @@ describe("html:", () => {
       render(fragment);
 
       expect(fragment.children[0].customProperty).toBe(1);
+    });
+
+    it("sets attribute for read-only property", () => {
+      html`
+        <form id="test-html-form"></form>
+        <input form="${"test-html-form"}" list="${"test-html-list"}" />
+      `(fragment);
+
+      const input = fragment.children[1];
+      expect(input.getAttribute("list")).toBe("test-html-list");
+      expect(input.form).toBe(fragment.children[0]);
+    });
+
+    it("sets attribute for getter-only property of external element", () => {
+      class TestGetterOnlyElement extends HTMLElement {
+        get rowHeight() {
+          return Number(this.getAttribute("row-height"));
+        }
+      }
+
+      customElements.define("test-html-getter-only", TestGetterOnlyElement);
+
+      html`
+        <test-html-getter-only row-height="${40}"></test-html-getter-only>
+      `(fragment);
+
+      expect(fragment.children[0].rowHeight).toBe(40);
     });
   });
 
