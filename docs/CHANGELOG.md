@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.2.1](https://github.com/hybridsjs/hybrids/compare/v9.2.0...v9.2.1) (2026-09-25)
+
+
+### Bug Fixes
+
+* **html:** fall back to attribute for read-only properties ([#320](https://github.com/hybridsjs/hybrids/issues/320)) ([a0b7e1e](https://github.com/hybridsjs/hybrids/commit/a0b7e1e70fe1e7b36f0b7d2938a2ffd55e9bad82))
+* **html:** set attribute for expressions on nested svg elements ([#316](https://github.com/hybridsjs/hybrids/issues/316)) ([423b571](https://github.com/hybridsjs/hybrids/commit/423b5719804e532e445fa494d88ef8910caee7a2))
+* **template:** correct table-mode detection after closed table elements ([#318](https://github.com/hybridsjs/hybrids/issues/318)) ([9428a97](https://github.com/hybridsjs/hybrids/commit/9428a97664921115bffa1b1ad508029a93ac86af))
+
 ## [9.2.0](https://github.com/hybridsjs/hybrids/compare/v9.1.23...v9.2.0) (2026-09-17)
 
 
