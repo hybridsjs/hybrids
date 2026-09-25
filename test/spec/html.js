@@ -1001,6 +1001,94 @@ describe("html:", () => {
       );
     });
 
+    it("should set multiple expressions in <tbody> element after closed table elements", () => {
+      const renderRow = (v) =>
+        html`<tr>
+          <td>${v}</td>
+        </tr>`;
+      const render = html`
+        <table>
+          <thead>
+            <tr>
+              <th>header</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderRow("one")} ${renderRow("two")}
+          </tbody>
+        </table>
+        <div class="${"test"}">${"text"}</div>
+      `;
+
+      render(fragment);
+      expect(fragment.querySelectorAll("tbody td").length).toBe(2);
+      expect(fragment.children[1].outerHTML).toBe(
+        '<div class="test">text</div>',
+      );
+    });
+
+    it("should set multiple expressions in <tbody> element separated by a comment", () => {
+      const renderRow = (v) =>
+        html`<tr>
+          <td>${v}</td>
+        </tr>`;
+      const render = html`
+        <table>
+          <thead>
+            <tr>
+              <th>header</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderRow("one")}
+            <!-- comment -->
+            ${renderRow("two")}
+          </tbody>
+        </table>
+        <div class="${"test"}">${"text"}</div>
+      `;
+
+      render(fragment);
+      expect(fragment.querySelectorAll("tbody td").length).toBe(2);
+      expect(fragment.children[1].outerHTML).toBe(
+        '<div class="test">text</div>',
+      );
+    });
+
+    it("should set expression after closed <td> in <tr> element", () => {
+      const render = html`
+        <table>
+          <tbody>
+            <tr>
+              <td>one</td>
+              ${html`<td>two</td>`}
+            </tr>
+          </tbody>
+        </table>
+      `;
+
+      render(fragment);
+      expect(getArrayValues(fragment.querySelector("tr"))).toEqual([
+        "one",
+        "two",
+      ]);
+    });
+
+    it("should set attribute expression after expression in <td> element", () => {
+      const render = html`
+        <table>
+          <tbody>
+            <tr>
+              <td>${"one"}<span class="${"two"}"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+
+      render(fragment);
+      expect(fragment.querySelector("span").getAttribute("class")).toBe("two");
+    });
+
     it("should set <td> inner element property", () => {
       const render = html`
         <table>
