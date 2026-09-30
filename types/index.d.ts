@@ -3,7 +3,7 @@
  * (shorthand syntax), a getter function called with the element instance,
  * or a full {@link Descriptor} object.
  *
- * @see https://hybrids.js.org/#/component-model/structure.md
+ * @see https://hybrids.js.org/#/component-model/structure
  */
 export type Property<E, V> =
   | (V extends string | number | boolean | null | undefined ? V : never)
@@ -14,7 +14,7 @@ export type Property<E, V> =
  * The full syntax of the property definition with the cached `value` and
  * optional lifecycle methods and options.
  *
- * @see https://hybrids.js.org/#/component-model/structure.md#property-descriptor
+ * @see https://hybrids.js.org/#/component-model/structure?id=property-descriptor
  */
 export interface Descriptor<E, V> {
   /**
@@ -66,7 +66,7 @@ export interface RenderFunction<E> {
  * The full syntax of the `render` property with the `shadow` option, which
  * controls how the template is attached to the element.
  *
- * @see https://hybrids.js.org/#/component-model/structure.md#render
+ * @see https://hybrids.js.org/#/component-model/structure?id=render
  */
 export interface RenderDescriptor<E> extends Descriptor<E, RenderFunction<E>> {
   value: RenderFunction<E>;
@@ -92,7 +92,7 @@ export type ComponentBase = {
  * A map of the component properties with a required `tag` name, which
  * describes the structure and behavior of the custom element.
  *
- * @see https://hybrids.js.org/#/component-model/structure.md
+ * @see https://hybrids.js.org/#/component-model/structure
  */
 export type Component<E> = ComponentBase & {
   [
@@ -129,7 +129,7 @@ export interface HybridElement<E> {
  * @param component - a map of properties with a `tag` name
  * @returns the passed component definition
  *
- * @see https://hybrids.js.org/#/component-model/definition.md
+ * @see https://hybrids.js.org/#/component-model/definition
  */
 export function define<E>(component: Component<E>): typeof component;
 
@@ -142,7 +142,7 @@ export namespace define {
    * @param component - a map of properties without the `tag` name
    * @returns a custom element constructor
    *
-   * @see https://hybrids.js.org/#/component-model/definition.md#external-usage
+   * @see https://hybrids.js.org/#/component-model/definition?id=external-usage
    */
   function compile<E>(component: Component<E>): HybridElement<E>;
 
@@ -162,7 +162,7 @@ export namespace define {
    * @param options.prefix - a prefix added to the generated tag names
    * @param options.root - a path or list of paths removed from the tag names
    *
-   * @see https://hybrids.js.org/#/component-model/definition.md#multiple-components
+   * @see https://hybrids.js.org/#/component-model/definition?id=multiple-components
    */
   function from(
     components: { [path: string]: Component<any> },
@@ -181,7 +181,7 @@ export namespace define {
  * @param component - a map of properties without the `tag` name
  * @returns a function, which detaches the component from the target
  *
- * @see https://hybrids.js.org/#/component-model/definition.md#mounting
+ * @see https://hybrids.js.org/#/component-model/definition?id=mounting
  */
 export function mount<E>(
   target: HTMLElement,
@@ -199,7 +199,7 @@ export function mount<E>(
  *   when the checked definition meets the condition
  * @returns a property descriptor, which resolves to `null` or an element
  *
- * @see https://hybrids.js.org/#/component-model/parent-children.md#parent
+ * @see https://hybrids.js.org/#/component-model/parent-children?id=parent
  */
 export function parent<E, V>(
   componentOrFn: Component<V> | ((component: Component<E>) => boolean),
@@ -216,7 +216,7 @@ export function parent<E, V>(
  * @param options.nested - include nested matching children (requires `deep`)
  * @returns a property descriptor, which resolves to an array of elements
  *
- * @see https://hybrids.js.org/#/component-model/parent-children.md#children
+ * @see https://hybrids.js.org/#/component-model/parent-children?id=children
  */
 export function children<E, V>(
   componentOrFn: Component<V> | ((component: Component<E>) => boolean),
@@ -246,7 +246,7 @@ export type NonModelDefinition = { __store__connect__?: never } & object;
  * A model definition - a plain object describing the structure of the model
  * instance by its default values, with an optional `[store.connect]` storage.
  *
- * @see https://hybrids.js.org/#/store/model.md
+ * @see https://hybrids.js.org/#/store/model
  */
 export type Model<M extends ModelInstance> = NonArrayObject & {
   [property in keyof Omit<M, "id">]-?: NonNullable<
@@ -303,7 +303,7 @@ export type NestedArrayModel<T> =
  * An identifier of the enumerable model instance - a string, or an object map
  * of parameters (for example, for a paginated listing).
  *
- * @see https://hybrids.js.org/#/store/model.md#identifier
+ * @see https://hybrids.js.org/#/store/model?id=identifier
  */
 export type ModelIdentifier =
   string | Record<string, string | boolean | number | null> | undefined;
@@ -335,7 +335,7 @@ export type StorageResult<M extends ModelInstance> =
  * An external storage definition set in the `[store.connect]` property of the
  * model definition, which connects the model to an async data source.
  *
- * @see https://hybrids.js.org/#/store/storage.md
+ * @see https://hybrids.js.org/#/store/storage
  */
 export type Storage<M extends ModelInstance> = {
   /** Fetches a single model instance by its identifier. */
@@ -400,7 +400,7 @@ export type Storage<M extends ModelInstance> = {
  *   which can be saved by the `store.submit()` method
  * @returns a property descriptor connected to the store
  *
- * @see https://hybrids.js.org/#/store/usage.md#factory
+ * @see https://hybrids.js.org/#/store/usage?id=factory
  */
 // Enumerable - This overload must be the first one, then its signature and documentation will be displayed in intelephence by default.
 export function store<E, M extends EnumerableInstance>(
@@ -441,7 +441,7 @@ export namespace store {
    * A key of the model definition property, which connects the model to an
    * external storage.
    *
-   * @see https://hybrids.js.org/#/store/storage.md#external
+   * @see https://hybrids.js.org/#/store/storage?id=external
    */
   const connect = "__store__connect__";
 
@@ -454,7 +454,7 @@ export namespace store {
    * @param id - an identifier of the model instance
    * @returns a model instance or its placeholder
    *
-   * @see https://hybrids.js.org/#/store/usage.md#storeget
+   * @see https://hybrids.js.org/#/store/usage?id=storeget
    */
   function get<M extends ModelInstance>(
     Model: Model<M>,
@@ -474,7 +474,7 @@ export namespace store {
    * @param values - partial values of the model, or `null` to delete it
    * @returns a promise resolving to the model instance
    *
-   * @see https://hybrids.js.org/#/store/usage.md#storeset
+   * @see https://hybrids.js.org/#/store/usage?id=storeset
    */
   function set<M extends ModelInstance>(
     model: Model<M> | M,
@@ -488,7 +488,7 @@ export namespace store {
    * @param values - partial values of the model, or `null` to delete it
    * @returns a model instance or its placeholder
    *
-   * @see https://hybrids.js.org/#/store/usage.md#storesync
+   * @see https://hybrids.js.org/#/store/usage?id=storesync
    */
   function sync<M extends ModelInstance>(
     model: Model<M> | M,
@@ -502,7 +502,7 @@ export namespace store {
    * @param clearValue - when `false`, the value is only marked as expired
    *   instead of being deleted. Defaults to `true`
    *
-   * @see https://hybrids.js.org/#/store/usage.md#storeclear
+   * @see https://hybrids.js.org/#/store/usage?id=storeclear
    */
   function clear<M extends ModelInstance>(
     model: Model<M> | [Model<M>] | M,
@@ -513,7 +513,7 @@ export namespace store {
    * A guard, which returns a promise resolving with the next model value when
    * the instance is in the pending state, or `false` otherwise.
    *
-   * @see https://hybrids.js.org/#/store/usage.md#storepending
+   * @see https://hybrids.js.org/#/store/usage?id=storepending
    */
   function pending<M extends ModelInstance>(model: M): false | Promise<M>;
   function pending<M extends ModelInstance>(
@@ -528,7 +528,7 @@ export namespace store {
    * @param propertyName - a property name with a failed validation defined by
    *   the `store.value()` method, or `null` for the general error message only
    *
-   * @see https://hybrids.js.org/#/store/usage.md#storeerror
+   * @see https://hybrids.js.org/#/store/usage?id=storeerror
    */
   function error<M extends ModelInstance>(
     model: M,
@@ -539,7 +539,7 @@ export namespace store {
    * A guard, which returns `true` when the passed model instances contain
    * valid values (they are not placeholders).
    *
-   * @see https://hybrids.js.org/#/store/usage.md#storeready
+   * @see https://hybrids.js.org/#/store/usage?id=storeready
    */
   function ready<M extends ModelInstance>(model: M): boolean;
   function ready<M extends ModelInstance>(...models: Array<M>): boolean;
@@ -552,7 +552,7 @@ export namespace store {
    * @param values - optional values merged on top of the draft values
    * @returns a promise resolving with the primary model instance
    *
-   * @see https://hybrids.js.org/#/store/usage.md#draft-mode
+   * @see https://hybrids.js.org/#/store/usage?id=draft-mode
    */
   function submit<M extends ModelInstance>(
     draft: M,
@@ -563,7 +563,7 @@ export namespace store {
    * Returns a promise, which resolves with the latest model value when it is
    * ready, or rejects with the error of the model instance.
    *
-   * @see https://hybrids.js.org/#/store/usage.md#storeresolve
+   * @see https://hybrids.js.org/#/store/usage?id=storeresolve
    */
   function resolve<M extends ModelInstance>(model: M): Promise<M>;
   function resolve<M extends ModelInstance>(
@@ -582,7 +582,7 @@ export namespace store {
    * @param fn - a function returning the property definition
    * @returns the passed function, marked for the store
    *
-   * @see https://hybrids.js.org/#/store/model.md#self-reference--import-cycles
+   * @see https://hybrids.js.org/#/store/model?id=self-reference--import-cycles
    */
   function ref<T>(fn: () => T): () => T;
 
@@ -593,7 +593,7 @@ export namespace store {
    * @param value - any supported property value
    * @returns a record definition (an empty object)
    *
-   * @see https://hybrids.js.org/#/store/model.md#record
+   * @see https://hybrids.js.org/#/store/model?id=record
    */
   function record<V>(value: V): Record<string, V>;
   function record<V extends () => {}>(value: V): Record<string, ReturnType<V>>;
@@ -612,7 +612,7 @@ export namespace store {
    *   default validation fails for falsy values
    * @param errorMessage - an error message used when the validation fails
    *
-   * @see https://hybrids.js.org/#/store/model.md#validation
+   * @see https://hybrids.js.org/#/store/model?id=validation
    */
   function value<M extends ModelInstance>(
     defaultValue: string,
@@ -639,7 +639,7 @@ export namespace store {
    *   the last model instance
    * @returns a function, which stops observing
    *
-   * @see https://hybrids.js.org/#/store/usage.md#storeobserve
+   * @see https://hybrids.js.org/#/store/usage?id=storeobserve
    */
   function observe<M extends ModelInstance>(
     model: Model<M>,
@@ -657,7 +657,7 @@ export namespace store {
  * A configuration of the view set in the `[router.connect]` property of the
  * component definition.
  *
- * @see https://hybrids.js.org/#/router/view.md#configuration
+ * @see https://hybrids.js.org/#/router/view?id=configuration
  */
 export interface ViewOptions {
   /** A URL pattern of the view, for example `"/users/:userId"`. */
@@ -703,7 +703,7 @@ export interface ViewOptions {
  *   with the type of the transition between views
  * @returns a property descriptor, which resolves to an array of elements
  *
- * @see https://hybrids.js.org/#/router/usage.md
+ * @see https://hybrids.js.org/#/router/usage
  */
 export function router<E>(
   views:
@@ -720,7 +720,7 @@ export namespace router {
    * A key of the component definition property, which configures the view
    * options, like the `url` or the `stack` of nested views.
    *
-   * @see https://hybrids.js.org/#/router/view.md#configuration
+   * @see https://hybrids.js.org/#/router/view?id=configuration
    */
   const connect = "__router__connect__";
 
@@ -728,7 +728,7 @@ export namespace router {
    * Enables logging of the navigation events and exposes the current view in
    * the DevTools console via the `$$0` reference.
    *
-   * @see https://hybrids.js.org/#/router/usage.md#debug-mode
+   * @see https://hybrids.js.org/#/router/usage?id=debug-mode
    */
   function debug(value?: boolean): void;
 
@@ -749,7 +749,7 @@ export namespace router {
    *   option
    * @returns a `URL` instance, or an empty string if the view is not found
    *
-   * @see https://hybrids.js.org/#/router/usage.md#routerurl
+   * @see https://hybrids.js.org/#/router/usage?id=routerurl
    */
   function url<E>(
     view: ComponentBase,
@@ -760,20 +760,20 @@ export namespace router {
    * Generates a URL to the previous view in the stack. Use the `nested` option
    * inside of a nested router to go back within its own stack.
    *
-   * @see https://hybrids.js.org/#/router/usage.md#routerbackurl
+   * @see https://hybrids.js.org/#/router/usage?id=routerbackurl
    */
   function backUrl(options?: { nested?: boolean } & UrlOptions): URL | "";
   /**
    * Generates a URL to the view, which the user tried to reach before being
    * redirected by the `guard` option of the current view.
    *
-   * @see https://hybrids.js.org/#/router/usage.md#routerguardurl
+   * @see https://hybrids.js.org/#/router/usage?id=routerguardurl
    */
   function guardUrl(params?: UrlParams<any> & UrlOptions): URL | "";
   /**
    * Generates a URL to the current view with updated parameters.
    *
-   * @see https://hybrids.js.org/#/router/usage.md#routercurrenturl
+   * @see https://hybrids.js.org/#/router/usage?id=routercurrenturl
    */
   function currentUrl<E>(params?: UrlParams<E> & UrlOptions): URL | "";
 
@@ -787,7 +787,7 @@ export namespace router {
    * @param params - parameters passed to the view, plus the `scrollToTop`
    *   option
    *
-   * @see https://hybrids.js.org/#/router/usage.md#routernavigate
+   * @see https://hybrids.js.org/#/router/usage?id=routernavigate
    */
   function navigate<E>(
     view: ComponentBase,
@@ -798,7 +798,7 @@ export namespace router {
    * Checks if the passed views are currently active. Use the `stack` option to
    * also match views, which are parents of the current view.
    *
-   * @see https://hybrids.js.org/#/router/usage.md#routeractive
+   * @see https://hybrids.js.org/#/router/usage?id=routeractive
    */
   function active(
     views: ComponentBase | ComponentBase[],
@@ -813,7 +813,7 @@ export namespace router {
    * @param promise - a promise, which must resolve to navigate
    * @returns a chained promise
    *
-   * @see https://hybrids.js.org/#/router/usage.md#routerresolve
+   * @see https://hybrids.js.org/#/router/usage?id=routerresolve
    */
   function resolve<P>(event: Event, promise: Promise<P>): Promise<P>;
 }
@@ -824,7 +824,7 @@ export namespace router {
  * A dictionary of translated messages, where keys are the message keys
  * (usually the original text content) with an optional `| context` suffix.
  *
- * @see https://hybrids.js.org/#/component-model/localization.md#messages
+ * @see https://hybrids.js.org/#/component-model/localization?id=messages
  */
 export type Messages = {
   [key: string]: {
@@ -854,7 +854,7 @@ export type Messages = {
  *   the fallback language
  * @param messages - a map of translated messages
  *
- * @see https://hybrids.js.org/#/component-model/localization.md#messages
+ * @see https://hybrids.js.org/#/component-model/localization?id=messages
  */
 export function localize(lang: string, messages: Messages): void;
 /**
@@ -866,7 +866,7 @@ export function localize(lang: string, messages: Messages): void;
  * @param options.format - transforms keys to a custom format; for now only
  *   `"chrome.i18n"` is supported
  *
- * @see https://hybrids.js.org/#/component-model/localization.md#custom-function
+ * @see https://hybrids.js.org/#/component-model/localization?id=custom-function
  */
 export function localize(
   translate: (
@@ -894,7 +894,7 @@ export namespace localize {
  * html`<my-button name="${msg`Submit`}"></my-button>`
  * ```
  *
- * @see https://hybrids.js.org/#/component-model/localization.md#manual-translation
+ * @see https://hybrids.js.org/#/component-model/localization?id=manual-translation
  */
 export function msg(parts: TemplateStringsArray, ...args: unknown[]): string;
 
@@ -903,7 +903,7 @@ export namespace msg {
    * Translates a message with HTML content and returns a nested template.
    * The content is not sanitized, so use it only with trusted messages.
    *
-   * @see https://hybrids.js.org/#/component-model/localization.md#html--svg-content
+   * @see https://hybrids.js.org/#/component-model/localization?id=html--svg-content
    */
   function html<E>(
     parts: TemplateStringsArray,
@@ -914,7 +914,7 @@ export namespace msg {
    * Translates a message with SVG content and returns a nested template.
    * The content is not sanitized, so use it only with trusted messages.
    *
-   * @see https://hybrids.js.org/#/component-model/localization.md#html--svg-content
+   * @see https://hybrids.js.org/#/component-model/localization?id=html--svg-content
    */
   function svg<E>(
     parts: TemplateStringsArray,
@@ -934,7 +934,7 @@ export namespace msg {
  * @returns `false` if the event is cancelable and one of the handlers called
  *   `preventDefault()`; otherwise `true`
  *
- * @see https://hybrids.js.org/#/component-model/events.md
+ * @see https://hybrids.js.org/#/component-model/events
  */
 export function dispatch(
   host: EventTarget,
@@ -946,7 +946,7 @@ export function dispatch(
  * Enables the debug mode of the library, which adds extra logging and error
  * messages. Call it before any other code, only in the development build.
  *
- * @see https://hybrids.js.org/#/getting-started.md#debug-mode
+ * @see https://hybrids.js.org/#/getting-started?id=debug-mode
  */
 export function debug(): void;
 
@@ -956,35 +956,35 @@ export function debug(): void;
  * An update function returned by the `html` and `svg` template engines with
  * chainable helper methods.
  *
- * @see https://hybrids.js.org/#/component-model/templates.md
+ * @see https://hybrids.js.org/#/component-model/templates
  */
 export interface UpdateFunctionWithMethods<E> extends UpdateFunction<E> {
   /**
    * Sets a unique key for the template, so a list of items can be efficiently
    * re-ordered instead of re-created.
    *
-   * @see https://hybrids.js.org/#/component-model/templates.md#keys
+   * @see https://hybrids.js.org/#/component-model/templates?id=keys
    */
   key: (id: any) => this;
   /**
    * Attaches styles to the template from CSS text contents or from
    * `CSSStyleSheet` instances.
    *
-   * @see https://hybrids.js.org/#/component-model/templates.md#style-element
+   * @see https://hybrids.js.org/#/component-model/templates?id=style-element
    */
   style: (...styles: Array<string | CSSStyleSheet>) => this;
   /**
    * Attaches styles to the template written as a tagged template literal with
    * support for dynamic expressions.
    *
-   * @see https://hybrids.js.org/#/component-model/templates.md#css-content
+   * @see https://hybrids.js.org/#/component-model/templates?id=css-content
    */
   css: (parts: TemplateStringsArray, ...args: unknown[]) => this;
   /**
    * Wraps the update function with a plugin, which takes control over the
    * update process. It can be chained.
    *
-   * @see https://hybrids.js.org/#/component-model/templates.md#plugins
+   * @see https://hybrids.js.org/#/component-model/templates?id=plugins
    */
   use: (fn: (template: UpdateFunction<E>) => UpdateFunction<E>) => this;
 }
@@ -993,7 +993,7 @@ export interface UpdateFunctionWithMethods<E> extends UpdateFunction<E> {
  * An event listener attached in the template, which is called with the host
  * element instead of the event target.
  *
- * @see https://hybrids.js.org/#/component-model/templates.md#event-listeners
+ * @see https://hybrids.js.org/#/component-model/templates?id=event-listeners
  */
 export interface EventHandler<E> {
   (host: E & HTMLElement, event?: Event): any;
@@ -1009,7 +1009,7 @@ export interface EventHandler<E> {
  *
  * @returns an update function with chainable helper methods
  *
- * @see https://hybrids.js.org/#/component-model/templates.md
+ * @see https://hybrids.js.org/#/component-model/templates
  */
 export function html<E>(
   parts: TemplateStringsArray,
@@ -1025,7 +1025,7 @@ export namespace html {
    * html`<input value="${value}" oninput="${html.set("value")}" />`
    * ```
    *
-   * @see https://hybrids.js.org/#/component-model/templates.md#form-elements
+   * @see https://hybrids.js.org/#/component-model/templates?id=form-elements
    */
   function set<E>(property: keyof E, valueOrPath?: any): EventHandler<E>;
   function set<E, M>(property: M, valueOrPath: string | null): EventHandler<E>;
@@ -1040,7 +1040,7 @@ export namespace html {
    * @param delay - a delay in milliseconds before the placeholder is rendered.
    *   Defaults to `200`
    *
-   * @see https://hybrids.js.org/#/component-model/templates.md#promises
+   * @see https://hybrids.js.org/#/component-model/templates?id=promises
    */
   function resolve<E>(
     promise: Promise<any>,
@@ -1056,14 +1056,14 @@ export namespace html {
    * render: ({ stack }) => html`<main>${stack}</main>`.use(html.transition)
    * ```
    *
-   * @see https://hybrids.js.org/#/component-model/templates.md#transition-api
+   * @see https://hybrids.js.org/#/component-model/templates?id=transition-api
    */
   function transition<E>(template: UpdateFunction<E>): UpdateFunction<E>;
 
   /**
    * An alias of the `msg` helper for translating messages inside of templates.
    *
-   * @see https://hybrids.js.org/#/component-model/localization.md#manual-translation
+   * @see https://hybrids.js.org/#/component-model/localization?id=manual-translation
    */
   function msg(parts: TemplateStringsArray, ...args: unknown[]): string;
 }
@@ -1075,7 +1075,7 @@ export namespace html {
  *
  * @returns an update function with chainable helper methods
  *
- * @see https://hybrids.js.org/#/component-model/templates.md
+ * @see https://hybrids.js.org/#/component-model/templates
  */
 export function svg<E>(
   parts: TemplateStringsArray,
