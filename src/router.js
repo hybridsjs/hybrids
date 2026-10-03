@@ -902,7 +902,7 @@ function getEntryOffset(entry) {
     if (config.dialog) return -1;
 
     if (j === state[i].length) {
-      offset = state[i].length - 1;
+      return -1;
     }
 
     entry = entry.nested;

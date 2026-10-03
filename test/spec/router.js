@@ -251,7 +251,50 @@ describe("router:", () => {
         el.querySelector("a").click();
 
         return resolveTimeout(() => {
-          expect(history.state.length).toBe(2);
+          expect(history.state.length).toBe(3);
+          document.body.removeChild(el);
+        });
+      });
+    });
+  });
+
+  it("pushes history entry when navigating between sibling views", () => {
+    const SiblingA = define({
+      tag: "test-router-sibling-a",
+      [router.connect]: { url: "/sibling-a" },
+      render: () => html`<a href="${router.url(SiblingB)}" id="SiblingB">B</a>`,
+    });
+
+    const SiblingB = define({
+      tag: "test-router-sibling-b",
+      [router.connect]: { url: "/sibling-b" },
+      render: () => html`<a href="${router.url(SiblingA)}" id="SiblingA">A</a>`,
+    });
+
+    define({
+      tag: "test-router-sibling-app",
+      stack: router([SiblingA, SiblingB]),
+      render: ({ stack }) => html`${stack}`,
+    });
+
+    const el = document.createElement("test-router-sibling-app");
+    document.body.appendChild(el);
+
+    return resolveTimeout(() => {
+      expect(hybrids(el.children[0])).toBe(SiblingA);
+      expect(window.history.state.length).toBe(1);
+
+      el.querySelector("#SiblingB").click();
+
+      return resolveTimeout(() => {
+        expect(hybrids(el.children[0])).toBe(SiblingB);
+        expect(window.history.state.length).toBe(2);
+
+        window.history.back();
+
+        return resolveTimeout(() => {
+          expect(hybrids(el.children[0])).toBe(SiblingA);
+          expect(window.history.state.length).toBe(1);
           document.body.removeChild(el);
         });
       });
