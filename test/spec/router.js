@@ -1410,6 +1410,111 @@ describe("router:", () => {
     });
   });
 
+  it("keeps nested entry and parent parameters when view parameters change", () => {
+    const Child = define({
+      tag: "test-router-history-params-child",
+      value: "",
+    });
+
+    const Parent = define({
+      tag: "test-router-history-params-parent",
+      tab: "",
+      views: router([Child]),
+      render: ({ views }) => html`${views}`,
+    });
+
+    define({
+      tag: "test-router-history-params",
+      views: router([Parent]),
+      render: ({ views }) => html`${views}`,
+    });
+
+    window.history.replaceState(null, "", browserUrl);
+
+    const el = document.createElement("test-router-history-params");
+    document.body.appendChild(el);
+
+    return resolveTimeout(() => {
+      const parent = el.querySelector(Parent.tag);
+      parent.tab = "settings";
+
+      return resolveTimeout(() => {
+        expect(window.history.state).toEqual([
+          {
+            id: Parent.tag,
+            params: { tab: "settings" },
+            nested: { id: Child.tag, params: {} },
+          },
+        ]);
+
+        parent.querySelector(Child.tag).value = "test";
+
+        return resolveTimeout(() => {
+          expect(window.history.state).toEqual([
+            {
+              id: Parent.tag,
+              params: { tab: "settings" },
+              nested: { id: Child.tag, params: { value: "test" } },
+            },
+          ]);
+
+          document.body.removeChild(el);
+        });
+      });
+    });
+  });
+
+  if (document.startViewTransition) {
+    it("restores layout when the view transition is skipped", () => {
+      const Other = define({ tag: "test-router-skipped-transition-other" });
+
+      const Home = define({
+        tag: "test-router-skipped-transition-home",
+        [router.connect]: { stack: [Other] },
+        render: () => html`<a href="${router.url(Other)}"></a>`,
+      });
+
+      define({
+        tag: "test-router-skipped-transition",
+        stack: router([Home]),
+        render: ({ stack }) => html`${stack}`.use(html.transition),
+      });
+
+      window.history.replaceState(null, "", browserUrl);
+
+      const el = document.createElement("test-router-skipped-transition");
+      document.body.appendChild(el);
+
+      return resolveTimeout(async () => {
+        // The initial render also runs a transition - wait until it is done,
+        // so the navigation below starts a new one
+        await html.transition.instance?.finished;
+
+        const startViewTransition = document.startViewTransition;
+        spyOn(document, "startViewTransition").and.callFake((callback) => {
+          const viewTransition = startViewTransition.call(document, callback);
+          viewTransition.skipTransition();
+          return viewTransition;
+        });
+
+        // Records the view displayed at the moment the layout is restored
+        const views = [];
+        spyOn(HTMLElement.prototype, "focus").and.callFake(() =>
+          views.push(hybrids(el.children[0])),
+        );
+
+        el.querySelector("a").click();
+
+        return resolveTimeout(async () => {
+          expect(views).toEqual([Other]);
+
+          document.body.removeChild(el);
+          await html.transition.instance?.finished;
+        });
+      });
+    });
+  }
+
   describe("backUrl() -", () => {
     it("returns an empty string when no router is connected", () => {
       window.history.replaceState(null, "", browserUrl);

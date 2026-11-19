@@ -70,8 +70,12 @@ async function restoreLayout(target) {
   const activeEl = globalThis.document.activeElement;
   await deferred;
 
-  // Wait until transition has started (by document.startViewTransition call)
-  transition.instance && (await transition.instance.ready);
+  // Wait until transition has started (by document.startViewTransition call).
+  // A skipped transition rejects the ready promise, but it still updates the DOM
+  const viewTransition = transition.instance;
+  if (viewTransition) {
+    await viewTransition.ready.catch(() => viewTransition.updateCallbackDone);
+  }
 
   focusElement(
     focusMap.get(target) ||
@@ -104,6 +108,11 @@ async function restoreLayout(target) {
   setTimeout(() => {
     globalThis.history.scrollRestoration = "auto";
   }, 0);
+}
+
+function replaceEntryParams(entry, id, params) {
+  if (entry.id === id) return { ...entry, params };
+  return { ...entry, nested: replaceEntryParams(entry.nested, id, params) };
 }
 
 function mapUrlParam(value) {
@@ -414,7 +423,7 @@ function setupView(hybrids, routerOptions, parent, nestedParent) {
 
           globalThis.history.replaceState(
             state.map((entry, i) =>
-              i === index ? config.getEntry(params) : entry,
+              i === index ? replaceEntryParams(entry, id, params) : entry,
             ),
             "",
             browserUrl ? config.url(params, true) : "",
