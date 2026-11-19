@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [9.2.2](https://github.com/hybridsjs/hybrids/compare/v9.2.1...v9.2.2) (2026-11-19)
+
+
+### Bug Fixes
+
+* **router:** keep nested history state and restore layout on skipped transition ([ac6b042](https://github.com/hybridsjs/hybrids/commit/ac6b042cc46b7a650446b37e136d724ed913c063))
+* **types:** use docsify format for documentation links ([706d335](https://github.com/hybridsjs/hybrids/commit/706d3352f93036b2e37718c0077a033349dd9937))
+
 ### [9.2.1](https://github.com/hybridsjs/hybrids/compare/v9.2.0...v9.2.1) (2026-09-25)
 
 
