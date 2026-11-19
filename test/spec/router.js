@@ -104,6 +104,18 @@ describe("router:", () => {
     ).toThrow();
   });
 
+  it("throws when url parameter is not writable", () => {
+    expect(() =>
+      router([
+        define({
+          [router.connect]: { url: "/test/:value" },
+          tag: "test-router-url-not-writable",
+          value: () => "computed",
+        }),
+      ]).connect(document.createElement("div")),
+    ).toThrowError(/'value' parameter from the url is not writable/);
+  });
+
   it("throws when url option duplicates parameter in pathname", () => {
     expect(() =>
       router([
@@ -257,6 +269,152 @@ describe("router:", () => {
       });
     });
   });
+
+  it("saves parameters of the view displayed below the dialog", () => {
+    const Dialog = define({
+      tag: "test-router-params-below-dialog-dialog",
+      [router.connect]: { dialog: true },
+    });
+
+    const View = define({
+      tag: "test-router-params-below-dialog-view",
+      [router.connect]: { stack: [Dialog] },
+      value: "",
+      render: () => html`<a href="${router.url(Dialog)}"></a>`,
+    });
+
+    define({
+      tag: "test-router-params-below-dialog",
+      stack: router([View]),
+      render: ({ stack }) => html`${stack}`,
+    });
+
+    window.history.replaceState(null, "", browserUrl);
+
+    const el = document.createElement("test-router-params-below-dialog");
+    document.body.appendChild(el);
+
+    return resolveTimeout(() => {
+      el.querySelector("a").click();
+
+      return resolveTimeout(() => {
+        const [view, dialog] = el.children;
+        expect(hybrids(dialog)).toBe(Dialog);
+
+        view.value = "test";
+
+        return resolveTimeout(() => {
+          expect(window.history.state).toEqual([
+            { id: Dialog.tag, params: {} },
+            { id: View.tag, params: { value: "test" } },
+          ]);
+
+          document.body.removeChild(el);
+        });
+      });
+    });
+  });
+
+  it("saves parameters of the view from the deeply nested router", () => {
+    const View = define({
+      tag: "test-router-deep-nested-params-view",
+      value: "",
+    });
+
+    const Nested = define({
+      tag: "test-router-deep-nested-params-nested",
+      views: router([View]),
+      render: ({ views }) => html`${views}`,
+    });
+
+    const Root = define({
+      tag: "test-router-deep-nested-params-root",
+      views: router([Nested]),
+      render: ({ views }) => html`${views}`,
+    });
+
+    define({
+      tag: "test-router-deep-nested-params",
+      views: router([Root]),
+      render: ({ views }) => html`${views}`,
+    });
+
+    window.history.replaceState(null, "", browserUrl);
+
+    const el = document.createElement("test-router-deep-nested-params");
+    document.body.appendChild(el);
+
+    return resolveTimeout(() => {
+      el.querySelector(View.tag).value = "test";
+
+      return resolveTimeout(() => {
+        expect(window.history.state).toEqual([
+          {
+            id: Root.tag,
+            params: {},
+            nested: {
+              id: Nested.tag,
+              params: {},
+              nested: { id: View.tag, params: { value: "test" } },
+            },
+          },
+        ]);
+
+        document.body.removeChild(el);
+      });
+    });
+  });
+
+  if (document.startViewTransition) {
+    it("restores layout after the view transition is ready", () => {
+      const Other = define({ tag: "test-router-view-transition-other" });
+
+      const Home = define({
+        tag: "test-router-view-transition-home",
+        [router.connect]: { stack: [Other] },
+        render: () => html`<a href="${router.url(Other)}"></a>`,
+      });
+
+      define({
+        tag: "test-router-view-transition",
+        stack: router([Home]),
+        render: ({ stack }) => html`${stack}`.use(html.transition),
+      });
+
+      window.history.replaceState(null, "", browserUrl);
+
+      const el = document.createElement("test-router-view-transition");
+      document.body.appendChild(el);
+
+      return resolveTimeout(async () => {
+        // The initial render also runs a transition - wait until it is done,
+        // so the navigation below starts a new one
+        await html.transition.instance?.finished;
+
+        const order = [];
+        const startViewTransition = document.startViewTransition;
+
+        spyOn(document, "startViewTransition").and.callFake((callback) => {
+          const viewTransition = startViewTransition.call(document, callback);
+          viewTransition.ready.then(() => order.push("ready"));
+          return viewTransition;
+        });
+        spyOn(HTMLElement.prototype, "focus").and.callFake(() =>
+          order.push("focus"),
+        );
+
+        el.querySelector("a").click();
+
+        return resolveTimeout(async () => {
+          expect(hybrids(el.children[0])).toBe(Other);
+          expect(order).toEqual(["ready", "focus"]);
+
+          document.body.removeChild(el);
+          await html.transition.instance?.finished;
+        });
+      });
+    });
+  }
 
   describe("test app", () => {
     beforeAll(() => {

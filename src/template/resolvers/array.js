@@ -5,7 +5,8 @@ export const arrayMap = new WeakMap();
 // moveBefore preserves state of custom elements (connectedMoveCallback) and iframes
 const moveNode = globalThis.Element?.prototype.moveBefore
   ? (parent, node, ref) => parent.moveBefore(node, ref)
-  : (parent, node, ref) => parent.insertBefore(node, ref);
+  : // istanbul ignore next
+    (parent, node, ref) => parent.insertBefore(node, ref);
 
 function movePlaceholder(target, previousSibling) {
   const meta = getMeta(target);

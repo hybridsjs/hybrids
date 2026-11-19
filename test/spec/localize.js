@@ -46,6 +46,22 @@ describe("localize:", () => {
       expect(console.warn).toHaveBeenCalledTimes(2);
       expect(spy).toHaveBeenCalledWith("text_only_@_0_", "");
     });
+
+    it("uses the same chrome.i18n key for a text with a pipe and a message with context", () => {
+      const spy = jasmine.createSpy("translate").and.returnValue("translated");
+      localize(spy, { format: "chrome.i18n" });
+
+      const el = document.createElement("div");
+      // prettier-ignore
+      html`<div>pipe | context</div>`(el);
+
+      expect(el.innerHTML).toBe("<div>translated</div>");
+      expect(msg`pipe | description | context`).toBe("translated");
+      expect(spy.calls.allArgs()).toEqual([
+        ["pipe___context", ""],
+        ["pipe___context", "context"],
+      ]);
+    });
   });
 
   describe("with dictionary -", () => {

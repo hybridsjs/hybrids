@@ -1229,6 +1229,12 @@ describe("store:", () => {
           });
       });
 
+      it("creates an empty record property when value is not set", () => {
+        return store.set(Model, { other: false }).then((model) => {
+          expect(model.values).toEqual({});
+        });
+      });
+
       it("updates item in record property", () => {
         return store
           .set(Model, { values: { a: "b", c: "d" } })
