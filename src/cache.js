@@ -234,14 +234,12 @@ function invalidateEntry(entry, options) {
     }
 
     if (entry.contexts) {
+      // dispatch() above has already removed collected contexts, and
+      // contexts dereferenced there are kept alive until the end of the job
       for (const ref of entry.contexts) {
         const context = ref.deref();
-        if (context) {
-          context.deps.delete(entry);
-          context.depsContexts.delete(entry.contexts);
-        } else {
-          entry.contexts.delete(ref);
-        }
+        context.deps.delete(entry);
+        context.depsContexts.delete(entry.contexts);
       }
     }
     entry.contexts = undefined;
